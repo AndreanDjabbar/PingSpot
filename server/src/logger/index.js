@@ -1,10 +1,11 @@
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import pino from 'pino';
+import { LOGGER_LEVEL } from '../utils/mainUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const loggerInfo = process.env.LOGGER_LEVEL || 'info';
+const loggerInfo = LOGGER_LEVEL;
 
 const fileTransport = pino.transport({
   target: 'pino-roll',

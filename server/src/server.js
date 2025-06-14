@@ -1,10 +1,7 @@
 import "../src/config/envConfig.js";
 import app from "./app.js";
 import logger from "./logger/index.js";
-
-const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || "0.0.0.0";
-const NODE_ENV = process.env.NODE_ENV || "development";
+import { PORT, HOST, NODE_ENV } from "./utils/mainUtils.js";
 
 const start = async () => {
     try {
