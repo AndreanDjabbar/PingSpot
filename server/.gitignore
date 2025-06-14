@@ -43,3 +43,11 @@ next-env.d.ts
 **/logger/*.log
 **/logger/*.log.*
 
+# prisma
+/prisma/migrations
+/prisma/generated
+
+
+/src/generated/prisma
+
+/src/generated/prisma

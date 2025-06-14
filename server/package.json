@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@prisma/client": "^6.9.0",
     "dotenv": "^16.5.0",
     "fastify": "^5.3.3",
     "nodemon": "^3.1.10",
@@ -13,13 +14,18 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cross-env NODE_ENV=production node src/server.js",
-    "dev": "cross-env NODE_ENV=development nodemon src/server.js"
+    "dev": "cross-env NODE_ENV=development nodemon src/server.js",
+    "migrate:dev": "dotenv -e .env.dev -- npx prisma migrate dev",
+    "generate:dev": "dotenv -e .env.dev -- npx prisma generate",
+    "pull:dev": "dotenv -e .env.dev -- npx prisma db pull"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
     "cross-env": "^7.0.3",
-    "pino-pretty": "^13.0.0"
+    "dotenv-cli": "^8.0.0",
+    "pino-pretty": "^13.0.0",
+    "prisma": "^6.9.0"
   }
 }
