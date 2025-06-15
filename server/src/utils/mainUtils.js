@@ -3,6 +3,7 @@ export const LOGGER_LEVEL = process.env.LOGGER_LEVEL || 'info';
 export const PORT = Number(process.env.PORT) || 3000;
 export const HOST = process.env.HOST || "0.0.0.0";
 export const NODE_ENV = process.env.NODE_ENV || "development";
+export const JWT_SECRET = process.env.JWT_SECRET || "default_secret_key";
 
 export const responseSuccess = (reply, status = 200, message = "Success", key = null, data = null) => {
     if (key === null || key === undefined) {

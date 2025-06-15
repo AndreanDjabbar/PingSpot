@@ -1,6 +1,9 @@
 {
   "dependencies": {
+    "@fastify/formbody": "^8.0.2",
+    "@fastify/jwt": "^9.1.0",
     "@prisma/client": "^6.9.0",
+    "ajv-errors": "^3.0.0",
     "dotenv": "^16.5.0",
     "fastify": "^5.3.3",
     "nodemon": "^3.1.10",
