@@ -22,7 +22,7 @@ export const loginSchema = {
 export const registerSchema = {
   body: {
     type: 'object',
-    required: ['username', 'email', 'password', 'fullName', 'phone'],
+    required: ['username', 'email', 'password', 'fullName', 'phone', 'provider'],
     properties: {
       username: { type: 'string', minLength: 3 },
       email: {
@@ -41,13 +41,20 @@ export const registerSchema = {
           pattern: 'Nomor telepon harus dimulai dengan 0 dan berisi 10–13 digit',
         },
       },
+      provider: {
+        type: 'string', 
+        enum: ['EMAIL', 'GOOGLE', 'GITHUB'],
+        errorMessage: {
+          enum: 'Provider harus salah satu dari EMAIL, GOOGLE, atau GITHUB',
+        },
+      }
     },
     errorMessage: {
       required: {
         username: 'Username wajib diisi',
         email: 'Email wajib diisi',
         password: 'Password wajib diisi',
-        fullName: 'Nama lengkap wajib diisi',
+        fullName: 'Fullname wajib diisi',
         phone: 'Nomor telepon wajib diisi',
       },
     },

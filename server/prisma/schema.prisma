@@ -8,7 +8,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Test {
-  id       String @id
-  username String @unique
+model User {
+  id         Int      @id @default(autoincrement())
+  username   String   @unique @db.VarChar(30)
+  email      String   @unique @db.VarChar(100)
+  password   String?  @db.VarChar(255)
+  fullName   String   @db.VarChar(100)
+  phone      String   @db.VarChar(15)
+  provider   Provider @default(EMAIL)
+  isVerified Boolean  @default(false)
+  providerId String?  @db.VarChar(100)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum Provider {
+  EMAIL
+  GOOGLE
+  GITHUB
 }
