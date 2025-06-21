@@ -7,7 +7,7 @@ const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-async function testConnection() {
+const testConnection = async() => {
     try {
         await prisma.$connect();
         logger.info('✅ Prisma connected to the database successfully.');

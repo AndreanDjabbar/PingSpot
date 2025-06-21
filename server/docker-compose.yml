@@ -1,0 +1,17 @@
+services:
+  pingspot-redis:
+    image: redis:latest
+    container_name: pingspot_redis
+    restart: always
+    ports:
+      - "6382:6379"
+    volumes:
+      - pingspot_redis_data:/data
+    networks:
+      - pingspot_network
+
+networks:
+  pingspot_network:
+
+volumes:
+  pingspot_redis_data:

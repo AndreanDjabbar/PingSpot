@@ -4,6 +4,9 @@ export const PORT = Number(process.env.PORT) || 3000;
 export const HOST = process.env.HOST || "0.0.0.0";
 export const NODE_ENV = process.env.NODE_ENV || "development";
 export const JWT_SECRET = process.env.JWT_SECRET || "default_secret_key";
+export const REDIS_HOST = process.env.REDIS_HOST || "localhost";
+export const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379;
+export const REDIS_PASSWORD = process.env.REDIS_PASSWORD || "";
 import bcrypt from 'bcrypt';
 
 export const responseSuccess = (reply, status = 200, message = "Success", key = null, data = null) => {

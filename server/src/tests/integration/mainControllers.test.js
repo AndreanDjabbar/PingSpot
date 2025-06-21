@@ -19,7 +19,7 @@ describe('GET /api', () => {
     it('should return a success message', async () => {
         const response = await app.inject({
             method: 'GET',
-            url: '/api'
+            url: '/api/main'
         });
 
         expect(response.statusCode).toBe(200);
