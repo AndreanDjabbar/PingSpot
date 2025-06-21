@@ -3,6 +3,7 @@ import fastifyFormbody from '@fastify/formbody';
 import mainRoutes from './routes/mainRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import prisma from './config/DBConfig.js';
+import { redisInit } from './config/redisConfig.js';
 import jwtPlugin from './plugins/jwtPlugin.js';
 import ajvErrors from 'ajv-errors';
 import { responseError } from './utils/mainUtils.js';
