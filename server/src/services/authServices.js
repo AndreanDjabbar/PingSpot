@@ -1,4 +1,5 @@
 import prisma from "../config/DBConfig.js";
+import { AppError } from "../utils/mainUtils.js";
 
 export const registerService = async ({
   username,
@@ -20,7 +21,7 @@ export const registerService = async ({
     });
 
     if (existing) {
-      throw new Error("Username atau email sudah digunakan");
+      return [null, new AppError("Email atau username sudah terdaftar", 409)];
     }
 
     const user = await prisma.user.create({
@@ -47,8 +48,8 @@ export const registerService = async ({
       }
     });
 
-    return user;
+    return [user, null];
   } catch (error) {
-    throw new Error(error.message || "Terjadi kesalahan saat registrasi");
+    throw new AppError(error.message || "Terjadi kesalahan saat registrasi", 500);
   }
 };
