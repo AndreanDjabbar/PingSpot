@@ -11,9 +11,19 @@ import {
     LOGGER_LEVEL,
     PORT,
     HOST,
-    NODE_ENV
+    NODE_ENV,
+    JWT_SECRET,
+    REDIS_HOST,
+    REDIS_PORT,
+    REDIS_PASSWORD,
+    CLIENT_URL,
+    EMAIL,
+    EMAIL_PASSWORD,
+    hashPassword,
+    comparePassword,
+    AppError
 } from '../../utils/mainUtils.js';
-
+import nodemailer from 'nodemailer';
 
 describe('responseSuccess()', () => {
     it('should return a successful response with default key "data"', () => {
@@ -89,9 +99,54 @@ describe('Environment Constants', () => {
         expect(typeof LOGGER_LEVEL).toBe('string');
         expect(typeof NODE_ENV).toBe('string');
         expect(typeof HOST).toBe('string');
-        expect(typeof PORT).toBe('number' || 'string'); // sometimes process.env is string
+        expect(typeof PORT).toBe('number' || 'string');
+        expect(typeof JWT_SECRET).toBe('string');
+        expect(typeof REDIS_HOST).toBe('string');
+        expect(typeof REDIS_PORT).toBe('number' || 'string');
+        expect(typeof REDIS_PASSWORD).toBe('string');
+        expect(typeof CLIENT_URL).toBe('string');
+        expect(typeof EMAIL).toBe('string');
+        expect(typeof EMAIL_PASSWORD).toBe('string');
 
         expect(['info', 'warn', 'error', 'debug']).toContain(LOGGER_LEVEL);
         expect(['development', 'production', 'test']).toContain(NODE_ENV);
+    });
+});
+
+describe('Password Hashing', () => {
+    it('should hash and compare passwords correctly', async () => {
+        const password = 'testPassword123';
+        const hashedPassword = await hashPassword(password);
+
+        expect(hashedPassword).toBeDefined();
+        expect(hashedPassword).not.toBe(password);
+
+        const isMatch = await comparePassword(password, hashedPassword);
+        expect(isMatch).toBe(true);
+
+        const wrongPassword = 'wrongPassword';
+        const isWrongMatch = await comparePassword(wrongPassword, hashedPassword);
+        expect(isWrongMatch).toBe(false);
+    });
+
+    it('should throw an error if password hashing fails', async () => {
+        const invalidPassword = null; 
+        await expect(hashPassword(invalidPassword)).rejects.toThrow();
+    });
+});
+
+describe ('AppError class functionality', () => {
+    it('should create an AppError instance with correct properties', () => {
+        const error = new AppError('Test error message', 400);
+
+        expect(error).toBeInstanceOf(AppError);
+        expect(error.message).toBe('Test error message');
+        expect(error.statusCode).toBe(400);
+    });
+
+    it('should default to status code 500 if not provided', () => {
+        const error = new AppError('Default error message');
+
+        expect(error.statusCode).toBe(500);
     });
 });

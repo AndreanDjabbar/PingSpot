@@ -8,8 +8,8 @@ export const REDIS_HOST = process.env.REDIS_HOST || "localhost";
 export const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD || "";
 export const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
-const EMAIL = process.env.EMAIL_EMAIL || "";
-const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || "";
+export const EMAIL = process.env.EMAIL_EMAIL || "";
+export const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || "";
 
 import bcrypt from 'bcrypt';
 import nodemailer from "nodemailer";
@@ -219,7 +219,7 @@ export const sendEmail = async (email, context="register_validation", verificati
 }
 
 export class AppError extends Error {
-    constructor(message, statusCode) {
+    constructor(message, statusCode=500) {
         super(message);
         this.statusCode = statusCode;
         this.name = this.constructor.name;
