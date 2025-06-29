@@ -21,7 +21,8 @@ import {
     EMAIL_PASSWORD,
     hashPassword,
     comparePassword,
-    AppError
+    AppError,
+    sendEmail
 } from '../../utils/mainUtils.js';
 import nodemailer from 'nodemailer';
 
@@ -150,3 +151,28 @@ describe ('AppError class functionality', () => {
         expect(error.statusCode).toBe(500);
     });
 });
+
+describe('sendEmail function', () => {
+    it('should send an email using nodemailer', async () => {
+        const mockTransporter = {
+            sendMail: vi.fn().mockResolvedValue({ response: 'Email sent' })
+        };
+        const createTransportSpy = vi.spyOn(nodemailer, 'createTransport').mockReturnValue(mockTransporter);
+
+        const email = 'andreanjabar19@gmail.com';
+        const context = 'register_validation';
+        const verificationLink = 'vericationLinkEXAMPLE';
+        const EMAIL = 'test@email.com';
+        const EMAIL_PASSWORD = 'testpassword';
+
+        const emailTemplates = {
+            register_validation: vi.fn().mockReturnValue('<b>Test Email</b>')
+        };
+
+        const info = await sendEmail(email, context, verificationLink);
+
+        expect(createTransportSpy).toHaveBeenCalled();
+        expect(mockTransporter.sendMail).toHaveBeenCalled();
+        expect(info).toEqual([true, null]);
+    });
+})
