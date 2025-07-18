@@ -1,53 +1,37 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Test binary, built with "go test -c"
+*.test
 
-# testing
-/coverage
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
 
-# next.js
-/.next/
-/out/
+# Dependency directories (remove the comment below to include it)
+# vendor/
 
-# production
-/build
+# Go workspace file
+go.work
+tmp/
 
-# misc
+# IDE specific files
+.vscode
+.idea
+
+# .env file
+.env
+.env.*
+
+# Project build
+main
+*templ.go
+
+# OS X generated file
 .DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
 
 **/logger/*.log
 **/logger/*.log.*
-
-# prisma
-/prisma/migrations
-/prisma/generated
-
-
-/src/generated/prisma
-
-/src/generated/prisma

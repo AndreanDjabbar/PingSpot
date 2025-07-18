@@ -4,9 +4,26 @@ services:
     container_name: pingspot_redis
     restart: always
     ports:
-      - "6382:6379"
+      - "${REDIS_PORT}:6379"
     volumes:
       - pingspot_redis_data:/data
+    networks:
+      - pingspot_network
+
+  pingspot-postgres:
+    image: postgres:latest
+    container_name: pingspot_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRE_DB}
+      POSTGRES_USER: ${POSTGRE_USER}
+      POSTGRES_PASSWORD: ${POSTGRE_PASSWORD}
+    ports:
+      - "${POSTGRE_PORT}:5432"
+    env_file:
+      - .env
+    volumes:
+      - pingspot_postgre_data:/var/lib/postgresql/data
     networks:
       - pingspot_network
 
@@ -15,3 +32,4 @@ networks:
 
 volumes:
   pingspot_redis_data:
+  pingspot_postgre_data:
