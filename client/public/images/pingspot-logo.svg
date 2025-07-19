@@ -1,0 +1,44 @@
+<svg viewBox="0 0 160 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3730a3;stop-opacity:1" />
+    </linearGradient>
+    
+    <radialGradient id="pulseGradient" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:0.25" />
+      <stop offset="100%" style="stop-color:#3730a3;stop-opacity:0" />
+    </radialGradient>
+
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#64748b;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3730a3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <circle cx="40" cy="40" r="25" fill="url(#pulseGradient)" opacity="0.85">
+    <animate attributeName="r" values="15;30;15" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.85;0;0.85" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="40" cy="40" r="20" fill="url(#pulseGradient)" opacity="0.55">
+    <animate attributeName="r" values="10;25;10" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.55;0;0.55" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <g transform="translate(40, 40)">
+    <ellipse cx="1" cy="12" rx="8" ry="3" fill="#000000" opacity="0.15"/>
+    <path d="M0,-15 C-8,-15 -15,-8 -15,0 C-15,8 0,15 0,15 C0,15 15,8 15,0 C15,-8 8,-15 0,-15 Z" 
+          fill="url(#pinGradient)" 
+          stroke="#bae6fd" 
+          stroke-width="2"/>
+    <circle cx="0" cy="-3" r="4" fill="#f1f5f9"/>
+
+  </g>
+  
+  <text x="59" y="46" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="url(#textGradient)">
+    PingSpot
+  </text>
+
+  <rect x="59" y="53" width="78" height="2" rx="1.5" fill="url(#textGradient)" opacity="0.88"/>
+</svg>
