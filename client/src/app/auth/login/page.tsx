@@ -12,14 +12,14 @@ const LoginPage = () => {
         <AuthLayout>
             <div className="space-y-8">
                 <div className="text-center space-y-2">
-                    <h1 className="text-3xl font-bold text-sky-800">Login</h1>
-                    <p className="text-sky-800">Sign in to your account to continue</p>
+                    <h1 className="text-3xl font-bold text-sky-800">Masuk</h1>
+                    <p className="text-sky-800">Masuk ke akun Anda untuk melanjutkan</p>
                 </div>
 
-                <div className="space-y-6">
-                    <div className="space-y-2">
+                <div className="space-y-5">
+                    <div className="space-y-1">
                         <label htmlFor="email" className="block text-sm font-medium text-sky-800">
-                        Email address
+                        Alamat Email
                         </label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -31,14 +31,17 @@ const LoginPage = () => {
                                 type="email"
                                 required
                                 className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200"
-                                placeholder="Enter your email"
+                                placeholder="Masukkan email Anda"
                             />
+                        </div>
+                        <div className="text-red-500 text-sm font-semibold mt-1">
+                            
                         </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         <label htmlFor="password" className="block text-sm font-medium text-sky-800">
-                        Password
+                        Kata Sandi
                         </label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -49,7 +52,7 @@ const LoginPage = () => {
                                 name="password"
                                 required
                                 className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200"
-                                placeholder="Enter your password"
+                                placeholder="Masukkan kata sandi Anda"
                             />
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                                 <button
@@ -61,12 +64,15 @@ const LoginPage = () => {
                                 </button>
                             </div>
                         </div>
+                        <div className="text-red-500 text-sm font-semibold mt-1">
+                            
+                        </div>
                     </div>
 
                     <div className="flex items-center justify-between">
                         <div className="text-sm">
                         <a href="#" className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
-                            Forgot your password?
+                            Lupa kata sandi?
                         </a>
                         </div>
                     </div>
@@ -76,7 +82,7 @@ const LoginPage = () => {
                         className="group relative w-full flex justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800"
                     >
                         <div className="flex items-center space-x-2">
-                            <span>Login</span>
+                            <span>Masuk</span>
                         </div>
                     </button>
                     </div>
@@ -86,7 +92,7 @@ const LoginPage = () => {
                         <div className="w-full border-t border-gray-300" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-sky-800">Or continue with</span>
+                        <span className="px-2 bg-white text-sky-800">Atau lanjutkan dengan</span>
                     </div>
                     </div>
 
@@ -109,9 +115,9 @@ const LoginPage = () => {
                 </div>
             
                 <p className="text-center text-sm text-sky-800">
-                Don't have an account?{' '}
-                <a href="/register" className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
-                    Sign up for free
+                Belum punya akun?{' '}
+                <a href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
+                    Daftar gratis
                 </a>
                 </p>
             </div>
