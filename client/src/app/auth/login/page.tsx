@@ -3,11 +3,11 @@
 import AuthLayout from "@/layouts/AuthLayout";
 import { MdMailOutline } from "react-icons/md";
 import { LuLockKeyhole } from "react-icons/lu";
-import { FaGoogle, FaGithub, FaEye, FaEyeSlash } from "react-icons/fa";
-import { useState } from "react";
+import { FaGoogle, FaGithub } from "react-icons/fa";
+import InputField from "@/components/form/InputField";
 
 const LoginPage = () => {
-    const [showPassword, setShowPassword] = useState(false);
+
     return (
         <AuthLayout>
             <div className="space-y-8">
@@ -17,58 +17,33 @@ const LoginPage = () => {
                 </div>
 
                 <div className="space-y-5">
-                    <div className="space-y-1">
-                        <label htmlFor="email" className="block text-sm font-medium text-sky-800">
-                        Alamat Email
-                        </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <MdMailOutline size={20}/>
-                            </div>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                required
-                                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200"
-                                placeholder="Masukkan email Anda"
-                            />
-                        </div>
-                        <div className="text-red-500 text-sm font-semibold mt-1">
-                            
-                        </div>
-                    </div>
+                    <InputField
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        className="w-full"
+                        withLabel={true}
+                        labelTitle="Alamat Email"
+                        icon={<MdMailOutline size={20} />}
+                        placeHolder="Masukkan email Anda"
+                    />
+                    <div className="text-red-500 text-sm font-semibold mt-1"></div>
 
-                    <div className="space-y-1">
-                        <label htmlFor="password" className="block text-sm font-medium text-sky-800">
-                        Kata Sandi
-                        </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <LuLockKeyhole size={20}/>
-                            </div>
-                            <input
-                                id="password"
-                                name="password"
-                                required
-                                className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200"
-                                placeholder="Masukkan kata sandi Anda"
-                            />
-                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                <button
-                                type="button"
-                                className="text-sky-800"
-                                onClick={() => setShowPassword(!showPassword)}
-                                >
-                                {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
-                                </button>
-                            </div>
-                        </div>
-                        <div className="text-red-500 text-sm font-semibold mt-1">
-                            
-                        </div>
-                    </div>
-
+                    <InputField
+                        id="password"
+                        name="password"
+                        type={'password'}
+                        required
+                        className="w-full"
+                        withLabel={true}
+                        labelTitle="Kata Sandi"
+                        icon={<LuLockKeyhole size={20} />}
+                        placeHolder="Masukkan kata sandi Anda"
+                        showPasswordToggle={true}
+                    />
+                    <div className="text-red-500 text-sm font-semibold mt-1"></div>
+                    
                     <div className="flex items-center justify-between">
                         <div className="text-sm">
                         <a href="#" className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
