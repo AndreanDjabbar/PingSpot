@@ -1,13 +1,28 @@
 'use client';
-/* eslint-disable react/no-unescaped-entities */
 import AuthLayout from "@/layouts/AuthLayout";
 import { MdMailOutline } from "react-icons/md";
 import { LuLockKeyhole } from "react-icons/lu";
 import { FaGoogle, FaGithub, FaPhoneAlt } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
 import InputField from "@/components/form/InputField";
+import { useForm } from "react-hook-form";
+import { IRegisterFormType } from "../types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RegisterSchema } from "../Schema";
 
 const RegisterPage = () => {
+    const { 
+        register, 
+        handleSubmit, 
+        formState: { errors } 
+    } = useForm<IRegisterFormType>({
+        resolver: zodResolver(RegisterSchema)
+    });
+
+    const onSubmit = (data: unknown) => {
+        console.log(data);
+    };
+
     return (
         <AuthLayout>
             <div className="space-y-8">
@@ -16,87 +31,103 @@ const RegisterPage = () => {
                     <p className="text-sky-800">Buat akun untuk mulai menggunakan PingSpot</p>
                 </div>
 
-                <div className="space-y-5">
+                <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
                     <div className="flex justify-between w-full gap-4">
                         <div className="w-1/2">
                             <InputField
-                                id="fullname"
-                                name="fullname"
+                                id="fullName"
+                                register={register("fullName")}
                                 type="text"
-                                required
                                 className="w-full"
                                 withLabel={true}
                                 labelTitle="Nama Lengkap"
                                 icon={<IoPersonSharp size={20}/>} 
                                 placeHolder="Masukkan nama lengkap Anda"
                             />
-                            <div className="text-red-500 text-sm font-semibold mt-0.5"></div>
+                            <div className="text-red-500 text-sm font-semibold">{errors.fullName?.message as string}</div>
                         </div>
                         <div className="w-1/2">
                             <InputField
                                 id="username"
-                                name="username"
+                                register={register("username")}
                                 type="text"
-                                required
                                 className="w-full"
                                 withLabel={true}
                                 labelTitle="Username"
                                 icon={<IoPersonSharp size={20}/>} 
                                 placeHolder="Masukkan username"
                             />
-                            <div className="text-red-500 text-sm font-semibold mt-0.5"></div>
+                            <div className="text-red-500 text-sm font-semibold">{errors.username?.message as string}</div>
                         </div>
                     </div>
 
-                    <InputField
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        required
-                        className="w-full"
-                        withLabel={true}
-                        labelTitle="Nomor Telepon"
-                        icon={<FaPhoneAlt size={20}/>} 
-                        placeHolder="Masukkan nomor telepon Anda"
-                    />
-                    <div className="text-red-500 text-sm font-semibold mt-0.5"></div>
+                    <div>
+                        <InputField
+                            id="phone"
+                            register={register("phone")}
+                            type="tel"
+                            className="w-full"
+                            withLabel={true}
+                            labelTitle="Nomor Telepon"
+                            icon={<FaPhoneAlt size={20}/>} 
+                            placeHolder="Masukkan nomor telepon Anda"
+                        />
+                        <div className="text-red-500 text-sm font-semibold">{errors.phone?.message as string}</div>
+                    </div>
 
-                    <InputField
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        className="w-full"
-                        withLabel={true}
-                        labelTitle="Alamat Email"
-                        icon={<MdMailOutline size={20}/>} 
-                        placeHolder="Masukkan email Anda"
-                    />
-                    <div className="text-red-500 text-sm font-semibold mt-0.5"></div>
+                    <div>
+                        <InputField
+                            id="email"
+                            register={register("email")}
+                            type="email"
+                            className="w-full"
+                            withLabel={true}
+                            labelTitle="Alamat Email"
+                            icon={<MdMailOutline size={20}/>} 
+                            placeHolder="Masukkan email Anda"
+                        />
+                        <div className="text-red-500 text-sm font-semibold">{errors.email?.message as string}</div>
+                    </div>
 
-                    <InputField
-                        id="password"
-                        name="password"
-                        type={"password"}
-                        required
-                        className="w-full"
-                        withLabel={true}
-                        labelTitle="Kata Sandi"
-                        icon={<LuLockKeyhole size={20}/>} 
-                        placeHolder="Masukkan kata sandi Anda"
-                        showPasswordToggle={true}
-                    />
-                    <div className="text-red-500 text-sm font-semibold mt-0.5"></div>
+                    <div>
+                        <InputField
+                            id="password"
+                            register={register("password")}
+                            type="password"
+                            className="w-full"
+                            withLabel={true}
+                            labelTitle="Kata Sandi"
+                            icon={<LuLockKeyhole size={20}/>} 
+                            placeHolder="Masukkan kata sandi Anda"
+                            showPasswordToggle={true}
+                        />
+                        <div className="text-red-500 text-sm font-semibold">{errors.password?.message as string}</div>
+                    </div>
+
+                    <div>
+                        <InputField
+                            id="passwordConfirmation"
+                            register={register("passwordConfirmation")}
+                            type="password"
+                            className="w-full"
+                            withLabel={true}
+                            labelTitle="Konfirmasi Kata Sandi"
+                            icon={<LuLockKeyhole size={20}/>} 
+                            placeHolder="Masukkan ulang kata sandi Anda"
+                            showPasswordToggle={true}
+                        />
+                        <div className="text-red-500 text-sm font-semibold">{errors.passwordConfirmation?.message as string}</div>
+                    </div>
 
                     <button
                         type="submit"
-                        className="group relative w-full flex justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800"
+                        className="group relative w-full flex justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
                     >
                         <div className="flex items-center space-x-2">
                             <span>Daftar</span>
                         </div>
                     </button>
-                </div>
+                </form>
 
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">

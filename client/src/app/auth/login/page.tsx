@@ -7,7 +7,6 @@ import { FaGoogle, FaGithub } from "react-icons/fa";
 import InputField from "@/components/form/InputField";
 
 const LoginPage = () => {
-
     return (
         <AuthLayout>
             <div className="space-y-8">

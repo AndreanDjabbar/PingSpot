@@ -15,11 +15,12 @@ interface InputFieldProps {
     value?: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+    register?: unknown;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
     id,
-    name = id,
+    name,
     type = 'text',
     required = false,
     className = '',
@@ -30,7 +31,8 @@ const InputField: React.FC<InputFieldProps> = ({
     icon,
     value,
     onChange,
-    onBlur
+    onBlur,
+    register
 }) => {
     const [showPassword, setShowPassword] = useState(false);
     const inputType = type === 'password' && showPasswordToggle ? (showPassword ? 'text' : 'password') : type;
@@ -55,6 +57,7 @@ const InputField: React.FC<InputFieldProps> = ({
                     value={value}
                     onChange={onChange}
                     onBlur={onBlur}
+                    {...(register || {})}
                 />
                 {type === 'password' && showPasswordToggle && (
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
