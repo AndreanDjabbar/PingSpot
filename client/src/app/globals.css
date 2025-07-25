@@ -3,3 +3,6 @@
 .bg-pingspot-gradient {
     @apply bg-gradient-to-br from-gray-600 via-sky-900 to-indigo-800;
 }
+.bg-pingspot-gradient:hover {
+    @apply from-sky-950 via-sky-950 to-sky-950;
+}
