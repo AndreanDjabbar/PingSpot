@@ -5,4 +5,5 @@ export type IRegisterFormType = {
     email: string;
     password: string;
     passwordConfirmation: string;
+    provider?: string;
 }
