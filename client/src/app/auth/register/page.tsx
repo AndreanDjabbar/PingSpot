@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import AuthLayout from "@/layouts/AuthLayout";
 import { MdMailOutline } from "react-icons/md";
 import { LuLockKeyhole } from "react-icons/lu";
@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { IRegisterFormType } from "../types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../Schema";
+import { useRegister } from "@/hooks/auth/useRegister";
 
 const RegisterPage = () => {
     const { 
@@ -18,9 +19,10 @@ const RegisterPage = () => {
     } = useForm<IRegisterFormType>({
         resolver: zodResolver(RegisterSchema)
     });
+    const { mutate, isPending, isError, isSuccess, error } = useRegister();
 
-    const onSubmit = (data: unknown) => {
-        console.log(data);
+    const onSubmit = (data: IRegisterFormType) => {
+        mutate(data);
     };
 
     return (
@@ -31,6 +33,20 @@ const RegisterPage = () => {
                     <p className="text-sky-800">Buat akun untuk mulai menggunakan PingSpot</p>
                 </div>
 
+                
+                {isSuccess && (
+                    <div className="text-green-600 font-semibold text-center bg-green-100 rounded px-4 py-2">
+                        Registrasi berhasil! Silakan cek email Anda atau langsung <a href="/auth/login" className="underline text-blue-600">login</a>.
+                    </div>
+                )}
+
+                {isError && (
+                    <div className="text-red-600 font-semibold text-center bg-red-100 rounded px-4 py-2">
+                        {error?.message}
+                    </div>
+                )}
+
+                {!isSuccess && (
                 <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
                     <div className="flex justify-between w-full gap-4">
                         <div className="w-1/2">
@@ -121,13 +137,16 @@ const RegisterPage = () => {
 
                     <button
                         type="submit"
-                        className="group relative w-full flex justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
+                        className="group relative w-full flex justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
+                        disabled={isPending}
                     >
                         <div className="flex items-center space-x-2">
-                            <span>Daftar</span>
+                            {isPending && <span className="loader mr-2"></span>}
+                            <span>{isPending ? "Mendaftar..." : "Daftar"}</span>
                         </div>
                     </button>
                 </form>
+                )}
 
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
