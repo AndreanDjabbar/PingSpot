@@ -10,6 +10,8 @@ import { IRegisterFormType } from "../types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../Schema";
 import { useRegister } from "@/hooks/auth/useRegister";
+import { useToast } from "@/hooks/useToast";
+import { useEffect } from "react";
 
 const RegisterPage = () => {
     const { 
@@ -20,6 +22,17 @@ const RegisterPage = () => {
         resolver: zodResolver(RegisterSchema)
     });
     const { mutate, isPending, isError, isSuccess, error } = useRegister();
+    const { toastSuccess, toastError } = useToast();
+
+    useEffect(() => {
+        {console.log("Effect triggered for registration status changes");}
+        if (isError && error) {
+            toastError(error?.message || "Terjadi kesalahan saat proses registrasi.");
+        }
+        if (isSuccess) {
+            toastSuccess("Registrasi berhasil! Silakan cek email Anda atau langsung login.");
+        }
+    }, [isError, isSuccess, error, toastError, toastSuccess]);
 
     const onSubmit = (data: IRegisterFormType) => {
         mutate(data);
@@ -33,7 +46,6 @@ const RegisterPage = () => {
                     <p className="text-sky-800">Buat akun untuk mulai menggunakan PingSpot</p>
                 </div>
 
-                
                 {isSuccess && (
                     <div className="text-green-600 font-semibold text-center bg-green-100 rounded px-4 py-2">
                         Registrasi berhasil! Silakan cek email Anda atau langsung <a href="/auth/login" className="underline text-blue-600">login</a>.
