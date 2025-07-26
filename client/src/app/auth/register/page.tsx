@@ -12,6 +12,9 @@ import { RegisterSchema } from "../Schema";
 import { useRegister } from "@/hooks/auth/useRegister";
 import { useToast } from "@/hooks/useToast";
 import { useEffect } from "react";
+import { getErrorMessage, getErrorDetails } from "@/utils/gerError";
+import ErrorSection from "@/components/UI/ErrorSection";
+
 
 const RegisterPage = () => {
     const { 
@@ -25,9 +28,9 @@ const RegisterPage = () => {
     const { toastSuccess, toastError } = useToast();
 
     useEffect(() => {
-        {console.log("Effect triggered for registration status changes");}
         if (isError && error) {
-            toastError(error?.message || "Terjadi kesalahan saat proses registrasi.");
+            console.error("Registration error:", error);
+            toastError(getErrorMessage(error));
         }
         if (isSuccess) {
             toastSuccess("Registrasi berhasil! Silakan cek email Anda atau langsung login.");
@@ -35,7 +38,7 @@ const RegisterPage = () => {
     }, [isError, isSuccess, error, toastError, toastSuccess]);
 
     const onSubmit = (data: IRegisterFormType) => {
-        mutate(data);
+        mutate({ ...data, provider: "" });
     };
 
     return (
@@ -53,9 +56,9 @@ const RegisterPage = () => {
                 )}
 
                 {isError && (
-                    <div className="text-red-600 font-semibold text-center bg-red-100 rounded px-4 py-2">
-                        {error?.message}
-                    </div>
+                    <ErrorSection 
+                    message={getErrorMessage(error)} 
+                    errors={getErrorDetails(error)}/>
                 )}
 
                 {!isSuccess && (
