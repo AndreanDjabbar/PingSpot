@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AxiosError } from "axios";
 
-export interface ErrorResponse {
+interface IErrorResponse {
     message?: string;
-    errors?: Record<string, string> | string[];
+    errors?: any;
 }
 
-export const getErrorMessage = (error: unknown): string => {
-    if ((error as AxiosError<ErrorResponse>)?.isAxiosError) {
-        const axiosError = error as AxiosError<ErrorResponse>;
+export const getErrorResponseMessage = (error: unknown): string => {
+    if ((error as AxiosError<IErrorResponse>)?.isAxiosError) {
+        const axiosError = error as AxiosError<IErrorResponse>;
         const res = axiosError.response?.data;
         if (res?.message) {
             return res.message;
@@ -19,14 +19,16 @@ export const getErrorMessage = (error: unknown): string => {
     return "Terjadi kesalahan tak terduga."
 };
 
-export const getErrorDetails = (error: unknown): any => {
-    if ((error as AxiosError<ErrorResponse>)?.isAxiosError) {
-        const axiosError = error as AxiosError<ErrorResponse>;
+export const getErrorResponseDetails = (error: unknown): any => {
+    if ((error as AxiosError<IErrorResponse>)?.isAxiosError) {
+        const axiosError = error as AxiosError<IErrorResponse>;
         const res = axiosError.response?.data;
         if (res?.errors && typeof res.errors === "object") {
             return res.errors;
         } else if (Array.isArray(res?.errors)) {
             return res.errors.join(", ");
+        } else if (typeof res?.errors === "string") {
+            return res.errors; 
         }
     }
     return "Terjadi kesalahan tak terduga."
