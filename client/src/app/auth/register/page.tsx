@@ -6,15 +6,18 @@ import { FaGoogle, FaGithub, FaPhoneAlt } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
 import InputField from "@/components/form/InputField";
 import { useForm } from "react-hook-form";
-import { IRegisterFormType } from "../types";
+import { IRegisterFormType} from "../types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../Schema";
 import { useRegister } from "@/hooks/auth/useRegister";
 import { useToast } from "@/hooks/useToast";
 import { useEffect } from "react";
-import { getErrorMessage, getErrorDetails } from "@/utils/gerError";
+import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
 import ErrorSection from "@/components/UI/ErrorSection";
-
+import ButtonSubmit from "@/components/form/ButtonSubmit";
+import { getDataResponseMessage } from "@/utils/getDataResponse";
+import { useRouter } from "next/navigation";
+import SuccessSection from "@/components/UI/SuccessSection";
 
 const RegisterPage = () => {
     const { 
@@ -24,21 +27,25 @@ const RegisterPage = () => {
     } = useForm<IRegisterFormType>({
         resolver: zodResolver(RegisterSchema)
     });
-    const { mutate, isPending, isError, isSuccess, error } = useRegister();
+    const { mutate, isPending, isError, isSuccess, error, data } = useRegister();
     const { toastSuccess, toastError } = useToast();
+    const router = useRouter();
 
     useEffect(() => {
         if (isError && error) {
             console.error("Registration error:", error);
-            toastError(getErrorMessage(error));
+            toastError(getErrorResponseMessage(error));
         }
-        if (isSuccess) {
-            toastSuccess("Registrasi berhasil! Silakan cek email Anda atau langsung login.");
+        if (isSuccess && data) {
+            toastSuccess(getDataResponseMessage(data));
+            setTimeout(() => {
+                router.push("/auth/login");
+            }, 2000);
         }
     }, [isError, isSuccess, error, toastError, toastSuccess]);
 
     const onSubmit = (data: IRegisterFormType) => {
-        mutate({ ...data, provider: "" });
+        mutate({ ...data, provider: "EMAIL" });
     };
 
     return (
@@ -50,117 +57,111 @@ const RegisterPage = () => {
                 </div>
 
                 {isSuccess && (
-                    <div className="text-green-600 font-semibold text-center bg-green-100 rounded px-4 py-2">
-                        Registrasi berhasil! Silakan cek email Anda atau langsung <a href="/auth/login" className="underline text-blue-600">login</a>.
-                    </div>
+                    <SuccessSection message={getDataResponseMessage(data)}/>
                 )}
 
                 {isError && (
                     <ErrorSection 
-                    message={getErrorMessage(error)} 
-                    errors={getErrorDetails(error)}/>
+                    message={getErrorResponseMessage(error)} 
+                    errors={getErrorResponseDetails(error)}/>
                 )}
 
                 {!isSuccess && (
-                <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-                    <div className="flex justify-between w-full gap-4">
-                        <div className="w-1/2">
+                    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+                        <div className="flex justify-between w-full gap-4">
+                            <div className="w-1/2">
+                                <InputField
+                                    id="fullName"
+                                    register={register("fullName")}
+                                    type="text"
+                                    className="w-full"
+                                    withLabel={true}
+                                    labelTitle="Nama Lengkap"
+                                    icon={<IoPersonSharp size={20}/>} 
+                                    placeHolder="Masukkan nama lengkap Anda"
+                                />
+                                <div className="text-red-500 text-sm font-semibold">{errors.fullName?.message as string}</div>
+                            </div>
+                            <div className="w-1/2">
+                                <InputField
+                                    id="username"
+                                    register={register("username")}
+                                    type="text"
+                                    className="w-full"
+                                    withLabel={true}
+                                    labelTitle="Username"
+                                    icon={<IoPersonSharp size={20}/>} 
+                                    placeHolder="Masukkan username"
+                                />
+                                <div className="text-red-500 text-sm font-semibold">{errors.username?.message as string}</div>
+                            </div>
+                        </div>
+
+                        <div>
                             <InputField
-                                id="fullName"
-                                register={register("fullName")}
-                                type="text"
+                                id="phone"
+                                register={register("phone")}
+                                type="tel"
                                 className="w-full"
                                 withLabel={true}
-                                labelTitle="Nama Lengkap"
-                                icon={<IoPersonSharp size={20}/>} 
-                                placeHolder="Masukkan nama lengkap Anda"
+                                labelTitle="Nomor Telepon"
+                                icon={<FaPhoneAlt size={20}/>} 
+                                placeHolder="Masukkan nomor telepon Anda"
                             />
-                            <div className="text-red-500 text-sm font-semibold">{errors.fullName?.message as string}</div>
+                            <div className="text-red-500 text-sm font-semibold">{errors.phone?.message as string}</div>
                         </div>
-                        <div className="w-1/2">
+
+                        <div>
                             <InputField
-                                id="username"
-                                register={register("username")}
-                                type="text"
+                                id="email"
+                                register={register("email")}
+                                type="email"
                                 className="w-full"
                                 withLabel={true}
-                                labelTitle="Username"
-                                icon={<IoPersonSharp size={20}/>} 
-                                placeHolder="Masukkan username"
+                                labelTitle="Alamat Email"
+                                icon={<MdMailOutline size={20}/>} 
+                                placeHolder="Masukkan email Anda"
                             />
-                            <div className="text-red-500 text-sm font-semibold">{errors.username?.message as string}</div>
+                            <div className="text-red-500 text-sm font-semibold">{errors.email?.message as string}</div>
                         </div>
-                    </div>
 
-                    <div>
-                        <InputField
-                            id="phone"
-                            register={register("phone")}
-                            type="tel"
-                            className="w-full"
-                            withLabel={true}
-                            labelTitle="Nomor Telepon"
-                            icon={<FaPhoneAlt size={20}/>} 
-                            placeHolder="Masukkan nomor telepon Anda"
-                        />
-                        <div className="text-red-500 text-sm font-semibold">{errors.phone?.message as string}</div>
-                    </div>
-
-                    <div>
-                        <InputField
-                            id="email"
-                            register={register("email")}
-                            type="email"
-                            className="w-full"
-                            withLabel={true}
-                            labelTitle="Alamat Email"
-                            icon={<MdMailOutline size={20}/>} 
-                            placeHolder="Masukkan email Anda"
-                        />
-                        <div className="text-red-500 text-sm font-semibold">{errors.email?.message as string}</div>
-                    </div>
-
-                    <div>
-                        <InputField
-                            id="password"
-                            register={register("password")}
-                            type="password"
-                            className="w-full"
-                            withLabel={true}
-                            labelTitle="Kata Sandi"
-                            icon={<LuLockKeyhole size={20}/>} 
-                            placeHolder="Masukkan kata sandi Anda"
-                            showPasswordToggle={true}
-                        />
-                        <div className="text-red-500 text-sm font-semibold">{errors.password?.message as string}</div>
-                    </div>
-
-                    <div>
-                        <InputField
-                            id="passwordConfirmation"
-                            register={register("passwordConfirmation")}
-                            type="password"
-                            className="w-full"
-                            withLabel={true}
-                            labelTitle="Konfirmasi Kata Sandi"
-                            icon={<LuLockKeyhole size={20}/>} 
-                            placeHolder="Masukkan ulang kata sandi Anda"
-                            showPasswordToggle={true}
-                        />
-                        <div className="text-red-500 text-sm font-semibold">{errors.passwordConfirmation?.message as string}</div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="group relative w-full flex justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
-                        disabled={isPending}
-                    >
-                        <div className="flex items-center space-x-2">
-                            {isPending && <span className="loader mr-2"></span>}
-                            <span>{isPending ? "Mendaftar..." : "Daftar"}</span>
+                        <div>
+                            <InputField
+                                id="password"
+                                register={register("password")}
+                                type="password"
+                                className="w-full"
+                                withLabel={true}
+                                labelTitle="Kata Sandi"
+                                icon={<LuLockKeyhole size={20}/>} 
+                                placeHolder="Masukkan kata sandi Anda"
+                                showPasswordToggle={true}
+                            />
+                            <div className="text-red-500 text-sm font-semibold">{errors.password?.message as string}</div>
                         </div>
-                    </button>
-                </form>
+
+                        <div>
+                            <InputField
+                                id="passwordConfirmation"
+                                register={register("passwordConfirmation")}
+                                type="password"
+                                className="w-full"
+                                withLabel={true}
+                                labelTitle="Konfirmasi Kata Sandi"
+                                icon={<LuLockKeyhole size={20}/>} 
+                                placeHolder="Masukkan ulang kata sandi Anda"
+                                showPasswordToggle={true}
+                            />
+                            <div className="text-red-500 text-sm font-semibold">{errors.passwordConfirmation?.message as string}</div>
+                        </div>
+
+                        <ButtonSubmit
+                            className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
+                            title="Daftar"
+                            progressTitle="Mendaftar..."
+                            isProgressing={isPending}
+                        />
+                    </form>
                 )}
 
                 <div className="relative">
