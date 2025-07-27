@@ -16,7 +16,7 @@ func ResponseSuccess(c *fiber.Ctx, status int, message string, key string, data 
 
 func ResponseError(c *fiber.Ctx, status int, message string, key string, data any) error {
 	if key == "" {
-		key = "error"
+		key = "errors"
 	}
 	response := fiber.Map{
 		"success": false,
