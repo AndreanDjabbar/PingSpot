@@ -39,13 +39,18 @@ const ErrorSection: React.FC<ErrorSectionProps> = ({ message, errors }) => {
                         {message || 'Please fix the following errors:'}
                     </h3>
                 </div>
-                
-                <div className="flex-1 px-4">         
-                    {errors && Object.keys(errors).length > 0 && (
+                <div className="flex-1 px-4">
+                    {errors && typeof errors === "string" && (
+                        <div className="bg-white rounded-md px-3 py-2 border border-red-100">
+                            <p className="text-sm text-red-700">{errors}</p>
+                        </div>
+                    )}
+                    
+                    {errors && typeof errors === "object" && Object.keys(errors).length > 0 && (
                         <div className="space-y-2">
                             {Object.entries(errors).map(([key, value]) => (
-                                <div 
-                                    key={key} 
+                                <div
+                                    key={key}
                                     className="bg-white rounded-md px-3 py-2 border border-red-100"
                                 >
                                     <div className="flex flex-col">
