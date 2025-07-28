@@ -11,3 +11,9 @@ export const RegisterSchema = z.object({
     message: "Konfirmasi kata sandi tidak cocok",
     path: ["passwordConfirmation"],
 });
+
+export const VerificationSchema = z.object({
+    code1: z.string().min(1, "Kode verifikasi 1 tidak boleh kosong"),
+    userId: z.string().min(1, "ID pengguna tidak boleh kosong"),
+    code2: z.string().min(1, "Kode verifikasi 2 tidak boleh kosong"),
+})
