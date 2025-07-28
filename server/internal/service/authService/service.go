@@ -101,3 +101,22 @@ func Login(db *gorm.DB, req dto.LoginRequest) (*model.User, string, error) {
 
 	return &user, token, nil
 }
+
+func VerifyUser(db *gorm.DB, userID uint) (*model.User, error) {
+	var user model.User
+
+	if err := db.First(&user, userID).Error; err != nil {
+		return nil, errors.New("User tidak ditemukan")
+	}
+
+	if user.IsVerified {
+		return nil, errors.New("Akun sudah diverifikasi")
+	}
+
+	user.IsVerified = true
+	if err := db.Save(&user).Error; err != nil {
+		return nil, errors.New("Gagal memverifikasi akun")
+	}
+
+	return &user, nil
+}
