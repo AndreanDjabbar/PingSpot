@@ -74,7 +74,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 		logger.Error("Failed to generate random code", zap.Error(err))
 		return responseUtils.ResponseError(c, 500, "Gagal membuat kode acak", "", err.Error())
 	}
-	verificationLink := fmt.Sprintf("%s/auth/verify-account/%s/%d/%s", envUtils.ClientURL(), randomCode1, user.ID, randomCode2)
+	verificationLink := fmt.Sprintf("%s/auth/verification?code1=%s&userId=%d&code2=%s", envUtils.ClientURL(), randomCode1, user.ID, randomCode2)
 
 	redisClient := config.GetRedis()
 
