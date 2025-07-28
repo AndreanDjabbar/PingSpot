@@ -3,7 +3,7 @@ import { verificationService } from "@/services/authService";
 import { AxiosError } from "axios";
 import { IVerificationType } from "@/app/auth/types";
 
-export function useVerification() {
+export const useVerification = () => {
     return useMutation<unknown, AxiosError, IVerificationType>({
         mutationFn: (data: IVerificationType) => verificationService(data)
     });

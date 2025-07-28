@@ -3,7 +3,7 @@ import { registerService } from "@/services/authService";
 import { AxiosError } from "axios";
 import { IRegisterFormType } from "@/app/auth/types";
 
-export function useRegister() {
+export const useRegister = () => {
     return useMutation<unknown, AxiosError, IRegisterFormType>({
         mutationFn: (data: IRegisterFormType) => registerService(data)
     });
