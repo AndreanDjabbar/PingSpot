@@ -7,3 +7,9 @@ export type IRegisterFormType = {
     passwordConfirmation: string;
     provider?: string;
 }
+
+export type IVerificationType = {
+    code1: string;
+    userId: string;
+    code2: string;
+}
