@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IRegisterFormType } from "@/app/auth/types";
+import { IRegisterFormType, IVerificationType } from "@/app/auth/types";
 import axios from "axios";
 
 const AUTH_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/auth`;
@@ -13,3 +13,8 @@ export const registerService = async (payload: IRegisterFormType): Promise<IResp
     const response = await axios.post<IResponseType>(`${AUTH_API_URL}/register`, payload);
     return response.data;
 };
+
+export const verificationService = async (payload: IVerificationType): Promise<IResponseType> => {
+    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/verification?code1=${payload.code1}&userId=${payload.userId}&code2=${payload.code2}`);
+    return response.data;
+}
