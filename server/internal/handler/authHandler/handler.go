@@ -12,10 +12,12 @@ import (
 	"server2/pkg/utils/envUtils"
 	mainutils "server2/pkg/utils/mainUtils"
 	"server2/pkg/utils/responseUtils"
+	"strconv"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
@@ -104,6 +106,65 @@ func RegisterHandler(c *fiber.Ctx) error {
 	logger.Info("User registered successfully", zap.String("user_id", fmt.Sprintf("%d", user.ID)))
 
 	return responseUtils.ResponseSuccess(c, 200, "Registrasi berhasil. Silahkan cek email anda untuk verifikasi akun", "data", newUser)
+}
+
+func VerificationHandler(c *fiber.Ctx) error {
+	logger.Info("VERIFICATION HANDLER")
+	code1 := c.Query("code1")
+	userId := c.Query("userId")
+	code2 := c.Query("code2")
+
+	if code1 == "" || userId == "" || code2 == "" {
+		return responseUtils.ResponseError(c, 400, "Parameter tidak lengkap", "", nil)
+	}
+
+	redisClient := config.GetRedis()
+	redisKey := fmt.Sprintf("link:%s", userId)
+	linkData, err := redisClient.Get(c.Context(), redisKey).Result()
+	if err != nil {
+		var errorMsg string
+		if err == redis.Nil {
+			errorMsg = "Link verifikasi tidak ditemukan atau sudah kadaluarsa"
+		} else {
+			errorMsg = "Gagal mendapatkan kode verifikasi"
+		}
+		logger.Error("Failed to get verification link from Redis", zap.Error(err))
+		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan kode verifikasi", "", errorMsg)
+	}
+
+	var link map[string]string
+	if err := json.Unmarshal([]byte(linkData), &link); err != nil {
+		logger.Error("Failed to unmarshal verification link data", zap.Error(err))
+		return responseUtils.ResponseError(c, 500, "Gagal memproses link verifikasi", "", err.Error())
+	}
+
+	if link["link1"] != code1 || link["link2"] != code2 {
+		return responseUtils.ResponseError(c, 400, "link verifikasi tidak valid", "", "Link verifikasi tidak valid")
+	}
+
+	userIdUint, err := strconv.ParseUint(userId, 10, 32)
+	if err != nil {
+		logger.Error("Invalid user ID format", zap.Error(err))
+		return responseUtils.ResponseError(c, 400, "ID pengguna tidak valid", "", err.Error())
+	}
+
+	db := config.GetDB()
+	user, err := authservice.VerifyUser(db, uint(userIdUint)) 
+	if err != nil {
+		logger.Error("Verification failed", zap.Error(err))
+		return responseUtils.ResponseError(c, 500, "Verifikasi gagal", "", err.Error())
+	}
+
+	if err := redisClient.Del(c.Context(), redisKey).Err(); err != nil {
+		logger.Error("Failed to delete verification link from Redis", zap.Error(err))
+	}
+
+	dataUser := map[string]any{
+		"username": user.Username,
+		"email":    user.Email,
+	}
+
+	return responseUtils.ResponseSuccess(c, 200, "Akun berhasil diverifikasi", "data", dataUser)
 }
 
 func LoginHandler(c *fiber.Ctx) error {
