@@ -4,13 +4,15 @@ import { FaCircleCheck } from "react-icons/fa6";
 
 interface SuccessSectionProps {
     message?: string;
-    data?: any;
+    data?: any | (() => any)
 }
 
 const SuccessSection: React.FC<SuccessSectionProps> = ({ 
     message, 
     data
 }) => {
+    const resolvedData = typeof data === 'function' ? data() : data;
+
     const getDataResponseMessage = (responseData: any): string => {
         if (typeof responseData === 'string') return responseData;
         if (responseData?.message) return responseData.message;
@@ -39,9 +41,9 @@ const SuccessSection: React.FC<SuccessSectionProps> = ({
                     </div>
                 </div>
                 <div className='ml-8'>
-                    {data && typeof data === 'object' && data.details && (
-                        <p className="mt-2 text-xs text-green-700 opacity-80">
-                            {data.details}
+                    {resolvedData && typeof resolvedData === 'string' && (
+                        <p className="text-sm text-gray-600">
+                            {resolvedData}
                         </p>
                     )}
                 </div>
