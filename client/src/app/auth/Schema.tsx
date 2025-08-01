@@ -12,6 +12,11 @@ export const RegisterSchema = z.object({
     path: ["passwordConfirmation"],
 });
 
+export const LoginSchema = z.object({
+    email: z.email({ message: "Format email tidak valid" }),
+    password: z.string().min(6, "Kata sandi minimal 6 karakter"),
+});
+
 export const VerificationSchema = z.object({
     code1: z.string().min(1, "Kode verifikasi 1 tidak boleh kosong"),
     userId: z.string().min(1, "ID pengguna tidak boleh kosong"),
