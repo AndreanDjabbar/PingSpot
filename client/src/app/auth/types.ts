@@ -8,6 +8,11 @@ export type IRegisterFormType = {
     provider?: string;
 }
 
+export type ILoginFormType = {
+    email: string;
+    password: string;
+}
+
 export type IVerificationType = {
     code1: string;
     userId: string;
