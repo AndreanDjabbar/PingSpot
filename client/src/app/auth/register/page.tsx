@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../Schema";
 import { useRegister } from "@/hooks/auth/useRegister";
 import { useToast } from "@/hooks/useToast";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
 import ErrorSection from "@/components/UI/ErrorSection";
 import ButtonSubmit from "@/components/form/ButtonSubmit";
@@ -30,11 +30,15 @@ const RegisterPage = () => {
     const { mutate, isPending, isError, isSuccess, error, data } = useRegister();
     const { toastSuccess, toastError } = useToast();
     const router = useRouter();
+    const errorRef = useRef<string | null>(null);
 
     useEffect(() => {
         if (isError && error) {
-            console.error("Registration error:", error);
-            toastError(getErrorResponseMessage(error));
+            const currentError = getErrorResponseMessage(error);
+            if (errorRef.current !== currentError) {
+                toastError(currentError);
+                errorRef.current = currentError;
+            }
         }
         if (isSuccess && data) {
             toastSuccess(getDataResponseMessage(data));
@@ -42,7 +46,11 @@ const RegisterPage = () => {
                 router.push("/auth/login");
             }, 2000);
         }
-    }, [isError, isSuccess, error, toastError, toastSuccess]);
+        
+        if (!isError) {
+            errorRef.current = null;
+        }
+    }, [isError, isSuccess, data, router, error, toastError, toastSuccess]);
 
     const onSubmit = (data: IRegisterFormType) => {
         mutate({ ...data, provider: "EMAIL" });
