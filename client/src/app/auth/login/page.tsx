@@ -133,6 +133,7 @@ const LoginPage = () => {
                                 <button
                                     type="button"
                                     className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-sky-800 transition-all duration-200"
+                                    onClick={() => window.location.href = 'http://localhost:4000/pingspot/api/auth/google'}
                                 >
                                     <FaGoogle size={20}/>
                                     <span className="ml-2">Google</span>
