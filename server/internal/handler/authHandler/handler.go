@@ -211,9 +211,46 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Authentication failed", http.StatusUnauthorized)
         return
     }
-	fmt.Println("User:", user)
+	email := user.Email
+	fullName := user.Name
+	nickName := user.RawData["given_name"].(string)
+	if nickName == "" {
+		nickName = user.RawData["name"].(string)
+	}
+	providerId := user.RawData["id"].(string)
+	logger.Info("Google user authenticated", zap.String("email", email), zap.String("name", fullName))
 
-    token := "dummy-jwt-token"
+	db := config.GetDB()
+	existingUser, err := authservice.GetUserByEmail(db, email)
+	if err != nil {
+		logger.Error("Error retrieving user by email", zap.Error(err))
+		http.Error(w, "Terdapat masalah", http.StatusNotFound)
+	}
 
-    http.Redirect(w, r, fmt.Sprintf("http://localhost:3000/auth/google?token=%s", token), http.StatusTemporaryRedirect)
+	if existingUser == nil {
+
+		newUser := dto.RegisterRequest{
+			Username:   nickName,
+			Email:      email,
+			FullName:   fullName,
+			Provider:   "GOOGLE",
+			ProviderID: &providerId,
+		}
+		createdUser, err := authservice.Register(db, newUser)
+		if err != nil {
+			logger.Error("Error registering new user", zap.Error(err))
+			http.Error(w, "Terdapat masalah saat registrasi", http.StatusInternalServerError)
+			return
+		} 
+		logger.Info("New user registered", zap.String("user_id", fmt.Sprintf("%d", createdUser.ID)))
+		existingUser = createdUser
+	} 
+
+	token, err := mainutils.GenerateJWT(existingUser.ID, []byte(envUtils.JWTSecret()), existingUser.Email, existingUser.Username, existingUser.FullName)
+	if err != nil {
+		logger.Error("Error generating token for Google user", zap.Error(err))
+		http.Error(w, "Terdapat masalah saat login", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, fmt.Sprintf("%s/auth/google?token=%s", envUtils.ClientURL(), token), http.StatusFound)
 }
