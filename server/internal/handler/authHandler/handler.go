@@ -1,8 +1,10 @@
 package authhandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"server2/internal/config"
 	"server2/internal/dto"
 	"server2/internal/logger"
@@ -17,6 +19,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/markbates/goth/gothic"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
@@ -191,4 +194,26 @@ func LoginHandler(c *fiber.Ctx) error {
 	return responseUtils.ResponseSuccess(c, 200, "Login berhasil", "data", map[string]any{
 		"token": token,
 	})
+}
+
+func GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
+	logger.Info("GOOGLE LOGIN HANDLER")
+	r = r.WithContext(context.WithValue(context.Background(), "provider", "google"))
+    gothic.BeginAuthHandler(w, r)
+}
+
+func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
+	logger.Info("GOOGLE CALLBACK HANDLER")
+	r = r.WithContext(context.WithValue(context.Background(), "provider", "google"))
+    user, err := gothic.CompleteUserAuth(w, r)
+    if err != nil {
+		logger.Error("Google authentication failed", zap.Error(err))
+        http.Error(w, "Authentication failed", http.StatusUnauthorized)
+        return
+    }
+	fmt.Println("User:", user)
+
+    token := "dummy-jwt-token"
+
+    http.Redirect(w, r, fmt.Sprintf("http://localhost:3000/auth/google?token=%s", token), http.StatusTemporaryRedirect)
 }
