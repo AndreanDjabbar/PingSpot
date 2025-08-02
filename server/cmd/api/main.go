@@ -23,6 +23,8 @@ func main() {
 		panic(fmt.Sprintf("failed to initialize logger: %v", err))
 	}
 
+	config.InitGoogleAuth()
+
 	if err := config.InitPostgre(); err != nil {
 		logger.Error("Failed to initialize PostgreSQL", zap.Error(err))
 		panic(fmt.Sprintf("failed to initialize PostgreSQL: %v", err))
