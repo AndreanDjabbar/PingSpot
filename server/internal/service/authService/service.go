@@ -120,3 +120,11 @@ func VerifyUser(db *gorm.DB, userID uint) (*model.User, error) {
 
 	return &user, nil
 }
+
+func GetUserByEmail(db *gorm.DB, email string) (*model.User, error) {
+	var user model.User
+	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, errors.New("User tidak ditemukan")
+	}
+	return &user, nil
+}
