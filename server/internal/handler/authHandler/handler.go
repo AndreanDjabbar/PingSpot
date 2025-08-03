@@ -55,7 +55,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	user, err := authservice.Register(db, req)
+	user, err := authservice.Register(db, req, false)
 	if err != nil {
 		logger.Error("Registration failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 500, "Registrasi gagal", "", err.Error())
@@ -236,7 +236,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 			Provider:   "GOOGLE",
 			ProviderID: &providerId,
 		}
-		createdUser, err := authservice.Register(db, newUser)
+		createdUser, err := authservice.Register(db, newUser, true)
 		if err != nil {
 			logger.Error("Error registering new user", zap.Error(err))
 			http.Error(w, "Terdapat masalah saat registrasi", http.StatusInternalServerError)
