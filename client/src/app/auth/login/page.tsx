@@ -13,7 +13,7 @@ import { useLogin } from "@/hooks/auth/useLogin";
 import ButtonSubmit from "@/components/form/ButtonSubmit";
 import ErrorSection from "@/components/UI/ErrorSection";
 import SuccessSection from "@/components/UI/SuccessSection";
-import { getDataResponseMessage } from "@/utils/getDataResponse";
+import { getDataResponseDetails, getDataResponseMessage } from "@/utils/getDataResponse";
 import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
 import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/useToast";
@@ -42,8 +42,14 @@ const LoginPage = () => {
         }
         if (isSuccess && data) {
             toastSuccess(getDataResponseMessage(data));
+            const token = getDataResponseDetails(data)?.token;
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const jwtExpiration = payload.exp || 0;
+            if (token) {
+                document.cookie = `auth_token=${token}; path=/; expires=${new Date(jwtExpiration * 1000).toUTCString()}; secure; samesite=strict`;
+            }
             setTimeout(() => {
-                router.push("/");
+                router.push("/main");
             }, 2000);
         }
         if (!isError) {

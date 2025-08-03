@@ -13,12 +13,17 @@ const GoogleAuthpage = () => {
 
     useEffect(() => {
         if (token) {
-            toastSuccess('Akun berhasil diverifikasi');
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const jwtExpiration = payload.exp || 0;
+            if (token) {
+                document.cookie = `auth_token=${token}; path=/; expires=${new Date(jwtExpiration * 1000).toUTCString()}; secure; samesite=strict`;
+            }
             setTimeout(() => {
-                router.push("/");
+                router.push("/main");
             }, 2000);
+            toastSuccess('Akun berhasil diverifikasi');
         }
-    }, [token, toastSuccess]);
+    }, [token, toastSuccess, router]);
     
     return (
         <AuthLayout>
