@@ -132,8 +132,8 @@ const LoginPage = () => {
                             <div className="grid grid-cols-2 gap-3">
                                 <button
                                     type="button"
-                                    className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-sky-800 transition-all duration-200"
-                                    onClick={() => window.location.href = 'http://localhost:4000/pingspot/api/auth/google'}
+                                    className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring focus:ring-sky-800 transition-all duration-300"
+                                    onClick={() => window.location.href = process.env.NEXT_PUBLIC_GOOGLE_AUTH_URL || ''}
                                 >
                                     <FaGoogle size={20}/>
                                     <span className="ml-2">Google</span>
@@ -141,7 +141,7 @@ const LoginPage = () => {
                                 
                                 <button
                                     type="button"
-                                    className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-sky-800 transition-all duration-200"
+                                    className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring focus:ring-sky-800 transition-all duration-200"
                                 >
                                     <FaGithub size={20}/>
                                     <span className="ml-2">GitHub</span>
