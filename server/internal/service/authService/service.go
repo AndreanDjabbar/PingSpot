@@ -17,7 +17,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Register(db *gorm.DB, req dto.RegisterRequest) (*model.User, error) {
+func Register(db *gorm.DB, req dto.RegisterRequest, isVerified bool) (*model.User, error) {
 	var existing model.User
 	if err := db.Where("email = ? OR username = ?", req.Email, req.Username).First(&existing).Error; err == nil {
 		return nil, errors.New("Email atau username sudah terdaftar")
@@ -38,7 +38,7 @@ func Register(db *gorm.DB, req dto.RegisterRequest) (*model.User, error) {
 		Phone:      req.Phone,
 		Provider:   model.Provider(req.Provider),
 		ProviderID: req.ProviderID,
-		IsVerified: false,
+		IsVerified: isVerified,
 	}
 	if err := db.Create(&user).Error; err != nil {
 		return nil, errors.New("Terjadi kesalahan saat registrasi")
