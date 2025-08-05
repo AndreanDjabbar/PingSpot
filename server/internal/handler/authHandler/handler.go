@@ -297,3 +297,32 @@ func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 	}
 	return responseUtils.ResponseSuccess(c, 200, "Silahkan cek email anda untuk verifikasi pengaturan ulang kata sandi", "data", nil)
 }
+
+func ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error {
+	logger.Info("FORGOT PASSWORD LINK VERIFICATION HANDLER")
+	code := c.Query("code")
+	email := c.Query("email")
+
+	if code == "" || email == "" {
+		return responseUtils.ResponseError(c, 400, "Parameter tidak lengkap", "", nil)
+	}
+
+	redisClient := config.GetRedis()
+	redisKey := fmt.Sprintf("forgot_password:%s", email)
+	storedCode, err := redisClient.Get(c.Context(), redisKey).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return responseUtils.ResponseError(c, 400, "Link verifikasi tidak ditemukan atau sudah kadaluarsa", "", nil)
+		}
+		logger.Error("Failed to get verification code from Redis", zap.Error(err))
+		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan kode verifikasi", "", err.Error())
+	}
+
+	if storedCode != code {
+		return responseUtils.ResponseError(c, 400, "Link verifikasi tidak valid", "", nil)
+	}
+
+	return responseUtils.ResponseSuccess(c, 200, "Link verifikasi berhasil", "data", map[string]any{
+		"email": email,
+	})
+}
