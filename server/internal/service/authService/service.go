@@ -134,3 +134,24 @@ func GetUserByEmail(db *gorm.DB, email string) (*model.User, error) {
 
     return &user, nil
 }
+
+func UpdateUserByEmail(db *gorm.DB, email string, updatedUser *model.User) (*model.User, error) {
+	var user model.User
+
+	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("User tidak ditemukan")
+		}
+		return nil, errors.New("Gagal mencari user")
+	}
+
+	if err := db.Model(&user).Updates(updatedUser).Error; err != nil {
+		return nil, errors.New("Gagal memperbarui data user")
+	}
+
+	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, errors.New("Gagal mengambil data user yang telah diperbarui")
+	}
+
+	return &user, nil
+}
