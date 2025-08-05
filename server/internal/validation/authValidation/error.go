@@ -78,3 +78,22 @@ func FormatLoginValidationErrors(err error) map[string]string {
 	}
 	return errors
 }
+
+func FormatForgotPasswordEmailVerificationValidationErrors(err error) map[string]string {
+	errors := map[string]string{}
+	if err == nil {
+		return errors
+	}
+	for _, e := range err.(validator.ValidationErrors) {
+		switch e.Field() {
+		case "Email":
+			if e.Tag() == "required" {
+				errors["email"] = "Email wajib diisi"
+			}
+			if e.Tag() == "email" {
+				errors["email"] = "Format email tidak valid"
+			}
+		}
+	}
+	return errors
+}
