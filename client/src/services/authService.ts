@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ILoginFormType, IRegisterFormType, IVerificationType } from "@/app/auth/types";
+import { IForgotPasswordFormEmailType, ILoginFormType, IRegisterFormType, IVerificationType } from "@/app/auth/types";
 import axios from "axios";
 
 const AUTH_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/auth`;
@@ -21,5 +21,10 @@ export const loginService = async (payload: ILoginFormType): Promise<IResponseTy
 
 export const verificationService = async (payload: IVerificationType): Promise<IResponseType> => {
     const response = await axios.post<IResponseType>(`${AUTH_API_URL}/verification?code1=${payload.code1}&userId=${payload.userId}&code2=${payload.code2}`);
+    return response.data;
+}
+
+export const sendForgotPasswordEmailVerificationService = async (payload: IForgotPasswordFormEmailType): Promise<IResponseType> => {
+    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/forgot-password/email-verification`, payload);
     return response.data;
 }
