@@ -281,7 +281,7 @@ func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 			logger.Error("Failed to generate verification code", zap.Error(err))
 			return responseUtils.ResponseError(c, 500, "Gagal membuat kode verifikasi", "", err.Error())
 		}
-		verificationLink := fmt.Sprintf("%s/auth/forgot-password/verification?code=%s?email=%s", envUtils.ClientURL(), verificationCode, req.Email)
+		verificationLink := fmt.Sprintf("%s/auth/forgot-password/verification?code=%s&email=%s", envUtils.ClientURL(), verificationCode, req.Email)
 		redisKey := fmt.Sprintf("forgot_password:%s", req.Email)
 		err = redisClient.Set(c.Context(), redisKey, verificationCode, 300*time.Second).Err()
 		if err != nil {
@@ -325,4 +325,46 @@ func ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error {
 	return responseUtils.ResponseSuccess(c, 200, "Link verifikasi berhasil", "data", map[string]any{
 		"email": email,
 	})
+}
+
+func ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
+	logger.Info("FORGOT PASSWORD RESET PASSWORD HANDLER")
+	var req dto.ForgotPasswordResetPasswordRequest
+	db := config.GetDB()
+	if err := c.BodyParser(&req); err != nil {
+		logger.Error("Failed to parse request body", zap.Error(err))
+		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+	}
+	if err := validate.Struct(req); err != nil {
+		errors := authValidation.FormatForgotPasswordResetPasswordValidationErrors(err)
+		logger.Error("Validation failed", zap.Error(err))
+		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+	}
+
+	user, err := authservice.GetUserByEmail(db, req.Email)
+	if err != nil {
+		logger.Error("Failed to get user by email", zap.Error(err))
+		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
+	}
+	if user == nil {
+		return responseUtils.ResponseError(c, 404, "Pengguna tidak ditemukan", "", "Email tidak terdaftar")
+	}
+
+	hashNewPassword, err := mainutils.HashPassword(req.Password)
+	if err != nil {
+		logger.Error("Failed to hash new password", zap.Error(err))
+		return responseUtils.ResponseError(c, 500, "Gagal mengenkripsi kata sandi baru", "", err.Error())
+	}
+	user.Password = &hashNewPassword
+
+	updatedUser, err := authservice.UpdateUserByEmail(db, req.Email, user)
+	if err != nil {
+		logger.Error("Failed to update user password", zap.Error(err))
+		return responseUtils.ResponseError(c, 500, "Gagal memperbarui kata sandi", "", err.Error())
+	}
+	if updatedUser == nil {
+		return responseUtils.ResponseError(c, 404, "Pengguna tidak ditemukan", "", "Email tidak terdaftar")
+	}
+
+	return responseUtils.ResponseSuccess(c, 200, "Kata sandi berhasil diperbarui. Silahkan masuk dengan identitas terbaru anda", "data", nil)
 }
