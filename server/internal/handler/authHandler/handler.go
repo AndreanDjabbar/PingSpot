@@ -254,3 +254,46 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, fmt.Sprintf("%s/auth/google?token=%s", envUtils.ClientURL(), token), http.StatusFound)
 }
+
+func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
+	logger.Info("FORGOT PASSWORD EMAIL VERIFICATION HANDLER")
+	var req dto.ForgotPasswordEmailVerificationRequest
+	db := config.GetDB()
+	if err := c.BodyParser(&req); err != nil {
+		logger.Error("Failed to parse request body", zap.Error(err))
+		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+	}
+	if err := validate.Struct(req); err != nil {
+		errors := authValidation.FormatForgotPasswordEmailVerificationValidationErrors(err)
+		logger.Error("Validation failed", zap.Error(err))
+		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+	}
+
+	user, err := authservice.GetUserByEmail(db, req.Email)
+	if err != nil {
+		logger.Error("Failed to get user by email", zap.Error(err))
+		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
+	}
+	if user != nil {
+		redisClient := config.GetRedis()
+		verificationCode, err := mainutils.GenerateRandomCode(200)
+		if err != nil {
+			logger.Error("Failed to generate verification code", zap.Error(err))
+			return responseUtils.ResponseError(c, 500, "Gagal membuat kode verifikasi", "", err.Error())
+		}
+		verificationLink := fmt.Sprintf("%s/auth/forgot-password/verification?code=%s?email=%s", envUtils.ClientURL(), verificationCode, req.Email)
+		redisKey := fmt.Sprintf("forgot_password:%s", req.Email)
+		err = redisClient.Set(c.Context(), redisKey, verificationCode, 300*time.Second).Err()
+		if err != nil {
+			logger.Error("Failed to save verification code to Redis", zap.Error(err))
+			return responseUtils.ResponseError(c, 500, "Gagal menyimpan kode verifikasi ke Redis", "", err.Error())
+		}
+	
+		go func(email, username, link string) {
+			if err := mainutils.SendEmail(email, username, "Pingspot - Verifikasi Email untuk mengatur ulang kata sandi", link); err != nil {
+				logger.Error("Failed to send verification email (background)", zap.Error(err))
+			}
+		}(req.Email, req.Email, verificationLink)
+	}
+	return responseUtils.ResponseSuccess(c, 200, "Silahkan cek email anda untuk verifikasi pengaturan ulang kata sandi", "data", nil)
+}
