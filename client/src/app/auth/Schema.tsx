@@ -22,3 +22,7 @@ export const VerificationSchema = z.object({
     userId: z.string().min(1, "ID pengguna tidak boleh kosong"),
     code2: z.string().min(1, "Kode verifikasi 2 tidak boleh kosong"),
 })
+
+export const ForgotPasswordEmailVerificationSchema = z.object({
+    email: z.email({ message: "Format email tidak valid" }),
+});
