@@ -23,3 +23,8 @@ export type IForgotPasswordFormEmailType = {
     email: string;
 }
 
+export type IForgotPasswordResetPasswordType = {
+    password: string;
+    passwordConfirmation: string;
+    email?: string;
+}
