@@ -18,3 +18,8 @@ export type IVerificationType = {
     userId: string;
     code2: string;
 }
+
+export type IForgotPasswordFormEmailType = {
+    email: string;
+}
+
