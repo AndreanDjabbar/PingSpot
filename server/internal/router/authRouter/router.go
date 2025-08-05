@@ -14,6 +14,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	authRoute.Post("/register", authhandler.RegisterHandler)
 	authRoute.Post("/login", authhandler.LoginHandler)
 	authRoute.Post("/forgot-password/email-verification", authhandler.ForgotPasswordEmailVerificationHandler)
+	authRoute.Post("/forgot-password/link-verification", authhandler.ForgotPasswordLinkVerificationHandler)
 	authRoute.Get("/google", adaptor.HTTPHandlerFunc(authhandler.GoogleLoginHandler))
 	authRoute.Get("/google/callback", adaptor.HTTPHandlerFunc(authhandler.GoogleCallbackHandler))
 }
