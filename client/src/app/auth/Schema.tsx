@@ -26,3 +26,11 @@ export const VerificationSchema = z.object({
 export const ForgotPasswordEmailVerificationSchema = z.object({
     email: z.email({ message: "Format email tidak valid" }),
 });
+
+export const ForgotPasswordResetPasswordSchema = z.object({
+    password: z.string().min(6, "Kata sandi minimal 6 karakter"),
+    passwordConfirmation: z.string(),
+}).refine((data) => data.password === data.passwordConfirmation, {
+    message: "Konfirmasi kata sandi tidak cocok",
+    path: ["passwordConfirmation"],
+})
