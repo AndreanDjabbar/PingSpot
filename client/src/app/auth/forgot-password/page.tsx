@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable react/no-unescaped-entities */
 import AuthLayout from "@/layouts/AuthLayout";
 import { MdMailOutline } from "react-icons/md";
 import { FaGoogle, FaGithub } from "react-icons/fa";
@@ -12,11 +11,12 @@ import ErrorSection from "@/components/UI/ErrorSection";
 import SuccessSection from "@/components/UI/SuccessSection";
 import {  getDataResponseMessage } from "@/utils/getDataResponse";
 import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
-import { useEffect, useRef } from "react";
-import { useToast } from "@/hooks/useToast";
+import { useEffect } from "react";
 import { useEmailVerification } from "@/hooks/auth/useForgotPassword";
 import { useRouter } from "next/navigation";
 import { ForgotPasswordEmailVerificationSchema } from "../Schema";
+import useErrorToast from "@/hooks/useErrorToast";
+import useSuccessToast from "@/hooks/useSuccessToast";
 
 const ForgotPasswordPage = () => {
     const { 
@@ -26,30 +26,20 @@ const ForgotPasswordPage = () => {
     } = useForm<IForgotPasswordFormEmailType>({
         resolver: zodResolver(ForgotPasswordEmailVerificationSchema)
     });
-    const { toastSuccess, toastError } = useToast();
     
     const { mutate, isPending, isError, isSuccess, error, data } = useEmailVerification();
     const router = useRouter();
-    const errorRef = useRef<string | null>(null);
     
+    useErrorToast(isError, error);
+    useSuccessToast(isSuccess, data);
+
     useEffect(() => {
-        if (isError && error) {
-            const currentError = getErrorResponseMessage(error);
-            if (errorRef.current !== currentError) {
-                toastError(currentError);
-                errorRef.current = currentError;
-            }
-        }
         if (isSuccess && data) {
-            toastSuccess(getDataResponseMessage(data));
             setTimeout(() => {
                 router.push("/auth/login");
             }, 2000);
         }
-        if (!isError) {
-            errorRef.current = null;
-        }
-    }, [isError, isSuccess, error, data, toastError, toastSuccess, router]);
+    }, [isSuccess, data, router]);
 
     const onSubmit = (data: IForgotPasswordFormEmailType) => {
         mutate({ ...data });

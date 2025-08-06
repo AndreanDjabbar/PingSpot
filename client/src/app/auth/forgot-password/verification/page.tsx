@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import AuthLayout from '@/layouts/AuthLayout';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -7,8 +6,6 @@ import ErrorSection from '@/components/UI/ErrorSection';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import SuccessSection from '@/components/UI/SuccessSection';
-import { useToast } from '@/hooks/useToast';
-import { getDataResponseMessage } from '@/utils/getDataResponse';
 import { useLinkVerification, useResetPassword } from '@/hooks/auth/useForgotPassword';
 import ButtonSubmit from '@/components/form/ButtonSubmit';
 import InputField from '@/components/form/InputField';
@@ -16,6 +13,8 @@ import { LuLockKeyhole } from 'react-icons/lu';
 import { IForgotPasswordResetPasswordType } from '../../types';
 import { ForgotPasswordResetPasswordSchema } from '../../Schema';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
+import useErrorToast from '@/hooks/useErrorToast';
+import useSuccessToast from '@/hooks/useSuccessToast';
 
 const VerificationPage = () => {
     const searchParams = useSearchParams();
@@ -39,8 +38,10 @@ const VerificationPage = () => {
         isSuccess: isSuccessVerify, 
         error: errorVerify, 
     } = useLinkVerification();
-    
-    const { toastSuccess, toastError } = useToast();
+
+    useErrorToast(isError, error);
+    useErrorToast(isErrorVerify, errorVerify);
+    useSuccessToast(isSuccess, data);
 
     useEffect(() => {
         if (email && code) {
@@ -53,29 +54,20 @@ const VerificationPage = () => {
 
     useEffect(() => {
         if (isSuccess && data) {
-            toastSuccess(getDataResponseMessage(data) || 'Password berhasil diatur ulang');
             setTimeout(() => {
                 router.push("/auth/login");
             }, 2000);
         }
-    }, [isSuccess, data, toastSuccess, router]);
-
-    useEffect(() => {
-        if (isError && error) {
-            console.error("Password reset error:", error);
-            toastError(getErrorResponseMessage(error) || 'Reset password gagal. Silakan coba lagi.');
-        }
-    }, [isError, error, toastError]);
+    }, [isSuccess, data, router]);
 
     useEffect(() => {
         if (isErrorVerify && errorVerify) {
             console.error("Link verification error:", errorVerify);
-            toastError(getErrorResponseMessage(errorVerify) || 'Verifikasi link gagal. Link mungkin sudah kadaluarsa.');
             setTimeout(() => {
                 router.push("/auth/forgot-password");
             }, 2000);
         }
-    }, [isErrorVerify, errorVerify, toastError]);
+    }, [isErrorVerify, errorVerify, router]);
 
     if (!code || !email) {
         return (

@@ -9,10 +9,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { VerificationSchema } from '../Schema';
 import { useForm } from 'react-hook-form';
 import SuccessSection from '@/components/UI/SuccessSection';
-import { useToast } from '@/hooks/useToast';
 import { useVerification } from '@/hooks/auth/userVerification';
-import { getDataResponseDetails, getDataResponseMessage } from '@/utils/getDataResponse';
+import { getDataResponseDetails } from '@/utils/getDataResponse';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
+import useErrorToast from '@/hooks/useErrorToast';
+import useSuccessToast from '@/hooks/useSuccessToast';
 
 const page = () => {
     const searchParams = useSearchParams();
@@ -28,7 +29,9 @@ const page = () => {
     });
     
     const { mutate, isPending, isError, isSuccess, error, data } = useVerification();
-    const { toastSuccess, toastError } = useToast();
+
+    useErrorToast(isError, error);
+    useSuccessToast(isSuccess, data);
 
     useEffect(() => {
         if (code1 && userId && code2) {
@@ -42,19 +45,11 @@ const page = () => {
 
     useEffect(() => {
         if (isSuccess && data) {
-            toastSuccess(getDataResponseMessage(data) || 'Akun berhasil diverifikasi');
             setTimeout(() => {
                 router.push("/auth/login");
             }, 2000);
         }
-    }, [isSuccess, data, toastSuccess]);
-
-    useEffect(() => {
-        if (isError && error) {
-            console.error("Verification error:", error);
-            toastError(getErrorResponseMessage(error) || 'Verifikasi gagal. Silakan coba lagi.');
-        }
-    }, [isError, error, toastError]);
+    }, [isSuccess, data, router]);
 
     if (!code1 || !userId || !code2) {
         return (

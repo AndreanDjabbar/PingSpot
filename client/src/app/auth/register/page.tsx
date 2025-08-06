@@ -10,14 +10,15 @@ import { IRegisterFormType} from "../types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../Schema";
 import { useRegister } from "@/hooks/auth/useRegister";
-import { useToast } from "@/hooks/useToast";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
 import ErrorSection from "@/components/UI/ErrorSection";
 import ButtonSubmit from "@/components/form/ButtonSubmit";
 import { getDataResponseMessage } from "@/utils/getDataResponse";
 import { useRouter } from "next/navigation";
 import SuccessSection from "@/components/UI/SuccessSection";
+import useErrorToast from "@/hooks/useErrorToast";
+import useSuccessToast from "@/hooks/useSuccessToast";
 
 const RegisterPage = () => {
     const { 
@@ -28,29 +29,18 @@ const RegisterPage = () => {
         resolver: zodResolver(RegisterSchema)
     });
     const { mutate, isPending, isError, isSuccess, error, data } = useRegister();
-    const { toastSuccess, toastError } = useToast();
     const router = useRouter();
-    const errorRef = useRef<string | null>(null);
+
+    useErrorToast(isError, error);
+    useSuccessToast(isSuccess, data);
 
     useEffect(() => {
-        if (isError && error) {
-            const currentError = getErrorResponseMessage(error);
-            if (errorRef.current !== currentError) {
-                toastError(currentError);
-                errorRef.current = currentError;
-            }
-        }
         if (isSuccess && data) {
-            toastSuccess(getDataResponseMessage(data));
             setTimeout(() => {
                 router.push("/auth/login");
             }, 2000);
         }
-        
-        if (!isError) {
-            errorRef.current = null;
-        }
-    }, [isError, isSuccess, data, router, error, toastError, toastSuccess]);
+    }, [isSuccess, data, router]);
 
     const onSubmit = (data: IRegisterFormType) => {
         mutate({ ...data, provider: "EMAIL" });
