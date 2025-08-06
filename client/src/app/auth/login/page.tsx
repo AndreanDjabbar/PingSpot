@@ -15,9 +15,10 @@ import ErrorSection from "@/components/UI/ErrorSection";
 import SuccessSection from "@/components/UI/SuccessSection";
 import { getDataResponseDetails, getDataResponseMessage } from "@/utils/getDataResponse";
 import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
-import { useEffect, useRef } from "react";
-import { useToast } from "@/hooks/useToast";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import useErrorToast from "@/hooks/useErrorToast";
+import useSuccessToast from "@/hooks/useSuccessToast";
 
 const LoginPage = () => {
     const { 
@@ -27,21 +28,14 @@ const LoginPage = () => {
     } = useForm<ILoginFormType>({
         resolver: zodResolver(LoginSchema)
     });
-    const { toastSuccess, toastError } = useToast();
     const { mutate, isPending, isError, isSuccess, error, data } = useLogin();
     const router = useRouter();
-    const errorRef = useRef<string | null>(null);
+
+    useErrorToast(isError, error);
+    useSuccessToast(isSuccess, data);
     
     useEffect(() => {
-        if (isError && error) {
-            const currentError = getErrorResponseMessage(error);
-            if (errorRef.current !== currentError) {
-                toastError(currentError);
-                errorRef.current = currentError;
-            }
-        }
         if (isSuccess && data) {
-            toastSuccess(getDataResponseMessage(data));
             const token = getDataResponseDetails(data)?.token;
             const payload = JSON.parse(atob(token.split('.')[1]));
             const jwtExpiration = payload.exp || 0;
@@ -52,10 +46,7 @@ const LoginPage = () => {
                 router.push("/main");
             }, 2000);
         }
-        if (!isError) {
-            errorRef.current = null;
-        }
-    }, [isError, isSuccess, error, data, toastError, toastSuccess, router]);
+    }, [isSuccess, data, router]);
 
     const onSubmit = (data: ILoginFormType) => {
         mutate({ ...data });
