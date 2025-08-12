@@ -152,7 +152,7 @@ func VerificationHandler(c *fiber.Ctx) error {
 	}
 
 	db := config.GetDB()
-	user, err := authservice.VerifyUser(db, uint(userIdUint)) 
+	user, err := authservice.VerifyUser(db, uint(userIdUint))
 	if err != nil {
 		logger.Error("Verification failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 500, "Verifikasi gagal", "", err.Error())
@@ -199,18 +199,18 @@ func LoginHandler(c *fiber.Ctx) error {
 func GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Info("GOOGLE LOGIN HANDLER")
 	r = r.WithContext(context.WithValue(context.Background(), "provider", "google"))
-    gothic.BeginAuthHandler(w, r)
+	gothic.BeginAuthHandler(w, r)
 }
 
 func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Info("GOOGLE CALLBACK HANDLER")
 	r = r.WithContext(context.WithValue(context.Background(), "provider", "google"))
-    user, err := gothic.CompleteUserAuth(w, r)
-    if err != nil {
+	user, err := gothic.CompleteUserAuth(w, r)
+	if err != nil {
 		logger.Error("Google authentication failed", zap.Error(err))
-        http.Error(w, "Authentication failed", http.StatusUnauthorized)
-        return
-    }
+		http.Error(w, "Authentication failed", http.StatusUnauthorized)
+		return
+	}
 	email := user.Email
 	fullName := user.Name
 	nickName := user.RawData["given_name"].(string)
@@ -241,10 +241,10 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 			logger.Error("Error registering new user", zap.Error(err))
 			http.Error(w, "Terdapat masalah saat registrasi", http.StatusInternalServerError)
 			return
-		} 
+		}
 		logger.Info("New user registered", zap.String("user_id", fmt.Sprintf("%d", createdUser.ID)))
 		existingUser = createdUser
-	} 
+	}
 
 	token, err := mainutils.GenerateJWT(existingUser.ID, []byte(envUtils.JWTSecret()), existingUser.Email, existingUser.Username, existingUser.FullName)
 	if err != nil {
@@ -288,7 +288,7 @@ func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 			logger.Error("Failed to save verification code to Redis", zap.Error(err))
 			return responseUtils.ResponseError(c, 500, "Gagal menyimpan kode verifikasi ke Redis", "", err.Error())
 		}
-	
+
 		go func(email, username, link string) {
 			if err := mainutils.SendEmail(email, username, "Pingspot - Verifikasi Email untuk mengatur ulang kata sandi", link); err != nil {
 				logger.Error("Failed to send verification email (background)", zap.Error(err))
@@ -367,4 +367,41 @@ func ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	}
 
 	return responseUtils.ResponseSuccess(c, 200, "Kata sandi berhasil diperbarui. Silahkan masuk dengan identitas terbaru anda", "data", nil)
+}
+
+func LogoutHandler(c *fiber.Ctx) error {
+	logger.Info("LOGOUT HANDLER")
+	token := c.Get("Authorization")
+	if token == "" {
+		return responseUtils.ResponseError(c, 401, "Token tidak ditemukan", "", "Anda harus login terlebih dahulu")
+	}
+
+	if len(token) > 7 && token[:7] == "Bearer " {
+		token = token[7:]
+	}
+
+	claims, err := mainutils.ParseJWT(token, []byte(envUtils.JWTSecret()))
+	if err != nil {
+		logger.Error("Failed to parse JWT token", zap.Error(err))
+		return responseUtils.ResponseError(c, 401, "Token tidak valid", "", err.Error())
+	}
+
+	exp := claims["exp"].(float64)
+	now := time.Now().Unix()
+	ttl := time.Duration(int64(exp)-now) * time.Second
+
+	if ttl > 0 {
+		redisClient := config.GetRedis()
+		blacklistKey := fmt.Sprintf("blacklist:%s", token)
+
+		err = redisClient.Set(c.Context(), blacklistKey, "true", ttl).Err()
+		if err != nil {
+			logger.Error("Failed to blacklist token in Redis", zap.Error(err))
+			return responseUtils.ResponseError(c, 500, "Gagal memproses logout", "", err.Error())
+		}
+
+		logger.Info("Token blacklisted successfully", zap.String("token_prefix", token[:10]+"..."))
+	}
+
+	return responseUtils.ResponseSuccess(c, 200, "Logout berhasil", "data", nil)
 }
