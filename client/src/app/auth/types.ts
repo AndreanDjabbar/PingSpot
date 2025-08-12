@@ -28,3 +28,7 @@ export type IForgotPasswordResetPasswordType = {
     passwordConfirmation: string;
     email?: string;
 }
+
+export type ILogoutType = {
+    authToken: string;
+}
