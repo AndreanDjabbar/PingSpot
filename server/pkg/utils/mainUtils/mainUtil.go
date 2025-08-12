@@ -58,6 +58,28 @@ func GenerateJWT(userID uint, JWTSecret []byte, email, username, fullName string
 	return token.SignedString(JWTSecret)
 }
 
+func ParseJWT(tokenString string, JWTSecret []byte) (jwt.MapClaims, error) {
+	if len(JWTSecret) == 0 {
+		return nil, fmt.Errorf("JWT secret cannot be empty")
+	}
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return JWTSecret, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	}
+	return nil, fmt.Errorf("invalid token")
+}
+
 func SendEmail(to, username, context, verificationLink string) error {
 	if to == "" || username == "" || verificationLink == "" {
 		return fmt.Errorf("required fields cannot be empty")
