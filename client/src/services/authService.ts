@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType, ILoginFormType, IRegisterFormType, IVerificationType } from "@/app/auth/types";
+import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType, ILoginFormType, ILogoutType, IRegisterFormType, IVerificationType } from "@/app/auth/types";
 import axios from "axios";
 
 const AUTH_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/auth`;
@@ -18,6 +18,15 @@ export const loginService = async (payload: ILoginFormType): Promise<IResponseTy
     const response = await axios.post<IResponseType>(`${AUTH_API_URL}/login`, payload);
     return response.data;
 };
+
+export const logoutService = async (payload: ILogoutType): Promise<IResponseType> => {
+    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/logout`, {}, {
+        headers: {
+            'Authorization': `Bearer ${payload.authToken}`
+        }
+    });
+    return response.data;
+}
 
 export const verificationService = async (payload: IVerificationType): Promise<IResponseType> => {
     const response = await axios.post<IResponseType>(`${AUTH_API_URL}/verification?code1=${payload.code1}&userId=${payload.userId}&code2=${payload.code2}`);
