@@ -1,10 +1,12 @@
 import { Suspense } from "react";
 import VerificationClient from "./VerificationClient";
 
-export default function Page() {
+const VerificationPage = () => {
     return (
         <Suspense fallback={<div>Loading...</div>}>
         <VerificationClient />
         </Suspense>
     );
 }
+
+export default VerificationPage;
