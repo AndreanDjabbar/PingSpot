@@ -13,6 +13,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	authRoute.Post("/verification", authhandler.VerificationHandler)
 	authRoute.Post("/register", authhandler.RegisterHandler)
 	authRoute.Post("/login", authhandler.LoginHandler)
+	authRoute.Post("/logout", authhandler.LogoutHandler)
 	authRoute.Post("/forgot-password/email-verification", authhandler.ForgotPasswordEmailVerificationHandler)
 	authRoute.Post("/forgot-password/link-verification", authhandler.ForgotPasswordLinkVerificationHandler)
 	authRoute.Post("/forgot-password/reset-password", authhandler.ForgotPasswordResetPasswordHandler)
