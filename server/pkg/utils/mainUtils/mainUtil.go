@@ -9,6 +9,7 @@ import (
 	"server2/pkg/utils/envUtils"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
@@ -56,6 +57,23 @@ func GenerateJWT(userID uint, JWTSecret []byte, email, username, fullName string
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(JWTSecret)
+}
+
+func GetJWTClaims(c *fiber.Ctx) (jwt.MapClaims, error) {
+	token := c.Locals("user")
+	if token == nil {
+		return nil, fmt.Errorf("no JWT token found in context")
+	}
+
+	jwtToken, ok := token.(*jwt.Token)
+	if !ok {
+		return nil, fmt.Errorf("invalid JWT token type")
+	}
+
+	if claims, ok := jwtToken.Claims.(jwt.MapClaims); ok && jwtToken.Valid {
+		return claims, nil
+	}
+	return nil, fmt.Errorf("invalid JWT token")
 }
 
 func ParseJWT(tokenString string, JWTSecret []byte) (jwt.MapClaims, error) {
