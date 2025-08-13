@@ -1,27 +1,28 @@
+"use client";
+
 import "./globals.css";
 import { ReactQueryClientProvider } from "@/provider/react-query-client";
-import type { Metadata } from "next";
 import { ToastContainer } from "react-toastify";
+import { useEffect } from "react";
+import { useUserStore } from "@/stores/userStore";
 
-export const metadata: Metadata = {
-  title: "PingSpot",
-  description: "Real-time community-powered issue tracker",
-};
+const RootLayout = ({ children }: { children: React.ReactNode }) => {
+  const loadUser = useUserStore((state) => state.loadUser);
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
+
   return (
     <html lang="en">
-      <body className={`antialiased`}
-      style={{ fontFamily: 'var(--font-sf)' }}>
+      <body className="antialiased" style={{ fontFamily: "var(--font-sf)" }}>
         <ReactQueryClientProvider>
-          <ToastContainer/>
+          <ToastContainer />
           {children}
         </ReactQueryClientProvider>
       </body>
     </html>
   );
 }
+
+export default RootLayout;
