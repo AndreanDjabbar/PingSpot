@@ -1,9 +1,12 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+"use client";
 import MainLayout from '@/layouts/MainLayout'
 import React from 'react'
 import { BiPlus } from 'react-icons/bi'
-import { FaMap, FaMapPin, FaUsers } from 'react-icons/fa'
+import { FaMap, FaUsers } from 'react-icons/fa'
 import { GoAlert } from 'react-icons/go'
 import { LuActivity } from 'react-icons/lu'
+import Map from '../components/Map';
 
 const page = () => {
     return (
@@ -74,20 +77,7 @@ const page = () => {
                             ))}
                         </div>
                     </div>
-
-                    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-lg p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                            <FaMap className="w-6 h-6 text-indigo-600 mr-2" />
-                            Peta Area
-                        </h2>
-                        <div className="bg-gradient-to-br from-sky-100 to-indigo-100 rounded-lg p-8 text-center border-2 border-dashed border-sky-200">
-                            <FaMapPin className="w-12 h-12 text-sky-500 mx-auto mb-4" />
-                            <p className="text-gray-600 mb-4">Peta interaktif akan ditampilkan di sini</p>
-                            <button className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-2 rounded-lg transition-colors">
-                            Buka Peta Lengkap
-                            </button>
-                        </div>
-                    </div>
+                    <Map/>
                 </div>
             </div>
         </MainLayout>
