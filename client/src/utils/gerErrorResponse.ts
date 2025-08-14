@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AxiosError } from "axios";
 
 interface IErrorResponse {
     message?: string;
-    errors?: any;
+    errors?: unknown;
 }
 
 export const getErrorResponseMessage = (error: unknown): string => {
@@ -15,11 +14,14 @@ export const getErrorResponseMessage = (error: unknown): string => {
         } else {
             return axiosError.message;
         }
+    } else if (typeof error === "string") {
+        return error as string;
+
     }
     return "Terjadi kesalahan tak terduga."
 };
 
-export const getErrorResponseDetails = (error: unknown): any => {
+export const getErrorResponseDetails = (error: unknown): unknown => {
     if ((error as AxiosError<IErrorResponse>)?.isAxiosError) {
         const axiosError = error as AxiosError<IErrorResponse>;
         const res = axiosError.response?.data;
@@ -30,6 +32,8 @@ export const getErrorResponseDetails = (error: unknown): any => {
         } else if (typeof res?.errors === "string") {
             return res.errors; 
         }
+    } else if (typeof error === "string") {
+        return error as string;
     }
     return "Terjadi kesalahan tak terduga."
 }
