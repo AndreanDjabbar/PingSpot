@@ -4,10 +4,10 @@ import "./globals.css";
 import { ReactQueryClientProvider } from "@/provider/react-query-client";
 import { ToastContainer } from "react-toastify";
 import { useEffect } from "react";
-import { useUserStore } from "@/stores/userStore";
+import { useUserProfileStore } from "@/stores/userProfileStore";
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
-  const loadUser = useUserStore((state) => state.loadUser);
+  const loadUser = useUserProfileStore((state) => state.loadUser);
 
   useEffect(() => {
     loadUser();
