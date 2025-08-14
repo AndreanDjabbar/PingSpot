@@ -1,4 +1,7 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
+import { useLocationStore } from "@/stores/userLocationStore";
+import getAuthToken from "@/utils/getAuthToken";
+import { jwtDecode } from "jwt-decode";
 
 type Location = {
     lat: number;
@@ -7,10 +10,12 @@ type Location = {
 };
 
 export const useCurrentLocation = () => {
-    const [location, setLocation] = useState<Location | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [permissionDenied, setPermissionDenied] = useState<string | null>(null);
+
+    const location = useLocationStore((state) => state.location);
+    const setLocationStore = useLocationStore((state) => state.setLocation);
 
     const requestLocation = useCallback(() => {
         setLoading(true);
@@ -18,9 +23,9 @@ export const useCurrentLocation = () => {
         setPermissionDenied(null);
 
         if (!navigator.geolocation) {
-            setError("Geolocation tidak didukung di browser ini.");
-            setLoading(false);
-            return;
+        setError("Geolocation tidak didukung di browser ini.");
+        setLoading(false);
+        return;
         }
 
         navigator.geolocation.getCurrentPosition(
@@ -28,31 +33,30 @@ export const useCurrentLocation = () => {
             const coords: Location = {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude,
-                lastUpdated: new Date().toLocaleString()
+                lastUpdated: new Date().toLocaleString(),
             };
-            setLocation(coords);
-            localStorage.setItem("current_location", JSON.stringify(coords));
+
+            const jwtToken = getAuthToken();
+            let expiresAt: number | undefined;
+            if (jwtToken) {
+                const decodedJWT = jwtDecode<{ exp: number }>(jwtToken);
+                expiresAt = decodedJWT.exp * 1000;
+            }
+            setLocationStore(coords, expiresAt);
             setLoading(false);
         },
         (err) => {
             if (err.code === err.PERMISSION_DENIED) {
-            setPermissionDenied(
-                "Akses lokasi ditolak. Silahkan izinkan akses lokasi di pengaturan browser Anda."
-            );
+                setPermissionDenied(
+                    "Akses lokasi ditolak. Silahkan izinkan akses lokasi di pengaturan browser Anda."
+                );
             } else {
-            setError(err.message);
+                setError(err.message);
             }
             setLoading(false);
         }
         );
-    }, []);
-
-    useEffect(() => {
-        const savedLocation = localStorage.getItem("current_location");
-        if (savedLocation) {
-            setLocation(JSON.parse(savedLocation));
-        }
-    }, []);
+    }, [setLocationStore]);
 
     return {
         location,
