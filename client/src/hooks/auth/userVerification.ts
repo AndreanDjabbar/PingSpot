@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { verificationService } from "@/services/authService";
 import { AxiosError } from "axios";
-import { IVerificationType } from "@/app/auth/types";
+import { IVerificationType } from "@/types/authTypes";
 
 export const useVerification = () => {
     return useMutation<unknown, AxiosError, IVerificationType>({

@@ -1,4 +1,4 @@
-import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType } from "@/app/auth/types";
+import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType } from "@/types/authTypes";
 import { linkVerificationService, resetPasswordService, sendForgotPasswordEmailVerificationService } from "@/services/authService";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";

@@ -6,7 +6,7 @@ import { LuLockKeyhole } from "react-icons/lu";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import InputField from "@/components/form/InputField";
 import { useForm } from "react-hook-form";
-import { ILoginFormType } from "../types";
+import { ILoginFormType } from "@/types/authTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema } from "../Schema";
 import { useLogin } from "@/hooks/auth/useLogin";

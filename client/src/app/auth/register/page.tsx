@@ -6,7 +6,7 @@ import { FaGoogle, FaGithub, FaPhoneAlt } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
 import InputField from "@/components/form/InputField";
 import { useForm } from "react-hook-form";
-import { IRegisterFormType} from "../types";
+import { IRegisterFormType } from "@/types/authTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../Schema";
 import { useRegister } from "@/hooks/auth/useRegister";

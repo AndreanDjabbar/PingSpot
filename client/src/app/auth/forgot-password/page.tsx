@@ -4,7 +4,7 @@ import { MdMailOutline } from "react-icons/md";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import InputField from "@/components/form/InputField";
 import { useForm } from "react-hook-form";
-import { IForgotPasswordFormEmailType } from "../types";
+import { IForgotPasswordFormEmailType } from "@/types/authTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ButtonSubmit from "@/components/form/ButtonSubmit";
 import ErrorSection from "@/components/UI/ErrorSection";

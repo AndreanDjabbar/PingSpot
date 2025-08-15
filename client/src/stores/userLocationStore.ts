@@ -1,22 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-type Location = {
-    lat: string;
-    lng: string;
-    lastUpdated?: string;
-    expiresAt?: number;
-    displayName?: string;
-    address?: object | null;
-    type?: string;
-    name?: string;
-    osmType?: string;
-    osmId?: string;
-};
+import { ILocation } from '@/types/mainTypes';
 
 type LocationState = {
-    location: Location | null;
-    setLocation: (loc: Location, ttl?: number) => void;
+    location: ILocation | null;
+    setLocation: (loc: ILocation, ttl?: number) => void;
     clearLocation: () => void;
 };
 

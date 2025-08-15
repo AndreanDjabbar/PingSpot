@@ -11,7 +11,7 @@ import { useLinkVerification, useResetPassword } from '@/hooks/auth/useForgotPas
 import ButtonSubmit from '@/components/form/ButtonSubmit';
 import InputField from '@/components/form/InputField';
 import { LuLockKeyhole } from 'react-icons/lu';
-import { IForgotPasswordResetPasswordType } from '../../types';
+import { IForgotPasswordResetPasswordType } from '@/types/authTypes';
 import { ForgotPasswordResetPasswordSchema } from '../../Schema';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import useErrorToast from '@/hooks/useErrorToast';
