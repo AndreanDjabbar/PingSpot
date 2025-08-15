@@ -54,7 +54,7 @@ const Map = () => {
                 name: locationData.name || null,
                 osmType: locationData.osmType || null,
                 osmId: locationData.osmId || null,
-            });
+            }, location?.expiresAt);
         }
     }, [data, setLocationStore]);
 
