@@ -2,10 +2,16 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 type Location = {
-    lat: number;
-    lng: number;
+    lat: string;
+    lng: string;
     lastUpdated?: string;
     expiresAt?: number;
+    displayName?: string;
+    address?: object | null;
+    type?: string;
+    name?: string;
+    osmType?: string;
+    osmId?: string;
 };
 
 type LocationState = {
@@ -18,10 +24,12 @@ export const useLocationStore = create<LocationState>()(
     persist(
         (set) => ({
         location: null,
-        setLocation: (loc, ttl = 5 * 60 * 1000) =>
+        setLocation: (loc, expiresAt?: number, ttl = 5 * 60 * 1000) => {
+            const jwtExpired = expiresAt ?? (ttl + Date.now())
             set({
-            location: { ...loc, expiresAt: Date.now() + ttl }
-            }),
+                location: { ...loc, expiresAt: jwtExpired }
+            })
+        },
         clearLocation: () => set({ location: null })
         }),
         { name: 'user_location' }

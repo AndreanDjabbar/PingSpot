@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
 import { useLocationStore } from "@/stores/userLocationStore";
 import getAuthToken from "@/utils/getAuthToken";
-import { jwtDecode } from "jwt-decode";
+import getJWTExpired from "@/utils/getJWTExpired";
 
 type Location = {
-    lat: number;
-    lng: number;
+    lat: string;
+    lng: string;
     lastUpdated?: string;
 };
 
@@ -13,36 +13,37 @@ export const useCurrentLocation = () => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [permissionDenied, setPermissionDenied] = useState<string | null>(null);
-
+    const [isUpdateRequest, setIsUpdateRequest] = useState<boolean>(false);
     const location = useLocationStore((state) => state.location);
     const setLocationStore = useLocationStore((state) => state.setLocation);
 
-    const requestLocation = useCallback(() => {
+    const requestLocation = useCallback((isUpdate=false) => {
         setLoading(true);
         setError(null);
         setPermissionDenied(null);
 
         if (!navigator.geolocation) {
-        setError("Geolocation tidak didukung di browser ini.");
-        setLoading(false);
-        return;
+            setError("Geolocation tidak didukung di browser ini.");
+            setLoading(false);
+            return;
         }
-
         navigator.geolocation.getCurrentPosition(
         (position) => {
             const coords: Location = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
+                lat: position.coords.latitude.toString(),
+                lng: position.coords.longitude.toString(),
                 lastUpdated: new Date().toLocaleString(),
             };
-
+            
             const jwtToken = getAuthToken();
             let expiresAt: number | undefined;
             if (jwtToken) {
-                const decodedJWT = jwtDecode<{ exp: number }>(jwtToken);
-                expiresAt = decodedJWT.exp * 1000;
-            }
+                expiresAt = getJWTExpired(jwtToken);
+            } else {
+                expiresAt = location?.expiresAt || (Date.now() + 5 * 60 * 1000);
+            } 
             setLocationStore(coords, expiresAt);
+            setIsUpdateRequest(isUpdate);
             setLoading(false);
         },
         (err) => {
@@ -56,7 +57,7 @@ export const useCurrentLocation = () => {
             setLoading(false);
         }
         );
-    }, [setLocationStore]);
+    }, [setLocationStore, location]);
 
     return {
         location,
@@ -66,5 +67,6 @@ export const useCurrentLocation = () => {
         isError: error !== null,
         isPermissionDenied: permissionDenied !== null,
         requestLocation,
+        isUpdateRequest,
     };
 };
