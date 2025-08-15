@@ -14,7 +14,7 @@ export const getDataResponseMessage = (data: any): string => {
 
 export const getDataResponseDetails = (data: any): any => {
     if (data) {
-        return (data as IDataResponse).data || null;
+        return (data as IDataResponse).data || data || null;
     }
     return null;
 }
