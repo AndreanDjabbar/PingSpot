@@ -1,5 +1,5 @@
 import axios from "axios";
-import { IReverseLocationType } from "@/app/main/types";
+import { IReverseLocationType } from "@/types/mainTypes";
 
 type IResponseType = {
     message: string;
