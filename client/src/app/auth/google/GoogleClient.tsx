@@ -19,7 +19,7 @@ const GoogleAuthClient = () => {
                 document.cookie = `auth_token=${token}; path=/; expires=${new Date(jwtExpiration * 1000).toUTCString()}; secure; samesite=strict`;
             }
             setTimeout(() => {
-                router.push("/main");
+                router.push("/main/home");
             }, 2000);
             toastSuccess('Akun berhasil diverifikasi');
         }
