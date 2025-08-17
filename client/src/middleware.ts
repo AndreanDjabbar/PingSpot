@@ -12,7 +12,7 @@ export const middleware = (request: NextRequest) => {
 
     if (request.nextUrl.pathname.startsWith('/auth')) {
         if (jwtToken) {
-            return NextResponse.redirect(new URL('/main', request.url));
+            return NextResponse.redirect(new URL('/main/home', request.url));
         }
     }
 }
