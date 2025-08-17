@@ -1,13 +1,17 @@
+/* eslint-disable react/no-unescaped-entities */
 import ErrorSection from '@/components/UI/ErrorSection'
 import { useCurrentLocation } from '@/hooks/main/useCurrentLocation'
 import useErrorToast from '@/hooks/useErrorToast'
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse'
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useReverseCurrentLocation } from '@/hooks/main/useReverseCurrentLocation'
 import { FaMap, FaMapPin, FaSpinner } from 'react-icons/fa'
 import { getDataResponseDetails } from '@/utils/getDataResponse'
 import { useLocationStore } from '@/stores/userLocationStore'
 import camelize from 'camelize';
+import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import L from 'leaflet';
 
 interface ReverseLocationResponse {
     display_name?: string;
@@ -29,6 +33,25 @@ const Map = () => {
     useErrorToast(isError, error);
     useErrorToast(isPermissionDenied, permissionDenied);
 
+    const customIcon = useMemo(() => new L.Icon({
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    }), []);
+
+    const mapCenter = useMemo(() => {
+        if (!location) return [0, 0];
+        return [Number(location.lat), Number(location.lng)];
+    }, [location?.lat, location?.lng]);
+
+    const mapKey = location 
+    ? `${location.lat}-${location.lng}`
+    : 'no-location';
+    
     useEffect(() => {
         if (location) {
             if (!location.displayName || !location.address || isUpdateRequest) {
@@ -71,7 +94,7 @@ const Map = () => {
             <div className='flex w-full justify-between items-start'>
                 <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
                     <FaMap className="w-6 h-6 text-sky-800 mr-2" />
-                    Peta Area
+                    Peta
                 </h2>
                 <div className="flex flex-col items-end">
                     {!location &&  <>
@@ -116,11 +139,38 @@ const Map = () => {
                 </div>
             </div>
             <div className="bg-gradient-to-br from-sky-100 to-indigo-100 rounded-lg p-8 text-center border-2 border-dashed border-sky-200">
-                <FaMapPin className="w-12 h-12 text-sky-500 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Peta interaktif akan ditampilkan di sini</p>
-                <button className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-2 rounded-lg transition-colors">
-                Buka Peta Lengkap
-                </button>
+                <div className='h-96 w-full'>
+                    {location ? (
+                        <MapContainer 
+                            center={mapCenter as [number, number]} 
+                            zoom={13} 
+                            scrollWheelZoom={false}
+                            style={{ height: '100%', width: '100%' }}
+                            key={mapKey}
+                        >
+                            <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            />
+                            <Marker 
+                            position={[Number(location.lat), Number(location.lng)]}
+                            icon={customIcon}
+                            >
+                                <Popup>
+                                    Lokasi Anda <br /> {location.displayName || 'Lokasi saat ini'}
+                                </Popup>
+                            </Marker>
+                        </MapContainer>
+                    ) : (
+                        <div className="flex items-center justify-center h-full text-gray-500">
+                            <div className="text-center">
+                                <FaMapPin className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                                <p>Lokasi belum tersedia</p>
+                                <p className="text-sm">Klik "Izin akses lokasi" untuk menampilkan peta</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
             {location && (
                 <div className='bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3'>
