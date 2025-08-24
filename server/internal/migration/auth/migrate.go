@@ -1,4 +1,4 @@
-package migration
+package auth
 
 import (
 	"server/internal/logger"
