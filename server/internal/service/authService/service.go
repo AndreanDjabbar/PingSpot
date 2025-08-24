@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"server2/internal/config"
 	"server2/internal/dto"
+	"server2/internal/infrastructure/cache"
 	"server2/internal/logger"
 	"server2/internal/model"
 	"server2/pkg/utils/envUtils"
@@ -70,7 +70,7 @@ func Login(db *gorm.DB, req dto.LoginRequest) (*model.User, string, error) {
 		}
 		verificationLink := fmt.Sprintf("%s/auth/verify-account/%s/%d/%s", envUtils.ClientURL(), randomCode1, user.ID, randomCode2)
 
-		redisClient := config.GetRedis()
+		redisClient := cache.GetRedis()
 		linkData := map[string]string{
 			"link1": randomCode1,
 			"link2": randomCode2,

@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"server2/internal/config"
 	"server2/internal/dto"
+	"server2/internal/infrastructure/cache"
+	"server2/internal/infrastructure/database"
 	"server2/internal/logger"
 	authservice "server2/internal/service/authService"
 	"server2/internal/validation"
@@ -43,7 +44,7 @@ func DefaultHandler(c *fiber.Ctx) error {
 func RegisterHandler(c *fiber.Ctx) error {
 	logger.Info("REGISTER HANDLER")
 	var req dto.RegisterRequest
-	db := config.GetDB()
+	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
@@ -81,7 +82,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 	}
 	verificationLink := fmt.Sprintf("%s/auth/verification?code1=%s&userId=%d&code2=%s", envUtils.ClientURL(), randomCode1, user.ID, randomCode2)
 
-	redisClient := config.GetRedis()
+	redisClient := cache.GetRedis()
 
 	linkData := map[string]string{
 		"link1": randomCode1,
@@ -121,7 +122,7 @@ func VerificationHandler(c *fiber.Ctx) error {
 		return responseUtils.ResponseError(c, 400, "Parameter tidak lengkap", "", nil)
 	}
 
-	redisClient := config.GetRedis()
+	redisClient := cache.GetRedis()
 	redisKey := fmt.Sprintf("link:%s", userId)
 	linkData, err := redisClient.Get(c.Context(), redisKey).Result()
 	if err != nil {
@@ -151,7 +152,7 @@ func VerificationHandler(c *fiber.Ctx) error {
 		return responseUtils.ResponseError(c, 400, "ID pengguna tidak valid", "", err.Error())
 	}
 
-	db := config.GetDB()
+	db := database.GetDB()
 	user, err := authservice.VerifyUser(db, uint(userIdUint))
 	if err != nil {
 		logger.Error("Verification failed", zap.Error(err))
@@ -173,7 +174,7 @@ func VerificationHandler(c *fiber.Ctx) error {
 func LoginHandler(c *fiber.Ctx) error {
 	logger.Info("LOGIN HANDLER")
 	var req dto.LoginRequest
-	db := config.GetDB()
+	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
@@ -220,7 +221,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	providerId := user.RawData["id"].(string)
 	logger.Info("Google user authenticated", zap.String("email", email), zap.String("name", fullName))
 
-	db := config.GetDB()
+	db := database.GetDB()
 	existingUser, err := authservice.GetUserByEmail(db, email)
 	if err != nil {
 		logger.Error("Error retrieving user by email", zap.Error(err))
@@ -258,7 +259,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 	logger.Info("FORGOT PASSWORD EMAIL VERIFICATION HANDLER")
 	var req dto.ForgotPasswordEmailVerificationRequest
-	db := config.GetDB()
+	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
@@ -275,7 +276,7 @@ func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
 	}
 	if user != nil {
-		redisClient := config.GetRedis()
+		redisClient := cache.GetRedis()
 		verificationCode, err := mainutils.GenerateRandomCode(200)
 		if err != nil {
 			logger.Error("Failed to generate verification code", zap.Error(err))
@@ -307,7 +308,7 @@ func ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error {
 		return responseUtils.ResponseError(c, 400, "Parameter tidak lengkap", "", nil)
 	}
 
-	redisClient := config.GetRedis()
+	redisClient := cache.GetRedis()
 	redisKey := fmt.Sprintf("forgot_password:%s", email)
 	storedCode, err := redisClient.Get(c.Context(), redisKey).Result()
 	if err != nil {
@@ -330,7 +331,7 @@ func ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error {
 func ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	logger.Info("FORGOT PASSWORD RESET PASSWORD HANDLER")
 	var req dto.ForgotPasswordResetPasswordRequest
-	db := config.GetDB()
+	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
@@ -391,7 +392,7 @@ func LogoutHandler(c *fiber.Ctx) error {
 	ttl := time.Duration(int64(exp)-now) * time.Second
 
 	if ttl > 0 {
-		redisClient := config.GetRedis()
+		redisClient := cache.GetRedis()
 		blacklistKey := fmt.Sprintf("blacklist:%s", token)
 
 		err = redisClient.Set(c.Context(), blacklistKey, "true", ttl).Err()

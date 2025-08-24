@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"server2/internal/config"
+	"server2/internal/infrastructure/cache"
 	"server2/pkg/utils/envUtils"
 	"server2/pkg/utils/responseUtils"
 	"strings"
@@ -13,7 +13,7 @@ import (
 )
 
 func CheckTokenBlacklist(token string) bool {
-	redisClient := config.GetRedis()
+	redisClient := cache.GetRedis()
 	blacklistKey := fmt.Sprintf("blacklist:%s", token)
 
 	_, err := redisClient.Get(context.Background(), blacklistKey).Result()
