@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"server/internal/dto"
 	"server/internal/infrastructure/cache"
 	"server/internal/logger"
-	"server/internal/model/auth"
+	modelAuth "server/internal/model/auth"
+	dtoAuth "server/internal/dto/auth"
 	"server/pkg/utils/envUtils"
 	mainutils "server/pkg/utils/mainUtils"
 	"time"
@@ -17,8 +17,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func Register(db *gorm.DB, req dto.RegisterRequest, isVerified bool) (*auth.User, error) {
-	var existing auth.User
+func Register(db *gorm.DB, req dtoAuth.RegisterRequest, isVerified bool) (*modelAuth.User, error) {
+	var existing modelAuth.User
 	if err := db.Where("email = ? OR username = ?", req.Email, req.Username).First(&existing).Error; err == nil {
 		return nil, errors.New("Email atau username sudah terdaftar")
 	} else if err != gorm.ErrRecordNotFound {
@@ -30,13 +30,13 @@ func Register(db *gorm.DB, req dto.RegisterRequest, isVerified bool) (*auth.User
 		return nil, errors.New("Gagal mengenkripsi password")
 	}
 
-	user := auth.User{
+	user := modelAuth.User{
 		Username:   req.Username,
 		Email:      req.Email,
 		Password:   &hashedPassword,
 		FullName:   req.FullName,
 		Phone:      req.Phone,
-		Provider:   auth.Provider(req.Provider),
+		Provider:   modelAuth.Provider(req.Provider),
 		ProviderID: req.ProviderID,
 		IsVerified: isVerified,
 	}
@@ -47,8 +47,8 @@ func Register(db *gorm.DB, req dto.RegisterRequest, isVerified bool) (*auth.User
 	return &user, nil
 }
 
-func Login(db *gorm.DB, req dto.LoginRequest) (*auth.User, string, error) {
-	var user auth.User
+func Login(db *gorm.DB, req dtoAuth.LoginRequest) (*modelAuth.User, string, error) {
+	var user modelAuth.User
 	if err := db.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		return nil, "", errors.New("Email atau password salah")
 	}
@@ -102,8 +102,8 @@ func Login(db *gorm.DB, req dto.LoginRequest) (*auth.User, string, error) {
 	return &user, token, nil
 }
 
-func VerifyUser(db *gorm.DB, userID uint) (*auth.User, error) {
-	var user auth.User
+func VerifyUser(db *gorm.DB, userID uint) (*modelAuth.User, error) {
+	var user modelAuth.User
 
 	if err := db.First(&user, userID).Error; err != nil {
 		return nil, errors.New("User tidak ditemukan")
@@ -121,8 +121,8 @@ func VerifyUser(db *gorm.DB, userID uint) (*auth.User, error) {
 	return &user, nil
 }
 
-func GetUserByEmail(db *gorm.DB, email string) (*auth.User, error) {
-    var user auth.User
+func GetUserByEmail(db *gorm.DB, email string) (*modelAuth.User, error) {
+    var user modelAuth.User
     result := db.Where("email = ?", email).First(&user)
 
     if result.Error != nil {
@@ -135,8 +135,8 @@ func GetUserByEmail(db *gorm.DB, email string) (*auth.User, error) {
     return &user, nil
 }
 
-func UpdateUserByEmail(db *gorm.DB, email string, updatedUser *auth.User) (*auth.User, error) {
-	var user auth.User
+func UpdateUserByEmail(db *gorm.DB, email string, updatedUser *modelAuth.User) (*modelAuth.User, error) {
+	var user modelAuth.User
 
 	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

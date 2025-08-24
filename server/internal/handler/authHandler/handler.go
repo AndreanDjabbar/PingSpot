@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"server/internal/dto"
+	dtoAuth "server/internal/dto/auth"
 	"server/internal/infrastructure/cache"
 	"server/internal/infrastructure/database"
 	"server/internal/logger"
@@ -43,7 +43,7 @@ func DefaultHandler(c *fiber.Ctx) error {
 
 func RegisterHandler(c *fiber.Ctx) error {
 	logger.Info("REGISTER HANDLER")
-	var req dto.RegisterRequest
+	var req dtoAuth.RegisterRequest
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -173,7 +173,7 @@ func VerificationHandler(c *fiber.Ctx) error {
 
 func LoginHandler(c *fiber.Ctx) error {
 	logger.Info("LOGIN HANDLER")
-	var req dto.LoginRequest
+	var req dtoAuth.LoginRequest
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -230,7 +230,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	if existingUser == nil {
 
-		newUser := dto.RegisterRequest{
+		newUser := dtoAuth.RegisterRequest{
 			Username:   nickName,
 			Email:      email,
 			FullName:   fullName,
@@ -258,7 +258,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 	logger.Info("FORGOT PASSWORD EMAIL VERIFICATION HANDLER")
-	var req dto.ForgotPasswordEmailVerificationRequest
+	var req dtoAuth.ForgotPasswordEmailVerificationRequest
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -330,7 +330,7 @@ func ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error {
 
 func ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	logger.Info("FORGOT PASSWORD RESET PASSWORD HANDLER")
-	var req dto.ForgotPasswordResetPasswordRequest
+	var req dtoAuth.ForgotPasswordResetPasswordRequest
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
