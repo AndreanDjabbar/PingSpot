@@ -12,7 +12,7 @@ import (
 func Migrate(db *gorm.DB) error {
 	m := gormigrate.New(db, gormigrate.DefaultOptions, []*gormigrate.Migration{
 		{
-			ID: "initial_migration",
+			ID: "24072025_initial_migration",
 			Migrate: func(tx *gorm.DB) error {
 				return tx.AutoMigrate(&model.User{})
 			},
