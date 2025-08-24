@@ -11,7 +11,7 @@ import (
 	"server/internal/logger"
 	authservice "server/internal/service/authService"
 	"server/internal/validation"
-	"server/internal/validation/authValidation"
+	validationAuth "server/internal/validation/auth"
 	"server/pkg/utils/envUtils"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/responseUtils"
@@ -51,7 +51,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 	}
 
 	if err := validate.Struct(req); err != nil {
-		errors := authValidation.FormatRegisterValidationErrors(err)
+		errors := validationAuth.FormatRegisterValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
@@ -181,7 +181,7 @@ func LoginHandler(c *fiber.Ctx) error {
 	}
 
 	if err := validate.Struct(req); err != nil {
-		errors := authValidation.FormatLoginValidationErrors(err)
+		errors := validationAuth.FormatLoginValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
@@ -265,7 +265,7 @@ func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
 	if err := validate.Struct(req); err != nil {
-		errors := authValidation.FormatForgotPasswordEmailVerificationValidationErrors(err)
+		errors := validationAuth.FormatForgotPasswordEmailVerificationValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
@@ -337,7 +337,7 @@ func ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
 	if err := validate.Struct(req); err != nil {
-		errors := authValidation.FormatForgotPasswordResetPasswordValidationErrors(err)
+		errors := validationAuth.FormatForgotPasswordResetPasswordValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}

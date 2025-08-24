@@ -6,7 +6,7 @@ import (
 	"server/internal/infrastructure/cache"
 	"server/internal/infrastructure/database"
 	"server/internal/logger"
-	"server/internal/migration"
+	migrationAuth "server/internal/migration/auth"
 	"server/internal/server"
 	"server/pkg/utils/envUtils"
 	"strconv"
@@ -45,7 +45,7 @@ func main() {
 	}
 
 	db := database.GetDB()
-	if err := migration.Migrate(db); err != nil {
+	if err := migrationAuth.Migrate(db); err != nil {
 		logger.Error("Failed to run migrations", zap.Error(err))
 		panic(fmt.Sprintf("failed to run migrations: %v", err))
 	}
