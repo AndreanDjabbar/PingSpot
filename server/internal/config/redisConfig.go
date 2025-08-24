@@ -1,6 +1,6 @@
 package config
 
-import "server2/pkg/utils/envUtils"
+import "server/pkg/utils/envUtils"
 
 type RedisConfig struct {
     Host     string

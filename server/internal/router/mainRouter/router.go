@@ -1,8 +1,8 @@
 package mainRouter
 
 import (
-	"server2/internal/handler/mainHandler"
-	"server2/internal/middleware"
+	"server/internal/handler/mainHandler"
+	"server/internal/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )

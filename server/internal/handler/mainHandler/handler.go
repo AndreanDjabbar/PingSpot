@@ -1,10 +1,10 @@
 package mainHandler
 
 import (
-	"server2/internal/logger"
-	"server2/pkg/utils/envUtils"
-	mainutils "server2/pkg/utils/mainUtils"
-	"server2/pkg/utils/responseUtils"
+	"server/internal/logger"
+	"server/pkg/utils/envUtils"
+	mainutils "server/pkg/utils/mainUtils"
+	"server/pkg/utils/responseUtils"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"

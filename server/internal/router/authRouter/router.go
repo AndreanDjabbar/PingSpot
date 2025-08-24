@@ -1,7 +1,7 @@
 package authrouter
 
 import (
-	authhandler "server2/internal/handler/authHandler"
+	authhandler "server/internal/handler/authHandler"
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"

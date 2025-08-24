@@ -4,8 +4,8 @@ import (
     "fmt"
     "sync"
 
-    "server2/internal/config"
-    "server2/internal/logger"
+    "server/internal/config"
+    "server/internal/logger"
 
     "go.uber.org/zap"
     "gorm.io/driver/postgres"

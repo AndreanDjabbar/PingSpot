@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 	"net/http"
-	"server2/pkg/utils/envUtils"
+	"server/pkg/utils/envUtils"
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"

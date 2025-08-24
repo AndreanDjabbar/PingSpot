@@ -1,11 +1,11 @@
 package server
 
 import (
-	"server2/internal/logger"
-	authrouter "server2/internal/router/authRouter"
-	"server2/internal/router/mainRouter"
-	"server2/pkg/utils/envUtils"
-	"server2/pkg/utils/responseUtils"
+	"server/internal/logger"
+	authrouter "server/internal/router/authRouter"
+	"server/internal/router/mainRouter"
+	"server/pkg/utils/envUtils"
+	"server/pkg/utils/responseUtils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"

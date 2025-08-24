@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"server2/internal/config"
-	"server2/internal/infrastructure/cache"
-	"server2/internal/infrastructure/database"
-	"server2/internal/logger"
-	"server2/internal/migration"
-	"server2/internal/server"
-	"server2/pkg/utils/envUtils"
+	"server/internal/config"
+	"server/internal/infrastructure/cache"
+	"server/internal/infrastructure/database"
+	"server/internal/logger"
+	"server/internal/migration"
+	"server/internal/server"
+	"server/pkg/utils/envUtils"
 	"strconv"
 
 	"go.uber.org/zap"

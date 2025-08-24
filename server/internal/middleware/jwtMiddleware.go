@@ -3,9 +3,9 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"server2/internal/infrastructure/cache"
-	"server2/pkg/utils/envUtils"
-	"server2/pkg/utils/responseUtils"
+	"server/internal/infrastructure/cache"
+	"server/pkg/utils/envUtils"
+	"server/pkg/utils/responseUtils"
 	"strings"
 
 	jwtware "github.com/gofiber/contrib/jwt"

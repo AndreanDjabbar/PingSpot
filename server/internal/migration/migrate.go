@@ -1,8 +1,8 @@
 package migration
 
 import (
-	"server2/internal/logger"
-	"server2/internal/model"
+	"server/internal/logger"
+	"server/internal/model"
 
 	"github.com/go-gormigrate/gormigrate/v2"
 	"go.uber.org/zap"

@@ -5,8 +5,8 @@ import (
     "fmt"
     "time"
 
-    "server2/internal/config"
-    "server2/internal/logger"
+    "server/internal/config"
+    "server/internal/logger"
 
     "github.com/redis/go-redis/v9"
     "go.uber.org/zap"
