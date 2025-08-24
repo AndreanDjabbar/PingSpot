@@ -1,4 +1,4 @@
-package authrouter
+package auth
 
 import (
 	authhandler "server/internal/handler/authHandler"
