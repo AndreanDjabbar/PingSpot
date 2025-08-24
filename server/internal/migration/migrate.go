@@ -2,7 +2,7 @@ package migration
 
 import (
 	"server/internal/logger"
-	"server/internal/model"
+	"server/internal/model/auth"
 
 	"github.com/go-gormigrate/gormigrate/v2"
 	"go.uber.org/zap"
@@ -14,10 +14,10 @@ func Migrate(db *gorm.DB) error {
 		{
 			ID: "24072025_initial_migration",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&model.User{})
+				return tx.AutoMigrate(&auth.User{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&model.User{})
+				return tx.Migrator().DropTable(&auth.User{})
 			},
 		},
 	})
