@@ -1,7 +1,7 @@
 package mainService
 
 import (
-	"server/internal/handler/mainHandler"
+	mainHandler "server/internal/handler/mainService"
 	"server/internal/middleware"
 
 	"github.com/gofiber/fiber/v2"

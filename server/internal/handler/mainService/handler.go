@@ -1,4 +1,4 @@
-package mainHandler
+package mainService
 
 import (
 	"server/internal/logger"

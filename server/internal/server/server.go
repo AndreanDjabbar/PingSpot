@@ -2,8 +2,8 @@ package server
 
 import (
 	"server/internal/logger"
-	routerAuth "server/internal/router/auth"
-	routerMain "server/internal/router/mainService"
+	authRouter "server/internal/router/auth"
+	mainRouter "server/internal/router/mainService"
 	"server/pkg/utils/envUtils"
 	"server/pkg/utils/responseUtils"
 
@@ -45,6 +45,6 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	defaultRoute := s.App.Group("/pingspot/api")
 	defaultRoute.Get("/", DefaultHandler)
 
-	routerMain.RegisterRoutes(s.App)
-	routerAuth.RegisterRoutes(s.App)
+	mainRouter.RegisterRoutes(s.App)
+	authRouter.RegisterRoutes(s.App)
 }
