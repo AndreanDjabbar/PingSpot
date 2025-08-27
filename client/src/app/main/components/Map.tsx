@@ -29,6 +29,7 @@ const Map = () => {
     const { mutate: reverseLocation, data, isPending: reverseLoading } = useReverseCurrentLocation();
     const { location, isError, error, loading, permissionDenied, isPermissionDenied, requestLocation, isUpdateRequest } = useCurrentLocation();
     const setLocationStore = useLocationStore((state) => state.setLocation);
+    const clearLocationStore = useLocationStore((state) => state.clearLocation);
     
     useErrorToast(isError, error);
     useErrorToast(isPermissionDenied, permissionDenied);
@@ -52,6 +53,16 @@ const Map = () => {
     ? `${location.lat}-${location.lng}`
     : 'no-location';
     
+    useEffect(() => {
+        if (location && location.expiresAt) {
+            const now = Date.now()
+            const isExpired = now > location.expiresAt;
+            if (isExpired) {
+                clearLocationStore();
+            }
+        }
+    }, []);
+
     useEffect(() => {
         if (location) {
             if (!location.displayName || !location.address || isUpdateRequest) {
