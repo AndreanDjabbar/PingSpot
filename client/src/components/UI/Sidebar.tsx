@@ -12,6 +12,7 @@ import useSuccessToast from "@/hooks/useSuccessToast";
 import useErrorToast from "@/hooks/useErrorToast";
 import getAuthToken from "@/utils/getAuthToken";
 import { useEffect } from "react";
+import { useGlobalStore } from "@/stores/globalStore";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -20,7 +21,7 @@ interface SidebarProps {
 }
 
 const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: BiHome, active: true },
+    { id: 'home', label: 'Dashboard', icon: BiHome },
     { id: 'map', label: 'Peta Interaktif', icon: FaMap },
     { id: 'reports', label: 'Laporan Saya', icon: GoAlert, badge: '3' },
     { id: 'community', label: 'Komunitas', icon: FaUsers },
@@ -29,16 +30,30 @@ const navigationItems = [
 ]
 
 const bottomNavigationItems = [
-    { id: 'settings', label: 'Pengaturan', icon: CiSettings },
+    { id: 'settings', label: 'Pengaturan', icon: CiSettings, active: true },
     { id: 'help', label: 'Bantuan', icon: IoMdHelpCircleOutline },
 ]
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }) => {
     const { mutate: logout, isPending, isError, error, isSuccess, data } = useLogout();
     const router = useRouter();
+    const { expiredAt, getCurrentPage, setCurrentPage, clearGlobalData } = useGlobalStore();
 
     useErrorToast(isError, error);
     useSuccessToast(isSuccess, data);
+
+    useEffect(() => {
+        const now = Date.now();
+        if (expiredAt && now > expiredAt) {
+            clearGlobalData();
+        }
+
+        const currentPage = getCurrentPage();
+        if (!currentPage) {
+            router.push("/main/home");
+            setCurrentPage("home");
+        }
+    }, [])
 
     useEffect(() => {
         if (isSuccess) {
@@ -84,10 +99,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                             {navigationItems.map((item) => (
                                 <button
                                     key={item.id}
+                                    onClick={() => {
+                                        router.push(`/main/${item.id}`)
+                                        setCurrentPage(item.id);
+                                    }}
                                     className={`
                                     w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
                                     transition-all duration-200 group relative
-                                    ${item.active 
+                                    ${item.id === getCurrentPage()
                                         ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/25' 
                                         : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
                                     }
@@ -117,10 +136,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                             {bottomNavigationItems.map((item) => (
                             <button
                                 key={item.id}
+                                onClick={() => {
+                                    setCurrentPage(item.id);
+                                    router.push(`/main/${item.id}`)
+                                }}
                                 className={`
                                 w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
                                 text-gray-200 hover:bg-gray-700/50 hover:text-gray-300 transition-colors
-                                `}
+                                ${item.id === getCurrentPage()
+                                        ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/25' 
+                                        : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
+                                }`}
                             >
                                 <item.icon className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0`} />
                                 {!collapsed && <span className="ml-3 font-medium">{item.label}</span>}
