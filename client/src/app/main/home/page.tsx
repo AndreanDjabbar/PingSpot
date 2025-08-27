@@ -8,7 +8,7 @@ import { GoAlert } from 'react-icons/go'
 import { LuActivity } from 'react-icons/lu'
 import Map from '../components/Map';
 
-const page = () => {
+const Homepage = () => {
     return (
         <MainLayout>
             <div className="space-y-8">
@@ -84,4 +84,4 @@ const page = () => {
     )
 }
 
-export default page
+export default Homepage
