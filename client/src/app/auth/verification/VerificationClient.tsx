@@ -47,7 +47,7 @@ const VerificationClient = () => {
         if (isSuccess && data) {
             setTimeout(() => {
                 router.push("/auth/login");
-            }, 2000);
+            }, 1000);
         }
     }, [isSuccess, data, router]);
 
