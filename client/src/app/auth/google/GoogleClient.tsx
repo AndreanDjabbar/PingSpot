@@ -20,7 +20,7 @@ const GoogleAuthClient = () => {
             }
             setTimeout(() => {
                 router.push("/main/home");
-            }, 2000);
+            }, 1000);
             toastSuccess('Akun berhasil diverifikasi');
         }
     }, [token, toastSuccess, router]);

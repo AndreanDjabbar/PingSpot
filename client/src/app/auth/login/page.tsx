@@ -44,7 +44,7 @@ const LoginPage = () => {
             }
             setTimeout(() => {
                 router.push("/main/home");
-            }, 2000);
+            }, 1000);
         }
     }, [isSuccess, data, router]);
 
