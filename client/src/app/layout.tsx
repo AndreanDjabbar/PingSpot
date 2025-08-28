@@ -14,7 +14,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
   const globalStore = useGlobalStore();
   const locationStore = useLocationStore();
 
-  useEffect(() => {      
+  useEffect(() => {
     const now = Date.now();
     if (globalStore.expiredAt && now > globalStore.expiredAt) {
       globalStore.clearGlobalData();
@@ -23,7 +23,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
     if (locationStore.location?.expiresAt && now > locationStore.location.expiresAt) {
       locationStore.clearLocation();
     }
-  }, [globalStore, locationStore]);
+  }, []);
 
   useEffect(() => {
     loadUser();
