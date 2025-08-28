@@ -37,23 +37,10 @@ const bottomNavigationItems = [
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }) => {
     const { mutate: logout, isPending, isError, error, isSuccess, data } = useLogout();
     const router = useRouter();
-    const { expiredAt, getCurrentPage, setCurrentPage, clearGlobalData } = useGlobalStore();
+    const { currentPage, setCurrentPage } = useGlobalStore();
 
     useErrorToast(isError, error);
     useSuccessToast(isSuccess, data);
-
-    useEffect(() => {
-        const now = Date.now();
-        if (expiredAt && now > expiredAt) {
-            clearGlobalData();
-        }
-
-        const currentPage = getCurrentPage();
-        if (!currentPage) {
-            router.push("/main/home");
-            setCurrentPage("home");
-        }
-    }, [])
 
     useEffect(() => {
         if (isSuccess) {
@@ -106,7 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                                     className={`
                                     w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
                                     transition-all duration-200 group relative
-                                    ${item.id === getCurrentPage()
+                                    ${item.id === currentPage
                                         ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/25' 
                                         : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
                                     }
@@ -143,7 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                                 className={`
                                 w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
                                 text-gray-200 hover:bg-gray-700/50 hover:text-gray-300 transition-colors
-                                ${item.id === getCurrentPage()
+                                ${item.id === currentPage
                                         ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/25' 
                                         : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
                                 }`}
