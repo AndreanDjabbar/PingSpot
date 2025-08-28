@@ -1,12 +1,15 @@
-const getAuthToken = () => {
-    const token = document.cookie
-    .split('; ')
-    .find(row => row.startsWith('auth_token='))
-    ?.split('=')[1];
-    if (!token) {
+export const getAuthToken = (): string | null => {
+    if (typeof document === "undefined") {
         return null;
     }
-    return token;
-}
+
+    const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("auth_token="))
+        ?.split("=")[1];
+
+    return token || null;
+};
+
 
 export default getAuthToken;
