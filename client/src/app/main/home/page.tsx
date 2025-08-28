@@ -1,12 +1,16 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import MainLayout from '@/layouts/MainLayout'
+import dynamic from 'next/dynamic';
 import React from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { FaMap, FaUsers } from 'react-icons/fa'
 import { GoAlert } from 'react-icons/go'
 import { LuActivity } from 'react-icons/lu'
-import Map from '../components/Map';
+
+const Map = dynamic(() => import("../components/Map"), {
+    ssr: false,
+});
 
 const Homepage = () => {
     return (
