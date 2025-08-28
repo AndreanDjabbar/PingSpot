@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
-import AuthLayout from '@/layouts/AuthLayout';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react'
 import ErrorSection from '@/components/UI/ErrorSection';
@@ -53,52 +52,48 @@ const VerificationClient = () => {
 
     if (!code1 || !userId || !code2) {
         return (
-            <AuthLayout>
-                <div className="space-y-8">
-                    <div className="text-center space-y-1">
-                        <h1 className="text-3xl font-bold text-sky-800">Verifikasi</h1>
-                        <p className="text-sky-800">Kami akan memverifikasi akun anda</p>
-                    </div>
-                    <ErrorSection 
-                        message="Link verifikasi tidak valid. Silakan periksa kembali link verifikasi yang Anda terima."
-                    />
-                </div>
-            </AuthLayout>
-        );
-    }
-
-    return (
-        <AuthLayout>
             <div className="space-y-8">
                 <div className="text-center space-y-1">
                     <h1 className="text-3xl font-bold text-sky-800">Verifikasi</h1>
                     <p className="text-sky-800">Kami akan memverifikasi akun anda</p>
                 </div>
-                
-                {isPending && (
-                    <div className="text-center">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-sky-800"></div>
-                        <p className="mt-2 text-sky-800">Memverifikasi akun...</p>
-                    </div>
-                )}
-                
-                {isSuccess && (
-                    <SuccessSection 
-                    message='Akun anda berhasil diverifikasi'
-                    data={() => {
-                        const {username} = getDataResponseDetails(data);
-                        return `Selamat datang, ${username}! sekarang anda dapat masuk ke akun Anda.`;
-                    }}/>
-                )}
-                
-                {isError && (
-                    <ErrorSection 
-                        message={getErrorResponseMessage(error) || 'Verifikasi gagal. Silakan coba lagi.'}
-                        errors={getErrorResponseDetails(error)}
-                    />
-                )}
+                <ErrorSection 
+                    message="Link verifikasi tidak valid. Silakan periksa kembali link verifikasi yang Anda terima."
+                />
             </div>
-        </AuthLayout>
+        );
+    }
+
+    return (
+        <div className="space-y-8">
+            <div className="text-center space-y-1">
+                <h1 className="text-3xl font-bold text-sky-800">Verifikasi</h1>
+                <p className="text-sky-800">Kami akan memverifikasi akun anda</p>
+            </div>
+            
+            {isPending && (
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-sky-800"></div>
+                    <p className="mt-2 text-sky-800">Memverifikasi akun...</p>
+                </div>
+            )}
+            
+            {isSuccess && (
+                <SuccessSection 
+                message='Akun anda berhasil diverifikasi'
+                data={() => {
+                    const {username} = getDataResponseDetails(data);
+                    return `Selamat datang, ${username}! sekarang anda dapat masuk ke akun Anda.`;
+                }}/>
+            )}
+            
+            {isError && (
+                <ErrorSection 
+                    message={getErrorResponseMessage(error) || 'Verifikasi gagal. Silakan coba lagi.'}
+                    errors={getErrorResponseDetails(error)}
+                />
+            )}
+        </div>
     )
 }
 
