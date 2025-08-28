@@ -5,13 +5,7 @@ import { GoAlert } from "react-icons/go";
 import { LuActivity, LuMessageCircle } from "react-icons/lu";
 import { CiSettings } from "react-icons/ci";
 import { IoMdHelpCircleOutline } from "react-icons/io";
-import { ImExit } from "react-icons/im";
-import { useLogout } from "@/hooks/auth/useLogout";
 import { usePathname, useRouter } from "next/navigation";
-import useSuccessToast from "@/hooks/useSuccessToast";
-import useErrorToast from "@/hooks/useErrorToast";
-import getAuthToken from "@/utils/getAuthToken";
-import { useEffect } from "react";
 import { useGlobalStore } from "@/stores/globalStore";
 
 interface SidebarProps {
@@ -35,33 +29,9 @@ const bottomNavigationItems = [
 ]
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }) => {
-    const { mutate: logout, isPending, isError, error, isSuccess, data } = useLogout();
     const router = useRouter();
     const currentPath = usePathname().split('/')[2] || 'home';
     const { setCurrentPage } = useGlobalStore();
-
-    useErrorToast(isError, error);
-    useSuccessToast(isSuccess, data);
-
-    useEffect(() => {
-        if (isSuccess) {
-            document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
-            
-            setTimeout(() => {
-                router.push("/auth/login");
-            }, 1000);
-        }
-    }, [isSuccess, router]);
-
-    const handleLogout = () => {
-        const token = getAuthToken();
-        if (token) {
-            logout({ authToken: token });
-        } else {
-            document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
-            router.push("/auth/login");
-        }
-    };
 
     return (
         <>
@@ -140,25 +110,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                                 {!collapsed && <span className="ml-3 font-medium">{item.label}</span>}
                             </button>
                             ))}
-                            
-                            <button
-                                onClick={handleLogout}
-                                disabled={isPending}
-                                className={`
-                                w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
-                                ${isPending 
-                                    ? 'text-red-400 bg-red-600/10 cursor-not-allowed' 
-                                    : 'text-red-300 hover:bg-red-600/20 hover:text-red-200'
-                                } transition-colors
-                                `}
-                            >
-                                <ImExit className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0 ${isPending ? 'animate-pulse' : ''}`} />
-                                {!collapsed && (
-                                    <span className="ml-3 font-medium">
-                                        {isPending ? 'Keluar...' : 'Keluar'}
-                                    </span>
-                                )}
-                            </button>
                         </div>
                     </div>
                 </div>
