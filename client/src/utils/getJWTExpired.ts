@@ -2,6 +2,8 @@ import { jwtDecode } from "jwt-decode"
 import getAuthToken from "./getAuthToken";
 
 const getJWTExpired = (jwt=getAuthToken()): number => {
+    if (!jwt) return 0;
+
     const decodedJWT = jwtDecode<{ exp: number }>(jwt || "");
     const exp = decodedJWT.exp;
     if (typeof exp !== 'number') {
