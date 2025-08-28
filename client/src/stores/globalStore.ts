@@ -5,7 +5,6 @@ import getJWTExpired from '@/utils/getJWTExpired';
 type GlobalState = {
     currentPage: string;
     setCurrentPage: (currentPage: string) => void;
-    getCurrentPage: () => string | null;
     clearGlobalData: () => void;
     expiredAt?: number;
 };
