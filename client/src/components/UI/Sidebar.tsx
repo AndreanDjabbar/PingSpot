@@ -7,7 +7,7 @@ import { CiSettings } from "react-icons/ci";
 import { IoMdHelpCircleOutline } from "react-icons/io";
 import { ImExit } from "react-icons/im";
 import { useLogout } from "@/hooks/auth/useLogout";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import useSuccessToast from "@/hooks/useSuccessToast";
 import useErrorToast from "@/hooks/useErrorToast";
 import getAuthToken from "@/utils/getAuthToken";
@@ -37,7 +37,8 @@ const bottomNavigationItems = [
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }) => {
     const { mutate: logout, isPending, isError, error, isSuccess, data } = useLogout();
     const router = useRouter();
-    const { currentPage, setCurrentPage } = useGlobalStore();
+    const currentPath = usePathname().split('/')[2] || 'home';
+    const { setCurrentPage } = useGlobalStore();
 
     useErrorToast(isError, error);
     useSuccessToast(isSuccess, data);
@@ -48,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
             
             setTimeout(() => {
                 router.push("/auth/login");
-            }, 1500);
+            }, 1000);
         }
     }, [isSuccess, router]);
 
@@ -93,7 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                                     className={`
                                     w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
                                     transition-all duration-200 group relative
-                                    ${item.id === currentPage
+                                    ${item.id === currentPath
                                         ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/25' 
                                         : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
                                     }
@@ -130,7 +131,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                                 className={`
                                 w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
                                 text-gray-200 hover:bg-gray-700/50 hover:text-gray-300 transition-colors
-                                ${item.id === currentPage
+                                ${item.id === currentPath
                                         ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/25' 
                                         : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
                                 }`}

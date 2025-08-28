@@ -10,11 +10,9 @@ import Map from '../components/Map';
 
 const SettingsPage = () => {
     return (
-        <MainLayout>
-            <div className="space-y-8">
-                Settings page
-            </div>
-        </MainLayout>
+        <div className="space-y-8">
+            Settings page
+        </div>
     )
 }
 
