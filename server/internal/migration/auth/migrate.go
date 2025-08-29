@@ -35,6 +35,15 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "29082025_add_user_profile_table",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&auth.UserProfile{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&auth.UserProfile{})
+			},
+		},
 	})
 
 	err := m.Migrate()
