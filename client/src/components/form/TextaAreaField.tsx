@@ -1,0 +1,67 @@
+import React from 'react';
+
+interface TextAreaFieldProps {
+    className?: string;
+    withLabel: boolean;
+    labelTitle?: string;
+    id: string;
+    name?: string;
+    required?: boolean;
+    icon?: React.ReactNode;
+    placeHolder?: string;
+    value?: string;
+    onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
+    register?: unknown;
+    rows?: number;
+}
+
+const TextAreaField: React.FC<TextAreaFieldProps> = ({
+    id,
+    name,
+    required = false,
+    className = '',
+    placeHolder = '',
+    withLabel = true,
+    labelTitle = '',
+    icon,
+    value,
+    onChange,
+    onBlur,
+    register,
+    rows = 4,
+}) => {
+    return (
+        <div className={`space-y-1 ${className}`}>
+        {withLabel && (
+            <label htmlFor={id} className="block text-sm font-medium text-sky-800">
+            {labelTitle}
+            </label>
+        )}
+        <div className="relative flex">
+                {icon && (
+                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 pl-3 flex items-center pointer-events-none text-sky-800">
+                        {icon}
+                    </div>
+                )}
+                <textarea
+                id={id}
+                name={name}
+                required={required}
+                rows={rows}
+                style={{ minHeight: '50px' }}
+                className={`block w-full ${
+                    icon ? 'pl-10' : 'pl-3'
+                } pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200`}
+                placeholder={placeHolder || `Masukkan ${labelTitle.toLowerCase()}`}
+                value={value}
+                onChange={onChange}
+                onBlur={onBlur}
+                {...(register || {})}
+                />
+            </div>
+        </div>
+    );
+};
+
+export default TextAreaField;
