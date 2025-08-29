@@ -35,7 +35,6 @@ func Register(db *gorm.DB, req authDto.RegisterRequest, isVerified bool) (*authM
 		Email:      req.Email,
 		Password:   &hashedPassword,
 		FullName:   req.FullName,
-		Phone:      req.Phone,
 		Provider:   authModel.Provider(req.Provider),
 		ProviderID: req.ProviderID,
 		IsVerified: isVerified,

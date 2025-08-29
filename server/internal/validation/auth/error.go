@@ -34,13 +34,6 @@ func FormatRegisterValidationErrors(err error) map[string]string {
 			if e.Tag() == "required" {
 				errors["fullName"] = "Fullname wajib diisi"
 			}
-		case "Phone":
-			if e.Tag() == "required" {
-				errors["phone"] = "Nomor telepon wajib diisi"
-			}
-			if e.Tag() == "phoneid" {
-				errors["phone"] = "Nomor telepon harus dimulai dengan 0 dan berisi 10–13 digit"
-			}
 		case "Provider":
 			if e.Tag() == "required" {
 				errors["provider"] = "Provider wajib diisi"
