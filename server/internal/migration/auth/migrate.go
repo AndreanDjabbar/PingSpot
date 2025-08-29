@@ -20,6 +20,21 @@ func Migrate(db *gorm.DB) error {
 				return tx.Migrator().DropTable(&auth.User{})
 			},
 		},
+		{
+			ID: "29082025_remove_phone_field",
+			Migrate: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&auth.User{}, "phone") {
+					return tx.Migrator().DropColumn(&auth.User{}, "phone")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&auth.User{}, "phone") {
+					return tx.Migrator().AddColumn(&auth.User{}, "phone")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()
