@@ -4,23 +4,23 @@ import React, { useEffect, useState } from 'react';
 import { BiLock, BiEnvelope, BiUser, BiCog } from 'react-icons/bi';
 import { IoPhonePortraitOutline } from 'react-icons/io5';
 import { MdOutlineLanguage, MdOutlineMarkEmailUnread } from 'react-icons/md';
-import ProfileForm from './components/ProfileForm';
 import PasswordForm from './components/PasswordForm';
 import useSuccessToast from '@/hooks/useSuccessToast';
 import getAuthToken from '@/utils/getAuthToken';
 import { useLogout } from '@/hooks/auth/useLogout';
 import useErrorToast from '@/hooks/useErrorToast';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ImExit } from 'react-icons/im';
 import { IoIosNotifications } from "react-icons/io";
 import { useUserProfileStore } from '@/stores/userProfileStore';
 import SettingItem from './components/SettingItem';
 import ToggleSwitch from '@/components/UI/ToggleSwitch';
 import SettingCard from './components/SettingCard';
+import Breadcrumb from '@/components/UI/Breadcrumb';
 
 const SettingsPage = () => {
     const router = useRouter();
-    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+    const currentPath = usePathname();
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -60,19 +60,15 @@ const SettingsPage = () => {
     const handleLanguageChange = (langCode: string) => {
         setSelectedLanguage(langCode);
     };
-
+    
     return (
         <div className="space-y-8">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Pengaturan
-                    </h1>
+                <div className="flex flex-col justify-between gap-6">
+                    <Breadcrumb path={currentPath}/>
                     <p className="text-gray-600 text-lg">
                     Sesuaikan PingSpot dengan preferensi Anda untuk pengalaman yang lebih baik.
                     </p>
-                </div>
                 </div>
             </div>
 
@@ -85,7 +81,7 @@ const SettingsPage = () => {
                     icon={BiUser}
                     action={
                         <button 
-                        onClick={() => setIsProfileModalOpen(true)}
+                        onClick={() => router.push('/main/settings/profile')}
                         className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
                         >
                         Edit
@@ -191,11 +187,6 @@ const SettingsPage = () => {
                 </div>
                 </SettingCard>
             </div>
-
-            <ProfileForm 
-                isOpen={isProfileModalOpen} 
-                onClose={() => setIsProfileModalOpen(false)} 
-            />
             
             <PasswordForm 
                 isOpen={isPasswordModalOpen} 
