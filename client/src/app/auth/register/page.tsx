@@ -1,7 +1,7 @@
 "use client";
 import { MdMailOutline } from "react-icons/md";
 import { LuLockKeyhole } from "react-icons/lu";
-import { FaGoogle, FaGithub, FaPhoneAlt } from "react-icons/fa";
+import { FaGoogle, FaGithub } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
 import InputField from "@/components/form/InputField";
 import { useForm } from "react-hook-form";
@@ -91,20 +91,6 @@ const RegisterPage = () => {
                             />
                             <div className="text-red-500 text-sm font-semibold">{errors.username?.message as string}</div>
                         </div>
-                    </div>
-
-                    <div>
-                        <InputField
-                            id="phone"
-                            register={register("phone")}
-                            type="tel"
-                            className="w-full"
-                            withLabel={true}
-                            labelTitle="Nomor Telepon"
-                            icon={<FaPhoneAlt size={20}/>} 
-                            placeHolder="Masukkan nomor telepon Anda"
-                        />
-                        <div className="text-red-500 text-sm font-semibold">{errors.phone?.message as string}</div>
                     </div>
 
                     <div>
