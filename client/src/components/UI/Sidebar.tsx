@@ -44,11 +44,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                 <div>
 
                     <div className="flex flex-col h-full">
-                        <div className={`justify-center ${collapsed ? 'p-4' : 'p-6'} border-b  border-white`}>
-                            <div className="backdrop-blur-md bg-white/20 border border-white rounded-xl shadow-lg flex justify-start w-full">
-                                <div>
-                                    <PingspotLogo size='170' />
-                                </div>
+                        <div className={`justify-center ${collapsed ? 'p-4' : 'p-4'} border-b  border-white`}>
+                            <div className="flex justify-start w-full">
+                                <PingspotLogo size='200' />
                             </div>
 
                         </div>
