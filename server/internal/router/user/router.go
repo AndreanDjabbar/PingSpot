@@ -1,4 +1,4 @@
-package auth
+package user
 
 import (
 	authHandler "server/internal/handler/auth"
@@ -8,7 +8,7 @@ import (
 )
 
 func RegisterRoutes(app *fiber.App) {
-	authRoute := app.Group("/pingspot/api/auth")
+	authRoute := app.Group("/pingspot/api/user")
 	authRoute.Get("/", authHandler.DefaultHandler)
 	authRoute.Post("/verification", authHandler.VerificationHandler)
 	authRoute.Post("/register", authHandler.RegisterHandler)
