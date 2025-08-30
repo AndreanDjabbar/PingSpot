@@ -24,13 +24,3 @@ type User struct {
 	CreatedAt  time.Time `gorm:"autoCreateTime"`
 	UpdatedAt  time.Time `gorm:"autoUpdateTime"`
 }
-
-type UserProfile struct {
-	ID     uint    `gorm:"primaryKey"`
-	UserID uint    `gorm:"unique;not null"`
-	User   User    `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	Bio    *string `gorm:"type:text"`
-	Avatar *string `gorm:"size:255"`
-	Gender *string `gorm:"size:20"`
-	Age    uint
-}
