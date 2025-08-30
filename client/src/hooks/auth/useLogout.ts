@@ -1,5 +1,5 @@
 import { ILogoutType } from "@/types/authTypes";
-import { logoutService } from "@/services/authService";
+import { logoutService } from "@/services/userService";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 

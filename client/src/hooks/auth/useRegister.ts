@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { registerService } from "@/services/authService";
+import { registerService } from "@/services/userService";
 import { AxiosError } from "axios";
 import { IRegisterFormType } from "@/types/authTypes";
 

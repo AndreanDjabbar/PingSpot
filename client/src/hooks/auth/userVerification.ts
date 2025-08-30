@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { verificationService } from "@/services/authService";
+import { verificationService } from "@/services/userService";
 import { AxiosError } from "axios";
 import { IVerificationType } from "@/types/authTypes";
 
