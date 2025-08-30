@@ -2,7 +2,7 @@ package user
 
 import (
 	"server/internal/logger"
-	"server/internal/model/auth"
+	"server/internal/model/user"
 
 	"github.com/go-gormigrate/gormigrate/v2"
 	"go.uber.org/zap"
@@ -14,23 +14,23 @@ func Migrate(db *gorm.DB) error {
 		{
 			ID: "24072025_initial_migration",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&auth.User{})
+				return tx.AutoMigrate(&user.User{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&auth.User{})
+				return tx.Migrator().DropTable(&user.User{})
 			},
 		},
 		{
 			ID: "29082025_remove_phone_field",
 			Migrate: func(tx *gorm.DB) error {
-				if tx.Migrator().HasColumn(&auth.User{}, "phone") {
-					return tx.Migrator().DropColumn(&auth.User{}, "phone")
+				if tx.Migrator().HasColumn(&user.User{}, "phone") {
+					return tx.Migrator().DropColumn(&user.User{}, "phone")
 				}
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				if !tx.Migrator().HasColumn(&auth.User{}, "phone") {
-					return tx.Migrator().AddColumn(&auth.User{}, "phone")
+				if !tx.Migrator().HasColumn(&user.User{}, "phone") {
+					return tx.Migrator().AddColumn(&user.User{}, "phone")
 				}
 				return nil
 			},
@@ -38,10 +38,10 @@ func Migrate(db *gorm.DB) error {
 		{
 			ID: "29082025_add_user_profile_table",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&auth.UserProfile{})
+				return tx.AutoMigrate(&user.UserProfile{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&auth.UserProfile{})
+				return tx.Migrator().DropTable(&user.UserProfile{})
 			},
 		},
 	})

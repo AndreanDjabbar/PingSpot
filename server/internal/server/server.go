@@ -2,7 +2,7 @@ package server
 
 import (
 	"server/internal/logger"
-	authRouter "server/internal/router/auth"
+	userRouter "server/internal/router/user"
 	mainRouter "server/internal/router/mainService"
 	"server/pkg/utils/envUtils"
 	"server/pkg/utils/responseUtils"
@@ -46,5 +46,5 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	defaultRoute.Get("/", DefaultHandler)
 
 	mainRouter.RegisterRoutes(s.App)
-	authRouter.RegisterRoutes(s.App)
+	userRouter.RegisterRoutes(s.App)
 }

@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	authDto "server/internal/dto/auth"
+	userDto "server/internal/dto/user"
 	"server/internal/infrastructure/cache"
 	"server/internal/infrastructure/database"
 	"server/internal/logger"
-	authService "server/internal/service/auth"
+	userService "server/internal/service/user"
 	"server/internal/validation"
-	authValidation "server/internal/validation/auth"
+	userValidation "server/internal/validation/user"
 	"server/pkg/utils/envUtils"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/responseUtils"
@@ -43,7 +43,7 @@ func DefaultHandler(c *fiber.Ctx) error {
 
 func RegisterHandler(c *fiber.Ctx) error {
 	logger.Info("REGISTER HANDLER")
-	var req authDto.RegisterRequest
+	var req userDto.RegisterRequest
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -51,12 +51,12 @@ func RegisterHandler(c *fiber.Ctx) error {
 	}
 
 	if err := validate.Struct(req); err != nil {
-		errors := authValidation.FormatRegisterValidationErrors(err)
+		errors := userValidation.FormatRegisterValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	user, err := authService.Register(db, req, false)
+	user, err := userService.Register(db, req, false)
 	if err != nil {
 		logger.Error("Registration failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 500, "Registrasi gagal", "", err.Error())
@@ -153,7 +153,7 @@ func VerificationHandler(c *fiber.Ctx) error {
 	}
 
 	db := database.GetDB()
-	user, err := authService.VerifyUser(db, uint(userIdUint))
+	user, err := userService.VerifyUser(db, uint(userIdUint))
 	if err != nil {
 		logger.Error("Verification failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 500, "Verifikasi gagal", "", err.Error())
@@ -173,7 +173,7 @@ func VerificationHandler(c *fiber.Ctx) error {
 
 func LoginHandler(c *fiber.Ctx) error {
 	logger.Info("LOGIN HANDLER")
-	var req authDto.LoginRequest
+	var req userDto.LoginRequest
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -181,12 +181,12 @@ func LoginHandler(c *fiber.Ctx) error {
 	}
 
 	if err := validate.Struct(req); err != nil {
-		errors := authValidation.FormatLoginValidationErrors(err)
+		errors := userValidation.FormatLoginValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	_, token, err := authService.Login(db, req)
+	_, token, err := userService.Login(db, req)
 	if err != nil {
 		logger.Error("Login failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 401, "Login gagal", "", err.Error())
@@ -222,7 +222,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Info("Google user authenticated", zap.String("email", email), zap.String("name", fullName))
 
 	db := database.GetDB()
-	existingUser, err := authService.GetUserByEmail(db, email)
+	existingUser, err := userService.GetUserByEmail(db, email)
 	if err != nil {
 		logger.Error("Error retrieving user by email", zap.Error(err))
 		http.Error(w, "Terdapat masalah", http.StatusNotFound)
@@ -230,14 +230,14 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	if existingUser == nil {
 
-		newUser := authDto.RegisterRequest{
+		newUser := userDto.RegisterRequest{
 			Username:   nickName,
 			Email:      email,
 			FullName:   fullName,
 			Provider:   "GOOGLE",
 			ProviderID: &providerId,
 		}
-		createdUser, err := authService.Register(db, newUser, true)
+		createdUser, err := userService.Register(db, newUser, true)
 		if err != nil {
 			logger.Error("Error registering new user", zap.Error(err))
 			http.Error(w, "Terdapat masalah saat registrasi", http.StatusInternalServerError)
@@ -258,19 +258,19 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 	logger.Info("FORGOT PASSWORD EMAIL VERIFICATION HANDLER")
-	var req authDto.ForgotPasswordEmailVerificationRequest
+	var req userDto.ForgotPasswordEmailVerificationRequest
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
 	if err := validate.Struct(req); err != nil {
-		errors := authValidation.FormatForgotPasswordEmailVerificationValidationErrors(err)
+		errors := userValidation.FormatForgotPasswordEmailVerificationValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	user, err := authService.GetUserByEmail(db, req.Email)
+	user, err := userService.GetUserByEmail(db, req.Email)
 	if err != nil {
 		logger.Error("Failed to get user by email", zap.Error(err))
 		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
@@ -330,19 +330,19 @@ func ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error {
 
 func ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	logger.Info("FORGOT PASSWORD RESET PASSWORD HANDLER")
-	var req authDto.ForgotPasswordResetPasswordRequest
+	var req userDto.ForgotPasswordResetPasswordRequest
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
 	if err := validate.Struct(req); err != nil {
-		errors := authValidation.FormatForgotPasswordResetPasswordValidationErrors(err)
+		errors := userValidation.FormatForgotPasswordResetPasswordValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	user, err := authService.GetUserByEmail(db, req.Email)
+	user, err := userService.GetUserByEmail(db, req.Email)
 	if err != nil {
 		logger.Error("Failed to get user by email", zap.Error(err))
 		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
@@ -358,7 +358,7 @@ func ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	}
 	user.Password = &hashNewPassword
 
-	updatedUser, err := authService.UpdateUserByEmail(db, req.Email, user)
+	updatedUser, err := userService.UpdateUserByEmail(db, req.Email, user)
 	if err != nil {
 		logger.Error("Failed to update user password", zap.Error(err))
 		return responseUtils.ResponseError(c, 500, "Gagal memperbarui kata sandi", "", err.Error())
