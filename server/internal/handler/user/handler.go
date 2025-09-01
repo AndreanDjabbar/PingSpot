@@ -406,3 +406,40 @@ func LogoutHandler(c *fiber.Ctx) error {
 
 	return responseUtils.ResponseSuccess(c, 200, "Logout berhasil", "data", nil)
 }
+
+func SaveUserProfileHandler(c *fiber.Ctx) error {
+	logger.Info("SAVE USER PROFILE HANDLER")
+	var req userDto.SaveUserProfileRequest
+	db := database.GetDB()
+	if err := c.BodyParser(&req); err != nil {
+		logger.Error("Failed to parse request body", zap.Error(err))
+		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+	}
+
+	if err := validate.Struct(req); err != nil {
+		errors := userValidation.FormatSaveUserProfileValidationErrors(err)
+		logger.Error("Validation failed", zap.Error(err))
+		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+	}
+
+	claims, err := mainutils.GetJWTClaims(c)
+	if err != nil {
+		logger.Error("Failed to get JWT claims", zap.Error(err))
+		return responseUtils.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+	}
+	userId := uint(claims["user_id"].(float64))
+	newProfile, err := userService.SaveProfile(db, userId, req)
+	if err != nil {
+		logger.Error("Failed to save user profile", zap.Error(err))
+		return responseUtils.ResponseError(c, 500, "Gagal memperbarui profil pengguna", "", err.Error())
+	}
+	newProfileFormatted := map[string]any{
+		"bio": 	newProfile.Bio,
+		"avatar": newProfile.Avatar,
+		"fullname": newProfile.User.FullName,
+		"username": newProfile.User.Username,
+		"age": newProfile.Age,
+		"gender": newProfile.Gender,
+	}
+	return responseUtils.ResponseSuccess(c, 200, "Profil pengguna berhasil diperbarui", "data", newProfileFormatted)
+}
