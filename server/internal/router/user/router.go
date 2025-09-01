@@ -23,4 +23,5 @@ func RegisterRoutes(app *fiber.App) {
 
 	profileRoute := app.Group("/pingspot/api/user/profile", middleware.JWTProtected())
 	profileRoute.Get("/", userHandler.DefaultHandler)
+	profileRoute.Post("/", userHandler.SaveUserProfileHandler)
 }
