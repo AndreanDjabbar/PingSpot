@@ -16,11 +16,7 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ onMenuToggle }) => {
                     <BiMenu className="w-6 h-6 text-gray-300" />
                 </button>
                 
-                <div className="backdrop-blur-md bg-white/20 border border-white rounded-xl shadow-lg flex justify-center">
-                    <div>
-                        <PingspotLogo size="120" />
-                    </div>
-                </div>
+                <PingspotLogo size="150" />
             </div>
         </div>
     )
