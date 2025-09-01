@@ -17,11 +17,13 @@ import SettingItem from './components/SettingItem';
 import ToggleSwitch from '@/components/UI/ToggleSwitch';
 import SettingCard from './components/SettingCard';
 import Breadcrumb from '@/components/UI/Breadcrumb';
+import ConfirmationDialog from '@/components/UI/ConfirmationDialog';
 
 const SettingsPage = () => {
     const router = useRouter();
     const currentPath = usePathname();
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
@@ -48,6 +50,10 @@ const SettingsPage = () => {
     }, [isSuccess, router]);
 
     const handleLogout = () => {
+        setIsLogoutModalOpen(true);
+    };
+    
+    const confirmLogout = () => {
         const token = getAuthToken();
         if (token) {
             logout({ authToken: token });
@@ -191,6 +197,20 @@ const SettingsPage = () => {
             <PasswordForm 
                 isOpen={isPasswordModalOpen} 
                 onClose={() => setIsPasswordModalOpen(false)} 
+            />
+            
+            <ConfirmationDialog
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                onConfirm={confirmLogout}
+                isPending={isPending}
+                type='warning'
+                cancelTitle='Batal'
+                confirmTitle='Keluar'
+                title='Konfirmasi Keluar'
+                explanation='Anda akan keluar dari sesi PingSpot saat ini.'
+                message='Apakah Anda yakin ingin keluar?'
+                icon={<ImExit/>}
             />
         </div>
     );
