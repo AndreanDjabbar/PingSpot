@@ -58,6 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                                     onClick={() => {
                                         router.push(`/main/${item.id}`)
                                         setCurrentPage(item.id);
+                                        onToggle();
                                     }}
                                     className={`
                                     w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
@@ -95,6 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                                 onClick={() => {
                                     setCurrentPage(item.id);
                                     router.push(`/main/${item.id}`)
+                                    onToggle();
                                 }}
                                 className={`
                                 w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
