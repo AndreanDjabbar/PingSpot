@@ -8,6 +8,10 @@ interface UserProfile {
     username: string;
     fullName: string;
     email: string;
+    avatar?: string;
+    gender?: string;
+    bio?: string;
+    age?: number;
 }
 
 interface UserProfileStore {
