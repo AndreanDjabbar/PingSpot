@@ -208,3 +208,17 @@ func SaveProfile(db *gorm.DB, userID uint, req userDto.SaveUserProfileRequest) (
 	}
 	return &profile, nil
 }
+
+func GetMyProfile(db *gorm.DB, userID uint) (*userModel.UserProfile, error) {
+	var profile userModel.UserProfile
+
+	err := db.Preload("User").Where("user_id = ?", userID).First(&profile).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("profil user tidak ditemukan")
+		}
+		return nil, err
+	}
+
+	return &profile, nil
+}
