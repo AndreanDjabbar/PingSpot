@@ -443,3 +443,30 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 	}
 	return responseUtils.ResponseSuccess(c, 200, "Profil pengguna berhasil diperbarui", "data", newProfileFormatted)
 }
+
+func GetMyProfileHandler(c *fiber.Ctx) error {
+	logger.Info("GET MY PROFILE HANDLER")
+	db := database.GetDB()
+	claims, err := mainutils.GetJWTClaims(c)
+	if err != nil {
+		logger.Error("Failed to get JWT claims", zap.Error(err))
+		return responseUtils.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+	}
+	userId := uint(claims["user_id"].(float64))
+	myProfile, err := userService.GetMyProfile(db, userId)
+	if err != nil {
+		logger.Error("Failed to get my profile", zap.Error(err))
+		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan profil pengguna", "", err.Error())
+	}
+	myProfileFormatted := map[string]any{
+		"bio": 	myProfile.Bio,
+		"avatar": myProfile.Avatar,
+		"fullname": myProfile.User.FullName,
+		"username": myProfile.User.Username,
+		"age": myProfile.Age,
+		"gender": myProfile.Gender,
+		"email": myProfile.User.Email,
+		"userID": myProfile.UserID,
+	}
+	return responseUtils.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", myProfileFormatted)
+}
