@@ -12,6 +12,7 @@ interface UserProfile {
     gender?: string;
     bio?: string;
     age?: number;
+    dob? : string;
 }
 
 interface UserProfileStore {
