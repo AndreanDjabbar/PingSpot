@@ -1,7 +1,7 @@
 // store/useUserStore.ts
 import { create } from "zustand";
-import getAuthToken from "@/utils/getAuthToken";
-import { jwtDecode } from "jwt-decode";
+import getAuthToken from "@/utils/getAuthToken"
+import { getMyProfileService } from "@/services/userService";
 
 interface UserProfile {
     id: string;
@@ -20,13 +20,6 @@ interface UserProfileStore {
     clearUser: () => void;
 }
 
-interface DecodedToken {
-    email: string;
-    full_name: string;
-    user_id: string;
-    username: string;
-}
-
 export const useUserProfileStore = create<UserProfileStore>((set) => ({
     userProfile: null,
     loadUser: async () => {
@@ -36,14 +29,18 @@ export const useUserProfileStore = create<UserProfileStore>((set) => ({
                 set({ userProfile: null });
                 return;
             }
-            const decoded: DecodedToken = jwtDecode(authToken);
-            const user: UserProfile = {
-                id: decoded.user_id,
-                username: decoded.username,
-                fullName: decoded.full_name,
-                email: decoded.email,
-            };
-            set({ userProfile: user });
+            const profileData = await getMyProfileService();
+            const profile: UserProfile = {
+                id: profileData.data.userID,
+                username: profileData.data.username,
+                fullName: profileData.data.fullname,
+                email: profileData.data.email,
+                gender: profileData.data.gender,
+                bio: profileData.data.bio,
+                age: profileData.data.age,
+                avatar: profileData.data.avatar,
+            }
+            set({ userProfile:  profile});
         } catch {
             set({ userProfile: null });
         }
