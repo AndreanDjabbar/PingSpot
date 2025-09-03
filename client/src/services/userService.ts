@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType, ILoginFormType, ILogoutType, IRegisterFormType, IVerificationType } from "@/types/authTypes";
+import { ISaveProfileFormType } from "@/types/userTypes";
 import getAuthToken from "@/utils/getAuthToken";
 import axios from "axios";
 
@@ -11,10 +12,20 @@ type IResponseType = {
     data?: any;
 }
 
-const headers = (authToken: string) => {
+const COMMON_HEADERS = (authToken: string) => {
     return {
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+        }
+    }
+}
+
+const MULTIPART_HEADERS = (authToken: string) => {
+    return {
+        headers: {
+            'Content-Type': 'multipart/form-data',
             'Accept': 'application/json',
             'Authorization': `Bearer ${authToken}`
         }
@@ -60,7 +71,19 @@ export const resetPasswordService = async (payload: IForgotPasswordResetPassword
     return response.data;
 };
 
+export const saveProfileService = async (payload: ISaveProfileFormType): Promise<IResponseType> => {
+    const formData = new FormData();
+    formData.append('fullName', payload.fullName);
+    formData.append('username', payload.username);
+    if (payload.bio) formData.append('bio', payload.bio);
+    if (payload.dob) formData.append('dob', new Date(payload.dob).toISOString());
+    if (payload.gender) formData.append('gender', payload.gender);
+    if (payload.profilePicture) formData.append('profilePicture', payload.profilePicture);
+    const response = await axios.post<IResponseType>(`${USER_API_URL}/profile`, formData, MULTIPART_HEADERS(AUTH_TOKEN));
+    return response.data;
+}
+
 export const getMyProfileService = async (): Promise<IResponseType> => {
-    const response = await axios.get<IResponseType>(`${USER_API_URL}/profile/me`, headers(AUTH_TOKEN));
+    const response = await axios.get<IResponseType>(`${USER_API_URL}/profile/me`, COMMON_HEADERS(AUTH_TOKEN));
     return response.data;
 }
