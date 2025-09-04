@@ -8,7 +8,7 @@ interface UserProfile {
     username: string;
     fullName: string;
     email: string;
-    avatar?: string;
+    profilePicture?: string;
     gender?: string;
     bio?: string;
     age?: number;
@@ -39,7 +39,7 @@ export const useUserProfileStore = create<UserProfileStore>((set) => ({
                 gender: profileData.data.gender,
                 bio: profileData.data.bio,
                 age: profileData.data.age,
-                avatar: profileData.data.avatar,
+                profilePicture: profileData.data.profilePicture,
             }
             set({ userProfile:  profile});
         } catch {
