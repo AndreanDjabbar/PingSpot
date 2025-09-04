@@ -174,7 +174,7 @@ func SaveProfile(db *gorm.DB, userID uint, req userDto.SaveUserProfileRequest) (
 			profile = userModel.UserProfile{
 				UserID: userID,
 				Bio:    req.Bio,
-				Avatar: req.ProfilePicture,
+				ProfilePicture: req.ProfilePicture,
 				Age: func() uint { 
 						if req.Age != nil {
 							return *req.Age
