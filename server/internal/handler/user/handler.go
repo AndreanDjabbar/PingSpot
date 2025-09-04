@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	userDto "server/internal/dto/user"
 	"server/internal/infrastructure/cache"
 	"server/internal/infrastructure/database"
@@ -409,12 +410,48 @@ func LogoutHandler(c *fiber.Ctx) error {
 
 func SaveUserProfileHandler(c *fiber.Ctx) error {
 	logger.Info("SAVE USER PROFILE HANDLER")
-	var req userDto.SaveUserProfileRequest
-	db := database.GetDB()
-	if err := c.BodyParser(&req); err != nil {
-		logger.Error("Failed to parse request body", zap.Error(err))
+	_, err := c.MultipartForm()
+	if err != nil {
+		logger.Error("Failed to parse multipart form", zap.Error(err))
 		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
+	fullName := c.FormValue("fullName")
+	gender := c.FormValue("gender")
+	bio := c.FormValue("bio")
+	file, err := c.FormFile("profilePicture")
+	var profilePicture string
+	if err == nil && file != nil {
+		if file.Size > 5*1024*1024 { 
+			logger.Error("Profile picture file size too large", zap.Int64("size", file.Size))
+			return responseUtils.ResponseError(c, 400, "Ukuran gambar terlalu besar", "", "Maksimal ukuran gambar 5MB")
+		}
+
+		ext := filepath.Ext(file.Filename)
+		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+			logger.Error("Unsupported profile picture file format", zap.String("extension", ext))
+			return responseUtils.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
+		}
+
+		fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+		savePath := filepath.Join("uploads/user", fileName)
+		
+		if err := c.SaveFile(file, savePath); err != nil {
+			logger.Error("Failed to save profile picture", zap.Error(err))
+			return responseUtils.ResponseError(c, 500, "Gagal menyimpan gambar", "", err.Error())
+		}
+		profilePicture = fileName
+	} else {
+		profilePicture = ""
+	}
+
+	req := userDto.SaveUserProfileRequest{
+		FullName: fullName,
+		Gender: mainutils.StrPtrOrNil(gender),
+		Bio: mainutils.StrPtrOrNil(bio),
+		ProfilePicture: mainutils.StrPtrOrNil(profilePicture),
+	}
+	
+	db := database.GetDB()
 
 	if err := validate.Struct(req); err != nil {
 		errors := userValidation.FormatSaveUserProfileValidationErrors(err)
@@ -435,7 +472,7 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 	}
 	newProfileFormatted := map[string]any{
 		"bio": 	newProfile.Bio,
-		"avatar": newProfile.Avatar,
+		"avatar": newProfile.ProfilePicture,
 		"fullname": newProfile.User.FullName,
 		"username": newProfile.User.Username,
 		"age": newProfile.Age,
@@ -460,7 +497,7 @@ func GetMyProfileHandler(c *fiber.Ctx) error {
 	}
 	myProfileFormatted := map[string]any{
 		"bio": 	myProfile.Bio,
-		"avatar": myProfile.Avatar,
+		"profilePicture": myProfile.ProfilePicture,
 		"fullname": myProfile.User.FullName,
 		"username": myProfile.User.Username,
 		"age": myProfile.Age,
