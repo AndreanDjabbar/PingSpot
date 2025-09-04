@@ -20,6 +20,7 @@ func New() *FiberServer {
 		App: fiber.New(fiber.Config{
 			ServerHeader: "Pingspot Server",
 			AppName:      "Pingspot API Server",
+			BodyLimit: 10 * 1024 * 1024,
 		}),
 	}
 	return server
