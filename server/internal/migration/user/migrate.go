@@ -44,6 +44,21 @@ func Migrate(db *gorm.DB) error {
 				return tx.Migrator().DropTable(&user.UserProfile{})
 			},
 		},
+		{
+			ID: "04092025_rename_avatar_to_profile_picture",
+			Migrate: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&user.UserProfile{}, "avatar") {
+					return tx.Migrator().RenameColumn(&user.UserProfile{}, "avatar", "profile_picture")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&user.UserProfile{}, "profile_picture") {
+					return tx.Migrator().RenameColumn(&user.UserProfile{}, "profile_picture", "avatar")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()

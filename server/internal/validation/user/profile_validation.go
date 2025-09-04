@@ -17,7 +17,7 @@ func FormatSaveUserProfileValidationErrors(err error) map[string]string {
 			if e.Tag() == "max" {
 				errors["bio"] = "Bio maksimal 255 karakter"
 			}
-		case "Avatar":
+		case "ProfilePicture":
 			if e.Tag() == "max" {
 				errors["avatar"] = "Avatar maksimal 255 karakter"
 			}
