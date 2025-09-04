@@ -16,14 +16,18 @@ type FiberServer struct {
 }
 
 func New() *FiberServer {
-	server := &FiberServer{
-		App: fiber.New(fiber.Config{
-			ServerHeader: "Pingspot Server",
-			AppName:      "Pingspot API Server",
-			BodyLimit: 10 * 1024 * 1024,
-		}),
-	}
-	return server
+    app := fiber.New(fiber.Config{
+        ServerHeader: "Pingspot Server",
+        AppName:      "Pingspot API Server",
+        BodyLimit:    10 * 1024 * 1024,
+    })
+
+    app.Static("/user", "./uploads/user")
+    app.Static("/main", "./uploads/main")
+
+    return &FiberServer{
+        App: app,
+    }
 }
 
 func DefaultHandler(c *fiber.Ctx) error {
