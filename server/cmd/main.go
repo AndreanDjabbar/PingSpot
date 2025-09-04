@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"server/internal/config"
 	"server/internal/infrastructure/cache"
 	"server/internal/infrastructure/database"
@@ -48,6 +49,16 @@ func main() {
 	if err := userMigration.Migrate(db); err != nil {
 		logger.Error("Failed to run migrations", zap.Error(err))
 		panic(fmt.Sprintf("failed to run migrations: %v", err))
+	}
+
+	if _, err := os.Stat("uploads"); os.IsNotExist(err) {
+		if err := os.MkdirAll("uploads/user", os.ModePerm); err != nil {
+			logger.Error("Failed to create uploads/user directory", zap.Error(err))
+		}
+
+		if err := os.MkdirAll("uploads/main", os.ModePerm); err != nil {
+			logger.Error("Failed to create uploads/main directory", zap.Error(err))
+		}
 	}
 
 	server := server.New()
