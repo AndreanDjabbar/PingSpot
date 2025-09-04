@@ -253,3 +253,10 @@ func RenderAuthValidationEmail(verificationLink, userName, validationName string
 	
 	return buf.String(), nil
 }
+
+func StrPtrOrNil(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
