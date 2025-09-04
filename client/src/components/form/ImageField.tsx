@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, ChangeEvent } from 'react';
+import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
 import Image from 'next/image';
 import { FaCamera } from 'react-icons/fa';
 import { cn } from '@/lib/utils';
@@ -33,6 +33,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
     width=44,
     shape
 }) => {
+    const defaultURL = `${process.env.NEXT_PUBLIC_user_static_URL}/default.png`;
     const [avatar, setAvatar] = useState<string | null>(currentAvatar || null);
     const [isHovering, setIsHovering] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -40,6 +41,10 @@ const ImageField: React.FC<ImageFieldProps> = ({
     const handleAvatarClick = () => {
         fileInputRef.current?.click();
     };
+
+    useEffect(() => {
+        setAvatar(currentAvatar || defaultURL || null);
+    }, [currentAvatar]);
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -58,7 +63,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
     };
 
     const handleRemoveAvatar = () => {
-        setAvatar(null);
+        setAvatar(defaultURL);
         if (fileInputRef.current) {
         fileInputRef.current.value = '';
         }
@@ -100,7 +105,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
                     </>
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-                    <FaCamera className="text-gray-400 text-2xl" />
+                        <FaCamera className="text-gray-400 text-2xl" />
                     </div>
                 )}
                 </div>
@@ -114,7 +119,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
                     {buttonTitle}
                 </button>
                 
-                {avatar && (
+                {avatar && avatar != defaultURL && (
                     <button
                     type="button"
                     onClick={handleRemoveAvatar}
