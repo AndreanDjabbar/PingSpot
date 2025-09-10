@@ -133,7 +133,7 @@ const ProfilePage = () => {
                                         withLabel={true}
                                         labelTitle="Foto Profil"
                                         buttonTitle="Pilih Foto"
-                                        currentAvatar={ user?.profilePicture 
+                                        currentImage={ user?.profilePicture 
                                             ?`${process.env.NEXT_PUBLIC_user_static_URL}/${user?.profilePicture}` 
                                             : `${process.env.NEXT_PUBLIC_user_static_URL}/default.png`
                                         }

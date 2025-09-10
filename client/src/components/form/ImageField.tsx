@@ -12,7 +12,7 @@ interface ImageFieldProps {
     labelTitle?: string;
     buttonTitle?: string;
     required?: boolean;
-    currentAvatar?: string;
+    currentImage?: string;
     onChange?: (file: File | null) => void;
     height?: number;
     width?: number;
@@ -27,14 +27,14 @@ const ImageField: React.FC<ImageFieldProps> = ({
     labelTitle = 'Foto Profil',
     buttonTitle = 'Pilih Foto',
     required = false,
-    currentAvatar,
+    currentImage,
     onChange,
     height=44,
     width=44,
     shape
 }) => {
     const defaultURL = `${process.env.NEXT_PUBLIC_user_static_URL}/default.png`;
-    const [avatar, setAvatar] = useState<string | null>(currentAvatar || null);
+    const [image, setImage] = useState<string | null>(currentImage || null);
     const [isHovering, setIsHovering] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,8 +43,8 @@ const ImageField: React.FC<ImageFieldProps> = ({
     };
 
     useEffect(() => {
-        setAvatar(currentAvatar || defaultURL || null);
-    }, [currentAvatar]);
+        setImage(currentImage || defaultURL || null);
+    }, [currentImage]);
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -52,7 +52,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
         const reader = new FileReader();
         reader.onload = (event) => {
             const result = event.target?.result as string;
-            setAvatar(result);
+            setImage(result);
         };
         reader.readAsDataURL(file);
 
@@ -63,7 +63,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
     };
 
     const handleRemoveAvatar = () => {
-        setAvatar(defaultURL);
+        setImage(defaultURL);
         if (fileInputRef.current) {
         fileInputRef.current.value = '';
         }
@@ -88,10 +88,10 @@ const ImageField: React.FC<ImageFieldProps> = ({
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
                 >
-                {avatar ? (
+                {image ? (
                     <>
                     <Image
-                        src={avatar}
+                        src={image}
                         alt="Profile picture"
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
@@ -119,7 +119,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
                     {buttonTitle}
                 </button>
                 
-                {avatar && avatar != defaultURL && (
+                {image && image != defaultURL && (
                     <button
                     type="button"
                     onClick={handleRemoveAvatar}
