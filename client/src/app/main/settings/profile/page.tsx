@@ -138,8 +138,8 @@ const ProfilePage = () => {
                                             : `${process.env.NEXT_PUBLIC_user_static_URL}/default.png`
                                         }
                                         onChange={(file) => {
-                                            setProfilePicture(file);
-                                            console.log("Image selected:", file?.name);                                    }}
+                                            setProfilePicture(file);                             
+                                        }}
                                         shape="circle"
                                         height={160}
                                         width={160}
