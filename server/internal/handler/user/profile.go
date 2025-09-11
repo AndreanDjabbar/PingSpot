@@ -24,6 +24,7 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 	}
 	fullName := c.FormValue("fullName")
 	gender := c.FormValue("gender")
+	birthday := c.FormValue("birthday")
 	bio := c.FormValue("bio")
 	file, err := c.FormFile("profilePicture")
 	var profilePicture string
@@ -48,7 +49,14 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 		}
 		profilePicture = fileName
 	} else {
-		profilePicture = ""
+		if c.FormValue("removeProfilePicture") == "true" {
+			profilePicture = ""
+		} else if c.FormValue("defaultProfilePicture") != "" {
+			profilePictureName := c.FormValue("defaultProfilePicture")
+			profilePicture = profilePictureName
+		} else {
+			profilePicture = ""
+		}
 	}
 
 	req := userDto.SaveUserProfileRequest{
@@ -56,6 +64,7 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 		Gender: mainutils.StrPtrOrNil(gender),
 		Bio: mainutils.StrPtrOrNil(bio),
 		ProfilePicture: mainutils.StrPtrOrNil(profilePicture),
+		Birthday: mainutils.StrPtrOrNil(birthday),
 	}
 	
 	db := database.GetDB()
@@ -83,6 +92,7 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 		"fullname": newProfile.User.FullName,
 		"username": newProfile.User.Username,
 		"gender": newProfile.Gender,
+		"birthday": newProfile.Birthday,
 	}
 	return responseUtils.ResponseSuccess(c, 200, "Profil pengguna berhasil diperbarui", "data", newProfileFormatted)
 }
@@ -106,6 +116,7 @@ func GetMyProfileHandler(c *fiber.Ctx) error {
 		"profilePicture": myProfile.ProfilePicture,
 		"fullname": myProfile.User.FullName,
 		"username": myProfile.User.Username,
+		"birthday": myProfile.Birthday,
 		"gender": myProfile.Gender,
 		"email": myProfile.User.Email,
 		"userID": myProfile.UserID,
