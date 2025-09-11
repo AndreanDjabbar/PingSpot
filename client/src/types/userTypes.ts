@@ -3,6 +3,6 @@ export type ISaveProfileFormType = {
     username: string;
     gender?: "male" | "female" | null;
     bio?: string;
-    dob?: string | null;
+    birthday?: string | null;
     profilePicture?: File;
 };
