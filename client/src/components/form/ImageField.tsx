@@ -14,6 +14,7 @@ interface ImageFieldProps {
     required?: boolean;
     currentImage?: string;
     onChange?: (file: File | null) => void;
+    onRemove?: () => void;
     height?: number;
     width?: number;
     shape: 'circle' | 'square';
@@ -29,6 +30,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
     required = false,
     currentImage,
     onChange,
+    onRemove,
     height=44,
     width=44,
     shape
@@ -43,7 +45,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
     };
 
     useEffect(() => {
-        setImage(currentImage || defaultURL || null);
+        setImage(currentImage || null);
     }, [currentImage]);
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -62,13 +64,17 @@ const ImageField: React.FC<ImageFieldProps> = ({
         }
     };
 
-    const handleRemoveAvatar = () => {
+    const handleRemoveImage = () => {
         setImage(defaultURL);
-        if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+            if (fileInputRef.current) {
+            fileInputRef.current.value = '';
         }
         if (onChange) {
-        onChange(null);
+            onChange(null);
+        }
+
+        if (onRemove) {
+            onRemove();
         }
     };
 
@@ -122,7 +128,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
                 {image && image != defaultURL && (
                     <button
                     type="button"
-                    onClick={handleRemoveAvatar}
+                    onClick={handleRemoveImage}
                     className="px-4 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
                     >
                     Hapus
