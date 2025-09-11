@@ -74,6 +74,21 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "11092025_add_birthday_field",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&user.UserProfile{}, "birthday") {
+					return tx.Migrator().AddColumn(&user.UserProfile{}, "birthday")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&user.UserProfile{}, "birthday") {
+					return tx.Migrator().DropColumn(&user.UserProfile{}, "birthday")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()

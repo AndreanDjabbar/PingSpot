@@ -28,9 +28,9 @@ func FormatSaveUserProfileValidationErrors(err error) map[string]string {
 			if e.Tag() == "oneof" {
 				errors["gender"] = "Gender harus salah satu antara male atau female"
 			}
-		case "Age":
-			if e.Tag() == "gte" {
-				errors["age"] = "Age harus lebih besar atau sama dengan 0"
+		case "Birthday":
+			if e.Tag() == "datetime" {
+				errors["birthday"] = "Birthday harus dalam format YYYY-MM-DD"
 			}
 		}
 	}

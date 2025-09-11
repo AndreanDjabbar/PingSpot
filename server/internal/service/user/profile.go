@@ -48,6 +48,7 @@ func SaveProfile(db *gorm.DB, userID uint, req userDto.SaveUserProfileRequest) (
 				UserID: userID,
 				Bio:    req.Bio,
 				ProfilePicture: req.ProfilePicture,
+				Birthday: req.Birthday,
 			}
 			if err := tx.Create(&profile).Error; err != nil {
 				tx.Rollback()
@@ -62,6 +63,7 @@ func SaveProfile(db *gorm.DB, userID uint, req userDto.SaveUserProfileRequest) (
 			"bio":    req.Bio,
 			"profile_picture": req.ProfilePicture,
 			"gender": req.Gender,
+			"birthday": req.Birthday,
 		}).Error; err != nil {
 			tx.Rollback()
 			return nil, errors.New("Gagal memperbarui profil user")
