@@ -8,7 +8,7 @@ export const SaveProfileSchema = z.object({
         message: "Jenis kelamin harus diantara laki-laki atau perempuan"
     }).optional().nullable(),
     bio: z.string().max(200, "Bio maksimal 200 karakter").optional(),
-    dob: z.string().refine((date) => {
+    birthday: z.string().refine((date) => {
         if (!date || date.trim() === "") return true;
         
         const parsedDate = new Date(date);
