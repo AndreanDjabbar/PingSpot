@@ -48,13 +48,6 @@ func SaveProfile(db *gorm.DB, userID uint, req userDto.SaveUserProfileRequest) (
 				UserID: userID,
 				Bio:    req.Bio,
 				ProfilePicture: req.ProfilePicture,
-				Age: func() uint { 
-						if req.Age != nil {
-							return *req.Age
-						} else {
-							return 0
-						}
-					}(),
 			}
 			if err := tx.Create(&profile).Error; err != nil {
 				tx.Rollback()
@@ -68,7 +61,6 @@ func SaveProfile(db *gorm.DB, userID uint, req userDto.SaveUserProfileRequest) (
 		if err := tx.Model(&profile).Updates(map[string]interface{}{
 			"bio":    req.Bio,
 			"profile_picture": req.ProfilePicture,
-			"age":	req.Age,
 			"gender": req.Gender,
 		}).Error; err != nil {
 			tx.Rollback()

@@ -7,5 +7,4 @@ type UserProfile struct {
 	Bio    		   *string `gorm:"type:text"`
 	ProfilePicture *string `gorm:"size:255"`
 	Gender 		   *string `gorm:"size:20"`
-	Age    			uint
 }

@@ -59,6 +59,21 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "11092025_remove_age_field",
+			Migrate: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&user.UserProfile{}, "age") {
+					return tx.Migrator().DropColumn(&user.UserProfile{}, "age")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&user.UserProfile{}, "age") {
+					return tx.Migrator().AddColumn(&user.UserProfile{}, "age")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()

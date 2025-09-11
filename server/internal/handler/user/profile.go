@@ -82,7 +82,6 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 		"avatar": newProfile.ProfilePicture,
 		"fullname": newProfile.User.FullName,
 		"username": newProfile.User.Username,
-		"age": newProfile.Age,
 		"gender": newProfile.Gender,
 	}
 	return responseUtils.ResponseSuccess(c, 200, "Profil pengguna berhasil diperbarui", "data", newProfileFormatted)
@@ -107,7 +106,6 @@ func GetMyProfileHandler(c *fiber.Ctx) error {
 		"profilePicture": myProfile.ProfilePicture,
 		"fullname": myProfile.User.FullName,
 		"username": myProfile.User.Username,
-		"age": myProfile.Age,
 		"gender": myProfile.Gender,
 		"email": myProfile.User.Email,
 		"userID": myProfile.UserID,
