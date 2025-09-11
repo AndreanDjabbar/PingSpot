@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import getAuthToken from "@/utils/getAuthToken"
 import { getMyProfileService } from "@/services/userService";
+import { formattedDate } from "@/utils/getFormattedDate";
 
 interface UserProfile {
     id: string;
@@ -12,7 +13,7 @@ interface UserProfile {
     gender?: string;
     bio?: string;
     age?: number;
-    dob? : string;
+    birthday? : string;
 }
 
 interface UserProfileStore {
@@ -38,6 +39,7 @@ export const useUserProfileStore = create<UserProfileStore>((set) => ({
                 email: profileData.data.email,
                 gender: profileData.data.gender,
                 bio: profileData.data.bio,
+                birthday: formattedDate(profileData.data.birthday),
                 age: profileData.data.age,
                 profilePicture: profileData.data.profilePicture,
             }
