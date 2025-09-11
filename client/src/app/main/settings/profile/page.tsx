@@ -26,14 +26,16 @@ import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErr
 const ProfilePage = () => {
     const user = useUserProfileStore(state => state.userProfile);
     const [profilePicture, setProfilePicture] = useState<File | null>(null);
+    const [birthdayDate, setBirthdayDate] = useState<string>(user?.birthday || '');
+    const [removedProfilePicture, setRemovedProfilePicture] = useState(false);
     
     const defaultValues = {
         fullName: user?.fullName || '',
         username: user?.username || '',
         gender: user?.gender as "male" | "female" | null | undefined,
         bio: user?.bio || '',
-        dob: user?.dob || undefined,
-        profilePicture: undefined
+        birthday: user?.birthday || null,
+        profilePicture: user?.profilePicture ? undefined : undefined
     };
 
     const { 
@@ -52,7 +54,7 @@ const ProfilePage = () => {
     
     const onSubmit = (formData: ISaveProfileFormType) => {
         const data = new FormData();
-        
+
         data.append('fullName', formData.fullName);
         data.append('username', formData.username);
         
@@ -60,8 +62,14 @@ const ProfilePage = () => {
             data.append('bio', formData.bio);
         }
         
-        if (formData.dob) {
-            data.append('dob', formData.dob);
+        if (formData.birthday) {
+            if (birthdayDate.trim() === "") {
+                data.append("birthday", user?.birthday ? user.birthday : "");
+            } else {
+                const date = new Date(birthdayDate);
+                const formatted = date.toISOString().split("T")[0];
+                data.append("birthday", formatted);
+            }
         }
         
         if (formData.gender) {
@@ -70,6 +78,12 @@ const ProfilePage = () => {
         
         if (profilePicture) {
             data.append('profilePicture', profilePicture);
+        } else {
+            if (removedProfilePicture) {
+                data.append('removeProfilePicture', 'true');
+            } else if (user?.profilePicture) {
+                data.append('defaultProfilePicture', user?.profilePicture ? user.profilePicture : '');
+            }
         }
         
         mutate(data);
@@ -88,7 +102,7 @@ const ProfilePage = () => {
             setValue('username', user.username || '');
             setValue('gender', user.gender as "male" | "female" | null | undefined);
             setValue('bio', user.bio || '');
-            setValue('dob', user.dob || undefined);
+            setValue('birthday', user.birthday || undefined);
         }
     }, [user, setValue]);
 
@@ -140,6 +154,10 @@ const ProfilePage = () => {
                                         onChange={(file) => {
                                             setProfilePicture(file);                             
                                         }}
+                                        onRemove={() => {
+                                            setProfilePicture(null);
+                                            setRemovedProfilePicture(true);
+                                        }}
                                         shape="circle"
                                         height={160}
                                         width={160}
@@ -184,17 +202,21 @@ const ProfilePage = () => {
                                 <div className='flex flex-col gap-6 md:flex-row'>
                                     <div className='w-full'>
                                         <DateTimeField
-                                            id="dob"
-                                            name="dob"
-                                            register={register("dob")}
+                                            id="birthday"
+                                            name="birthday"
                                             type="date"
+                                            onChange={(e) => {
+                                                setBirthdayDate(e.target.value);
+                                                setValue("birthday", e.target.value);
+                                            }}
+                                            value={user?.birthday || ''}
                                             labelTitle="Tanggal Lahir"
                                             icon={<FaCalendarAlt />}
                                             withLabel={true}
                                             max={"2023-12-31"}
                                             min={"1905-01-01"}
                                         />
-                                        <div className="text-red-500 text-sm font-semibold">{errors.dob?.message as string}</div>
+                                        <div className="text-red-500 text-sm font-semibold">{errors.birthday?.message as string}</div>
                                     </div>
 
                                     <div className='w-full'>
