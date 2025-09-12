@@ -6,3 +6,10 @@ export type ISaveProfileFormType = {
     birthday?: string | null;
     profilePicture?: File;
 };
+
+export type ISaveSecurityFormType = {
+    newPassword: string;
+    newPasswordConfirmation: string;
+    oldPassword: string;
+    oldPasswordConfirmation: string;
+}
