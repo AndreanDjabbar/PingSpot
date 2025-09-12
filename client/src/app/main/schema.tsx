@@ -20,3 +20,19 @@ export const SaveProfileSchema = z.object({
     }, { message: "Tanggal lahir tidak valid" }).optional().nullable(),
     profilePicture: z.file().min(1).max(5 * 1024 * 1024).optional()
 })
+
+export const SaveSecuritySchema = z.object({
+    oldPassword: z.string().min(6, "Kata sandi lama minimal 6 karakter"),
+    oldPasswordConfirmation: z.string().min(6, "Konfirmasi kata sandi lama minimal 6 karakter"),
+    newPassword: z.string().min(6, "Kata sandi baru minimal 6 karakter"),
+    newPasswordConfirmation: z.string().min(6, "Konfirmasi kata sandi baru minimal 6 karakter"),
+}).refine((data) => data.oldPassword === data.oldPasswordConfirmation, {
+    message: "Konfirmasi kata sandi lama tidak sesuai",
+    path: ["oldPasswordConfirmation"],
+}).refine((data) => data.newPassword === data.newPasswordConfirmation, {
+    message: "Konfirmasi kata sandi baru tidak sesuai",
+    path: ["newPasswordConfirmation"],
+}).refine((data) => data.oldPassword !== data.newPassword, {
+    message: "Kata sandi baru tidak boleh sama dengan password lama",
+    path: ["newPassword"],
+});
