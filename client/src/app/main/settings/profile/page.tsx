@@ -8,7 +8,6 @@ import { InputField, DateTimeField, RadioField, ImageField, ButtonSubmit } from 
 import TextAreaField from '@/components/form/TextaAreaField';
 import { IoPersonSharp } from 'react-icons/io5';
 import { LuNotebookText } from 'react-icons/lu';
-import Breadcrumb from '@/components/UI/Breadcrumb';
 import { FaCalendarAlt } from 'react-icons/fa';
 import { TbGenderBigender } from "react-icons/tb";
 import { SaveProfileSchema } from '../../schema';
@@ -22,6 +21,7 @@ import SuccessSection from '@/components/UI/SuccessSection';
 import { getDataResponseMessage } from '@/utils/getDataResponse';
 import ErrorSection from '@/components/UI/ErrorSection';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
+import HeaderSection from '../../components/HeaderSection';
 
 const ProfilePage = () => {
     const user = useUserProfileStore(state => state.userProfile);
@@ -120,14 +120,10 @@ const ProfilePage = () => {
 
     return (
         <div className="space-y-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8">
-                <div className="flex flex-col gap-6">
-                    <Breadcrumb path={currentPath}/>
-                    <p className="text-gray-600 text-lg">
-                    Sesuaikan PingSpot dengan preferensi Anda untuk pengalaman yang lebih baik.
-                    </p>
-                </div>
-            </div>
+            <HeaderSection 
+            currentPath={currentPath}
+            message='Sesuaikan PingSpot dengan preferensi Anda untuk pengalaman yang lebih baik.'/>
+
             {isSuccess && (
                 <SuccessSection message={getDataResponseMessage(data)}/>
             )}
@@ -137,9 +133,11 @@ const ProfilePage = () => {
                 message={getErrorResponseMessage(error)} 
                 errors={getErrorResponseDetails(error)}/>
             )}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8">
-                <div className="">
-                    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col justify-center p-5 space-y-4  w-full gap-10" encType="multipart/form-data">
+
+            {!isSuccess && (
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8">
+                    <div className="">
+                        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col justify-center p-5 space-y-4  w-full gap-10" encType="multipart/form-data">
                             <div className='w-full flex flex-col gap-6 justify-between'>
                                 <div className="w-full flex flex-col justify-center items-center">
                                     <ImageField
@@ -262,8 +260,9 @@ const ProfilePage = () => {
                                 </div>
                             </div>
                         </form>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

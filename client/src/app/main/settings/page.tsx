@@ -16,8 +16,8 @@ import { useUserProfileStore } from '@/stores/userProfileStore';
 import SettingItem from './components/SettingItem';
 import ToggleSwitch from '@/components/UI/ToggleSwitch';
 import SettingCard from './components/SettingCard';
-import Breadcrumb from '@/components/UI/Breadcrumb';
 import ConfirmationDialog from '@/components/UI/ConfirmationDialog';
+import HeaderSection from '../components/HeaderSection';
 
 const SettingsPage = () => {
     const router = useRouter();
@@ -69,14 +69,9 @@ const SettingsPage = () => {
     
     return (
         <div className="space-y-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8">
-                <div className="flex flex-col justify-between gap-6">
-                    <Breadcrumb path={currentPath}/>
-                    <p className="text-gray-600 text-lg">
-                    Sesuaikan PingSpot dengan preferensi Anda untuk pengalaman yang lebih baik.
-                    </p>
-                </div>
-            </div>
+            <HeaderSection 
+            currentPath={currentPath}
+            message='Sesuaikan PingSpot dengan preferensi Anda untuk pengalaman yang lebih baik.'/>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <SettingCard title="Akun & Profil" icon={BiUser}>
@@ -90,7 +85,7 @@ const SettingsPage = () => {
                         onClick={() => router.push('/main/settings/profile')}
                         className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
                         >
-                        Edit
+                        Ubah
                         </button>
                     }
                     />
@@ -100,10 +95,10 @@ const SettingsPage = () => {
                     icon={BiLock}
                     action={
                         <button 
-                        onClick={() => setIsPasswordModalOpen(true)}
+                        onClick={() => router.push('/main/settings/security')}
                         className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
                         >
-                        Update
+                        Ubah
                         </button>
                     }
                     />

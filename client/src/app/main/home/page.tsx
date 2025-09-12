@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
-import Breadcrumb from '@/components/UI/Breadcrumb';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import React from 'react'
@@ -8,6 +7,7 @@ import { BiPlus } from 'react-icons/bi'
 import { FaMap, FaUsers } from 'react-icons/fa'
 import { GoAlert } from 'react-icons/go'
 import { LuActivity } from 'react-icons/lu'
+import HeaderSection from '../components/HeaderSection';
 
 const Map = dynamic(() => import("../components/Map"), {
     ssr: false,
@@ -17,20 +17,14 @@ const Homepage = () => {
     const currentPath = usePathname();
     return (
         <div className="space-y-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div className='flex flex-col gap-6 justify-between'>
-                    <Breadcrumb path={currentPath}/>
-                    <p className="text-gray-600 text-lg">
-                    Kelola laporan dan pantau kondisi lingkungan sekitar Anda secara real-time.
-                    </p>
-                </div>
+            <HeaderSection 
+            currentPath={currentPath}
+            message='Kelola laporan dan pantau kondisi lingkungan sekitar Anda secara real-time.'>
                 <button className="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-sky-500/25 transition-all flex items-center space-x-2">
                     <BiPlus className="w-5 h-5" />
                     <span>Buat Laporan Baru</span>
                 </button>
-                </div>
-            </div>
+            </HeaderSection>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
