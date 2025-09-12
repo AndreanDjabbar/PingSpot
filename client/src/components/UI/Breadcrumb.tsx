@@ -17,6 +17,7 @@
         { id: 'settings', label: '⚙️ Pengaturan', },
         { id: 'help', label: 'Bantuan' },
         { id: 'profile', label: 'Profil' },
+        { id: 'security', label: 'Keamanan' },
     ]
 
     const Breadcrumb = ({ path }: BreadcrumbProps) => {
