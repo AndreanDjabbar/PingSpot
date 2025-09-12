@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType, ILoginFormType, ILogoutType, IRegisterFormType, IVerificationType } from "@/types/authTypes";
+import { ISaveSecurityFormType } from "@/types/userTypes";
 import getAuthToken from "@/utils/getAuthToken";
 import axios from "axios";
 
@@ -72,6 +73,11 @@ export const resetPasswordService = async (payload: IForgotPasswordResetPassword
 
 export const saveProfileService = async (payload: FormData): Promise<IResponseType> => {
     const response = await axios.post<IResponseType>(`${USER_API_URL}/profile`, payload, MULTIPART_HEADERS(AUTH_TOKEN));
+    return response.data;
+}
+
+export const saveSecurityService = async (payload: ISaveSecurityFormType): Promise<IResponseType> => {
+    const response = await axios.post<IResponseType>(`${USER_API_URL}/profile/security`, payload, COMMON_HEADERS(AUTH_TOKEN));
     return response.data;
 }
 
