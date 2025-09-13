@@ -35,5 +35,7 @@ main
 
 **/logger/*.log
 **/logger/*.log.*
+**/log/*.log
+**/log/*.log.*
 
 uploads/**
