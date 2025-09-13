@@ -1,8 +1,8 @@
 package user
 
 import (
-	"server/internal/logger"
 	"server/internal/model/user"
+	"server/pkg/logger"
 
 	"github.com/go-gormigrate/gormigrate/v2"
 	"go.uber.org/zap"

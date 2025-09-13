@@ -1,7 +1,7 @@
 package mainService
 
 import (
-	"server/internal/logger"
+	"server/pkg/logger"
 	"server/pkg/utils/envUtils"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/responseUtils"

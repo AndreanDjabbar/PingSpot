@@ -1,9 +1,9 @@
 package server
 
 import (
-	"server/internal/logger"
-	userRouter "server/internal/router/user"
 	mainRouter "server/internal/router/mainService"
+	userRouter "server/internal/router/user"
+	"server/pkg/logger"
 	"server/pkg/utils/envUtils"
 	"server/pkg/utils/responseUtils"
 
@@ -16,18 +16,18 @@ type FiberServer struct {
 }
 
 func New() *FiberServer {
-    app := fiber.New(fiber.Config{
-        ServerHeader: "Pingspot Server",
-        AppName:      "Pingspot API Server",
-        BodyLimit:    10 * 1024 * 1024,
-    })
+	app := fiber.New(fiber.Config{
+		ServerHeader: "Pingspot Server",
+		AppName:      "Pingspot API Server",
+		BodyLimit:    10 * 1024 * 1024,
+	})
 
-    app.Static("/user", "./uploads/user")
-    app.Static("/main", "./uploads/main")
+	app.Static("/user", "./uploads/user")
+	app.Static("/main", "./uploads/main")
 
-    return &FiberServer{
-        App: app,
-    }
+	return &FiberServer{
+		App: app,
+	}
 }
 
 func DefaultHandler(c *fiber.Ctx) error {

@@ -6,9 +6,9 @@ import (
 	"server/internal/config"
 	"server/internal/infrastructure/cache"
 	"server/internal/infrastructure/database"
-	"server/internal/logger"
 	userMigration "server/internal/migration/user"
 	"server/internal/server"
+	"server/pkg/logger"
 	"server/pkg/utils/envUtils"
 	"strconv"
 
