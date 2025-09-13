@@ -11,9 +11,9 @@ import (
 	userService "server/internal/service/user"
 	userValidation "server/internal/validation/user"
 	"server/pkg/logger"
-	"server/pkg/utils/envUtils"
+	"server/pkg/utils/env"
 	mainutils "server/pkg/utils/mainUtils"
-	"server/pkg/utils/responseUtils"
+	"server/pkg/utils/response"
 	"strconv"
 	"time"
 
@@ -27,9 +27,9 @@ func DefaultHandler(c *fiber.Ctx) error {
 	logger.Info("DEFAULT AUTH HANDLER")
 	data := map[string]any{
 		"message":    "Selamat datang di Pingspot AUTH API.. Silakan cek repository untuk informasi lebih lanjut.",
-		"repository": envUtils.GithubRepoURL(),
+		"repository": env.GithubRepoURL(),
 	}
-	return responseUtils.ResponseSuccess(c, 200, "Selamat datang di Pingspot AUTH API", "data", data)
+	return response.ResponseSuccess(c, 200, "Selamat datang di Pingspot AUTH API", "data", data)
 }
 
 func RegisterHandler(c *fiber.Ctx) error {
@@ -38,19 +38,19 @@ func RegisterHandler(c *fiber.Ctx) error {
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
 
 	if err := userValidation.Validate.Struct(req); err != nil {
 		errors := userValidation.FormatRegisterValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
 	user, err := userService.Register(db, req, false)
 	if err != nil {
 		logger.Error("Registration failed", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Registrasi gagal", "", err.Error())
+		return response.ResponseError(c, 500, "Registrasi gagal", "", err.Error())
 	}
 
 	newUser := map[string]any{
@@ -64,14 +64,14 @@ func RegisterHandler(c *fiber.Ctx) error {
 	randomCode1, err := mainutils.GenerateRandomCode(150)
 	if err != nil {
 		logger.Error("Failed to generate random code", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal membuat kode acak", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal membuat kode acak", "", err.Error())
 	}
 	randomCode2, err := mainutils.GenerateRandomCode(150)
 	if err != nil {
 		logger.Error("Failed to generate random code", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal membuat kode acak", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal membuat kode acak", "", err.Error())
 	}
-	verificationLink := fmt.Sprintf("%s/auth/verification?code1=%s&userId=%d&code2=%s", envUtils.ClientURL(), randomCode1, user.ID, randomCode2)
+	verificationLink := fmt.Sprintf("%s/auth/verification?code1=%s&userId=%d&code2=%s", env.ClientURL(), randomCode1, user.ID, randomCode2)
 
 	redisClient := cache.GetRedis()
 
@@ -82,14 +82,14 @@ func RegisterHandler(c *fiber.Ctx) error {
 	linkJSON, err := json.Marshal(linkData)
 	if err != nil {
 		logger.Error("Failed to marshal verification link data", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal menyimpan kode verifikasi", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal menyimpan kode verifikasi", "", err.Error())
 	}
 
 	redisKey := fmt.Sprintf("link:%d", newUser["id"])
 	err = redisClient.Set(c.Context(), redisKey, linkJSON, 300*time.Second).Err()
 	if err != nil {
 		logger.Error("Failed to save verification link to Redis", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal menyimpan kode verifikasi ke Redis", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal menyimpan kode verifikasi ke Redis", "", err.Error())
 	}
 
 	go func(email, username, link string) {
@@ -100,7 +100,7 @@ func RegisterHandler(c *fiber.Ctx) error {
 
 	logger.Info("User registered successfully", zap.String("user_id", fmt.Sprintf("%d", user.ID)))
 
-	return responseUtils.ResponseSuccess(c, 200, "Registrasi berhasil. Silahkan cek email anda untuk verifikasi akun", "data", newUser)
+	return response.ResponseSuccess(c, 200, "Registrasi berhasil. Silahkan cek email anda untuk verifikasi akun", "data", newUser)
 }
 
 func VerificationHandler(c *fiber.Ctx) error {
@@ -110,7 +110,7 @@ func VerificationHandler(c *fiber.Ctx) error {
 	code2 := c.Query("code2")
 
 	if code1 == "" || userId == "" || code2 == "" {
-		return responseUtils.ResponseError(c, 400, "Parameter tidak lengkap", "", nil)
+		return response.ResponseError(c, 400, "Parameter tidak lengkap", "", nil)
 	}
 
 	redisClient := cache.GetRedis()
@@ -124,30 +124,30 @@ func VerificationHandler(c *fiber.Ctx) error {
 			errorMsg = "Gagal mendapatkan kode verifikasi"
 		}
 		logger.Error("Failed to get verification link from Redis", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan kode verifikasi", "", errorMsg)
+		return response.ResponseError(c, 500, "Gagal mendapatkan kode verifikasi", "", errorMsg)
 	}
 
 	var link map[string]string
 	if err := json.Unmarshal([]byte(linkData), &link); err != nil {
 		logger.Error("Failed to unmarshal verification link data", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal memproses link verifikasi", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal memproses link verifikasi", "", err.Error())
 	}
 
 	if link["link1"] != code1 || link["link2"] != code2 {
-		return responseUtils.ResponseError(c, 400, "link verifikasi tidak valid", "", "Link verifikasi tidak valid")
+		return response.ResponseError(c, 400, "link verifikasi tidak valid", "", "Link verifikasi tidak valid")
 	}
 
 	userIdUint, err := strconv.ParseUint(userId, 10, 32)
 	if err != nil {
 		logger.Error("Invalid user ID format", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "ID pengguna tidak valid", "", err.Error())
+		return response.ResponseError(c, 400, "ID pengguna tidak valid", "", err.Error())
 	}
 
 	db := database.GetDB()
 	user, err := userService.VerifyUser(db, uint(userIdUint))
 	if err != nil {
 		logger.Error("Verification failed", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Verifikasi gagal", "", err.Error())
+		return response.ResponseError(c, 500, "Verifikasi gagal", "", err.Error())
 	}
 
 	if err := redisClient.Del(c.Context(), redisKey).Err(); err != nil {
@@ -159,7 +159,7 @@ func VerificationHandler(c *fiber.Ctx) error {
 		"email":    user.Email,
 	}
 
-	return responseUtils.ResponseSuccess(c, 200, "Akun berhasil diverifikasi", "data", dataUser)
+	return response.ResponseSuccess(c, 200, "Akun berhasil diverifikasi", "data", dataUser)
 }
 
 func LoginHandler(c *fiber.Ctx) error {
@@ -168,22 +168,22 @@ func LoginHandler(c *fiber.Ctx) error {
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
 
 	if err := userValidation.Validate.Struct(req); err != nil {
 		errors := userValidation.FormatLoginValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
 	_, token, err := userService.Login(db, req)
 	if err != nil {
 		logger.Error("Login failed", zap.Error(err))
-		return responseUtils.ResponseError(c, 401, "Login gagal", "", err.Error())
+		return response.ResponseError(c, 401, "Login gagal", "", err.Error())
 	}
 
-	return responseUtils.ResponseSuccess(c, 200, "Login berhasil", "data", map[string]any{
+	return response.ResponseSuccess(c, 200, "Login berhasil", "data", map[string]any{
 		"token": token,
 	})
 }
@@ -238,13 +238,13 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		existingUser = createdUser
 	}
 
-	token, err := mainutils.GenerateJWT(existingUser.ID, []byte(envUtils.JWTSecret()), existingUser.Email, existingUser.Username, existingUser.FullName)
+	token, err := mainutils.GenerateJWT(existingUser.ID, []byte(env.JWTSecret()), existingUser.Email, existingUser.Username, existingUser.FullName)
 	if err != nil {
 		logger.Error("Error generating token for Google user", zap.Error(err))
 		http.Error(w, "Terdapat masalah saat login", http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, fmt.Sprintf("%s/auth/google?token=%s", envUtils.ClientURL(), token), http.StatusFound)
+	http.Redirect(w, r, fmt.Sprintf("%s/auth/google?token=%s", env.ClientURL(), token), http.StatusFound)
 }
 
 func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
@@ -253,32 +253,32 @@ func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
 	if err := userValidation.Validate.Struct(req); err != nil {
 		errors := userValidation.FormatForgotPasswordEmailVerificationValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
 	user, err := userService.GetUserByEmail(db, req.Email)
 	if err != nil {
 		logger.Error("Failed to get user by email", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
 	}
 	if user != nil {
 		redisClient := cache.GetRedis()
 		verificationCode, err := mainutils.GenerateRandomCode(200)
 		if err != nil {
 			logger.Error("Failed to generate verification code", zap.Error(err))
-			return responseUtils.ResponseError(c, 500, "Gagal membuat kode verifikasi", "", err.Error())
+			return response.ResponseError(c, 500, "Gagal membuat kode verifikasi", "", err.Error())
 		}
-		verificationLink := fmt.Sprintf("%s/auth/forgot-password/verification?code=%s&email=%s", envUtils.ClientURL(), verificationCode, req.Email)
+		verificationLink := fmt.Sprintf("%s/auth/forgot-password/verification?code=%s&email=%s", env.ClientURL(), verificationCode, req.Email)
 		redisKey := fmt.Sprintf("forgot_password:%s", req.Email)
 		err = redisClient.Set(c.Context(), redisKey, verificationCode, 300*time.Second).Err()
 		if err != nil {
 			logger.Error("Failed to save verification code to Redis", zap.Error(err))
-			return responseUtils.ResponseError(c, 500, "Gagal menyimpan kode verifikasi ke Redis", "", err.Error())
+			return response.ResponseError(c, 500, "Gagal menyimpan kode verifikasi ke Redis", "", err.Error())
 		}
 
 		go func(email, username, link string) {
@@ -287,7 +287,7 @@ func ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 			}
 		}(req.Email, req.Email, verificationLink)
 	}
-	return responseUtils.ResponseSuccess(c, 200, "Silahkan cek email anda untuk verifikasi pengaturan ulang kata sandi", "data", nil)
+	return response.ResponseSuccess(c, 200, "Silahkan cek email anda untuk verifikasi pengaturan ulang kata sandi", "data", nil)
 }
 
 func ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error {
@@ -296,7 +296,7 @@ func ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error {
 	email := c.Query("email")
 
 	if code == "" || email == "" {
-		return responseUtils.ResponseError(c, 400, "Parameter tidak lengkap", "", nil)
+		return response.ResponseError(c, 400, "Parameter tidak lengkap", "", nil)
 	}
 
 	redisClient := cache.GetRedis()
@@ -304,17 +304,17 @@ func ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error {
 	storedCode, err := redisClient.Get(c.Context(), redisKey).Result()
 	if err != nil {
 		if err == redis.Nil {
-			return responseUtils.ResponseError(c, 400, "Link verifikasi tidak ditemukan atau sudah kadaluarsa", "", nil)
+			return response.ResponseError(c, 400, "Link verifikasi tidak ditemukan atau sudah kadaluarsa", "", nil)
 		}
 		logger.Error("Failed to get verification code from Redis", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan kode verifikasi", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal mendapatkan kode verifikasi", "", err.Error())
 	}
 
 	if storedCode != code {
-		return responseUtils.ResponseError(c, 400, "Link verifikasi tidak valid", "", nil)
+		return response.ResponseError(c, 400, "Link verifikasi tidak valid", "", nil)
 	}
 
-	return responseUtils.ResponseSuccess(c, 200, "Link verifikasi berhasil", "data", map[string]any{
+	return response.ResponseSuccess(c, 200, "Link verifikasi berhasil", "data", map[string]any{
 		"email": email,
 	})
 }
@@ -325,57 +325,57 @@ func ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	db := database.GetDB()
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
 	if err := userValidation.Validate.Struct(req); err != nil {
 		errors := userValidation.FormatForgotPasswordResetPasswordValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
 	user, err := userService.GetUserByEmail(db, req.Email)
 	if err != nil {
 		logger.Error("Failed to get user by email", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
 	}
 	if user == nil {
-		return responseUtils.ResponseError(c, 404, "Pengguna tidak ditemukan", "", "Email tidak terdaftar")
+		return response.ResponseError(c, 404, "Pengguna tidak ditemukan", "", "Email tidak terdaftar")
 	}
 
 	hashNewPassword, err := mainutils.HashPassword(req.Password)
 	if err != nil {
 		logger.Error("Failed to hash new password", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal mengenkripsi kata sandi baru", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal mengenkripsi kata sandi baru", "", err.Error())
 	}
 	user.Password = &hashNewPassword
 
 	updatedUser, err := userService.UpdateUserByEmail(db, req.Email, user)
 	if err != nil {
 		logger.Error("Failed to update user password", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal memperbarui kata sandi", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal memperbarui kata sandi", "", err.Error())
 	}
 	if updatedUser == nil {
-		return responseUtils.ResponseError(c, 404, "Pengguna tidak ditemukan", "", "Email tidak terdaftar")
+		return response.ResponseError(c, 404, "Pengguna tidak ditemukan", "", "Email tidak terdaftar")
 	}
 
-	return responseUtils.ResponseSuccess(c, 200, "Kata sandi berhasil diperbarui. Silahkan masuk dengan identitas terbaru anda", "data", nil)
+	return response.ResponseSuccess(c, 200, "Kata sandi berhasil diperbarui. Silahkan masuk dengan identitas terbaru anda", "data", nil)
 }
 
 func LogoutHandler(c *fiber.Ctx) error {
 	logger.Info("LOGOUT HANDLER")
 	token := c.Get("Authorization")
 	if token == "" {
-		return responseUtils.ResponseError(c, 401, "Token tidak ditemukan", "", "Anda harus login terlebih dahulu")
+		return response.ResponseError(c, 401, "Token tidak ditemukan", "", "Anda harus login terlebih dahulu")
 	}
 
 	if len(token) > 7 && token[:7] == "Bearer " {
 		token = token[7:]
 	}
 
-	claims, err := mainutils.ParseJWT(token, []byte(envUtils.JWTSecret()))
+	claims, err := mainutils.ParseJWT(token, []byte(env.JWTSecret()))
 	if err != nil {
 		logger.Error("Failed to parse JWT token", zap.Error(err))
-		return responseUtils.ResponseError(c, 401, "Token tidak valid", "", err.Error())
+		return response.ResponseError(c, 401, "Token tidak valid", "", err.Error())
 	}
 
 	exp := claims["exp"].(float64)
@@ -389,11 +389,11 @@ func LogoutHandler(c *fiber.Ctx) error {
 		err = redisClient.Set(c.Context(), blacklistKey, "true", ttl).Err()
 		if err != nil {
 			logger.Error("Failed to blacklist token in Redis", zap.Error(err))
-			return responseUtils.ResponseError(c, 500, "Gagal memproses logout", "", err.Error())
+			return response.ResponseError(c, 500, "Gagal memproses logout", "", err.Error())
 		}
 
 		logger.Info("Token blacklisted successfully", zap.String("token_prefix", token[:10]+"..."))
 	}
 
-	return responseUtils.ResponseSuccess(c, 200, "Logout berhasil", "data", nil)
+	return response.ResponseSuccess(c, 200, "Logout berhasil", "data", nil)
 }

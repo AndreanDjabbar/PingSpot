@@ -1,4 +1,4 @@
-package envUtils
+package env
 
 import "os"
 

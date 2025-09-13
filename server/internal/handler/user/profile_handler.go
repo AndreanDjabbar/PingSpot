@@ -9,7 +9,7 @@ import (
 	userValidation "server/internal/validation/user"
 	"server/pkg/logger"
 	mainutils "server/pkg/utils/mainUtils"
-	"server/pkg/utils/responseUtils"
+	"server/pkg/utils/response"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,7 +21,7 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 	_, err := c.MultipartForm()
 	if err != nil {
 		logger.Error("Failed to parse multipart form", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
 	fullName := c.FormValue("fullName")
 	gender := c.FormValue("gender")
@@ -32,13 +32,13 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 	if err == nil && file != nil {
 		if file.Size > 5*1024*1024 {
 			logger.Error("Profile picture file size too large", zap.Int64("size", file.Size))
-			return responseUtils.ResponseError(c, 400, "Ukuran gambar terlalu besar", "", "Maksimal ukuran gambar 5MB")
+			return response.ResponseError(c, 400, "Ukuran gambar terlalu besar", "", "Maksimal ukuran gambar 5MB")
 		}
 
 		ext := filepath.Ext(file.Filename)
 		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
 			logger.Error("Unsupported profile picture file format", zap.String("extension", ext))
-			return responseUtils.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
+			return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
 		}
 
 		fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
@@ -46,7 +46,7 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 
 		if err := c.SaveFile(file, savePath); err != nil {
 			logger.Error("Failed to save profile picture", zap.Error(err))
-			return responseUtils.ResponseError(c, 500, "Gagal menyimpan gambar", "", err.Error())
+			return response.ResponseError(c, 500, "Gagal menyimpan gambar", "", err.Error())
 		}
 		profilePicture = fileName
 	} else {
@@ -73,19 +73,19 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 	if err := userValidation.Validate.Struct(req); err != nil {
 		errors := userValidation.FormatSaveUserProfileValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
-		return responseUtils.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
 	claims, err := mainutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
-		return responseUtils.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
 	newProfile, err := userService.SaveProfile(db, userId, req)
 	if err != nil {
 		logger.Error("Failed to save user profile", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal memperbarui profil pengguna", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal memperbarui profil pengguna", "", err.Error())
 	}
 	newProfileFormatted := map[string]any{
 		"bio":      newProfile.Bio,
@@ -95,7 +95,7 @@ func SaveUserProfileHandler(c *fiber.Ctx) error {
 		"gender":   newProfile.Gender,
 		"birthday": newProfile.Birthday,
 	}
-	return responseUtils.ResponseSuccess(c, 200, "Profil pengguna berhasil diperbarui", "data", newProfileFormatted)
+	return response.ResponseSuccess(c, 200, "Profil pengguna berhasil diperbarui", "data", newProfileFormatted)
 }
 
 func GetMyProfileHandler(c *fiber.Ctx) error {
@@ -104,13 +104,13 @@ func GetMyProfileHandler(c *fiber.Ctx) error {
 	claims, err := mainutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
-		return responseUtils.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
 	myProfile, err := userService.GetMyProfile(db, userId)
 	if err != nil {
 		logger.Error("Failed to get my profile", zap.Error(err))
-		return responseUtils.ResponseError(c, 500, "Gagal mendapatkan profil pengguna", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal mendapatkan profil pengguna", "", err.Error())
 	}
 	myProfileFormatted := map[string]any{
 		"bio":            myProfile.Bio,
@@ -122,5 +122,5 @@ func GetMyProfileHandler(c *fiber.Ctx) error {
 		"email":          myProfile.User.Email,
 		"userID":         myProfile.UserID,
 	}
-	return responseUtils.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", myProfileFormatted)
+	return response.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", myProfileFormatted)
 }

@@ -1,18 +1,18 @@
 package config
 
-import "server/pkg/utils/envUtils"
+import "server/pkg/utils/env"
 
 type RedisConfig struct {
-    Host     string
-    Port     string
-    Password string
-    DB       int
+	Host     string
+	Port     string
+	Password string
+	DB       int
 }
 
 func LoadRedisConfig() RedisConfig {
-    return RedisConfig{
-        Host:     envUtils.RedisHost(),
-        Port:     envUtils.RedisPort(),
-        DB:       0,
-    }
+	return RedisConfig{
+		Host: env.RedisHost(),
+		Port: env.RedisPort(),
+		DB:   0,
+	}
 }

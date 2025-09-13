@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"server/internal/infrastructure/cache"
-	"server/pkg/utils/envUtils"
-	"server/pkg/utils/responseUtils"
+	"server/pkg/utils/env"
+	"server/pkg/utils/response"
 	"strings"
 
 	jwtware "github.com/gofiber/contrib/jwt"
@@ -24,26 +24,26 @@ func JWTProtected() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return responseUtils.ResponseError(c, 401, "Token tidak ditemukan", "", "Anda harus login terlebih dahulu")
+			return response.ResponseError(c, 401, "Token tidak ditemukan", "", "Anda harus login terlebih dahulu")
 		}
 
 		var token string
 		if strings.HasPrefix(authHeader, "Bearer ") {
 			token = authHeader[7:]
 		} else {
-			return responseUtils.ResponseError(c, 401, "Format token tidak valid", "", "Token harus menggunakan format Bearer")
+			return response.ResponseError(c, 401, "Format token tidak valid", "", "Token harus menggunakan format Bearer")
 		}
 
 		if CheckTokenBlacklist(token) {
-			return responseUtils.ResponseError(c, 401, "Token sudah tidak valid", "", "Token telah di-logout")
+			return response.ResponseError(c, 401, "Token sudah tidak valid", "", "Token telah di-logout")
 		}
 
 		jwtMiddleware := jwtware.New(jwtware.Config{
 			SigningKey: jwtware.SigningKey{
-				Key: []byte(envUtils.JWTSecret()),
+				Key: []byte(env.JWTSecret()),
 			},
 			ErrorHandler: func(c *fiber.Ctx, err error) error {
-				return responseUtils.ResponseError(c, 401, "Token tidak valid", "", err.Error())
+				return response.ResponseError(c, 401, "Token tidak valid", "", err.Error())
 			},
 		})
 

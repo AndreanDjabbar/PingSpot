@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"html/template"
 	"math/big"
-	"server/pkg/utils/envUtils"
+	"server/pkg/utils/env"
 	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -28,7 +29,7 @@ func GenerateRandomCode(length int) (string, error) {
 	if length <= 0 {
 		return "", fmt.Errorf("length must be greater than 0")
 	}
-	
+
 	characters := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	code := make([]byte, length)
 	for i := range code {
@@ -45,7 +46,7 @@ func GenerateJWT(userID uint, JWTSecret []byte, email, username, fullName string
 	if len(JWTSecret) == 0 {
 		return "", fmt.Errorf("JWT secret cannot be empty")
 	}
-	
+
 	claims := jwt.MapClaims{
 		"user_id":   userID,
 		"email":     email,
@@ -102,9 +103,9 @@ func SendEmail(to, username, context, verificationLink string) error {
 		return fmt.Errorf("required fields cannot be empty")
 	}
 
-	email := envUtils.EmailEmail()
-	password := envUtils.EmailPassword()
-	
+	email := env.EmailEmail()
+	password := env.EmailPassword()
+
 	if email == "" || password == "" {
 		return fmt.Errorf("email credentials not configured")
 	}
@@ -235,7 +236,7 @@ func RenderAuthValidationEmail(verificationLink, userName, validationName string
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
 	}
-	
+
 	data := struct {
 		VerificationLink string
 		UserName         string
@@ -245,12 +246,12 @@ func RenderAuthValidationEmail(verificationLink, userName, validationName string
 		UserName:         userName,
 		Title:            validationName,
 	}
-	
+
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, data); err != nil {
 		return "", fmt.Errorf("failed to execute template: %w", err)
 	}
-	
+
 	return buf.String(), nil
 }
 

@@ -9,7 +9,7 @@ import (
 	"server/internal/infrastructure/cache"
 	userModel "server/internal/model/user"
 	"server/pkg/logger"
-	"server/pkg/utils/envUtils"
+	"server/pkg/utils/env"
 	mainutils "server/pkg/utils/mainUtils"
 	"time"
 
@@ -67,7 +67,7 @@ func Login(db *gorm.DB, req userDto.LoginRequest) (*userModel.User, string, erro
 			logger.Error("Failed to generate random code", zap.Error(err))
 			return nil, "", errors.New("Gagal membuat kode acak")
 		}
-		verificationLink := fmt.Sprintf("%s/auth/verify-account/%s/%d/%s", envUtils.ClientURL(), randomCode1, user.ID, randomCode2)
+		verificationLink := fmt.Sprintf("%s/auth/verify-account/%s/%d/%s", env.ClientURL(), randomCode1, user.ID, randomCode2)
 
 		redisClient := cache.GetRedis()
 		linkData := map[string]string{
@@ -93,7 +93,7 @@ func Login(db *gorm.DB, req userDto.LoginRequest) (*userModel.User, string, erro
 		return nil, "", errors.New("Akun belum diverifikasi, silakan cek email untuk verifikasi")
 	}
 
-	token, err := mainutils.GenerateJWT(user.ID, []byte(envUtils.JWTSecret()), user.Email, user.Username, user.FullName)
+	token, err := mainutils.GenerateJWT(user.ID, []byte(env.JWTSecret()), user.Email, user.Username, user.FullName)
 	if err != nil {
 		return nil, "", errors.New("Gagal membuat token JWT")
 	}

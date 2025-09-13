@@ -9,7 +9,7 @@ import (
 	userMigration "server/internal/migration/user"
 	"server/internal/server"
 	"server/pkg/logger"
-	"server/pkg/utils/envUtils"
+	"server/pkg/utils/env"
 	"strconv"
 
 	"go.uber.org/zap"
@@ -65,8 +65,8 @@ func main() {
 
 	server.RegisterFiberRoutes()
 
-	port, _ := strconv.Atoi(envUtils.Port())
-	host := envUtils.Host()
+	port, _ := strconv.Atoi(env.Port())
+	host := env.Host()
 	logger.Info("Starting server on port", zap.Int("port", port), zap.String("host", host))
 	err = server.Listen(fmt.Sprintf("%s:%d", host, port))
 	if err != nil {

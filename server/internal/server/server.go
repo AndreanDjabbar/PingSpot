@@ -4,8 +4,8 @@ import (
 	mainRouter "server/internal/router/mainService"
 	userRouter "server/internal/router/user"
 	"server/pkg/logger"
-	"server/pkg/utils/envUtils"
-	"server/pkg/utils/responseUtils"
+	"server/pkg/utils/env"
+	"server/pkg/utils/response"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -34,9 +34,9 @@ func DefaultHandler(c *fiber.Ctx) error {
 	logger.Info("DEFAULT CONTROLLER")
 	data := map[string]any{
 		"message":    "Welcome to Pingspot API.. Please check the repository for more information.",
-		"repository": envUtils.GithubRepoURL(),
+		"repository": env.GithubRepoURL(),
 	}
-	return responseUtils.ResponseSuccess(c, 200, "Welcome to Pingspot API", "data", data)
+	return response.ResponseSuccess(c, 200, "Welcome to Pingspot API", "data", data)
 }
 
 func (s *FiberServer) RegisterFiberRoutes() {

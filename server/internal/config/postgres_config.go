@@ -1,23 +1,23 @@
 package config
 
-import "server/pkg/utils/envUtils"
+import "server/pkg/utils/env"
 
 type PostgresConfig struct {
-    Host     string
-    Port     string
-    User     string
-    Password string
-    DBName   string
-    SSLMode  string
+	Host     string
+	Port     string
+	User     string
+	Password string
+	DBName   string
+	SSLMode  string
 }
 
 func LoadPostgresConfig() PostgresConfig {
-    return PostgresConfig{
-        Host:     envUtils.PostgreHost(),
-        Port:     envUtils.PostgrePort(),
-        User:     envUtils.PostgreUser(),
-        Password: envUtils.PostgrePassword(),
-        DBName:   envUtils.PostgreDB(),
-        SSLMode:  "disable",
-    }
+	return PostgresConfig{
+		Host:     env.PostgreHost(),
+		Port:     env.PostgrePort(),
+		User:     env.PostgreUser(),
+		Password: env.PostgrePassword(),
+		DBName:   env.PostgreDB(),
+		SSLMode:  "disable",
+	}
 }
