@@ -56,7 +56,7 @@ const SettingsPage = () => {
     const confirmLogout = () => {
         const token = getAuthToken();
         if (token) {
-            logout({ authToken: token });
+            logout();
         } else {
             document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
             router.push("/auth/login");
