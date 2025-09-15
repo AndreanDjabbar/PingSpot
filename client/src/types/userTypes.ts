@@ -10,6 +10,6 @@ export type ISaveProfileFormType = {
 export type ISaveSecurityFormType = {
     newPassword: string;
     newPasswordConfirmation: string;
-    oldPassword: string;
-    oldPasswordConfirmation: string;
+    currentPassword: string;
+    currentPasswordConfirmation: string;
 }

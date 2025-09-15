@@ -22,17 +22,17 @@ export const SaveProfileSchema = z.object({
 })
 
 export const SaveSecuritySchema = z.object({
-    oldPassword: z.string().min(6, "Kata sandi lama minimal 6 karakter"),
-    oldPasswordConfirmation: z.string().min(6, "Konfirmasi kata sandi lama minimal 6 karakter"),
+    currentPassword: z.string().min(6, "Kata sandi lama minimal 6 karakter"),
+    currentPasswordConfirmation: z.string().min(6, "Konfirmasi kata sandi lama minimal 6 karakter"),
     newPassword: z.string().min(6, "Kata sandi baru minimal 6 karakter"),
     newPasswordConfirmation: z.string().min(6, "Konfirmasi kata sandi baru minimal 6 karakter"),
-}).refine((data) => data.oldPassword === data.oldPasswordConfirmation, {
+}).refine((data) => data.currentPassword === data.currentPasswordConfirmation, {
     message: "Konfirmasi kata sandi lama tidak sesuai",
     path: ["oldPasswordConfirmation"],
 }).refine((data) => data.newPassword === data.newPasswordConfirmation, {
     message: "Konfirmasi kata sandi baru tidak sesuai",
     path: ["newPasswordConfirmation"],
-}).refine((data) => data.oldPassword !== data.newPassword, {
+}).refine((data) => data.currentPassword !== data.newPassword, {
     message: "Kata sandi baru tidak boleh sama dengan password lama",
     path: ["newPassword"],
 });
