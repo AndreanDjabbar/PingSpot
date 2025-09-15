@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
-import React, { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { useUserProfileStore } from '@/stores/userProfileStore';
+import React, { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { InputField, ButtonSubmit } from '@/components/form';
 import { SaveSecuritySchema } from '../../schema';
 import { ISaveSecurityFormType } from '@/types/userTypes';
@@ -18,40 +17,53 @@ import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErr
 import HeaderSection from '../../components/HeaderSection';
 import { LuLockKeyhole } from 'react-icons/lu';
 import { useSaveSecurity } from '@/hooks/user/useSaveSecurity';
+import ConfirmationDialog from '@/components/UI/ConfirmationDialog';
+import { IoKey } from 'react-icons/io5';
+import { useLogout } from '@/hooks/auth/useLogout';
 
 const SecurityPage = () => {
-    const user = useUserProfileStore(state => state.userProfile);
+    const [isSaveSecurityModalOpen, setIsSaveSecurityModalOpen] = useState(false);
+    const [securityData, setSecurityData] = useState<ISaveSecurityFormType | null>(null);
 
     const { 
         register, 
         handleSubmit, 
-        setValue,
         formState: { errors } 
     } = useForm<ISaveSecurityFormType>({
         resolver: zodResolver(SaveSecuritySchema),
     });
     
     const { mutate, isPending, isError, isSuccess, error, data } = useSaveSecurity();
+    const { mutate: logout, isSuccess: isLogoutSuccess } = useLogout();
     const currentPath = usePathname();
+    const router = useRouter();
     
     const onSubmit = (data: ISaveSecurityFormType) => {
-        mutate(data);
+        setIsSaveSecurityModalOpen(true);
+        setSecurityData(data);
     };
-
-    useEffect(() => {
-        if (user) {
-
+    
+    const confirmSubmit = () => {
+        setIsSaveSecurityModalOpen(false);
+        if (securityData) {
+            mutate(securityData);
         }
-    }, [user, setValue]);
+    }
 
     useEffect(() => {
         if (isSuccess && data) {
-            console.log("Profile updated successfully");
-            setTimeout(() => {
-                window.location.reload();
-            }, 500)
+            logout();
         }
     }, [isSuccess, data]);
+
+    useEffect(() => {
+        if (isLogoutSuccess) {
+            document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
+            setTimeout(() => {
+                router.push("/auth/login");
+            }, 1000)
+        }
+    }, [isLogoutSuccess, router]);
 
     useErrorToast(isError, error);
     useSuccessToast(isSuccess, data);
@@ -80,8 +92,8 @@ const SecurityPage = () => {
                                 <div className='flex flex-col gap-6 md:flex-row'>
                                     <div className="w-full">
                                         <InputField
-                                            id="oldPassword"
-                                            register={register("oldPassword")}
+                                            id="currentPassword"
+                                            register={register("currentPassword")}
                                             type="password"
                                             className="w-full"
                                             withLabel={true}
@@ -90,12 +102,12 @@ const SecurityPage = () => {
                                             icon={<LuLockKeyhole size={20}/>} 
                                             placeHolder="Masukkan Kata Sandi Lama Anda"
                                         />
-                                        <div className="text-red-500 text-sm font-semibold">{errors.oldPassword?.message as string}</div>
+                                        <div className="text-red-500 text-sm font-semibold">{errors.currentPassword?.message as string}</div>
                                     </div>
                                     <div className="w-full">
                                         <InputField
-                                            id="oldPasswordConfirmation"
-                                            register={register("oldPasswordConfirmation")}
+                                            id="currentPasswordConfirmation"
+                                            register={register("currentPasswordConfirmation")}
                                             type="password"
                                             showPasswordToggle={true}
                                             className="w-full"
@@ -104,7 +116,7 @@ const SecurityPage = () => {
                                             icon={<LuLockKeyhole size={20}/>} 
                                             placeHolder="Masukkan Ulang Kata Sandi Anda"
                                         />
-                                        <div className="text-red-500 text-sm font-semibold">{errors.oldPasswordConfirmation?.message as string}</div>
+                                        <div className="text-red-500 text-sm font-semibold">{errors.currentPasswordConfirmation?.message as string}</div>
                                     </div>
                                 </div>
                                 <div className='flex flex-col gap-6 md:flex-row'>
@@ -150,6 +162,19 @@ const SecurityPage = () => {
                     </div>
                 </div>
             )}
+            <ConfirmationDialog
+            isOpen={isSaveSecurityModalOpen}
+            onClose={() => setIsSaveSecurityModalOpen(false)}
+            onConfirm={confirmSubmit}
+            isPending={isPending}
+            type='info'
+            cancelTitle='Batal'
+            confirmTitle='Ubah'
+            title='Konfirmasi Perubahan keamanan'
+            explanation='Informasi keamanan (kata sandi) anda akan diubah.'
+            message='Apakah Anda yakin ingin ubah?'
+            icon={<IoKey/>}
+            />
         </div>
     );
 };
