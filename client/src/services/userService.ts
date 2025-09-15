@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType, ILoginFormType, ILogoutType, IRegisterFormType, IVerificationType } from "@/types/authTypes";
+import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType, ILoginFormType, IRegisterFormType, IVerificationType } from "@/types/authTypes";
 import { ISaveSecurityFormType } from "@/types/userTypes";
 import getAuthToken from "@/utils/getAuthToken";
 import axios from "axios";
 
 const USER_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/user`;
-const AUTH_TOKEN = getAuthToken() || "";
 
 type IResponseType = {
     message: string;
@@ -42,10 +41,11 @@ export const loginService = async (payload: ILoginFormType): Promise<IResponseTy
     return response.data;
 };
 
-export const logoutService = async (payload: ILogoutType): Promise<IResponseType> => {
+export const logoutService = async (): Promise<IResponseType> => {
+    const authToken = getAuthToken();
     const response = await axios.post<IResponseType>(`${USER_API_URL}/auth/logout`, {}, {
         headers: {
-            'Authorization': `Bearer ${payload.authToken}`
+            'Authorization': `Bearer ${authToken}`
         }
     });
     return response.data;
@@ -72,16 +72,19 @@ export const resetPasswordService = async (payload: IForgotPasswordResetPassword
 };
 
 export const saveProfileService = async (payload: FormData): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/profile`, payload, MULTIPART_HEADERS(AUTH_TOKEN));
+    const authToken = getAuthToken();
+    const response = await axios.post<IResponseType>(`${USER_API_URL}/profile`, payload, MULTIPART_HEADERS(authToken || ''));
     return response.data;
 }
 
 export const saveSecurityService = async (payload: ISaveSecurityFormType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/profile/security`, payload, COMMON_HEADERS(AUTH_TOKEN));
+    const authToken = getAuthToken();
+    const response = await axios.post<IResponseType>(`${USER_API_URL}/security`, payload, COMMON_HEADERS(authToken || ''));
     return response.data;
 }
 
 export const getMyProfileService = async (): Promise<IResponseType> => {
-    const response = await axios.get<IResponseType>(`${USER_API_URL}/profile/me`, COMMON_HEADERS(AUTH_TOKEN));
+    const authToken = getAuthToken();
+    const response = await axios.get<IResponseType>(`${USER_API_URL}/profile/me`, COMMON_HEADERS(authToken || ''));
     return response.data;
 }
