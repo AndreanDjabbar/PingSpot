@@ -22,12 +22,15 @@ import { getDataResponseMessage } from '@/utils/getDataResponse';
 import ErrorSection from '@/components/UI/ErrorSection';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import HeaderSection from '../../components/HeaderSection';
+import ConfirmationDialog from '@/components/UI/ConfirmationDialog';
 
 const ProfilePage = () => {
     const user = useUserProfileStore(state => state.userProfile);
     const [profilePicture, setProfilePicture] = useState<File | null>(null);
     const [birthdayDate, setBirthdayDate] = useState<string>(user?.birthday || '');
     const [removedProfilePicture, setRemovedProfilePicture] = useState(false);
+    const [isSaveProfileModalOpen, setIsSaveProfileModalOpen] = useState(false);
+    const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
     
     const defaultValues = {
         fullName: user?.fullName || '',
@@ -53,6 +56,12 @@ const ProfilePage = () => {
     const currentPath = usePathname();
     
     const onSubmit = (formData: ISaveProfileFormType) => {
+        const preparedData = prepareFormData(formData);
+        setFormDataToSubmit(preparedData);
+        setIsSaveProfileModalOpen(true);
+    };
+
+    const prepareFormData = (formData: ISaveProfileFormType): FormData => {
         const data = new FormData();
 
         data.append('fullName', formData.fullName);
@@ -85,9 +94,15 @@ const ProfilePage = () => {
                 data.append('defaultProfilePicture', user?.profilePicture ? user.profilePicture : '');
             }
         }
-        
-        mutate(data);
-    };
+        return data;
+    }
+
+    const confirmSubmit = () => {
+        if (formDataToSubmit) {
+            mutate(formDataToSubmit);
+            setIsSaveProfileModalOpen(false);
+        }
+    }
 
     const genderOptions = [
         { value: 'male', label: 'Laki-laki' },
@@ -263,6 +278,19 @@ const ProfilePage = () => {
                     </div>
                 </div>
             )}
+            <ConfirmationDialog
+            isOpen={isSaveProfileModalOpen}
+            onClose={() => setIsSaveProfileModalOpen(false)}
+            onConfirm={confirmSubmit}
+            isPending={isPending}
+            type='info'
+            cancelTitle='Batal'
+            confirmTitle='Ubah'
+            title='Konfirmasi Perubahan Profil'
+            explanation='Informasi profil anda akan diubah.'
+            message='Apakah Anda yakin ingin ubah?'
+            icon={<IoPersonSharp/>}
+            />
         </div>
     );
 };
