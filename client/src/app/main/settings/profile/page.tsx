@@ -100,7 +100,6 @@ const ProfilePage = () => {
     const confirmSubmit = () => {
         if (formDataToSubmit) {
             mutate(formDataToSubmit);
-            setIsSaveProfileModalOpen(false);
         }
     }
 
@@ -123,7 +122,7 @@ const ProfilePage = () => {
 
     useEffect(() => {
         if (isSuccess && data) {
-            console.log("Profile updated successfully");
+            setIsSaveProfileModalOpen(false);
             setTimeout(() => {
                 window.location.reload();
             }, 500)

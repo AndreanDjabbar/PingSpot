@@ -44,7 +44,6 @@ const SecurityPage = () => {
     };
     
     const confirmSubmit = () => {
-        setIsSaveSecurityModalOpen(false);
         if (securityData) {
             mutate(securityData);
         }
@@ -59,6 +58,7 @@ const SecurityPage = () => {
     useEffect(() => {
         if (isLogoutSuccess) {
             document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
+            setIsSaveSecurityModalOpen(false);
             setTimeout(() => {
                 router.push("/auth/login");
             }, 1000)
