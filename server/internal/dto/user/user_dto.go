@@ -23,3 +23,10 @@ type ForgotPasswordResetPasswordRequest struct {
 	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 	Email string `json:"email" validate:"required,email"`
 }
+
+type SaveUserSecurityRequest struct {
+	CurrentPassword      string `json:"currentPassword" validate:"required,min=6"`
+	CurrentPasswordConfirmation string `json:"currentPasswordConfirmation" validate:"required,eqfield=CurrentPassword"`
+	NewPassword          string `json:"newPassword" validate:"required,min=6"`
+	NewPasswordConfirmation   string `json:"newPasswordConfirmation" validate:"required,eqfield=NewPassword"`
+}
