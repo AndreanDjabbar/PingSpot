@@ -2,7 +2,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { BiLock, BiEnvelope, BiUser, BiCog } from 'react-icons/bi';
-import { IoPhonePortraitOutline } from 'react-icons/io5';
 import { MdOutlineLanguage, MdOutlineMarkEmailUnread } from 'react-icons/md';
 import PasswordForm from './components/PasswordForm';
 import useSuccessToast from '@/hooks/useSuccessToast';
@@ -106,11 +105,6 @@ const SettingsPage = () => {
                     title="Email"
                     description={user?.email || ''}
                     icon={BiEnvelope}
-                    />
-                    <SettingItem
-                    title="Nomor Telepon"
-                    description=""
-                    icon={IoPhonePortraitOutline}
                     />
                 </div>
                 </SettingCard>
