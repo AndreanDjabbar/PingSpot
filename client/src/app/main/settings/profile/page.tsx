@@ -206,6 +206,7 @@ const ProfilePage = () => {
                                             labelTitle="Username"
                                             icon={<IoPersonSharp size={20}/>} 
                                             placeHolder="Masukkan username Anda"
+                                            disabled
                                         />
                                         <div className="text-red-500 text-sm font-semibold">{errors.username?.message as string}</div>
                                     </div>
