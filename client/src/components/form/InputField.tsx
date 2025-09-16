@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { cn } from '@/lib/utils';
 
 interface InputFieldProps {
     className?: string;
@@ -16,6 +17,7 @@ interface InputFieldProps {
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     register?: unknown;
+    disabled?: boolean;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -32,7 +34,8 @@ const InputField: React.FC<InputFieldProps> = ({
     value,
     onChange,
     onBlur,
-    register
+    register,
+    disabled = false,
 }) => {
     const [showPassword, setShowPassword] = useState(false);
     const inputType = type === 'password' && showPasswordToggle ? (showPassword ? 'text' : 'password') : type;
@@ -52,9 +55,10 @@ const InputField: React.FC<InputFieldProps> = ({
                     name={name}
                     type={inputType}
                     required={required}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200"
+                    className={cn("block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200", disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white', )}
                     placeholder={placeHolder || `Masukkan ${labelTitle.toLowerCase()}`}
                     value={value}
+                    disabled={disabled}
                     onChange={onChange}
                     onBlur={onBlur}
                     {...(register || {})}
