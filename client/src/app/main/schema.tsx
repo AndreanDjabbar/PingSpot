@@ -36,3 +36,16 @@ export const SaveSecuritySchema = z.object({
     message: "Kata sandi baru tidak boleh sama dengan password lama",
     path: ["newPassword"],
 });
+
+export const ReportSchema = z.object({
+    title: z.string().min(5, "Judul minimal 5 karakter").max(100, "Judul maksimal 100 karakter"),
+    description: z.string().min(10, "Deskripsi minimal 10 karakter").max(500, "Deskripsi maksimal 500 karakter"),
+    reportType: z.enum(['infrastructure', 'environment', 'safety', 'other'], {
+        message: "Pilih salah satu jenis laporan"
+    }),
+    location: z.string().min(3, "Lokasi minimal 3 karakter"),
+    latitude: z.string(),
+    longitude: z.string(),
+});
+
+export type ReportFormType = z.infer<typeof ReportSchema>;
