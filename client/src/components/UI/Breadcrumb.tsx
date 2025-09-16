@@ -10,7 +10,6 @@
     const paths = [
         { id: 'home', label: '🏠 Dashboard',},
         { id: 'map', label: 'Peta Interaktif', },
-        { id: 'reports', label: 'Laporan Saya', },
         { id: 'community', label: 'Komunitas', },
         { id: 'messages', label: 'Pesan', },
         { id: 'activity', label: 'Aktivitas', },
@@ -18,6 +17,7 @@
         { id: 'help', label: 'Bantuan' },
         { id: 'profile', label: 'Profil' },
         { id: 'security', label: 'Keamanan' },
+        { id: 'reports', label: '📝 Laporan' },
     ]
 
     const Breadcrumb = ({ path }: BreadcrumbProps) => {
