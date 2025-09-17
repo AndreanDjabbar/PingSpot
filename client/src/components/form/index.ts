@@ -4,6 +4,7 @@ import DateTimeField from './DateTimeField';
 import InputField from './InputField';
 import RadioField from './RadioField';
 import TextAreaField from './TextaAreaField';
+import MultipleImageField, { type ImageItem } from './MultipleImageField';
 
 export {
     ImageField,
@@ -11,5 +12,8 @@ export {
     DateTimeField,
     InputField,
     RadioField,
-    TextAreaField
+    TextAreaField,
+    MultipleImageField
 };
+
+export type { ImageItem };
