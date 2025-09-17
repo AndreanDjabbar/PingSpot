@@ -5,14 +5,13 @@ import { usePathname } from 'next/navigation';
 import HeaderSection from '../components/HeaderSection';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { InputField, ButtonSubmit, TextAreaField, RadioField, ImageField } from '@/components/form';
+import { InputField, ButtonSubmit, TextAreaField, RadioField, MultipleImageField } from '@/components/form';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { BiMessageDetail } from 'react-icons/bi';
 import { MdOutlineCategory } from 'react-icons/md';
 import { IoLocationOutline } from 'react-icons/io5';
 import { LuNotebookText } from "react-icons/lu";
-import ErrorSection from '@/components/UI/ErrorSection';
-import SuccessSection from '@/components/UI/SuccessSection';
+import { ErrorSection, SuccessSection, ImagePreviewModal } from '@/components/UI';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import { getDataResponseMessage } from '@/utils/getDataResponse';
 import useErrorToast from '@/hooks/useErrorToast';
@@ -27,9 +26,19 @@ const DynamicMap = dynamic(() => import('../components/DynamicMap'), {
 
 const ReportsPage = () => {
     const currentPath = usePathname();
-    const [reportImage, setReportImage] = useState<File | null>(null);
+    const [reportImages, setReportImages] = useState<File[]>([]);
     const [markerPosition, setMarkerPosition] = useState<{ lat: number, lng: number } | null>(null);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     
+    const handleImageClick = (imageUrl: string) => {
+        setPreviewImage(imageUrl);
+        setIsModalOpen(true);
+    };
+    
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
     const {
         register,
         handleSubmit,
@@ -60,7 +69,7 @@ const ReportsPage = () => {
         setIsSubmitting(true);
         const formData = {
         ...data,
-        image: reportImage
+        images: reportImages
         };
 
         console.log("Submitting report data:", formData);
@@ -75,7 +84,7 @@ const ReportsPage = () => {
             setResponseError(null);
         }
         reset();
-        setReportImage(null);
+        setReportImages([]);
         setMarkerPosition(null);
         }, 1000);
     };
@@ -192,15 +201,17 @@ const ReportsPage = () => {
 
                         <div className="w-full">
                             <div className=''>
-                                <ImageField
-                                id="reportImage"
+                                <MultipleImageField
+                                id="reportImages"
                                 withLabel={true}
-                                labelTitle="Foto Permasalahan"
+                                labelTitle="Foto Permasalahan (Maks. 5 Foto)"
                                 buttonTitle="Pilih Foto"
-                                width={420}
-                                height={420}
+                                width={200}
+                                height={200}
                                 shape="square"
-                                onChange={(file) => setReportImage(file)}
+                                maxImages={5}
+                                onChange={(files) => setReportImages(files)}
+                                onImageClick={handleImageClick}
                                 />
                             </div>
                             <p className="text-sm text-center text-gray-500 mt-1">
@@ -220,6 +231,12 @@ const ReportsPage = () => {
                 </form>
             </div>
         )}
+        
+        <ImagePreviewModal
+            imageUrl={previewImage}
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+        />
         </div>
     );
 };
