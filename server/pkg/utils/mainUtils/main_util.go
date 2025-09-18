@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"math/big"
 	"server/pkg/utils/env"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -260,4 +261,16 @@ func StrPtrOrNil(s string) *string {
 		return nil
 	}
 	return &s
+}
+
+func StringToFloat64(s string) (float64, error) {
+    if s == "" {
+        return 0.0, nil
+    }
+    value, err := strconv.ParseFloat(s, 64)
+    if err != nil {
+        return 0.0, fmt.Errorf("failed to convert string to float64: %w", err)
+    }
+    
+    return value, nil
 }
