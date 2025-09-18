@@ -56,7 +56,7 @@ func main() {
 			logger.Error("Failed to create uploads/user directory", zap.Error(err))
 		}
 
-		if err := os.MkdirAll("uploads/main", os.ModePerm); err != nil {
+		if err := os.MkdirAll("uploads/main/report", os.ModePerm); err != nil {
 			logger.Error("Failed to create uploads/main directory", zap.Error(err))
 		}
 	}
