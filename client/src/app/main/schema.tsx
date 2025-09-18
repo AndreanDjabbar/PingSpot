@@ -38,14 +38,21 @@ export const SaveSecuritySchema = z.object({
 });
 
 export const ReportSchema = z.object({
-    title: z.string().min(5, "Judul minimal 5 karakter").max(100, "Judul maksimal 100 karakter"),
-    description: z.string().min(10, "Deskripsi minimal 10 karakter").max(500, "Deskripsi maksimal 500 karakter"),
+    reportTitle: z.string().min(5, "Judul minimal 5 karakter").max(100, "Judul maksimal 100 karakter"),
+    reportDescription: z.string().min(10, "Deskripsi minimal 10 karakter").max(500, "Deskripsi maksimal 500 karakter"),
     reportType: z.enum(['infrastructure', 'environment', 'safety', 'other'], {
         message: "Pilih salah satu jenis laporan"
     }),
     location: z.string().min(3, "Lokasi minimal 3 karakter"),
     latitude: z.string(),
     longitude: z.string(),
+    reportImages: z
+    .array(z.instanceof(File))
+    .max(5, "Maksimal 5 gambar")
+    .refine(
+    (files) => files.every((file) => file.size <= 5 * 1024 * 1024),
+    "Setiap gambar maksimal 5MB"
+    ).optional(),
 });
 
-export type ReportFormType = z.infer<typeof ReportSchema>;
+export type IReportFormType = z.infer<typeof ReportSchema>;
