@@ -13,12 +13,15 @@ import { IoLocationOutline } from 'react-icons/io5';
 import { LuNotebookText } from "react-icons/lu";
 import { ErrorSection, SuccessSection, ImagePreviewModal } from '@/components/UI';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
-import { getDataResponseMessage } from '@/utils/getDataResponse';
+import { getDataResponseDetails, getDataResponseMessage } from '@/utils/getDataResponse';
 import useErrorToast from '@/hooks/useErrorToast';
 import useSuccessToast from '@/hooks/useSuccessToast';
 import dynamic from 'next/dynamic';
-import { ReportSchema, ReportFormType } from '../schema';
+import { ReportSchema, IReportFormType } from '../schema';
 import 'leaflet/dist/leaflet.css';
+import ConfirmationDialog from '@/components/UI/ConfirmationDialog';
+import { useCreateReport } from '@/hooks/main/useCreateReport';
+import { useReverseCurrentLocation } from '@/hooks/main/useReverseCurrentLocation';
 
 const DynamicMap = dynamic(() => import('../components/DynamicMap'), {
     ssr: false,
@@ -30,7 +33,19 @@ const ReportsPage = () => {
     const [markerPosition, setMarkerPosition] = useState<{ lat: number, lng: number } | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
+    const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
+
+    const { mutate, isPending, isError, isSuccess, error, data } = useCreateReport();
+    const { mutate: reverseLocation, data: reverseLocationData, isPending: reverseLoading } = useReverseCurrentLocation();
     
+    const issueTypes = [
+        { value: 'infrastructure', label: 'Infrastruktur' },
+        { value: 'environment', label: 'Lingkungan' },
+        { value: 'safety', label: 'Keamanan' },
+        { value: 'other', label: 'Lainnya' }
+    ];
+
     const handleImageClick = (imageUrl: string) => {
         setPreviewImage(imageUrl);
         setIsModalOpen(true);
@@ -39,6 +54,7 @@ const ReportsPage = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
     };
+    
     const {
         register,
         handleSubmit,
@@ -46,17 +62,20 @@ const ReportsPage = () => {
         formState: { errors },
         reset,
         watch
-    } = useForm<ReportFormType>({
+    } = useForm<IReportFormType>({
         resolver: zodResolver(ReportSchema),
     });
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
-    const [isError, setIsError] = useState(false);
-    const [responseData, setResponseData] = useState<{ message: string } | null>(null);
-    const [responseError, setResponseError] = useState<{ message: string, details?: Record<string, string[]> } | null>(null);
-
     const reportTypeValue = watch('reportType');
+
+    const confirmSubmit = () => {
+        if (formDataToSubmit) {
+            reverseLocation({
+                latitude: markerPosition?.lat.toString() || '',
+                longitude: markerPosition?.lng.toString() || ''
+            })
+        }
+    }
 
     useEffect(() => {
         if (markerPosition) {
@@ -65,39 +84,71 @@ const ReportsPage = () => {
         }
     }, [markerPosition, setValue]);
 
-    const onSubmit = (data: ReportFormType) => {
-        setIsSubmitting(true);
-        const formData = {
-        ...data,
-        images: reportImages
-        };
-
-        console.log("Submitting report data:", formData);
-        
-        setTimeout(() => {
-        setIsSubmitting(false);
-        setIsSuccess(true);
-        setResponseData({ message: "Laporan berhasil dikirim!" });
-
-        if (isError) {
-            setIsError(false);
-            setResponseError(null);
+    useEffect(() => {
+        if (reverseLocationData && formDataToSubmit) {
+            const locationData = getDataResponseDetails(reverseLocationData);
+            const {
+                country, 
+                country_code, 
+                county, 
+                postcode, 
+                region, 
+                road,
+                state, 
+                village, 
+                suburb
+            } = locationData.address || {};
+            formDataToSubmit.append('displayName', locationData.display_name || '');
+            formDataToSubmit.append('road', road || '');
+            formDataToSubmit.append('country', country || '');
+            formDataToSubmit.append('countryCode', country_code || '');
+            formDataToSubmit.append('county', county || '');
+            formDataToSubmit.append('postCode', postcode || '');
+            formDataToSubmit.append('region', region || '');
+            formDataToSubmit.append('state', state || '');
+            formDataToSubmit.append('village', village || '');
+            formDataToSubmit.append('suburb', suburb || '');
         }
-        reset();
-        setReportImages([]);
-        setMarkerPosition(null);
-        }, 1000);
+
+        if (formDataToSubmit) {
+            mutate(formDataToSubmit!);
+        }
+    }, [reverseLocationData]);
+
+    useEffect(() => {
+        if (isSuccess) {
+            reset();
+            setReportImages([]);
+            setMarkerPosition(null);
+            setFormDataToSubmit(null);
+            setIsCreateReportModalOpen(false);
+        }
+    }, [isSuccess, data]);
+
+    const prepareFormData = (formData: IReportFormType): FormData => {
+        const data = new FormData();
+        data.append('reportTitle', formData.reportTitle);
+        data.append('reportDescription', formData.reportDescription);
+        data.append('reportType', formData.reportType.toUpperCase());
+        data.append('detailLocation', formData.location);
+        data.append('latitude', formData.latitude);
+        data.append('longitude', formData.longitude);
+        if (reportImages && reportImages.length > 0 ) {
+            reportImages.forEach((file) => {
+                data.append('reportImages', file);
+            });
+        }
+        return data;
+    }
+
+    const onSubmit = (formData: IReportFormType) => {
+        const preparedData = prepareFormData(formData);
+        setFormDataToSubmit(preparedData);
+        setIsCreateReportModalOpen(true);
     };
 
-    useErrorToast(isError, responseError);
-    useSuccessToast(isSuccess, responseData);
-
-    const issueTypes = [
-        { value: 'infrastructure', label: 'Infrastruktur' },
-        { value: 'environment', label: 'Lingkungan' },
-        { value: 'safety', label: 'Keamanan' },
-        { value: 'other', label: 'Lainnya' }
-    ];
+    useErrorToast(isError, error);
+    useSuccessToast(isSuccess, data);
 
     return (
         <div className="space-y-8">
@@ -107,13 +158,13 @@ const ReportsPage = () => {
         />
 
         {isSuccess && (
-            <SuccessSection message={responseData ? getDataResponseMessage(responseData) : "Laporan berhasil dikirim!"} />
+            <SuccessSection message={getDataResponseMessage(data) || "Laporan berhasil dikirim!"} />
         )}
 
         {isError && (
             <ErrorSection 
-            message={getErrorResponseMessage(responseError)} 
-            errors={getErrorResponseDetails(responseError)} 
+            message={getErrorResponseMessage(error)} 
+            errors={getErrorResponseDetails(error)} 
             />
         )}
 
@@ -144,7 +195,7 @@ const ReportsPage = () => {
                             <div className="w-full">
                                 <InputField
                                     id="title"
-                                    register={register("title")}
+                                    register={register("reportTitle")}
                                     type="text"
                                     className="w-full"
                                     withLabel={true}
@@ -152,7 +203,7 @@ const ReportsPage = () => {
                                     icon={<LuNotebookText size={20} />}
                                     placeHolder="Masukkan judul laporan"
                                 />
-                                <div className="text-red-500 text-sm font-semibold">{errors.title?.message as string}</div>
+                                <div className="text-red-500 text-sm font-semibold">{errors.reportTitle?.message as string}</div>
                             </div>
 
                             <div className="w-full">
@@ -173,7 +224,7 @@ const ReportsPage = () => {
                         <div className="w-full">
                             <TextAreaField
                             id="description"
-                            register={register("description")}
+                            register={register("reportDescription")}
                             rows={4}
                             className="w-full"
                             withLabel={true}
@@ -181,7 +232,7 @@ const ReportsPage = () => {
                             icon={<BiMessageDetail size={20} />}
                             placeHolder="Jelaskan permasalahan dengan detail"
                             />
-                            <div className="text-red-500 text-sm font-semibold">{errors.description?.message as string}</div>
+                            <div className="text-red-500 text-sm font-semibold">{errors.reportDescription?.message as string}</div>
                         </div>
 
                         <div className="w-full">
@@ -224,18 +275,30 @@ const ReportsPage = () => {
                             className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
                             title="Kirim Laporan"
                             progressTitle="Mengirim Laporan..."
-                            isProgressing={isSubmitting}
+                            isProgressing={isPending || reverseLoading}
                             />
                         </div>
                     </div>
                 </form>
             </div>
         )}
-        
         <ImagePreviewModal
             imageUrl={previewImage}
             isOpen={isModalOpen}
             onClose={handleCloseModal}
+        />
+        <ConfirmationDialog
+        isOpen={isCreateReportModalOpen}
+        onClose={() => setIsCreateReportModalOpen(false)}
+        onConfirm={confirmSubmit}
+        isPending={isPending || reverseLoading}
+        type='info'
+        cancelTitle='Batal'
+        confirmTitle='Buat'
+        title='Konfirmasi Pembuatan Laporan'
+        explanation="Laporan yang sudah diunggah masih bisa diubah dalam 10 menit pertama, setelah itu tidak bisa diubah lagi."
+        message='Apakah Anda yakin ingin membuat?'
+        icon={<LuNotebookText/>}
         />
         </div>
     );
