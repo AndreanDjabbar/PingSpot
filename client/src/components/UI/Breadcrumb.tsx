@@ -18,6 +18,7 @@
         { id: 'profile', label: 'Profil' },
         { id: 'security', label: 'Keamanan' },
         { id: 'reports', label: '📝 Laporan' },
+        { id: 'create-report', label: 'Buat Laporan' },
     ]
 
     const Breadcrumb = ({ path }: BreadcrumbProps) => {
