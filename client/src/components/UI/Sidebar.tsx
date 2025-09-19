@@ -17,7 +17,7 @@ interface SidebarProps {
 const navigationItems = [
     { id: 'home', label: 'Dashboard', icon: BiHome },
     { id: 'map', label: 'Peta Interaktif', icon: FaMap },
-    { id: 'reports', label: 'Laporan Saya', icon: GoAlert, badge: '3' },
+    { id: 'reports', label: 'Laporan', icon: GoAlert, badge: '3' },
     { id: 'community', label: 'Komunitas', icon: FaUsers },
     { id: 'messages', label: 'Pesan', icon: LuMessageCircle, badge: '12' },
     { id: 'activity', label: 'Aktivitas', icon: LuActivity },
