@@ -55,4 +55,6 @@ export const ReportSchema = z.object({
     ).optional(),
 });
 
+export type ISaveProfileFormType = z.infer<typeof SaveProfileSchema>;
+export type ISaveSecurityFormType = z.infer<typeof SaveSecuritySchema>;
 export type IReportFormType = z.infer<typeof ReportSchema>;
