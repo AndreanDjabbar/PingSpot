@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType, ILoginFormType, IRegisterFormType, IVerificationType } from "@/types/authTypes";
-import { ISaveSecurityFormType } from "@/types/userTypes";
+import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType, ILoginFormType, IRegisterFormType, IVerificationFormType } from "@/app/auth/Schema";
+import { ISaveSecurityFormType } from "@/app/main/schema";
 import getAuthToken from "@/utils/getAuthToken";
 import axios from "axios";
 
@@ -51,7 +51,7 @@ export const logoutService = async (): Promise<IResponseType> => {
     return response.data;
 }
 
-export const verificationService = async (payload: IVerificationType): Promise<IResponseType> => {
+export const verificationService = async (payload: IVerificationFormType): Promise<IResponseType> => {
     const response = await axios.post<IResponseType>(`${USER_API_URL}/auth/verification?code1=${payload.code1}&userId=${payload.userId}&code2=${payload.code2}`);
     return response.data;
 }

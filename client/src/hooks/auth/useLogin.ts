@@ -1,4 +1,4 @@
-import { ILoginFormType } from "@/types/authTypes";
+import { ILoginFormType } from "@/app/auth/Schema";
 import { loginService } from "@/services/userService";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
