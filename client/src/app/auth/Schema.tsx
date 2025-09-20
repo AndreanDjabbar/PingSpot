@@ -5,6 +5,7 @@ export const RegisterSchema = z.object({
     username: z.string().min(3, "Username minimal 3 karakter"),
     email: z.email({ message: "Format email tidak valid" }),
     password: z.string().min(6, "Kata sandi minimal 6 karakter"),
+    provider: z.string().optional(),
     passwordConfirmation: z.string(),
     }).refine((data) => data.password === data.passwordConfirmation, {
     message: "Konfirmasi kata sandi tidak cocok",
@@ -33,3 +34,9 @@ export const ForgotPasswordResetPasswordSchema = z.object({
     message: "Konfirmasi kata sandi tidak cocok",
     path: ["passwordConfirmation"],
 })
+
+export type IRegisterFormType = z.infer<typeof RegisterSchema>;
+export type ILoginFormType = z.infer<typeof LoginSchema>;
+export type IVerificationFormType = z.infer<typeof VerificationSchema>;
+export type IForgotPasswordFormEmailType = z.infer<typeof ForgotPasswordEmailVerificationSchema>;
+export type IForgotPasswordResetPasswordType = z.infer<typeof ForgotPasswordResetPasswordSchema>;
