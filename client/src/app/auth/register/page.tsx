@@ -11,13 +11,12 @@ import { RegisterSchema } from "../Schema";
 import { useRegister } from "@/hooks/auth/useRegister";
 import { useEffect } from "react";
 import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
-import ErrorSection from "@/components/UI/ErrorSection";
 import ButtonSubmit from "@/components/form/ButtonSubmit";
 import { getDataResponseMessage } from "@/utils/getDataResponse";
 import { useRouter } from "next/navigation";
-import SuccessSection from "@/components/UI/SuccessSection";
 import useErrorToast from "@/hooks/useErrorToast";
 import useSuccessToast from "@/hooks/useSuccessToast";
+import { SuccessSection, ErrorSection } from "@/components/feedback";
 
 const RegisterPage = () => {
     const { 

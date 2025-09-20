@@ -6,20 +6,19 @@ import HeaderSection from '../components/HeaderSection';
 import Image from 'next/image';
 import { FaMapMarkerAlt, FaCalendarAlt, FaSearch, FaFilter } from 'react-icons/fa';
 import { MdOutlineCategory } from 'react-icons/md';
-import { ImagePreviewModal } from '@/components/UI';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { BiPlus } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
+import { ImagePreviewModal } from '@/components/feedback';
 
-const DynamicMap = dynamic(() => import('../components/DynamicMap'), {
+const StaticMap = dynamic(() => import('../components/StaticMap'), {
     ssr: false,
     loading: () => <div className="w-full h-[200px] bg-gray-200 animate-pulse rounded-lg"></div>
 });
 
-// Define types based on the backend models
 type ReportType = 'infrastructure' | 'environment' | 'safety' | 'other';
 
 interface ReportImage {
@@ -69,7 +68,6 @@ interface Report {
     images: ReportImage;
 }
 
-// Dummy data for reports
 const dummyReports: Report[] = [
     {
         id: 1,
@@ -111,7 +109,7 @@ const dummyReports: Report[] = [
         reportTitle: "Pembuangan Sampah Liar di Kali Ciliwung",
         reportType: "environment",
         reportDescription: "Banyak warga yang membuang sampah di bantaran kali Ciliwung yang menyebabkan pencemaran air dan potensi banjir saat musim hujan.",
-        createdAt: Date.now() - 86400000 * 5, // 5 days ago
+        createdAt: Date.now() - 86400000 * 5,
         location: {
             id: 2,
             reportId: 2,
@@ -141,7 +139,7 @@ const dummyReports: Report[] = [
         reportTitle: "Lampu Penerangan Jalan Mati di Kompleks Perumahan",
         reportType: "safety",
         reportDescription: "Sejak seminggu yang lalu, lampu penerangan jalan di kompleks perumahan Harapan Indah sudah mati dan belum diperbaiki. Hal ini membuat area menjadi gelap dan tidak aman pada malam hari.",
-        createdAt: Date.now() - 86400000 * 1, // 1 day ago
+        createdAt: Date.now() - 86400000 * 1,
         location: {
             id: 3,
             reportId: 3,
@@ -396,21 +394,14 @@ const ReportsPage = () => {
                                     </div>
                                 </div>
                                 
-                                {/* Map preview */}
                                 <div className="mb-4 h-[200px] w-full rounded-lg overflow-hidden">
-                                    <DynamicMap 
-                                        onMarkerPositionChange={() => {}}
-                                        initialMarker={{
-                                            lat: report.location.latitude,
-                                            lng: report.location.longitude
-                                        }}
-                                        showLocationButton={false}
-                                        scrollWheelZoom={false}
-                                        height={200}
+                                    <StaticMap
+                                    latitude={report.location.latitude}
+                                    longitude={report.location.longitude}
+                                    height={200}
                                     />
                                 </div>
                                 
-                                {/* Images preview */}
                                 {getReportImages(report.images).length > 0 && (
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 mb-2">Foto Permasalahan:</p>
@@ -446,7 +437,6 @@ const ReportsPage = () => {
                 </div>
             )}
             
-            {/* Image preview modal */}
             <ImagePreviewModal
                 imageUrl={previewImage}
                 isOpen={isModalOpen}

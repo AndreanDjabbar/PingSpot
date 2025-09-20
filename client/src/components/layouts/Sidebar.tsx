@@ -1,5 +1,7 @@
+"use client";
+
 import { BiHome, BiX } from "react-icons/bi";
-import PingspotLogo from "./PingspotLogo";
+import PingspotLogo from "../UI/PingspotLogo";
 import { FaMap, FaUsers } from "react-icons/fa";
 import { GoAlert } from "react-icons/go";
 import { LuActivity, LuMessageCircle } from "react-icons/lu";

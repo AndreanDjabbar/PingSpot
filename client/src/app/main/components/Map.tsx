@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unescaped-entities */
-import ErrorSection from '@/components/UI/ErrorSection'
 import { useCurrentLocation } from '@/hooks/main/useCurrentLocation'
 import useErrorToast from '@/hooks/useErrorToast'
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse'
@@ -12,6 +11,7 @@ import camelize from 'camelize';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet';
+import { ErrorSection } from '@/components/feedback'
 
 interface ReverseLocationResponse {
     display_name?: string;

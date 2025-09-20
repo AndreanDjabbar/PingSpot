@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/useToast';
-import SuccessSection from '@/components/UI/SuccessSection';
+import { SuccessSection } from '@/components/feedback';
 
 const GoogleAuthClient = () => {
     const searchParams = useSearchParams();

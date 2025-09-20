@@ -1,4 +1,4 @@
-import AuthLayout from "@/layouts/AuthLayout";
+import { AuthLayout } from "@/components/layouts";
 
 const AuthLayoutWrapper = ({children}: {children: React.ReactNode}) => {
     return (

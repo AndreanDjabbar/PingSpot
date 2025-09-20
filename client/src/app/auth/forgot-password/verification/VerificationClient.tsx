@@ -2,15 +2,14 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react'
-import ErrorSection from '@/components/UI/ErrorSection';
+import { SuccessSection, ErrorSection } from '@/components/feedback';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import SuccessSection from '@/components/UI/SuccessSection';
 import { useLinkVerification, useResetPassword } from '@/hooks/auth/useForgotPassword';
 import ButtonSubmit from '@/components/form/ButtonSubmit';
 import InputField from '@/components/form/InputField';
 import { LuLockKeyhole } from 'react-icons/lu';
-import { IForgotPasswordResetPasswordType } from '@/types/authTypes';
+import { IForgotPasswordResetPasswordType } from '../../Schema';
 import { ForgotPasswordResetPasswordSchema } from '../../Schema';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import useErrorToast from '@/hooks/useErrorToast';

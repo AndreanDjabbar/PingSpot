@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react'
-import Sidebar from '@/components/UI/Sidebar';
-import TopNavigation from '@/components/UI/TopNavigation';
+import Sidebar from './Sidebar';
+import TopNavigation from './TopNavigation';
 
 interface MainLayoutProps {
     children: React.ReactNode;

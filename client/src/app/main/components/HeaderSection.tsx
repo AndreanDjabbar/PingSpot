@@ -1,5 +1,5 @@
 import React from 'react'
-import Breadcrumb from '@/components/UI/Breadcrumb'
+import { Breadcrumb } from '@/components/layouts';
 import { cn } from '@/lib/utils';
 
 interface HeaderSectionProps {

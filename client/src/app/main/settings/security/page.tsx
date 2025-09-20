@@ -10,14 +10,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import useErrorToast from '@/hooks/useErrorToast';
 import useSuccessToast from '@/hooks/useSuccessToast';
-import SuccessSection from '@/components/UI/SuccessSection';
+import { SuccessSection, ErrorSection, ConfirmationDialog } from '@/components/feedback';
 import { getDataResponseMessage } from '@/utils/getDataResponse';
-import ErrorSection from '@/components/UI/ErrorSection';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import HeaderSection from '../../components/HeaderSection';
 import { LuLockKeyhole } from 'react-icons/lu';
 import { useSaveSecurity } from '@/hooks/user/useSaveSecurity';
-import ConfirmationDialog from '@/components/UI/ConfirmationDialog';
 import { IoKey } from 'react-icons/io5';
 import { useLogout } from '@/hooks/auth/useLogout';
 

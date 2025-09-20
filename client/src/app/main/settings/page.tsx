@@ -15,7 +15,7 @@ import { useUserProfileStore } from '@/stores/userProfileStore';
 import SettingItem from './components/SettingItem';
 import ToggleSwitch from '@/components/UI/ToggleSwitch';
 import SettingCard from './components/SettingCard';
-import ConfirmationDialog from '@/components/UI/ConfirmationDialog';
+import { ConfirmationDialog } from '@/components/feedback';
 import HeaderSection from '../components/HeaderSection';
 
 const SettingsPage = () => {

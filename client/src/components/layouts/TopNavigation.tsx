@@ -1,5 +1,5 @@
 import { BiMenu } from "react-icons/bi";
-import PingspotLogo from "./PingspotLogo";
+import PingspotLogo from "../UI/PingspotLogo";
 
 interface TopNavigationProps {
     onMenuToggle: () => void;

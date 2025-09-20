@@ -1,9 +1,7 @@
-import ErrorSection from './ErrorSection';
-import SuccessSection from './SuccessSection';
-import ImagePreviewModal from './ImagePreviewModal';
+import PingspotLogo from "./PingspotLogo";
+import ToggleSwitch from "./ToggleSwitch";
 
 export {
-    ErrorSection,
-    SuccessSection,
-    ImagePreviewModal
-};
+    PingspotLogo,
+    ToggleSwitch
+}

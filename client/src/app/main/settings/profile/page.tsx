@@ -16,12 +16,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useSaveProfile } from '@/hooks/user/useSaveProfile';
 import useErrorToast from '@/hooks/useErrorToast';
 import useSuccessToast from '@/hooks/useSuccessToast';
-import SuccessSection from '@/components/UI/SuccessSection';
 import { getDataResponseMessage } from '@/utils/getDataResponse';
-import ErrorSection from '@/components/UI/ErrorSection';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import HeaderSection from '../../components/HeaderSection';
-import ConfirmationDialog from '@/components/UI/ConfirmationDialog';
+import { SuccessSection, ErrorSection, ConfirmationDialog } from '@/components/feedback';
 
 const ProfilePage = () => {
     const user = useUserProfileStore(state => state.userProfile);
