@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { InputField, ButtonSubmit } from '@/components/form';
 import { SaveSecuritySchema } from '../../schema';
-import { ISaveSecurityFormType } from '@/types/userTypes';
+import { ISaveSecurityFormType } from '../../schema';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import useErrorToast from '@/hooks/useErrorToast';
