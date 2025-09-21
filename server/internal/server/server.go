@@ -1,12 +1,10 @@
 package server
 
 import (
-	mainRouter "server/internal/router/mainService"
-	userRouter "server/internal/router/user"
+	"server/internal/router"
 	"server/pkg/logger"
 	"server/pkg/utils/env"
 	"server/pkg/utils/response"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
@@ -50,6 +48,5 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	defaultRoute := s.App.Group("/pingspot/api")
 	defaultRoute.Get("/", DefaultHandler)
 
-	mainRouter.RegisterRoutes(s.App)
-	userRouter.RegisterRoutes(s.App)
+	router.RegisterRoutes(s.App)
 }
