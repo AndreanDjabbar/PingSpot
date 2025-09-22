@@ -5,6 +5,7 @@ import getAuthToken from "@/utils/getAuthToken";
 import axios from "axios";
 
 const USER_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/user`;
+const AUTH_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/auth`;
 
 type IResponseType = {
     message: string;
@@ -32,18 +33,18 @@ const MULTIPART_HEADERS = (authToken: string) => {
 }
 
 export const registerService = async (payload: IRegisterFormType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/auth/register`, payload);
+    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/register`, payload);
     return response.data;
 };
 
 export const loginService = async (payload: ILoginFormType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/auth/login`, payload);
+    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/login`, payload);
     return response.data;
 };
 
 export const logoutService = async (): Promise<IResponseType> => {
     const authToken = getAuthToken();
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/auth/logout`, {}, {
+    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/logout`, {}, {
         headers: {
             'Authorization': `Bearer ${authToken}`
         }
@@ -52,22 +53,22 @@ export const logoutService = async (): Promise<IResponseType> => {
 }
 
 export const verificationService = async (payload: IVerificationFormType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/auth/verification?code1=${payload.code1}&userId=${payload.userId}&code2=${payload.code2}`);
+    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/verification?code1=${payload.code1}&userId=${payload.userId}&code2=${payload.code2}`);
     return response.data;
 }
 
 export const sendForgotPasswordEmailVerificationService = async (payload: IForgotPasswordFormEmailType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/auth/forgot-password/email-verification`, payload);
+    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/forgot-password/email-verification`, payload);
     return response.data;
 }
 
 export const linkVerificationService = async ({ code, email }: { code: string; email: string }): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/auth/forgot-password/link-verification?code=${code}&email=${email}`);
+    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/forgot-password/link-verification?code=${code}&email=${email}`);
     return response.data;
 }
 
 export const resetPasswordService = async (payload: IForgotPasswordResetPasswordType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/auth/forgot-password/reset-password`, payload);
+    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/forgot-password/reset-password`, payload);
     return response.data;
 };
 
@@ -85,6 +86,6 @@ export const saveSecurityService = async (payload: ISaveSecurityFormType): Promi
 
 export const getMyProfileService = async (): Promise<IResponseType> => {
     const authToken = getAuthToken();
-    const response = await axios.get<IResponseType>(`${USER_API_URL}/profile/me`, COMMON_HEADERS(authToken || ''));
+    const response = await axios.get<IResponseType>(`${USER_API_URL}/profile/`, COMMON_HEADERS(authToken || ''));
     return response.data;
 }
