@@ -1,11 +1,12 @@
-package mainservice
+package handler
 
 import (
 	"fmt"
 	"path/filepath"
+	"server/internal/domain/mainService/service"
+	"server/internal/domain/mainService/validation"
 	"server/internal/infrastructure/database"
 	"server/pkg/logger"
-	"server/pkg/utils/env"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/response"
 	"time"
@@ -14,16 +15,15 @@ import (
 	"go.uber.org/zap"
 )
 
-func defaultHandler(c *fiber.Ctx) error {
-	logger.Info("DEFAULT AUTH HANDLER")
-	data := map[string]any{
-		"message":    "Selamat datang di Pingspot AUTH API.. Silakan cek repository untuk informasi lebih lanjut.",
-		"repository": env.GithubRepoURL(),
-	}
-	return response.ResponseSuccess(c, 200, "Selamat datang di Pingspot AUTH API", "data", data)
+type MainHandler struct {
+	mainService *service.MainService
 }
 
-func createReportHandler(c *fiber.Ctx) error {
+func NewMainHandler(mainService *service.MainService ) *MainHandler {
+	return &MainHandler{mainService: mainService}
+}
+
+func (h *MainHandler) CreateReportHandler(c *fiber.Ctx) error {
 	logger.Info("CREATE REPORT HANDLER")
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -94,7 +94,7 @@ func createReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Format longitude tidak valid", "", "Longitude harus berupa angka desimal")
 	}
 
-	req := createReportRequest{
+	req := validation.CreateReportRequest{
 		ReportTitle: 	 reportTitle,
 		ReportType: 	 reportType,
 		ReportDescription: reportDescription,
@@ -120,8 +120,8 @@ func createReportHandler(c *fiber.Ctx) error {
 	}
 
 	db := database.GetDB()
-	if err := validate.Struct(req); err != nil {
-		errors := formatCreateReportValidationErrors(err)
+	if err := validation.Validate.Struct(req); err != nil {
+		errors := validation.FormatCreateReportValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
@@ -133,7 +133,7 @@ func createReportHandler(c *fiber.Ctx) error {
 	}
 	userID := uint(claims["user_id"].(float64))
 
-	result, err := CreateReport(db, userID, req)
+	result, err := h.mainService.CreateReport(db, userID, req)
 	if err != nil {
 		logger.Error("Failed to create report", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal membuat laporan", "", err.Error())

@@ -1,11 +1,12 @@
-package userservice
+package handler
 
 import (
 	"fmt"
 	"path/filepath"
+	"server/internal/domain/userService/service"
+	"server/internal/domain/userService/validation"
 	"server/internal/infrastructure/database"
 	"server/pkg/logger"
-	"server/pkg/utils/env"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/response"
 	"time"
@@ -14,24 +15,23 @@ import (
 	"go.uber.org/zap"
 )
 
-func defaultHandler(c *fiber.Ctx) error {
-	logger.Info("DEFAULT AUTH HANDLER")
-	data := map[string]any{
-		"message":    "Selamat datang di Pingspot AUTH API.. Silakan cek repository untuk informasi lebih lanjut.",
-		"repository": env.GithubRepoURL(),
-	}
-	return response.ResponseSuccess(c, 200, "Selamat datang di Pingspot AUTH API", "data", data)
+type UserHandler struct {
+    userService *service.UserService
 }
 
-func saveUserSecurityHandler(c *fiber.Ctx) error {
+func NewUserHandler(userService *service.UserService ) *UserHandler {
+    return &UserHandler{userService: userService}
+}
+
+func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
 	logger.Info("SAVE USER SECURITY HANDLER")
-	var req saveUserSecurityRequest
+	var req validation.SaveUserSecurityRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
-	if err := validate.Struct(req); err != nil {
-		errors := formatSaveUserSecurityValidationErrors(err)
+	if err := validation.Validate.Struct(req); err != nil {
+		errors := validation.FormatSaveUserSecurityValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
@@ -41,15 +41,14 @@ func saveUserSecurityHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
-	db := database.GetDB()
-	if err := SaveSecurity(db, userId, req); err != nil {
+	if err := h.userService.SaveSecurity( userId, req); err != nil {
 		logger.Error("Failed to update user password", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal memperbarui kata sandi", "", err.Error())
 	}
 	return response.ResponseSuccess(c, 200, "Kata sandi berhasil diperbarui. Silahkan masuk kembali dengan kata sandi baru anda.", "data", nil)
 }
 
-func saveUserProfileHandler(c *fiber.Ctx) error {
+func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 	logger.Info("SAVE USER PROFILE HANDLER")
 	_, err := c.MultipartForm()
 	if err != nil {
@@ -93,7 +92,7 @@ func saveUserProfileHandler(c *fiber.Ctx) error {
 		}
 	}
 
-	req := saveUserProfileRequest{
+	req := validation.SaveUserProfileRequest{
 		FullName:       fullName,
 		Gender:         mainutils.StrPtrOrNil(gender),
 		Bio:            mainutils.StrPtrOrNil(bio),
@@ -101,10 +100,8 @@ func saveUserProfileHandler(c *fiber.Ctx) error {
 		Birthday:       mainutils.StrPtrOrNil(birthday),
 	}
 
-	db := database.GetDB()
-
-	if err := validate.Struct(req); err != nil {
-		errors := formatSaveUserProfileValidationErrors(err)
+	if err := validation.Validate.Struct(req); err != nil {
+		errors := validation.FormatSaveUserProfileValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
@@ -115,7 +112,8 @@ func saveUserProfileHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
-	newProfile, err := SaveProfile(db, userId, req)
+	database := database.GetDB()
+	newProfile, err := h.userService.SaveProfile(database, userId, req)
 	if err != nil {
 		logger.Error("Failed to save user profile", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal memperbarui profil pengguna", "", err.Error())
@@ -131,16 +129,15 @@ func saveUserProfileHandler(c *fiber.Ctx) error {
 	return response.ResponseSuccess(c, 200, "Profil pengguna berhasil diperbarui", "data", newProfileFormatted)
 }
 
-func getProfileHandler(c *fiber.Ctx) error {
+func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
 	logger.Info("GET MY PROFILE HANDLER")
-	db := database.GetDB()
 	claims, err := mainutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
-	myProfile, err := GetProfile(db, userId)
+	myProfile, err := h.userService.GetProfile(userId)
 	if err != nil {
 		logger.Error("Failed to get my profile", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal mendapatkan profil pengguna", "", err.Error())

@@ -1,16 +1,16 @@
-package userservice
+package validation
 
 import (
 	"github.com/go-playground/validator/v10"
 )
 
-var validate *validator.Validate
+var Validate *validator.Validate
 
 func init() {
-	validate = validator.New()
+	Validate = validator.New()
 }
 
-func formatSaveUserProfileValidationErrors(err error) map[string]string {
+func FormatSaveUserProfileValidationErrors(err error) map[string]string {
 	errors := map[string]string{}
 	if err == nil {
 		return errors
@@ -45,7 +45,7 @@ func formatSaveUserProfileValidationErrors(err error) map[string]string {
 	return errors
 }
 
-func formatSaveUserSecurityValidationErrors(err error) map[string]string {
+func FormatSaveUserSecurityValidationErrors(err error) map[string]string {
 	errors := map[string]string{}
 	if err == nil {
 		return errors

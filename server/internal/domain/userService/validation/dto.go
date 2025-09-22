@@ -1,6 +1,6 @@
-package userservice
+package validation
 
-type saveUserProfileRequest struct {
+type SaveUserProfileRequest struct {
 	FullName 		  string  `json:"fullName" validate:"required"`
 	Bio    	 		 *string `json:"bio" validate:"omitempty,max=255"`
 	ProfilePicture   *string `json:"profilePicture" validate:"omitempty,max=255"`
@@ -8,7 +8,7 @@ type saveUserProfileRequest struct {
 	Birthday 	   	 *string `json:"birthday" validate:"omitempty,datetime=2006-01-02"`
 }
 
-type saveUserSecurityRequest struct {
+type SaveUserSecurityRequest struct {
 	CurrentPassword      string `json:"currentPassword" validate:"required,min=6"`
 	CurrentPasswordConfirmation string `json:"currentPasswordConfirmation" validate:"required,eqfield=CurrentPassword"`
 	NewPassword          string `json:"newPassword" validate:"required,min=6"`

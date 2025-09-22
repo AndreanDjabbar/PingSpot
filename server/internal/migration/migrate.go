@@ -1,8 +1,8 @@
 package migration
 
 import (
-	mainservice "server/internal/domain/mainService"
-	userservice "server/internal/domain/userService"
+	mainModel "server/internal/domain/mainService/model"
+	userModel "server/internal/domain/userService/model"
 	"server/pkg/logger"
 
 	"github.com/go-gormigrate/gormigrate/v2"
@@ -15,23 +15,23 @@ func Migrate(db *gorm.DB) error {
 		{
 			ID: "24072025_initial_migration",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&userservice.User{})
+				return tx.AutoMigrate(&userModel.User{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&userservice.User{})
+				return tx.Migrator().DropTable(&userModel.User{})
 			},
 		},
 		{
 			ID: "29082025_remove_phone_field",
 			Migrate: func(tx *gorm.DB) error {
-				if tx.Migrator().HasColumn(&userservice.User{}, "phone") {
-					return tx.Migrator().DropColumn(&userservice.User{}, "phone")
+				if tx.Migrator().HasColumn(&userModel.User{}, "phone") {
+					return tx.Migrator().DropColumn(&userModel.User{}, "phone")
 				}
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				if !tx.Migrator().HasColumn(&userservice.User{}, "phone") {
-					return tx.Migrator().AddColumn(&userservice.User{}, "phone")
+				if !tx.Migrator().HasColumn(&userModel.User{}, "phone") {
+					return tx.Migrator().AddColumn(&userModel.User{}, "phone")
 				}
 				return nil
 			},
@@ -39,23 +39,23 @@ func Migrate(db *gorm.DB) error {
 		{
 			ID: "29082025_add_user_profile_table",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&userservice.UserProfile{})
+				return tx.AutoMigrate(&userModel.UserProfile{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&userservice.UserProfile{})
+				return tx.Migrator().DropTable(&userModel.UserProfile{})
 			},
 		},
 		{
 			ID: "04092025_rename_avatar_to_profile_picture",
 			Migrate: func(tx *gorm.DB) error {
-				if tx.Migrator().HasColumn(&userservice.UserProfile{}, "avatar") {
-					return tx.Migrator().RenameColumn(&userservice.UserProfile{}, "avatar", "profile_picture")
+				if tx.Migrator().HasColumn(&userModel.UserProfile{}, "avatar") {
+					return tx.Migrator().RenameColumn(&userModel.UserProfile{}, "avatar", "profile_picture")
 				}
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				if tx.Migrator().HasColumn(&userservice.UserProfile{}, "profile_picture") {
-					return tx.Migrator().RenameColumn(&userservice.UserProfile{}, "profile_picture", "avatar")
+				if tx.Migrator().HasColumn(&userModel.UserProfile{}, "profile_picture") {
+					return tx.Migrator().RenameColumn(&userModel.UserProfile{}, "profile_picture", "avatar")
 				}
 				return nil
 			},
@@ -63,14 +63,14 @@ func Migrate(db *gorm.DB) error {
 		{
 			ID: "11092025_remove_age_field",
 			Migrate: func(tx *gorm.DB) error {
-				if tx.Migrator().HasColumn(&userservice.UserProfile{}, "age") {
-					return tx.Migrator().DropColumn(&userservice.UserProfile{}, "age")
+				if tx.Migrator().HasColumn(&userModel.UserProfile{}, "age") {
+					return tx.Migrator().DropColumn(&userModel.UserProfile{}, "age")
 				}
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				if !tx.Migrator().HasColumn(&userservice.UserProfile{}, "age") {
-					return tx.Migrator().AddColumn(&userservice.UserProfile{}, "age")
+				if !tx.Migrator().HasColumn(&userModel.UserProfile{}, "age") {
+					return tx.Migrator().AddColumn(&userModel.UserProfile{}, "age")
 				}
 				return nil
 			},
@@ -78,14 +78,14 @@ func Migrate(db *gorm.DB) error {
 		{
 			ID: "11092025_add_birthday_field",
 			Migrate: func(tx *gorm.DB) error {
-				if !tx.Migrator().HasColumn(&userservice.UserProfile{}, "birthday") {
-					return tx.Migrator().AddColumn(&userservice.UserProfile{}, "birthday")
+				if !tx.Migrator().HasColumn(&userModel.UserProfile{}, "birthday") {
+					return tx.Migrator().AddColumn(&userModel.UserProfile{}, "birthday")
 				}
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				if tx.Migrator().HasColumn(&userservice.UserProfile{}, "birthday") {
-					return tx.Migrator().DropColumn(&userservice.UserProfile{}, "birthday")
+				if tx.Migrator().HasColumn(&userModel.UserProfile{}, "birthday") {
+					return tx.Migrator().DropColumn(&userModel.UserProfile{}, "birthday")
 				}
 				return nil
 			},
@@ -93,41 +93,41 @@ func Migrate(db *gorm.DB) error {
 		{
 			ID: "18092025_add_report_table",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&mainservice.Report{})
+				return tx.AutoMigrate(&mainModel.Report{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&mainservice.Report{})
+				return tx.Migrator().DropTable(&mainModel.Report{})
 			},
 		},
 		{
 			ID: "18092025_add_report_image_table",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&mainservice.ReportImage{})
+				return tx.AutoMigrate(&mainModel.ReportImage{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&mainservice.ReportImage{})
+				return tx.Migrator().DropTable(&mainModel.ReportImage{})
 			},
 		},
 		{
 			ID: "18092025_add_report_location_table",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.AutoMigrate(&mainservice.ReportLocation{})
+				return tx.AutoMigrate(&mainModel.ReportLocation{})
 			},
 			Rollback: func(tx *gorm.DB) error {
-				return tx.Migrator().DropTable(&mainservice.ReportLocation{})
+				return tx.Migrator().DropTable(&mainModel.ReportLocation{})
 			},
 		},
 		{
 			ID: "18092025_add_road_field",
 			Migrate: func(tx *gorm.DB) error {
-				if !tx.Migrator().HasColumn(&mainservice.ReportLocation{}, "road") {
-					return tx.Migrator().AddColumn(&mainservice.ReportLocation{}, "road")
+				if !tx.Migrator().HasColumn(&mainModel.ReportLocation{}, "road") {
+					return tx.Migrator().AddColumn(&mainModel.ReportLocation{}, "road")
 				}
 				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
-				if tx.Migrator().HasColumn(&mainservice.ReportLocation{}, "road") {
-					return tx.Migrator().DropColumn(&mainservice.ReportLocation{}, "road")
+				if tx.Migrator().HasColumn(&mainModel.ReportLocation{}, "road") {
+					return tx.Migrator().DropColumn(&mainModel.ReportLocation{}, "road")
 				}
 				return nil
 			},

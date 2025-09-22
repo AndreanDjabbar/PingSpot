@@ -1,16 +1,16 @@
-package mainservice
+package validation
 
 import (
 	"github.com/go-playground/validator/v10"
 )
 
-var validate *validator.Validate
+var Validate *validator.Validate
 
 func init() {
-	validate = validator.New()
+	Validate = validator.New()
 }
 
-func formatCreateReportValidationErrors(err error) map[string]string {
+func FormatCreateReportValidationErrors(err error) map[string]string {
 	errors := map[string]string{}
 	if err == nil {
 		return errors

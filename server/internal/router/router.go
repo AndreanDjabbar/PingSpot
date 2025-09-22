@@ -1,15 +1,15 @@
 package router
 
 import (
-	authservice "server/internal/domain/authService"
-	mainservice "server/internal/domain/mainService"
-	userservice "server/internal/domain/userService"
+	authRouter "server/internal/domain/authService/router"
+	mainRouter "server/internal/domain/mainService/router"
+	userRouter "server/internal/domain/userService/router"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func RegisterRoutes(app *fiber.App) {
-	userservice.RegisterUserRoutes(app)
-	authservice.RegisterAuthRoutes(app)
-	mainservice.RegisterMainRoutes(app)
+	userRouter.RegisterUserRoutes(app)
+	authRouter.RegisterAuthRoutes(app)
+	mainRouter.RegisterMainRoutes(app)
 }

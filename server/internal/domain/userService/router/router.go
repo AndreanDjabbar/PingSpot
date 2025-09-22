@@ -1,0 +1,26 @@
+package router
+
+import (
+	"server/internal/domain/userService/handler"
+	"server/internal/domain/userService/repository"
+	"server/internal/domain/userService/service"
+	"server/internal/infrastructure/database"
+	"server/internal/middleware"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+func RegisterUserRoutes(app *fiber.App) {
+	db := database.GetDB()
+	userRepo := repository.NewUserRepository(db)
+	userProfileRepo := repository.NewUserProfileRepository(db)
+	userService := service.NewUserService(userRepo, userProfileRepo, db)
+	userHandler := handler.NewUserHandler(userService)
+
+	profileRoute := app.Group("/pingspot/api/user/profile", middleware.JWTProtected())
+    profileRoute.Get("/", userHandler.GetProfileHandler)
+    profileRoute.Post("/", userHandler.SaveUserProfileHandler)
+
+	securityRoute := app.Group("/pingspot/api/user/security", middleware.JWTProtected())
+    securityRoute.Post("/", userHandler.SaveUserSecurityHandler)
+}

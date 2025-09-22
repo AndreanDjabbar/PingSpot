@@ -1,19 +1,38 @@
-package mainservice
+package service
 
 import (
 	"errors"
+	"server/internal/domain/mainService/model"
+	"server/internal/domain/mainService/repository"
+	"server/internal/domain/mainService/validation"
 	"time"
 
 	"gorm.io/gorm"
 )
 
-type CreateReportResult = struct{
-	Report Report
-	ReportLocation ReportLocation
-	ReportImages ReportImage
+type MainService struct {
+	reportRepo repository.ReportRepository
+	reportLocationRepo repository.ReportLocationRepository
+	reportImageRepo repository.ReportImageRepository
+	db *gorm.DB
 }
 
-func CreateReport(db *gorm.DB, userID uint, req createReportRequest) (*CreateReportResult, error) {
+type CreateReportResult = struct{
+	Report model.Report
+	ReportLocation model.ReportLocation
+	ReportImages model.ReportImage
+}
+
+func NewMainService(reportRepo repository.ReportRepository, locationRepo repository.ReportLocationRepository, imageRepo repository.ReportImageRepository, db *gorm.DB) *MainService {
+	return &MainService{
+		reportRepo: reportRepo,
+		reportLocationRepo: locationRepo,
+		reportImageRepo: imageRepo,
+		db: db,
+	}
+}
+
+func (s *MainService) CreateReport(db *gorm.DB, userID uint, req validation.CreateReportRequest) (*CreateReportResult, error) {
 	tx := db.Begin()
 	if tx.Error != nil {
 		return nil, errors.New("Gagal memulai transaksi") 
@@ -24,23 +43,23 @@ func CreateReport(db *gorm.DB, userID uint, req createReportRequest) (*CreateRep
 		}
 	}()
 
-	var reportStruct Report
-	reportStruct = Report{
+	var reportStruct model.Report
+	reportStruct = model.Report{
 		UserID:      userID,
 		ReportTitle: req.ReportTitle,
-		ReportType: reportType(req.ReportType),
+		ReportType: model.ReportType(req.ReportType),
 		ReportDescription: req.ReportDescription,
 		CreatedAt:  time.Now().Unix(),
 	}
-	if err := tx.Create(&reportStruct).Error; err != nil {
+	if err := s.reportRepo.Create(&reportStruct, tx); err != nil {
 		tx.Rollback()
 		return nil, errors.New("Gagal membuat laporan")
 	}
 
 	reportID := reportStruct.ID
 
-	var reportLocationStruct ReportLocation
-	reportLocationStruct = ReportLocation{
+	var reportLocationStruct model.ReportLocation
+	reportLocationStruct = model.ReportLocation{
 		ReportID:   reportID,
 		Latitude:   req.Latitude,
 		Longitude:  req.Longitude,
@@ -58,13 +77,13 @@ func CreateReport(db *gorm.DB, userID uint, req createReportRequest) (*CreateRep
 		Suburb: req.Suburb,
 	}
 
-	if err := tx.Create(&reportLocationStruct).Error; err != nil {
+	if err := s.reportLocationRepo.Create(&reportLocationStruct, tx); err != nil {
 		tx.Rollback()
 		return nil, errors.New("Gagal menyimpan lokasi laporan")
 	}
 
-	var reportImages ReportImage
-	reportImages = ReportImage{
+	var reportImages model.ReportImage
+	reportImages = model.ReportImage{
 		Image1URL: req.Image1URL,
 		Image2URL: req.Image2URL,
 		Image3URL: req.Image3URL,
@@ -72,7 +91,7 @@ func CreateReport(db *gorm.DB, userID uint, req createReportRequest) (*CreateRep
 		Image5URL: req.Image5URL,
 		ReportID:  reportID,
 	}
-	if err := tx.Create(&reportImages).Error; err != nil {
+	if err := s.reportImageRepo.Create(&reportImages, tx); err != nil {
 		tx.Rollback()
 		return nil, errors.New("Gagal menyimpan gambar laporan")
 	}

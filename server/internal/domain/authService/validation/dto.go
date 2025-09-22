@@ -1,6 +1,6 @@
-package authservice
+package validation
 
-type registerRequest struct {
+type RegisterRequest struct {
 	Username   string  `json:"username" validate:"required,min=3"`
 	Email      string  `json:"email" validate:"required,email"`
 	Password   string  `json:"password" validate:"required,min=6"`
@@ -9,16 +9,16 @@ type registerRequest struct {
 	ProviderID *string `json:"providerId"`
 }
 
-type loginRequest struct {
+type LoginRequest struct {
 	Email      string  `json:"email" validate:"required,email"`
 	Password   string  `json:"password" validate:"required,min=6"`
 }
 
-type forgotPasswordEmailVerificationRequest struct {
+type ForgotPasswordEmailVerificationRequest struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
-type forgotPasswordResetPasswordRequest struct {
+type ForgotPasswordResetPasswordRequest struct {
 	Password string `json:"password" validate:"required,min=6"`
 	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 	Email string `json:"email" validate:"required,email"`

@@ -1,15 +1,15 @@
-package userservice
+package model
 
 import (
 	"time"
 )
 
-type provider string
+type Provider string
 
 const (
-	ProviderEmail    provider = "EMAIL"
-	ProviderGoogle   provider = "GOOGLE"
-	ProviderFacebook provider = "FACEBOOK"
+	ProviderEmail    Provider = "EMAIL"
+	ProviderGoogle   Provider = "GOOGLE"
+	ProviderFacebook Provider = "FACEBOOK"
 )
 
 type User struct {
@@ -18,7 +18,7 @@ type User struct {
 	Email      string    `gorm:"size:100;unique;not null"`
 	Password   *string   `gorm:"size:255"`
 	FullName   string    `gorm:"size:100;not null"`
-	Provider   provider  `gorm:"type:varchar(20);default:EMAIL;not null"`
+	Provider   Provider  `gorm:"type:varchar(20);default:EMAIL;not null"`
 	IsVerified bool      `gorm:"default:false;not null"`
 	ProviderID *string   `gorm:"size:100"`
 	CreatedAt  time.Time `gorm:"autoCreateTime"`

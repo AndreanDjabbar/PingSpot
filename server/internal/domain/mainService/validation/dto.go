@@ -1,6 +1,6 @@
-package mainservice
+package validation
 
-type createReportRequest struct {
+type CreateReportRequest struct {
 	ReportTitle       string   `json:"reportTitle" validate:"required";max=200"`
 	ReportType        string   `json:"reportType" validate:"required,oneof=INFRASTRUCTURE ENVIRONMENT SOCIAL_ISSUE SAFETY OTHER"`
 	ReportDescription string   `json:"reportDescription" validate:"required"`

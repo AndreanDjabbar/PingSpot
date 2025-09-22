@@ -1,23 +1,23 @@
-package mainservice
+package model
 
-import authservice "server/internal/domain/authService"
+import "server/internal/domain/userService/model"
 
-type reportType string
+type ReportType string
 
 const (
-	Infrastructure reportType = "INFRASTRUCTURE"
-	Environment    reportType = "ENVIRONMENT"
-	SocialIssue    reportType = "SOCIAL_ISSUE"
-	Safety         reportType = "SAFETY"
-	Other          reportType = "OTHER"
+	Infrastructure ReportType = "INFRASTRUCTURE"
+	Environment    ReportType = "ENVIRONMENT"
+	SocialIssue    ReportType = "SOCIAL_ISSUE"
+	Safety         ReportType = "SAFETY"
+	Other          ReportType = "OTHER"
 )
 
 type Report struct {
 	ID                uint       `gorm:"primaryKey"`
 	UserID            uint       `gorm:"not null"`
-	User              authservice.User    `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	User              model.User `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ReportTitle       string     `gorm:"size:255;not null"`
-	ReportType        reportType `gorm:"type:varchar(30);not null"`
+	ReportType        ReportType `gorm:"type:varchar(30);not null"`
 	ReportDescription string     `gorm:"type:text;not null"`
 	CreatedAt         int64      `gorm:"autoCreateTime"`
 }
@@ -45,7 +45,7 @@ type ReportLocation struct {
 	Country        *string `gorm:"size:100"`
 	CountryCode    *string `gorm:"size:10"`
 	Region         *string `gorm:"size:100"`
-	Road    		*string `gorm:"size:200"`
+	Road           *string `gorm:"size:200"`
 	PostCode       *string `gorm:"size:20"`
 	County         *string `gorm:"size:200"`
 	State          *string `gorm:"size:200"`

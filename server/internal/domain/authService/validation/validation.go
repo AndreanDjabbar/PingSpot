@@ -1,16 +1,16 @@
-package authservice
+package validation
 
 import (
 	"github.com/go-playground/validator/v10"
 )
 
-var validate *validator.Validate
+var Validate *validator.Validate
 
 func init() {
-	validate = validator.New()
+	Validate = validator.New()
 }
 
-func formatRegisterValidationErrors(err error) map[string]string {
+func FormatRegisterValidationErrors(err error) map[string]string {
 	errors := map[string]string{}
 	if err == nil {
 		return errors
@@ -54,7 +54,7 @@ func formatRegisterValidationErrors(err error) map[string]string {
 	return errors
 }
 
-func formatLoginValidationErrors(err error) map[string]string {
+func FormatLoginValidationErrors(err error) map[string]string {
 	errors := map[string]string{}
 	if err == nil {
 		return errors
@@ -80,7 +80,7 @@ func formatLoginValidationErrors(err error) map[string]string {
 	return errors
 }
 
-func formatForgotPasswordEmailVerificationValidationErrors(err error) map[string]string {
+func FormatForgotPasswordEmailVerificationValidationErrors(err error) map[string]string {
 	errors := map[string]string{}
 	if err == nil {
 		return errors
@@ -99,7 +99,7 @@ func formatForgotPasswordEmailVerificationValidationErrors(err error) map[string
 	return errors
 }
 
-func formatForgotPasswordResetPasswordValidationErrors(err error) map[string]string {
+func FormatForgotPasswordResetPasswordValidationErrors(err error) map[string]string {
 	errors := map[string]string{}
 	if err == nil {
 		return errors

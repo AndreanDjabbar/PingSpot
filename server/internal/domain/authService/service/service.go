@@ -1,10 +1,13 @@
-package authservice
+package service
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"server/internal/domain/authService/validation"
+	"server/internal/domain/userService/model"
+	"server/internal/domain/userService/repository"
 	"server/internal/infrastructure/cache"
 	"server/pkg/logger"
 	"server/pkg/utils/env"
@@ -15,11 +18,20 @@ import (
 	"gorm.io/gorm"
 )
 
-func register(db *gorm.DB, req registerRequest, isVerified bool) (*User, error) {
-	var existing User
-	if err := db.Where("email = ? OR username = ?", req.Email, req.Username).First(&existing).Error; err == nil {
-		return nil, errors.New("Email atau username sudah terdaftar")
-	} else if err != gorm.ErrRecordNotFound {
+type AuthService struct {
+    userRepo repository.UserRepository
+}
+
+func NewAuthService(userRepo repository.UserRepository) *AuthService {
+    return &AuthService{userRepo: userRepo}
+}
+
+func (s *AuthService) Register(req validation.RegisterRequest, isVerified bool) (*model.User, error) {
+	_, err := s.userRepo.GetByEmail(req.Email)
+	if err == nil {
+		return nil, errors.New("Email sudah terdaftar")
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("Terjadi kesalahan saat cek data user")
 	}
 
@@ -28,25 +40,26 @@ func register(db *gorm.DB, req registerRequest, isVerified bool) (*User, error) 
 		return nil, errors.New("Gagal mengenkripsi password")
 	}
 
-	user := User{
+	user := model.User{
 		Username:   req.Username,
 		Email:      req.Email,
 		Password:   &hashedPassword,
 		FullName:   req.FullName,
-		Provider:   provider(req.Provider),
+		Provider:   model.Provider(req.Provider),
 		ProviderID: req.ProviderID,
 		IsVerified: isVerified,
 	}
-	if err := db.Create(&user).Error; err != nil {
-		return nil, errors.New("Terjadi kesalahan saat registrasi")
+
+	if err := s.userRepo.Create(&user); err != nil {
+		return nil, errors.New("Gagal menyimpan user")
 	}
 
 	return &user, nil
 }
 
-func login(db *gorm.DB, req loginRequest) (*User, string, error) {
-	var user User
-	if err := db.Where("email = ?", req.Email).First(&user).Error; err != nil {
+func (s *AuthService) Login(req validation.LoginRequest) (*model.User, string, error) {
+	user, err := s.userRepo.GetByEmail(req.Email)
+	if err != nil {
 		return nil, "", errors.New("Email atau password salah")
 	}
 
@@ -96,13 +109,12 @@ func login(db *gorm.DB, req loginRequest) (*User, string, error) {
 		return nil, "", errors.New("Gagal membuat token JWT")
 	}
 
-	return &user, token, nil
+	return user, token, nil
 }
 
-func verifyUser(db *gorm.DB, userID uint) (*User, error) {
-	var user User
-
-	if err := db.First(&user, userID).Error; err != nil {
+func (s *AuthService) VerifyUser(userID uint) (*model.User, error) {
+	user, err := s.userRepo.GetByID(userID)
+	if err != nil {
 		return nil, errors.New("User tidak ditemukan")
 	}
 
@@ -111,44 +123,38 @@ func verifyUser(db *gorm.DB, userID uint) (*User, error) {
 	}
 
 	user.IsVerified = true
-	if err := db.Save(&user).Error; err != nil {
-		return nil, errors.New("Gagal memverifikasi akun")
+
+	if err := s.userRepo.Save(user); err != nil {
+		return nil, errors.New("Gagal menyimpan data user")
 	}
 
-	return &user, nil
+	return user, nil
 }
 
-func UpdateUserByEmail(db *gorm.DB, email string, updatedUser *User) (*User, error) {
-	var user User
-
-	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("User tidak ditemukan")
-		}
-		return nil, errors.New("Gagal mencari user")
-	}
-
-	if err := db.Model(&user).Updates(updatedUser).Error; err != nil {
-		return nil, errors.New("Gagal memperbarui data user")
-	}
-
-	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
-		return nil, errors.New("Gagal mengambil data user yang telah diperbarui")
-	}
-
-	return &user, nil
-}
-
-func GetUserByEmail(db *gorm.DB, email string) (*User, error) {
-    var user User
-    result := db.Where("email = ?", email).First(&user)
-
-    if result.Error != nil {
-        if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-            return nil, nil
+func (s *AuthService) UpdateUserByEmail(email string, updatedUser *model.User) (*model.User, error) {
+    _, err := s.userRepo.GetByEmail(email)
+    if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, errors.New("User tidak ditemukan")
         }
-        return nil, result.Error
+        return nil, errors.New("Gagal mencari user")
     }
 
-    return &user, nil
+    user, err := s.userRepo.UpdateByEmail(email, updatedUser)
+    if err != nil {
+        return nil, errors.New("Gagal update user")
+    }
+
+    return user, nil
+}
+
+func (s *AuthService) GetUserByEmail(email string) (*model.User, error) {
+    user, err := s.userRepo.GetByEmail(email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+    return user, nil
 }
