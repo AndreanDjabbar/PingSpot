@@ -12,6 +12,7 @@ type UserRepository interface {
 	GetByEmail(email string) (*model.User, error)
 	Save(user *model.User) error
 	Create(user *model.User) error
+	UpdateFullNameTX(tx *gorm.DB, userID uint, fullName string) error
 }
 
 type userRepository struct {
@@ -52,4 +53,10 @@ func (r *userRepository) Create(user *model.User) error {
 
 func (r *userRepository) Save(user *model.User) error {
     return r.db.Save(user).Error
+}
+
+func (r *userRepository) UpdateFullNameTX(tx *gorm.DB, userID uint, fullName string) error {
+    return tx.Model(&model.User{}).
+        Where("id = ?", userID).
+        Update("full_name", fullName).Error
 }
