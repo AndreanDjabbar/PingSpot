@@ -44,6 +44,11 @@ func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req validation.SaveU
         return nil, errors.New("gagal memulai transaksi")
     }
 
+    if err := s.userRepo.UpdateFullNameTX(tx, userID, req.FullName); err != nil {
+        tx.Rollback()
+        return nil, err
+    }
+
     profile, err := s.userProfileRepo.GetByIDTX(tx, userID)
     if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
