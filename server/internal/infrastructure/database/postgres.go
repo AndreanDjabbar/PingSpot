@@ -13,13 +13,13 @@ import (
 )
 
 var (
-	dbInstance *gorm.DB
-	dbOnce     sync.Once
-	dbErr      error
+	postgresDBInstance *gorm.DB
+	postgresDBOnce     sync.Once
+	postgresDBErr      error
 )
 
 func InitPostgres(cfg config.PostgresConfig) error {
-	dbOnce.Do(func() {
+	postgresDBOnce.Do(func() {
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 			cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
 		)
@@ -32,17 +32,17 @@ func InitPostgres(cfg config.PostgresConfig) error {
 		)
 
 		var err error
-		dbInstance, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		postgresDBInstance, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if err != nil {
 			logger.Error("Failed to connect to PostgreSQL", zap.Error(err))
-			dbErr = fmt.Errorf("failed to connect to PostgreSQL: %w", err)
+			postgresDBErr = fmt.Errorf("failed to connect to PostgreSQL: %w", err)
 		} else {
 			logger.Info("Connected to PostgreSQL successfully")
 		}
 	})
-	return dbErr
+	return postgresDBErr
 }
 
-func GetDB() *gorm.DB {
-	return dbInstance
+func GetPostgresDB() *gorm.DB {
+	return postgresDBInstance
 }
