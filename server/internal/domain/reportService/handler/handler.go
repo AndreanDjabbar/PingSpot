@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 	"path/filepath"
-	"server/internal/domain/mainService/service"
-	"server/internal/domain/mainService/validation"
+	"server/internal/domain/reportService/service"
+	"server/internal/domain/reportService/validation"
 	"server/internal/infrastructure/database"
 	"server/pkg/logger"
 	mainutils "server/pkg/utils/mainUtils"
@@ -15,15 +15,15 @@ import (
 	"go.uber.org/zap"
 )
 
-type MainHandler struct {
-	mainService *service.MainService
+type ReportHandler struct {
+	reportService *service.ReportService
 }
 
-func NewMainHandler(mainService *service.MainService) *MainHandler {
-	return &MainHandler{mainService: mainService}
+func NewReportHandler(reportService *service.ReportService) *ReportHandler {
+	return &ReportHandler{reportService: reportService}
 }
 
-func (h *MainHandler) CreateReportHandler(c *fiber.Ctx) error {
+func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 	logger.Info("CREATE REPORT HANDLER")
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -133,7 +133,7 @@ func (h *MainHandler) CreateReportHandler(c *fiber.Ctx) error {
 	}
 	userID := uint(claims["user_id"].(float64))
 
-	result, err := h.mainService.CreateReport(db, userID, req)
+	result, err := h.reportService.CreateReport(db, userID, req)
 	if err != nil {
 		logger.Error("Failed to create report", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal membuat laporan", "", err.Error())

@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"server/internal/domain/mainService/model"
+	"server/internal/domain/reportService/model"
 
 	"gorm.io/gorm"
 )

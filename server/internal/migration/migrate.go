@@ -1,7 +1,7 @@
 package migration
 
 import (
-	mainModel "server/internal/domain/mainService/model"
+	mainModel "server/internal/domain/reportService/model"
 	userModel "server/internal/domain/userService/model"
 	"server/pkg/logger"
 

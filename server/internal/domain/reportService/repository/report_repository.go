@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"server/internal/domain/mainService/model"
+	"server/internal/domain/reportService/model"
 
 	"gorm.io/gorm"
 )
@@ -11,7 +11,7 @@ type ReportRepository interface {
 }
 
 type reportRepository struct {
-    db *gorm.DB
+	db *gorm.DB
 }
 
 func NewReportRepository(db *gorm.DB) ReportRepository {
@@ -19,8 +19,8 @@ func NewReportRepository(db *gorm.DB) ReportRepository {
 }
 
 func (r *reportRepository) Create(report *model.Report, tx *gorm.DB) error {
-    if tx != nil {
-        return tx.Create(report).Error
-    }
-    return r.db.Create(report).Error
+	if tx != nil {
+		return tx.Create(report).Error
+	}
+	return r.db.Create(report).Error
 }
