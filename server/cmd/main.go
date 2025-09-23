@@ -45,7 +45,7 @@ func main() {
 		panic(fmt.Sprintf("failed to initialize Google Auth: %v", err))
 	}
 
-	db := database.GetDB()
+	db := database.GetPostgresDB()
 	if err := migration.Migrate(db); err != nil {
 		logger.Error("Failed to run migrations", zap.Error(err))
 		panic(fmt.Sprintf("failed to run migrations: %v", err))

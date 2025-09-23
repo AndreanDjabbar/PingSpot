@@ -11,16 +11,16 @@ import (
 )
 
 func RegisterUserRoutes(app *fiber.App) {
-	db := database.GetDB()
+	db := database.GetPostgresDB()
 	userRepo := repository.NewUserRepository(db)
 	userProfileRepo := repository.NewUserProfileRepository(db)
 	userService := service.NewUserService(userRepo, userProfileRepo, db)
 	userHandler := handler.NewUserHandler(userService)
 
 	profileRoute := app.Group("/pingspot/api/user/profile", middleware.JWTProtected())
-    profileRoute.Get("/", userHandler.GetProfileHandler)
-    profileRoute.Post("/", userHandler.SaveUserProfileHandler)
+	profileRoute.Get("/", userHandler.GetProfileHandler)
+	profileRoute.Post("/", userHandler.SaveUserProfileHandler)
 
 	securityRoute := app.Group("/pingspot/api/user/security", middleware.JWTProtected())
-    securityRoute.Post("/", userHandler.SaveUserSecurityHandler)
+	securityRoute.Post("/", userHandler.SaveUserSecurityHandler)
 }

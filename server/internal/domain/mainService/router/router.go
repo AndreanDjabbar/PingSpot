@@ -11,7 +11,7 @@ import (
 )
 
 func RegisterMainRoutes(app *fiber.App) {
-	database := database.GetDB()
+	database := database.GetPostgresDB()
 	reportRepo := repository.NewReportRepository(database)
 	reportLocationRepo := repository.NewReportLocationRepository(database)
 	reportImageRepo := repository.NewReportImageRepository(database)

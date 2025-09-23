@@ -11,11 +11,11 @@ import (
 )
 
 func RegisterAuthRoutes(app *fiber.App) {
-	db := database.GetDB()
+	db := database.GetPostgresDB()
 	userRepo := repository.NewUserRepository(db)
 	authService := service.NewAuthService(userRepo)
 	authHandler := handler.NewAuthHandler(authService)
-	
+
 	authRoute := app.Group("/pingspot/api/auth")
 	authRoute.Post("/verification", authHandler.VerificationHandler)
 	authRoute.Post("/register", authHandler.RegisterHandler)

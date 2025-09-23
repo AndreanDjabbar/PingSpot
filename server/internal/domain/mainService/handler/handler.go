@@ -19,7 +19,7 @@ type MainHandler struct {
 	mainService *service.MainService
 }
 
-func NewMainHandler(mainService *service.MainService ) *MainHandler {
+func NewMainHandler(mainService *service.MainService) *MainHandler {
 	return &MainHandler{mainService: mainService}
 }
 
@@ -67,7 +67,7 @@ func (h *MainHandler) CreateReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Ukuran total gambar terlalu besar", "", "Maksimal ukuran total gambar 25MB")
 	}
 
-	for i, file := range files {		
+	for i, file := range files {
 		ext := filepath.Ext(file.Filename)
 		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
 			logger.Error("Unsupported profile picture file format", zap.String("extension", ext))
@@ -95,31 +95,31 @@ func (h *MainHandler) CreateReportHandler(c *fiber.Ctx) error {
 	}
 
 	req := validation.CreateReportRequest{
-		ReportTitle: 	 reportTitle,
-		ReportType: 	 reportType,
+		ReportTitle:       reportTitle,
+		ReportType:        reportType,
 		ReportDescription: reportDescription,
-		DetailLocation:  detailLocation,
-		Latitude:       floatLatitude,
-		Longitude:      floatLongitude,
-		DisplayName:    mainutils.StrPtrOrNil(displayName),
-		AddressType:    mainutils.StrPtrOrNil(addressType),
-		Country:        mainutils.StrPtrOrNil(country),
-		CountryCode:    mainutils.StrPtrOrNil(countryCode),
-		Region:         mainutils.StrPtrOrNil(region),
-		PostCode:       mainutils.StrPtrOrNil(postCode),
-		County:         mainutils.StrPtrOrNil(county),
-		State:          mainutils.StrPtrOrNil(state),
-		Road:		   mainutils.StrPtrOrNil(road),
-		Village:        mainutils.StrPtrOrNil(village),
-		Suburb: mainutils.StrPtrOrNil(suburb),
-		Image1URL:     mainutils.StrPtrOrNil(images[0]),
-		Image2URL:     mainutils.StrPtrOrNil(images[1]),
-		Image3URL:     mainutils.StrPtrOrNil(images[2]),
-		Image4URL:     mainutils.StrPtrOrNil(images[3]),
-		Image5URL:     mainutils.StrPtrOrNil(images[4]),
+		DetailLocation:    detailLocation,
+		Latitude:          floatLatitude,
+		Longitude:         floatLongitude,
+		DisplayName:       mainutils.StrPtrOrNil(displayName),
+		AddressType:       mainutils.StrPtrOrNil(addressType),
+		Country:           mainutils.StrPtrOrNil(country),
+		CountryCode:       mainutils.StrPtrOrNil(countryCode),
+		Region:            mainutils.StrPtrOrNil(region),
+		PostCode:          mainutils.StrPtrOrNil(postCode),
+		County:            mainutils.StrPtrOrNil(county),
+		State:             mainutils.StrPtrOrNil(state),
+		Road:              mainutils.StrPtrOrNil(road),
+		Village:           mainutils.StrPtrOrNil(village),
+		Suburb:            mainutils.StrPtrOrNil(suburb),
+		Image1URL:         mainutils.StrPtrOrNil(images[0]),
+		Image2URL:         mainutils.StrPtrOrNil(images[1]),
+		Image3URL:         mainutils.StrPtrOrNil(images[2]),
+		Image4URL:         mainutils.StrPtrOrNil(images[3]),
+		Image5URL:         mainutils.StrPtrOrNil(images[4]),
 	}
 
-	db := database.GetDB()
+	db := database.GetPostgresDB()
 	if err := validation.Validate.Struct(req); err != nil {
 		errors := validation.FormatCreateReportValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))

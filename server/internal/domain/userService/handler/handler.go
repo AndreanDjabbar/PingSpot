@@ -16,11 +16,11 @@ import (
 )
 
 type UserHandler struct {
-    userService *service.UserService
+	userService *service.UserService
 }
 
-func NewUserHandler(userService *service.UserService ) *UserHandler {
-    return &UserHandler{userService: userService}
+func NewUserHandler(userService *service.UserService) *UserHandler {
+	return &UserHandler{userService: userService}
 }
 
 func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
@@ -41,7 +41,7 @@ func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
-	if err := h.userService.SaveSecurity( userId, req); err != nil {
+	if err := h.userService.SaveSecurity(userId, req); err != nil {
 		logger.Error("Failed to update user password", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal memperbarui kata sandi", "", err.Error())
 	}
@@ -112,7 +112,7 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
-	database := database.GetDB()
+	database := database.GetPostgresDB()
 	newProfile, err := h.userService.SaveProfile(database, userId, req)
 	if err != nil {
 		logger.Error("Failed to save user profile", zap.Error(err))
