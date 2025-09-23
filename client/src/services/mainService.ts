@@ -8,7 +8,7 @@ type IResponseType = {
 }
 
 const REVERSE_LOCATION_API_URL = `${process.env.NEXT_PUBLIC_REVERSE_LOCATION_URL}`;
-const MAIN_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/main`;
+const MAIN_API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
 
 // const COMMON_HEADERS = (authToken: string) => {
 //     return {
