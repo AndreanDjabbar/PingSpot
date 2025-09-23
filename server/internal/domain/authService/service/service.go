@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"server/internal/domain/authService/validation"
-	"server/internal/domain/userService/model"
+	"server/internal/domain/model"
 	"server/internal/domain/userService/repository"
 	"server/internal/infrastructure/cache"
 	"server/pkg/logger"

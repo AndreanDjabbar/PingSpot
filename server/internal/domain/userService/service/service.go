@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"server/internal/domain/userService/model"
+	"server/internal/domain/model"
 	"server/internal/domain/userService/repository"
 	"server/internal/domain/userService/validation"
 	mainutils "server/pkg/utils/mainUtils"

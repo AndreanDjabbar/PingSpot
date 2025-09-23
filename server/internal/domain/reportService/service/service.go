@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"server/internal/domain/reportService/model"
+	"server/internal/domain/model"
 	"server/internal/domain/reportService/repository"
 	"server/internal/domain/reportService/validation"
 	"time"
