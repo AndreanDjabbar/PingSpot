@@ -14,7 +14,6 @@ type ReportService struct {
 	reportRepo         repository.ReportRepository
 	reportLocationRepo repository.ReportLocationRepository
 	reportImageRepo    repository.ReportImageRepository
-	db                 *gorm.DB
 }
 
 type CreateReportResult = struct {
@@ -23,12 +22,11 @@ type CreateReportResult = struct {
 	ReportImages   model.ReportImage
 }
 
-func NewreportService(reportRepo repository.ReportRepository, locationRepo repository.ReportLocationRepository, imageRepo repository.ReportImageRepository, db *gorm.DB) *ReportService {
+func NewreportService(reportRepo repository.ReportRepository, locationRepo repository.ReportLocationRepository, imageRepo repository.ReportImageRepository) *ReportService {
 	return &ReportService{
 		reportRepo:         reportRepo,
 		reportLocationRepo: locationRepo,
 		reportImageRepo:    imageRepo,
-		db:                 db,
 	}
 }
 

@@ -15,7 +15,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	reportRepo := repository.NewReportRepository(database)
 	reportLocationRepo := repository.NewReportLocationRepository(database)
 	reportImageRepo := repository.NewReportImageRepository(database)
-	reportService := service.NewreportService(reportRepo, reportLocationRepo, reportImageRepo, database)
+	reportService := service.NewreportService(reportRepo, reportLocationRepo, reportImageRepo)
 	reportHandler := handler.NewReportHandler(reportService)
 
 	reportRoute := app.Group("/pingspot/api/report", middleware.JWTProtected())

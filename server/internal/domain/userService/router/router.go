@@ -14,7 +14,7 @@ func RegisterUserRoutes(app *fiber.App) {
 	db := database.GetPostgresDB()
 	userRepo := repository.NewUserRepository(db)
 	userProfileRepo := repository.NewUserProfileRepository(db)
-	userService := service.NewUserService(userRepo, userProfileRepo, db)
+	userService := service.NewUserService(userRepo, userProfileRepo)
 	userHandler := handler.NewUserHandler(userService)
 
 	profileRoute := app.Group("/pingspot/api/user/profile", middleware.JWTProtected())

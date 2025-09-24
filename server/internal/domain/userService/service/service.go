@@ -11,16 +11,14 @@ import (
 )
 
 type UserService struct {
-	db  *gorm.DB
     userRepo repository.UserRepository
     userProfileRepo repository.UserProfileRepository
 }
 
-func NewUserService(userRepo repository.UserRepository, userProfileRepo repository.UserProfileRepository, db *gorm.DB) *UserService {
+func NewUserService(userRepo repository.UserRepository, userProfileRepo repository.UserProfileRepository) *UserService {
     return &UserService{
         userRepo: userRepo,
         userProfileRepo: userProfileRepo,
-        db:  db,
     }
 }
 
