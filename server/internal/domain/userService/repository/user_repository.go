@@ -13,6 +13,7 @@ type UserRepository interface {
 	Save(user *model.User) error
 	Create(user *model.User) error
 	UpdateFullNameTX(tx *gorm.DB, userID uint, fullName string) error
+    Get() (*[]model.User, error)
 }
 
 type userRepository struct {
@@ -21,6 +22,14 @@ type userRepository struct {
 
 func NewUserRepository(db *gorm.DB) UserRepository {
     return &userRepository{db: db}
+}
+
+func (r *userRepository) Get() (*[]model.User, error) {
+    var users []model.User
+    if err := r.db.Find(&users).Error; err != nil {
+        return nil, err
+    }
+    return &users, nil
 }
 
 func (r *userRepository) GetByEmail(email string) (*model.User, error) {
