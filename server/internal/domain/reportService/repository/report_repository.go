@@ -8,6 +8,8 @@ import (
 
 type ReportRepository interface {
 	Create(report *model.Report, tx *gorm.DB) error
+	GetByID(reportID uint) (*model.Report, error)
+	Get() (*[]model.Report, error)
 }
 
 type reportRepository struct {
@@ -23,4 +25,20 @@ func (r *reportRepository) Create(report *model.Report, tx *gorm.DB) error {
 		return tx.Create(report).Error
 	}
 	return r.db.Create(report).Error
+}
+
+func (r *reportRepository) Get() (*[]model.Report, error) {
+	var reports []model.Report
+	if err := r.db.Preload("User").Find(&reports).Error; err != nil {
+		return nil, err
+	}
+	return &reports, nil
+}
+
+func (r *reportRepository) GetByID(reportID uint) (*model.Report, error) {
+	var report model.Report
+	if err := r.db.Preload("User").First(&report, reportID).Error; err != nil {
+		return nil, err
+	}
+	return &report, nil
 }
