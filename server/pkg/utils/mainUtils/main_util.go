@@ -274,3 +274,14 @@ func StringToFloat64(s string) (float64, error) {
     
     return value, nil
 }
+
+func StringToUint(s string) (uint, error) {
+	if s == "" {
+		return 0, nil
+	}
+	value, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert string to uint: %w", err)
+	}
+	return uint(value), nil
+}
