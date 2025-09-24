@@ -2,8 +2,9 @@ package router
 
 import (
 	"server/internal/domain/reportService/handler"
-	"server/internal/domain/reportService/repository"
+	reportRepository "server/internal/domain/reportService/repository"
 	"server/internal/domain/reportService/service"
+	userRepository "server/internal/domain/userService/repository"
 	"server/internal/infrastructure/database"
 	"server/internal/middleware"
 
@@ -12,12 +13,15 @@ import (
 
 func RegisterReportRoutes(app *fiber.App) {
 	database := database.GetPostgresDB()
-	reportRepo := repository.NewReportRepository(database)
-	reportLocationRepo := repository.NewReportLocationRepository(database)
-	reportImageRepo := repository.NewReportImageRepository(database)
-	reportService := service.NewreportService(reportRepo, reportLocationRepo, reportImageRepo)
+	reportRepo := reportRepository.NewReportRepository(database)
+	reportLocationRepo := reportRepository.NewReportLocationRepository(database)
+	reportImageRepo := reportRepository.NewReportImageRepository(database)
+	userProfileRepo := userRepository.NewUserProfileRepository(database)
+	userRepo := userRepository.NewUserRepository(database)
+	reportService := service.NewreportService(reportRepo, reportLocationRepo, reportImageRepo, userRepo, userProfileRepo)
 	reportHandler := handler.NewReportHandler(reportService)
 
 	reportRoute := app.Group("/pingspot/api/report", middleware.JWTProtected())
 	reportRoute.Post("/", reportHandler.CreateReportHandler)
+	reportRoute.Get("/", reportHandler.GetReportHandler)
 }
