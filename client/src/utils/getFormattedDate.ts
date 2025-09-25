@@ -1,20 +1,36 @@
+import { format, Locale } from "date-fns";
+import { id } from "date-fns/locale";
+
+type FormatDateOptions = {
+    formatStr?: string;
+    locale?: Locale;
+    withTime?: boolean;
+};
+
 export const formattedDate = (
-    isoString: string,
-    type: "date" | "datetime" = "date"
+    value: string | number,
+    options: FormatDateOptions = {}
 ): string => {
-    if (!isoString || isoString === "") return "";
+    if (!value) return "";
 
-    const d = new Date(isoString);
+    const {
+        formatStr,
+        locale = id,
+        withTime = false,
+    } = options;
 
-    if (type === "date") {
-        return d.toISOString().split("T")[0];
+    const defaultFormat = withTime ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd";
+    const fmt = formatStr || defaultFormat;
+
+    let date: Date;
+
+    if (typeof value === "number") {
+        date = value < 1e12 ? new Date(value * 1000) : new Date(value);
+    } else {
+        date = new Date(value);
     }
 
-    if (type === "datetime") {
-        const date = d.toISOString().split("T")[0];
-        const time = d.toISOString().slice(11, 16);
-        return `${date} ${time}`;
-    }
+    if (isNaN(date.getTime())) return "";
 
-    return isoString;
+    return format(date, fmt, { locale });
 };
