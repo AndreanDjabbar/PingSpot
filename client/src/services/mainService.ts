@@ -41,3 +41,27 @@ export const createReportService = async (payload: FormData): Promise<IResponseT
     const response = await axios.post<IResponseType>(`${MAIN_API_URL}/report`, payload, MULTIPART_HEADERS(authToken || ''));
     return response.data;
 }
+
+export const getReportService = async (): Promise<IResponseType> => {
+    const authToken = getAuthToken();
+    const response = await axios.get<IResponseType>(`${MAIN_API_URL}/report`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${authToken || ''}`
+        }
+    });
+    return response.data;
+}
+
+export const getReportByIDService = async (reportID: number): Promise<IResponseType> => {
+    const authToken = getAuthToken();
+    const response = await axios.get<IResponseType>(`${MAIN_API_URL}/report?reportID=${reportID}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${authToken || ''}`
+        }
+    });
+    return response.data;
+}
