@@ -11,7 +11,7 @@ services:
       - pingspot_network
 
   pingspot-postgres:
-    image: postgres:latest
+    image: postgis/postgis:15-3.4
     container_name: pingspot_postgres
     restart: always
     environment:
