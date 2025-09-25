@@ -12,6 +12,7 @@ type UserRepository interface {
 	GetByEmail(email string) (*model.User, error)
 	Save(user *model.User) error
 	Create(user *model.User) error
+    CreateTX(tx *gorm.DB, user *model.User) (*model.User, error)
 	UpdateFullNameTX(tx *gorm.DB, userID uint, fullName string) error
     Get() (*[]model.User, error)
 }
@@ -58,6 +59,13 @@ func (r *userRepository) GetByID(userID uint) (*model.User, error) {
 
 func (r *userRepository) Create(user *model.User) error {
     return r.db.Create(user).Error
+}
+
+func (r *userRepository) CreateTX(tx *gorm.DB, user *model.User) (*model.User, error) {
+    if err := tx.Create(user).Error; err != nil {
+        return nil, err
+    }
+    return user, nil
 }
 
 func (r *userRepository) Save(user *model.User) error {
