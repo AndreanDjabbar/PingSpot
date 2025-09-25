@@ -3,34 +3,38 @@ package service
 import (
 	"errors"
 	"server/internal/domain/model"
-	"server/internal/domain/reportService/repository"
-	"server/internal/domain/reportService/validation"
+	"server/internal/domain/reportService/dto"
+	reportRepository "server/internal/domain/reportService/repository"
+	userRepository "server/internal/domain/userService/repository"
 	"time"
-
 	"gorm.io/gorm"
 )
 
 type ReportService struct {
-	reportRepo         repository.ReportRepository
-	reportLocationRepo repository.ReportLocationRepository
-	reportImageRepo    repository.ReportImageRepository
+	reportRepo         reportRepository.ReportRepository
+	reportLocationRepo reportRepository.ReportLocationRepository
+	reportImageRepo    reportRepository.ReportImageRepository
+	userRepo 			userRepository.UserRepository
+	userProfileRepo 	userRepository.UserProfileRepository
 }
 
-type CreateReportResult = struct {
+type FullReportResult = struct {
 	Report         model.Report
 	ReportLocation model.ReportLocation
 	ReportImages   model.ReportImage
 }
 
-func NewreportService(reportRepo repository.ReportRepository, locationRepo repository.ReportLocationRepository, imageRepo repository.ReportImageRepository) *ReportService {
+func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo reportRepository.ReportLocationRepository, imageRepo reportRepository.ReportImageRepository, userRepo userRepository.UserRepository, userProfileRepo userRepository.UserProfileRepository) *ReportService {
 	return &ReportService{
 		reportRepo:         reportRepo,
 		reportLocationRepo: locationRepo,
 		reportImageRepo:    imageRepo,
+		userRepo:			userRepo,
+		userProfileRepo:	userProfileRepo,
 	}
 }
 
-func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req validation.CreateReportRequest) (*CreateReportResult, error) {
+func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateReportRequest) (*FullReportResult, error) {
 	tx := db.Begin()
 	if tx.Error != nil {
 		return nil, errors.New("Gagal memulai transaksi")
@@ -98,10 +102,114 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req validation.Cr
 		return nil, errors.New("Gagal menyimpan perubahan")
 	}
 
-	reportResult := &CreateReportResult{
+	reportResult := &FullReportResult{
 		Report:         reportStruct,
 		ReportLocation: reportLocationStruct,
 		ReportImages:   reportImages,
 	}
 	return reportResult, nil
+}
+
+func (s *ReportService) GetAllReport() ([]any, error) {
+	reports, err := s.reportRepo.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Laporan tidak ditemukan")
+		}
+		return nil, err
+	}
+
+	var fullReports []any
+
+	for _, report := range *reports {
+		location, err := s.reportLocationRepo.GetByReportID(report.ID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, errors.New("Lokasi laporan tidak ditemukan")
+			}
+			return nil, err
+		}
+		images, err := s.reportImageRepo.GetByReportID(report.ID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, errors.New("Gambar laporan tidak ditemukan")
+			}
+			return nil, err
+		}
+		
+		userProfile, err := s.userProfileRepo.GetByID(report.UserID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, errors.New("Profil pengguna tidak ditemukan")
+			}
+			return nil, err
+		}
+
+		fullReports = append(fullReports, dto.GetReportResponse{
+			ID:                report.ID,
+			ReportTitle:       report.ReportTitle,
+			ReportType:        string(report.ReportType),
+			ReportDescription: report.ReportDescription,
+			ReportCreatedAt:   report.CreatedAt,
+			UserID:            report.UserID,
+			UserName:          report.User.Username,
+			FullName:		   report.User.FullName,
+			ProfilePicture:    userProfile.ProfilePicture,
+			Location: dto.ReportLocationResponse{
+				DetailLocation: location.DetailLocation,
+				Latitude:       location.Latitude,
+				Longitude:      location.Longitude,
+				DisplayName:    location.DisplayName,
+				AddressType:    location.AddressType,
+				Country:        location.Country,
+				CountryCode:    location.CountryCode,
+				Region:         location.Region,
+				Road:		   location.Road,
+				PostCode:       location.PostCode,
+				County:         location.County,
+				State:          location.State,
+				Village:        location.Village,
+				Suburb:         location.Suburb,
+			},
+			Images: dto.ReportImageResponse{
+				Image1URL: images.Image1URL,
+				Image2URL: images.Image2URL,
+				Image3URL: images.Image3URL,
+				Image4URL: images.Image4URL,
+				Image5URL: images.Image5URL,
+			},
+		})
+	}
+	return fullReports, nil
+}
+
+func (s *ReportService) GetReportByID(reportID uint) (*FullReportResult, error) {
+	report, err := s.reportRepo.GetByID(reportID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Laporan tidak ditemukan")
+		}
+		return nil, err
+	}
+	location, err := s.reportLocationRepo.GetByReportID(reportID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Lokasi laporan tidak ditemukan")
+		}
+		return nil, err
+	}
+	images, err := s.reportImageRepo.GetByReportID(reportID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Gambar laporan tidak ditemukan")
+		}
+		return nil, err
+	}
+
+	result := &FullReportResult{
+		Report:         *report,
+		ReportLocation: *location,
+		ReportImages:   *images,
+	}
+	return result, nil
 }

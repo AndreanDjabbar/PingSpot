@@ -1,4 +1,4 @@
-package validation
+package dto
 
 type CreateReportRequest struct {
 	ReportTitle       string   `json:"reportTitle" validate:"required";max=200"`
