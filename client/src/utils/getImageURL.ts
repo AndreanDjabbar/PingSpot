@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-export const getImageURL = (path: string, type: "user") => {
+export const getImageURL = (path: string, type: string) => {
     let pathFile = path;
     if (!path || path === "") {
         type === "user" 
