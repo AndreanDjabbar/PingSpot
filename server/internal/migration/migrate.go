@@ -131,6 +131,21 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "25092025_add_geometry_field",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&model.ReportLocation{}, "geometry") {
+					return tx.Migrator().AddColumn(&model.ReportLocation{}, "geometry")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&model.ReportLocation{}, "geometry") {
+					return tx.Migrator().DropColumn(&model.ReportLocation{}, "geometry")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()
