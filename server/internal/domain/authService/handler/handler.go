@@ -8,6 +8,7 @@ import (
 	"server/internal/domain/authService/service"
 	"server/internal/domain/authService/validation"
 	"server/internal/infrastructure/cache"
+	"server/internal/infrastructure/database"
 	"server/pkg/logger"
 	"server/pkg/utils/env"
 	mainutils "server/pkg/utils/mainUtils"
@@ -42,8 +43,8 @@ func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 		logger.Error("Validation failed", zap.Error(err))
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
-
-	user, err := h.authService.Register(req, false)
+	db := database.GetPostgresDB()
+	user, err := h.authService.Register(db, req, false)
 	if err != nil {
 		logger.Error("Registration failed", zap.Error(err))
 		return response.ResponseError(c, 500, "Registrasi gagal", "", err.Error())
@@ -221,7 +222,8 @@ func (h *AuthHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Reque
 			Provider:   "GOOGLE",
 			ProviderID: &providerId,
 		}
-		createdUser, err := h.authService.Register(newUser, true)
+		db := database.GetPostgresDB()
+		createdUser, err := h.authService.Register(db, newUser, true)
 		if err != nil {
 			logger.Error("Error registering new user", zap.Error(err))
 			http.Error(w, "Terdapat masalah saat registrasi", http.StatusInternalServerError)

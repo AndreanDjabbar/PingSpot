@@ -20,41 +20,74 @@ import (
 
 type AuthService struct {
     userRepo repository.UserRepository
+    userProfileRepo repository.UserProfileRepository
 }
 
-func NewAuthService(userRepo repository.UserRepository) *AuthService {
-    return &AuthService{userRepo: userRepo}
+func NewAuthService(userRepo repository.UserRepository, userProfileRepo repository.UserProfileRepository) *AuthService {
+    return &AuthService{
+		userRepo: userRepo,
+		userProfileRepo: userProfileRepo,
+	}
 }
 
-func (s *AuthService) Register(req validation.RegisterRequest, isVerified bool) (*model.User, error) {
-	_, err := s.userRepo.GetByEmail(req.Email)
-	if err == nil {
-		return nil, errors.New("Email sudah terdaftar")
-	}
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.New("Terjadi kesalahan saat cek data user")
+func (s *AuthService) Register(db *gorm.DB, req validation.RegisterRequest, isVerified bool) (*model.User, error) {
+    tx := db.Begin()
+    if tx.Error != nil {
+        return nil, errors.New("Gagal memulai transaksi")
+    }
+    defer func() {
+        if r := recover(); r != nil {
+            tx.Rollback()
+        }
+    }()
+
+    _, err := s.userRepo.GetByEmail(req.Email)
+    if err == nil {
+        tx.Rollback()
+        return nil, errors.New("Email sudah terdaftar")
+    }
+    if !errors.Is(err, gorm.ErrRecordNotFound) {
+        tx.Rollback()
+        return nil, errors.New("Terjadi kesalahan saat cek data user")
+    }
+
+    hashedPassword, err := mainutils.HashPassword(req.Password)
+    if err != nil {
+        tx.Rollback()
+        return nil, errors.New("Gagal mengenkripsi password")
+    }
+
+    user := model.User{
+        Username:   req.Username,
+        Email:      req.Email,
+        Password:   &hashedPassword,
+        FullName:   req.FullName,
+        Provider:   model.Provider(req.Provider),
+        ProviderID: req.ProviderID,
+        IsVerified: isVerified,
+    }
+
+    createdUser, err := s.userRepo.CreateTX(tx, &user)
+    if err != nil {
+        tx.Rollback()
+        return nil, errors.New("Gagal membuat user")
+    }
+
+	newProfile := model.UserProfile{
+		UserID: createdUser.ID,
 	}
 
-	hashedPassword, err := mainutils.HashPassword(req.Password)
-	if err != nil {
-		return nil, errors.New("Gagal mengenkripsi password")
-	}
+    if _, err := s.userProfileRepo.CreateTX(tx, &newProfile); err != nil {
+		fmt.Println("Error creating UserProfile:", err)
+        tx.Rollback()
+        return nil, errors.New("Gagal membuat profil user")
+    }
 
-	user := model.User{
-		Username:   req.Username,
-		Email:      req.Email,
-		Password:   &hashedPassword,
-		FullName:   req.FullName,
-		Provider:   model.Provider(req.Provider),
-		ProviderID: req.ProviderID,
-		IsVerified: isVerified,
-	}
+    if err := tx.Commit().Error; err != nil {
+        return nil, errors.New("Gagal menyimpan perubahan")
+    }
 
-	if err := s.userRepo.Create(&user); err != nil {
-		return nil, errors.New("Gagal menyimpan user")
-	}
-
-	return &user, nil
+    return createdUser, nil
 }
 
 func (s *AuthService) Login(req validation.LoginRequest) (*model.User, string, error) {

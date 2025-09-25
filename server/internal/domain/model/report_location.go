@@ -7,6 +7,7 @@ type ReportLocation struct {
 	DetailLocation string  `gorm:"type:text;not null"`
 	Latitude       float64 `gorm:"not null"`
 	Longitude      float64 `gorm:"not null"`
+	Geometry       string  `gorm:"type:geometry(Point, 4326);not null;default:ST_SetSRID(ST_MakePoint(0,0), 4326)"`
 	DisplayName    *string `gorm:"type:text"`
 	AddressType    *string `gorm:"size:100"`
 	Country        *string `gorm:"size:100"`
