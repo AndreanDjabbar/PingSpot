@@ -1,0 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+export const getImageURL = (path: string, type: "user") => {
+    let pathFile = path;
+    if (!path || path === "") {
+        type === "user" 
+            ? pathFile = "default.png"
+            : pathFile = "default-image.png";
+    }
+    
+    const baseURL = type === "user"
+        ? process.env.NEXT_PUBLIC_USER_STATIC_URL
+        : process.env.NEXT_PUBLIC_MAIN_STATIC_URL;
+    return `${baseURL}/${pathFile}`;
+}

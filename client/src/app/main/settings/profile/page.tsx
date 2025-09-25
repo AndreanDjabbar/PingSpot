@@ -20,6 +20,7 @@ import { getDataResponseMessage } from '@/utils/getDataResponse';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import HeaderSection from '../../components/HeaderSection';
 import { SuccessSection, ErrorSection, ConfirmationDialog } from '@/components/feedback';
+import { getImageURL } from '@/utils/getImageURL';
 
 const ProfilePage = () => {
     const user = useUserProfileStore(state => state.userProfile);
@@ -156,10 +157,7 @@ const ProfilePage = () => {
                                         withLabel={true}
                                         labelTitle="Foto Profil"
                                         buttonTitle="Pilih Foto"
-                                        currentImage={ user?.profilePicture 
-                                            ?`${process.env.NEXT_PUBLIC_user_static_URL}/${user?.profilePicture}` 
-                                            : `${process.env.NEXT_PUBLIC_user_static_URL}/default.png`
-                                        }
+                                        currentImage={getImageURL(user?.profilePicture || '', "user")}
                                         onChange={(file) => {
                                             setProfilePicture(file);                             
                                         }}
