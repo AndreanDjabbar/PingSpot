@@ -19,7 +19,7 @@ import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { useCreateReport } from '@/hooks/main/useCreateReport';
 import { useReverseCurrentLocation } from '@/hooks/main/useReverseCurrentLocation';
-import { IReportFormType, ReportSchema } from '../../schema';
+import { IReportFormType, CreateReportSchema } from '../../schema';
 import HeaderSection from '../../components/HeaderSection';
 
 const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
@@ -34,7 +34,7 @@ const ReportsPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
     const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
-
+    console.log("MArker Position: ", markerPosition);
     const { mutate, isPending, isError, isSuccess, error, data } = useCreateReport();
     const { mutate: reverseLocation, data: reverseLocationData, isPending: reverseLoading } = useReverseCurrentLocation();
     
@@ -62,7 +62,7 @@ const ReportsPage = () => {
         reset,
         watch
     } = useForm<IReportFormType>({
-        resolver: zodResolver(ReportSchema),
+        resolver: zodResolver(CreateReportSchema),
     });
 
     const reportTypeValue = watch('reportType');
@@ -171,23 +171,27 @@ const ReportsPage = () => {
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8">
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col justify-center p-5 space-y-8 w-full" encType="multipart/form-data">
                     <div className="w-full flex flex-col gap-6">
-                        <div className="w-full bg-gradient-to-br from-sky-100 to-indigo-100 rounded-lg p-4 border-2 border-dashed border-sky-200">
-                            <h2 className="text-xl font-semibold text-sky-800 mb-4 flex items-center">
-                            <FaMapMarkerAlt className="mr-2" />
-                            Pilih Lokasi
-                            </h2>
-                            <p className="text-gray-600 mb-4 text-sm">Klik pada peta untuk menentukan lokasi masalah atau aktifkan lokasi otomatis</p>
-                            <div className="h-[400px] w-full mb-4">
-                                <DynamicMap onMarkerPositionChange={setMarkerPosition}/>
+                        <div>
+
+                            <div className="w-full bg-gradient-to-br from-sky-100 to-indigo-100 rounded-lg p-4 border-2 border-dashed border-sky-200">
+                                <h2 className="text-xl font-semibold text-sky-800 mb-4 flex items-center">
+                                <FaMapMarkerAlt className="mr-2" />
+                                Pilih Lokasi
+                                </h2>
+                                <p className="text-gray-600 mb-4 text-sm">Klik pada peta untuk menentukan lokasi masalah atau aktifkan lokasi otomatis</p>
+                                <div className="h-[400px] w-full mb-4">
+                                    <DynamicMap onMarkerPositionChange={setMarkerPosition}/>
+                                </div>
+                                <input 
+                                type="hidden" 
+                                {...register('latitude')}
+                                />
+                                <input 
+                                type="hidden" 
+                                {...register('longitude')}
+                                />
                             </div>
-                            <input 
-                            type="hidden" 
-                            {...register('latitude')}
-                            />
-                            <input 
-                            type="hidden" 
-                            {...register('longitude')}
-                            />
+                            <div className="text-red-500 text-sm font-semibold">{errors?.latitude?.message as string || errors?.longitude?.message as string}</div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
