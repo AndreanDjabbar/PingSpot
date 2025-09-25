@@ -2,11 +2,13 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"server/internal/domain/model"
 	"server/internal/domain/reportService/dto"
 	reportRepository "server/internal/domain/reportService/repository"
 	userRepository "server/internal/domain/userService/repository"
 	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -65,6 +67,7 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 		ReportID:       reportID,
 		Latitude:       req.Latitude,
 		Longitude:      req.Longitude,
+		Geometry: 	 fmt.Sprintf("SRID=4326;POINT(%f %f)", req.Longitude, req.Latitude),
 		DetailLocation: req.DetailLocation,
 		DisplayName:    req.DisplayName,
 		AddressType:    req.AddressType,
@@ -110,7 +113,7 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 	return reportResult, nil
 }
 
-func (s *ReportService) GetAllReport() ([]any, error) {
+func (s *ReportService) GetAllReport() ([]dto.GetReportResponse, error) {
 	reports, err := s.reportRepo.Get()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -119,7 +122,7 @@ func (s *ReportService) GetAllReport() ([]any, error) {
 		return nil, err
 	}
 
-	var fullReports []any
+	var fullReports []dto.GetReportResponse
 
 	for _, report := range *reports {
 		location, err := s.reportLocationRepo.GetByReportID(report.ID)
@@ -170,6 +173,7 @@ func (s *ReportService) GetAllReport() ([]any, error) {
 				State:          location.State,
 				Village:        location.Village,
 				Suburb:         location.Suburb,
+				Geometry: 	 	&location.Geometry,
 			},
 			Images: dto.ReportImageResponse{
 				Image1URL: images.Image1URL,

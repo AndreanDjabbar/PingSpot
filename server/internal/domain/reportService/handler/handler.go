@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"path/filepath"
+	"server/internal/domain/reportService/dto"
 	"server/internal/domain/reportService/service"
 	"server/internal/domain/reportService/validation"
 	"server/internal/infrastructure/database"
@@ -94,7 +95,7 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Format longitude tidak valid", "", "Longitude harus berupa angka desimal")
 	}
 
-	req := validation.CreateReportRequest{
+	req := dto.CreateReportRequest{
 		ReportTitle:       reportTitle,
 		ReportType:        reportType,
 		ReportDescription: reportDescription,

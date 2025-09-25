@@ -15,14 +15,15 @@ type ReportLocationResponse struct {
 	State          *string `json:"state"`
 	Village        *string `json:"village"`
 	Suburb         *string `json:"suburb"`
+	Geometry	   *string `json:"geometry"`
 }
 
 type ReportImageResponse struct {
-	Image1URL *string `json:"image1Url"`
-	Image2URL *string `json:"image2Url"`
-	Image3URL *string `json:"image3Url"`
-	Image4URL *string `json:"image4Url"`
-	Image5URL *string `json:"image5Url"`
+	Image1URL *string `json:"image1URL"`
+	Image2URL *string `json:"image2URL"`
+	Image3URL *string `json:"image3URL"`
+	Image4URL *string `json:"image4URL"`
+	Image5URL *string `json:"image5URL"`
 }
 
 type GetReportResponse struct {
