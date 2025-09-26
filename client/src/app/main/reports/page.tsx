@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import HeaderSection from '../components/HeaderSection';
 import Image from 'next/image';
 import { FaMapMarkerAlt, FaCalendarAlt, FaSearch, FaFilter } from 'react-icons/fa';
+import { BsThreeDots } from "react-icons/bs";
 import { MdOutlineCategory } from 'react-icons/md';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
@@ -12,12 +13,16 @@ import { BiPlus } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
 import { ErrorSection, ImagePreviewModal } from '@/components/feedback';
 import { useGetReport } from '@/hooks/main/useGetReport';
+import { useReactionReport, useSaveReport, useAddComment, useStatusVote } from '@/hooks/main/useReportInteractions';
 import useErrorToast from '@/hooks/useErrorToast';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import { getDataResponseDetails } from '@/utils/getDataResponse';
 import { getImageURL } from '@/utils/getImageURL';
 import { formattedDate } from '@/utils/getFormattedDate';
 import { ReportType, Report, ReportImage } from './types';
+import { ReportInteractionBar } from '../components/ReportInteractionBar';
+import { StatusVoting } from '../components/StatusVoting';
+import { ReportModal } from './components/ReportModal';
 
 const StaticMap = dynamic(() => import('../components/StaticMap'), {
     ssr: false,
@@ -34,16 +39,6 @@ const getReportTypeLabel = (type: ReportType): string => {
     return types[type] || 'Lainnya';
 };
 
-const getReportTypeColorClass = (type: ReportType): string => {
-    const colors = {
-        INFRASTRUCTURE: 'bg-blue-500',
-        ENVIRONMENT: 'bg-green-500',
-        SAFETY: 'bg-red-500',
-        OTHER: 'bg-purple-500'
-    };
-    return colors[type] || 'bg-gray-500';
-};
-
 const ReportsPage = () => {
     const currentPath = usePathname();
     const [reports, setReports] = useState<Report[]>([]);
@@ -52,7 +47,14 @@ const ReportsPage = () => {
     const [activeFilter, setActiveFilter] = useState<ReportType | "all">("all");
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const router = useRouter();
+
+    const reactionMutation = useReactionReport();
+    const saveMutation = useSaveReport();
+    const commentMutation = useAddComment();
+    const voteMutation = useStatusVote();
 
     const { 
         mutate: getReport, 
@@ -100,10 +102,16 @@ const ReportsPage = () => {
     
     const handleCloseModal = () => {
         setIsModalOpen(false);
+        setPreviewImage(null);
+    };
+
+    const handleCloseReportModal = () => {
+        setIsReportModalOpen(false);
+        setSelectedReport(null);
     };
 
     const getReportImages = (images: ReportImage): string[] => {
-        console.log("IMAGES OBJECT:", images);
+        if (!images) return [];
         return [
             images.image1URL, 
             images.image2URL, 
@@ -113,20 +121,102 @@ const ReportsPage = () => {
         ].filter((url): url is string => typeof url === 'string');
     };
 
-    useErrorToast(isGetReportError, getErrorResponseMessage(getReportError) || 'Terjadi kesalahan saat mengambil data laporan');
+    // Interaction handlers
+    const handleLike = async (reportId: number) => {
+        try {
+            await reactionMutation.mutateAsync({
+                reportId,
+                type: 'LIKE'
+            });
+        } catch (error) {
+            console.error('Error liking report:', error);
+        }
+    };
+
+    const handleDislike = async (reportId: number) => {
+        try {
+            await reactionMutation.mutateAsync({
+                reportId,
+                type: 'DISLIKE'
+            });
+        } catch (error) {
+            console.error('Error disliking report:', error);
+        }
+    };
+
+    const handleSave = async (reportId: number) => {
+        try {
+            await saveMutation.mutateAsync(reportId);
+        } catch (error) {
+            console.error('Error saving report:', error);
+        }
+    };
+
+    const handleComment = (reportId: number) => {
+        const report = filteredReports.find(r => r.id === reportId);
+        if (report) {
+            setSelectedReport(report);
+            setIsReportModalOpen(true);
+        }
+    };
+
+    const handleShare = async (reportId: number, reportTitle: string) => {
+        try {
+            const shareUrl = `${window.location.origin}/main/reports/${reportId}`;
+            if (navigator.share) {
+                await navigator.share({
+                    title: reportTitle,
+                    text: 'Lihat laporan ini di PingSpot',
+                    url: shareUrl
+                });
+            } else {
+                await navigator.clipboard.writeText(shareUrl);
+                alert('Link telah disalin ke clipboard!');
+            }
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    };
+
+    const handleAddComment = async (reportId: number, content: string, parentId?: number) => {
+        try {
+            await commentMutation.mutateAsync({
+                reportId,
+                content,
+                parentId
+            });
+        } catch (error) {
+            console.error('Error adding comment:', error);
+        }
+    };
+
+    const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => {
+        try {
+            await voteMutation.mutateAsync({
+                reportId,
+                voteType
+            });
+        } catch (error) {
+            console.error('Error voting on status:', error);
+        }
+    };
+
+    useErrorToast(
+        isGetReportError, 
+        getErrorResponseMessage(getReportError) || 'Terjadi kesalahan saat mengambil data laporan'
+    );
 
     if (getReportPending) {
         return (
             <div className="space-y-8">
                 <HeaderSection 
                     currentPath={currentPath}
-                    message='Memuat data laporan...'>
+                    message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.'>
                     <div className="bg-gray-300 animate-pulse px-8 py-4 rounded-xl">
-                        <div className="w-32 h-6 bg-gray-400 rounded"></div>
+                        <div className="h-6 w-40 bg-gray-400 rounded"></div>
                     </div>
                 </HeaderSection>
                 
-                {/* Loading skeleton for reports */}
                 <div className="space-y-6">
                     {[1, 2, 3].map((i) => (
                         <div key={i} className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-6">
@@ -184,7 +274,7 @@ const ReportsPage = () => {
                             <input
                                 type="text"
                                 placeholder="Cari laporan berdasarkan judul, deskripsi atau lokasi"
-                                className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                                className="w-full pl-10 pr-4 py-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -257,36 +347,45 @@ const ReportsPage = () => {
                                 <div key={report.id} className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl overflow-hidden transition-all duration-300">
                                     <div className="p-6">
                                         <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center">
-                                                {report && (
-                                                    <div className="h-10 w-10 rounded-full overflow-hidden mr-3 border-2 border-white shadow">
-                                                        <Image 
-                                                            src={getImageURL(report?.profilePicture || '', "user")} 
-                                                            alt={report?.fullName}
-                                                            width={40}
-                                                            height={40}
-                                                            className="object-cover h-full w-full"
-                                                        />
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <div className="font-medium text-sky-900">{report?.fullName}</div>
-                                                    <div className="text-xs text-gray-500 flex items-center">
-                                                        <FaCalendarAlt className="mr-1" size={12} />
-                                                        {formattedDate(report?.reportCreatedAt, {
-                                                            formatStr: 'dd MMMM yyyy - HH:mm',
-                                                        })}
+                                            <div className='flex gap-5'>
+                                                <div className="flex items-center">
+                                                    {report && (
+                                                        <div className="h-10 w-10 rounded-full overflow-hidden mr-3 border-2 border-white shadow">
+                                                            <Image 
+                                                                src={getImageURL(report?.profilePicture || '', "user")} 
+                                                                alt={report?.fullName}
+                                                                width={40}
+                                                                height={40}
+                                                                className="object-cover h-full w-full"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <div className="font-medium text-sky-900">{report?.fullName}</div>
+                                                        <div className="text-xs text-gray-500 flex items-center">
+                                                            <FaCalendarAlt className="mr-1" size={12} />
+                                                            {formattedDate(report?.reportCreatedAt, {
+                                                                formatStr: 'dd MMMM yyyy - HH:mm',
+                                                            })}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <span className={`inline-block px-3 py-1 bg-sky-900 text-xs font-medium text-white rounded-full ${report.reportType}`}>
+                                                        {getReportTypeLabel(report.reportType)}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <span className={`inline-block px-3 py-1 text-xs font-medium text-white rounded-full ${getReportTypeColorClass(report.reportType)}`}>
-                                                    {getReportTypeLabel(report.reportType)}
-                                                </span>
+                                            <div className='flex gap-10'>
+                                                <div className="flex items-center space-x-2">
+                                                    <span className={`inline-block text-xs font-medium text-sky-900 rounded-full`}>
+                                                        <BsThreeDots size={20}/>
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                         
-                                        <h2 className="text-xl font-bold text-sky-900 mb-2">{report.reportTitle}</h2>
+                                        <h2 className="text-xl font-bold text--900 graymb-2">{report.reportTitle}</h2>
                                         <p className="text-gray-700 mb-4">{report.reportDescription}</p>
                                         
                                         <div className="flex items-start mb-5 text-gray-600">
@@ -299,37 +398,63 @@ const ReportsPage = () => {
                                             </div>
                                         </div>
                                         
-                                        <div className="mb-4 h-[200px] w-full rounded-lg overflow-hidden">
-                                            <StaticMap
-                                            latitude={report.location.latitude}
-                                            longitude={report.location.longitude}
-                                            height={200}
-                                            markerColor='red'
-                                            popupText={report.reportTitle}
-                                            />
-                                        </div>
-                                        
-                                        {getReportImages(report.images).length > 0 && (
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-600 mb-2">Foto Permasalahan:</p>
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                                                    {getReportImages(report.images).map((imageUrl, index) => (
-                                                        <div 
-                                                            key={`${report.id}-image-${index}`}
-                                                            className="aspect-square relative rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-2 border-white shadow"
-                                                            onClick={() => handleImageClick(getImageURL(`/report/${imageUrl}`, "main"))}
-                                                        >
-                                                            <Image 
-                                                                src={getImageURL(`/report/${imageUrl}`, "main")}
-                                                                alt={`Foto ${index + 1} untuk laporan ${report.reportTitle}`}
-                                                                fill
-                                                                className="object-cover"
-                                                            />
-                                                        </div>
-                                                    ))}
+                                        <div className='flex flex-col items lg:flex-row gap-4'>
+                                            <div className="lg:w-1/2">
+                                                <div className="h-full rounded-lg overflow-hidden">
+                                                    <StaticMap
+                                                        latitude={report.location.latitude}
+                                                        longitude={report.location.longitude}
+                                                        height={403}
+                                                        markerColor='red'
+                                                        popupText={report.reportTitle}
+                                                    />
                                                 </div>
                                             </div>
-                                        )}
+                                            
+                                            <div className="lg:w-1/2">
+                                                {getReportImages(report.images).length > 0 && (
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-600 mb-2">Foto Permasalahan:</p>
+                                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                                            {getReportImages(report.images).map((imageUrl, index) => (
+                                                                <div 
+                                                                    key={`${report.id}-image-${index}`}
+                                                                    className="aspect-square relative rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border-2 border-white shadow"
+                                                                    onClick={() => handleImageClick(getImageURL(`/report/${imageUrl}`, "main"))}
+                                                                >
+                                                                    <Image 
+                                                                        src={getImageURL(`/report/${imageUrl}`, "main")}
+                                                                        alt={`Foto ${index + 1} untuk laporan ${report.reportTitle}`}
+                                                                        fill
+                                                                        className="object-cover"
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <ReportInteractionBar
+                                            reactionStats={report.reactionStats || { likes: 0, dislikes: 0 }}
+                                            userInteraction={report.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}
+                                            commentCount={report.commentCount || 0}
+                                            onLike={() => handleLike(report.id)}
+                                            onDislike={() => handleDislike(report.id)}
+                                            onSave={() => handleSave(report.id)}
+                                            onComment={() => handleComment(report.id)}
+                                            onShare={() => handleShare(report.id, report.reportTitle)}
+                                            isLoading={reactionMutation.isPending || saveMutation.isPending}
+                                        />
+
+                                        <StatusVoting
+                                            currentStatus={report.status || 'PENDING'}
+                                            statusVoteStats={report.statusVoteStats || { resolved: 0, notResolved: 0, neutral: 0 }}
+                                            userCurrentVote={report.userInteraction?.currentVote || null}
+                                            onVote={(voteType: string) => handleStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
+                                            isLoading={voteMutation.isPending}
+                                        />
                                     </div>
                                 </div>
                             ))}
@@ -365,6 +490,22 @@ const ReportsPage = () => {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
             />
+
+            {selectedReport && (
+                <ReportModal
+                    report={selectedReport}
+                    isOpen={isReportModalOpen}
+                    onClose={handleCloseReportModal}
+                    currentUserId={1}
+                    onLike={() => handleLike(selectedReport.id)}
+                    onDislike={() => handleDislike(selectedReport.id)}
+                    onSave={() => handleSave(selectedReport.id)}
+                    onShare={() => handleShare(selectedReport.id, selectedReport.reportTitle)}
+                    onAddComment={(content, parentId) => handleAddComment(selectedReport.id, content, parentId)}
+                    onStatusVote={(voteType) => handleStatusVote(selectedReport.id, voteType)}
+                    isInteractionLoading={reactionMutation.isPending || saveMutation.isPending || voteMutation.isPending || commentMutation.isPending}
+                />
+            )}
         </div>
     );
 };
