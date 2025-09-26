@@ -1,4 +1,5 @@
 export type ReportType = 'INFRASTRUCTURE' | 'ENVIRONMENT' | 'SAFETY' | 'OTHER';
+export type ReportStatus = 'PENDING' | 'RESOLVED' | 'NOT_RESOLVED' | 'IN_PROGRESS';
 
 export interface ReportImage {
     id: number;
@@ -29,6 +30,37 @@ export interface ReportLocation {
     suburb?: string;
 }
 
+export interface CommentType {
+    id: number;
+    content: string;
+    createdAt: number;
+    updatedAt: number;
+    userId: number;
+    userName: string;
+    fullName: string;
+    profilePicture?: string;
+    parentId?: number;
+    replies?: CommentType[];
+}
+
+export interface ReactionStats {
+    likes: number;
+    dislikes: number;
+}
+
+export interface StatusVoteStats {
+    resolved: number;
+    notResolved: number;
+    neutral: number;
+}
+
+export interface UserInteraction {
+    hasLiked: boolean;
+    hasDisliked: boolean;
+    hasSaved: boolean;
+    currentVote?: string;
+}
+
 export interface Report {
     id: number;
     fullName: string;
@@ -36,7 +68,14 @@ export interface Report {
     reportTitle: string;
     reportType: ReportType;
     reportDescription: string;
+    status: ReportStatus;
     reportCreatedAt: number;
+    reportUpdatedAt: number;
     location: ReportLocation;
     images: ReportImage;
+    comments: CommentType[];
+    commentCount: number;
+    reactionStats: ReactionStats;
+    statusVoteStats: StatusVoteStats;
+    userInteraction: UserInteraction;
 }
