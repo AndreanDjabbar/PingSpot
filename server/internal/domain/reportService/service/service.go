@@ -139,14 +139,6 @@ func (s *ReportService) GetAllReport() ([]dto.GetReportResponse, error) {
 			}
 			return nil, err
 		}
-		
-		userProfile, err := s.userProfileRepo.GetByID(report.UserID)
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, errors.New("Profil pengguna tidak ditemukan")
-			}
-			return nil, err
-		}
 
 		fullReports = append(fullReports, dto.GetReportResponse{
 			ID:                report.ID,
@@ -157,7 +149,7 @@ func (s *ReportService) GetAllReport() ([]dto.GetReportResponse, error) {
 			UserID:            report.UserID,
 			UserName:          report.User.Username,
 			FullName:		   report.User.FullName,
-			ProfilePicture:    userProfile.ProfilePicture,
+			ProfilePicture:    report.User.Profile.ProfilePicture,
 			Location: dto.ReportLocationResponse{
 				DetailLocation: location.DetailLocation,
 				Latitude:       location.Latitude,
