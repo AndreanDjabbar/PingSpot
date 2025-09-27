@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"server/internal/domain/model"
+	"server/internal/domain/userService/dto"
 	"server/internal/domain/userService/repository"
-	"server/internal/domain/userService/validation"
 	mainutils "server/pkg/utils/mainUtils"
 
 	"gorm.io/gorm"
@@ -36,7 +36,7 @@ func (s *UserService) UpdateUserByEmail(email string, updatedUser *model.User) (
 	return updated, nil
 }
 
-func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req validation.SaveUserProfileRequest) (*model.UserProfile, error) {
+func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProfileRequest) (*dto.SaveUserProfileResponse, error) {
     tx := db.Begin()
     if tx.Error != nil {
         return nil, errors.New("gagal memulai transaksi")
@@ -64,7 +64,15 @@ func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req validation.SaveU
             if err := tx.Commit().Error; err != nil {
                 return nil, err
             }
-            return &newProfile, nil
+            newProfileResponse := dto.SaveUserProfileResponse{
+                UserID:         userID,
+                Bio:            req.Bio,
+                ProfilePicture: req.ProfilePicture,
+                Birthday:       req.Birthday,
+                Gender:         req.Gender,
+                FullName:      req.FullName,
+            }
+            return &newProfileResponse, nil
         } else {
             tx.Rollback()
             return nil, err
@@ -85,15 +93,24 @@ func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req validation.SaveU
         return nil, err
     }
 
-    return profile, nil
+    profileResponse := dto.SaveUserProfileResponse{
+        UserID:         userID,
+        Bio:            profile.Bio,
+        ProfilePicture: profile.ProfilePicture,
+        Birthday:       profile.Birthday,
+        Gender:        profile.Gender,
+        FullName:      req.FullName,
+        Username:      *req.Username,
+    }
+    return &profileResponse, nil
 }
 
 
-func (s *UserService) GetProfile(userID uint) (*model.UserProfile, error) {
-    return s.userProfileRepo.GetByID(userID)
+func (s *UserService) GetProfile(userID uint) (*model.User, error) {
+    return s.userRepo.GetByID(userID)
 }
 
-func (s *UserService) SaveSecurity(userID uint, req validation.SaveUserSecurityRequest) error {
+func (s *UserService) SaveSecurity(userID uint, req dto.SaveUserSecurityRequest) error {
     user, err := s.userRepo.GetByID(userID)
     if err != nil {
         return err

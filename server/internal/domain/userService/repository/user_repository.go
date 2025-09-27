@@ -51,7 +51,7 @@ func (r *userRepository) UpdateByEmail(email string, updatedUser *model.User) (*
 
 func (r *userRepository) GetByID(userID uint) (*model.User, error) {
     var user model.User
-    if err := r.db.First(&user, userID).Error; err != nil {
+    if err := r.db.Preload("Profile").First(&user, userID).Error; err != nil {
         return nil, err
     }
     return &user, nil
