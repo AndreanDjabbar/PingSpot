@@ -21,6 +21,7 @@ type User struct {
 	Provider   Provider  `gorm:"type:varchar(20);default:EMAIL;not null"`
 	IsVerified bool      `gorm:"default:false;not null"`
 	ProviderID *string   `gorm:"size:100"`
+	Profile	UserProfile `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	CreatedAt  time.Time `gorm:"autoCreateTime"`
 	UpdatedAt  time.Time `gorm:"autoUpdateTime"`
 }
