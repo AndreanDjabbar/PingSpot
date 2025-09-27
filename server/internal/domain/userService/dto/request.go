@@ -1,7 +1,8 @@
-package validation
+package dto
 
 type SaveUserProfileRequest struct {
 	FullName 		  string  `json:"fullName" validate:"required"`
+	Username		  *string  `json:"username"`
 	Bio    	 		 *string `json:"bio" validate:"omitempty,max=255"`
 	ProfilePicture   *string `json:"profilePicture" validate:"omitempty,max=255"`
 	Gender   		 *string `json:"gender" validate:"omitempty,oneof=male female"`
