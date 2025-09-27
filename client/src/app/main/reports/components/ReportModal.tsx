@@ -12,8 +12,8 @@ import { getImageURL } from '@/utils/getImageURL';
 import { formattedDate } from '@/utils/getFormattedDate';
 import { Report, ReportType, ReportImage } from '../../reports/types';
 import { CommentType } from '../../reports/types';
-import { ReportInteractionBar } from '../../components/ReportInteractionBar';
-import { StatusVoting } from '../../components/StatusVoting';
+import { ReportInteractionBar } from './ReportInteractionBar';
+import { StatusVoting } from './StatusVoting';
 import { BsThreeDots } from 'react-icons/bs';
 
 const StaticMap = dynamic(() => import('../../components/StaticMap'), {
