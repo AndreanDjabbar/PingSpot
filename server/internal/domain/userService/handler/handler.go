@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"path/filepath"
+	"server/internal/domain/userService/dto"
 	"server/internal/domain/userService/service"
 	"server/internal/domain/userService/validation"
 	"server/internal/infrastructure/database"
@@ -25,7 +26,7 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 
 func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
 	logger.Info("SAVE USER SECURITY HANDLER")
-	var req validation.SaveUserSecurityRequest
+	var req dto.SaveUserSecurityRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
@@ -59,6 +60,7 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 	gender := c.FormValue("gender")
 	birthday := c.FormValue("birthday")
 	bio := c.FormValue("bio")
+	username := c.FormValue("username")
 	file, err := c.FormFile("profilePicture")
 	var profilePicture string
 	if err == nil && file != nil {
@@ -92,12 +94,13 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 		}
 	}
 
-	req := validation.SaveUserProfileRequest{
+	req := dto.SaveUserProfileRequest{
 		FullName:       fullName,
 		Gender:         mainutils.StrPtrOrNil(gender),
 		Bio:            mainutils.StrPtrOrNil(bio),
 		ProfilePicture: mainutils.StrPtrOrNil(profilePicture),
 		Birthday:       mainutils.StrPtrOrNil(birthday),
+		Username:       mainutils.StrPtrOrNil(username),
 	}
 
 	if err := validation.Validate.Struct(req); err != nil {
@@ -121,8 +124,8 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 	newProfileFormatted := map[string]any{
 		"bio":      newProfile.Bio,
 		"avatar":   newProfile.ProfilePicture,
-		"fullname": newProfile.User.FullName,
-		"username": newProfile.User.Username,
+		"fullname": newProfile.FullName,
+		"username": newProfile.Username,
 		"gender":   newProfile.Gender,
 		"birthday": newProfile.Birthday,
 	}
@@ -137,20 +140,20 @@ func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
-	myProfile, err := h.userService.GetProfile(userId)
+	user, err := h.userService.GetProfile(userId)
 	if err != nil {
 		logger.Error("Failed to get my profile", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal mendapatkan profil pengguna", "", err.Error())
 	}
-	myProfileFormatted := map[string]any{
-		"bio":            myProfile.Bio,
-		"profilePicture": myProfile.ProfilePicture,
-		"fullname":       myProfile.User.FullName,
-		"username":       myProfile.User.Username,
-		"birthday":       myProfile.Birthday,
-		"gender":         myProfile.Gender,
-		"email":          myProfile.User.Email,
-		"userID":         myProfile.UserID,
+	myProfile := map[string]any{
+		"bio":            user.Profile.Bio,
+		"profilePicture": user.Profile.ProfilePicture,
+		"fullname":       user.FullName,
+		"username":       user.Username,
+		"birthday":       user.Profile.Birthday,
+		"gender":         user.Profile.Gender,
+		"email":          user.Email,
+		"userID":         user.ID,
 	}
-	return response.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", myProfileFormatted)
+	return response.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", myProfile)
 }
