@@ -12,13 +12,13 @@ import useErrorToast from '@/hooks/useErrorToast';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import { getDataResponseDetails } from '@/utils/getDataResponse';
 import { ReportType, Report } from './types';
-import { ReportModal } from './components/ReportModal';
-import { 
-    ReportSearchAndFilter, 
-    ReportList, 
-} from './components';
-import ReportSkeleton from './components/ReportSkeleton';
 import { EmptyState } from '@/components/UI';
+import { 
+    ReportSkeleton, 
+    ReportSearchAndFilter,
+    ReportModal,
+    ReportList
+} from './components';
 
 const ReportsPage = () => {
     const currentPath = usePathname();

@@ -1,4 +1,18 @@
 // Export all report components
-export { default as ReportSearchAndFilter } from './ReportSearchAndFilter';
-export { default as ReportCard } from './ReportCard';
-export { default as ReportList } from './ReportList';
+import ReportCard from "./ReportCard";
+import ReportModal from "./ReportModal";
+import StatusVoting from "./StatusVoting";
+import ReportSkeleton from "./ReportSkeleton";
+import ReportSearchAndFilter from "./ReportSearchAndFilter";
+import ReportList from "./ReportList";
+import CommentSection from "./CommentSection";
+
+export {
+    ReportCard,
+    ReportModal,
+    StatusVoting,
+    ReportSkeleton,
+    ReportSearchAndFilter,
+    ReportList,
+    CommentSection
+}

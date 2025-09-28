@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaMapMarkerAlt, FaCalendarAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
@@ -13,8 +13,9 @@ import { formattedDate } from '@/utils/getFormattedDate';
 import { Report, ReportType, ReportImage } from '../../reports/types';
 import { CommentType } from '../../reports/types';
 import { ReportInteractionBar } from './ReportInteractionBar';
-import { StatusVoting } from './StatusVoting';
 import { BsThreeDots } from 'react-icons/bs';
+import StatusVoting from './StatusVoting';
+import CommentItem from './CommentItem';
 
 const StaticMap = dynamic(() => import('../../components/StaticMap'), {
     ssr: false,
@@ -35,12 +36,8 @@ interface ReportModalProps {
     isInteractionLoading?: boolean;
 }
 
-interface CommentItemProps {
-    comment: CommentType;
-    currentUserId: number;
-    level?: number;
-    onReply: (content: string, parentId: number) => void;
-}
+// Remove the local CommentItemProps interface and CommentItem component
+// They're already defined in the imported CommentItem
 
 const getReportTypeLabel = (type: ReportType): string => {
     const types = {
@@ -63,138 +60,7 @@ const getReportImages = (images: ReportImage): string[] => {
     ].filter((url): url is string => typeof url === 'string');
 };
 
-const CommentItem: React.FC<CommentItemProps> = ({ 
-    comment, 
-    currentUserId, 
-    level = 0, 
-    onReply 
-}) => {
-    const [isReplying, setIsReplying] = useState(false);
-    const [replyContent, setReplyContent] = useState('');
-    const replyInputRef = useRef<HTMLTextAreaElement>(null);
-
-    useEffect(() => {
-        if (isReplying && replyInputRef.current) {
-            replyInputRef.current.focus();
-        }
-    }, [isReplying]);
-
-    const handleReply = () => {
-        if (replyContent.trim()) {
-            onReply(replyContent, comment.id);
-            setReplyContent('');
-            setIsReplying(false);
-        }
-    };
-
-    const marginLeft = Math.min(level * 16, 32);
-
-    return (
-        <div className="mb-3" style={{ marginLeft: `${marginLeft}px` }}>
-            <div className="flex space-x-2">
-                <div className="flex-shrink-0">
-                    <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-200">
-                        <Image 
-                            src={getImageURL(comment.profilePicture || '', "user")}
-                            alt={comment.fullName}
-                            width={24}
-                            height={24}
-                            className="object-cover h-full w-full"
-                        />
-                    </div>
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-start space-x-2">
-                        <span className="font-semibold text-sm text-gray-900 shrink-0">
-                            {comment.fullName}
-                        </span>
-                        <span className="text-sm text-gray-800 break-words">
-                            {comment.content}
-                        </span>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3 mt-1">
-                        <span className="text-xs text-gray-400">
-                            {formattedDate(comment.createdAt, { formatStr: 'dd MMM yyyy' })}
-                        </span>
-                        <button
-                            onClick={() => setIsReplying(true)}
-                            className="text-xs text-gray-400 hover:text-gray-600 font-medium"
-                        >
-                            Balas
-                        </button>
-                    </div>
-                    
-                    {isReplying && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="mt-2"
-                        >
-                            <div className="flex items-center justify-between">
-                                    <div className="w-5 h-5 rounded-full overflow-hidden border border-gray-200">
-                                        <Image 
-                                            src={getImageURL('', "user")}
-                                            alt="Current User"
-                                            width={20}
-                                            height={20}
-                                            className="object-cover h-full w-full"
-                                        />
-                                    </div>
-                                <div className="flex-1 relative">
-                                    <textarea
-                                        ref={replyInputRef}
-                                        value={replyContent}
-                                        onChange={(e) => setReplyContent(e.target.value)}
-                                        placeholder={`Balas ${comment.fullName}...`}
-                                        className="w-full p-2 pr-8 text-sm border border-gray-200 rounded-lg resize-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 bg-white"
-                                        rows={2}
-                                    />
-                                    <div className="absolute bottom-1 right-1 flex space-x-1">
-                                        <button
-                                            onClick={() => {
-                                                setIsReplying(false);
-                                                setReplyContent('');
-                                            }}
-                                            className="text-xs text-gray-400 hover:text-gray-600"
-                                        >
-                                            Batal
-                                        </button>
-                                        <button
-                                            onClick={handleReply}
-                                            disabled={!replyContent.trim()}
-                                            className="text-xs text-sky-600 hover:text-sky-700 disabled:opacity-50"
-                                        >
-                                            Kirim
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                    
-                    {comment.replies && comment.replies.length > 0 && (
-                        <div className="mt-2">
-                            {comment.replies.map((reply) => (
-                                <CommentItem
-                                    key={reply.id}
-                                    comment={reply}
-                                    currentUserId={currentUserId}
-                                    level={level + 1}
-                                    onReply={onReply}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export const ReportModal: React.FC<ReportModalProps> = ({
+const ReportModal: React.FC<ReportModalProps> = ({
     report,
     isOpen,
     onClose,
@@ -232,17 +98,14 @@ export const ReportModal: React.FC<ReportModalProps> = ({
         onAddComment(content, parentId);
     };
 
-    // Organize comments into threads
     const organizeComments = (comments: CommentType[]): CommentType[] => {
         const commentMap = new Map<number, CommentType>();
         const rootComments: CommentType[] = [];
 
-        // First pass: create comment map
         comments.forEach(comment => {
             commentMap.set(comment.id, { ...comment, replies: [] });
         });
 
-        // Second pass: organize into threads
         comments.forEach(comment => {
             const commentWithReplies = commentMap.get(comment.id)!;
             
@@ -450,7 +313,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                                         key={comment.id}
                                         comment={comment}
                                         currentUserId={currentUserId}
+                                        variant="compact" // Use compact variant for modal
+                                        showLikes={false} // Don't show likes in modal
                                         onReply={handleReply}
+                                        // onEdit and onDelete are optional, so they can be omitted
                                     />
                                 ))
                             ) : (
@@ -497,3 +363,5 @@ export const ReportModal: React.FC<ReportModalProps> = ({
         </AnimatePresence>
     );
 };
+
+export default ReportModal;

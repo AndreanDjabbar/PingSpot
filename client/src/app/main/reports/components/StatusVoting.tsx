@@ -19,7 +19,7 @@ interface StatusVotingProps {
     isLoading?: boolean;
 }
 
-export const StatusVoting: React.FC<StatusVotingProps> = ({
+const StatusVoting: React.FC<StatusVotingProps> = ({
     currentStatus,
     statusVoteStats,
     userCurrentVote,
@@ -187,3 +187,5 @@ export const StatusVoting: React.FC<StatusVotingProps> = ({
         </div>
     );
 };
+
+export default StatusVoting;

@@ -7,7 +7,7 @@ import { Report, ReportType, ReportImage } from '@/app/main/reports/types';
 import { getImageURL } from '@/utils/getImageURL';
 import { formattedDate } from '@/utils/getFormattedDate';
 import { ReportInteractionBar } from '@/app/main/reports/components/ReportInteractionBar';
-import { StatusVoting } from '@/app/main/reports/components/StatusVoting';
+import StatusVoting from './StatusVoting';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,
