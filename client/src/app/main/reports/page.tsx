@@ -19,6 +19,7 @@ import {
     ReportModal,
     ReportList
 } from './components';
+import { useReactReport } from '@/hooks/main/useReactReport';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
@@ -31,6 +32,11 @@ const ReportsPage = () => {
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const router = useRouter();
+    const { 
+        mutate: reactReport, 
+        isError: isReactReportError,  
+        error: reactReportError, 
+    } = useReactReport();
 
     const { 
         mutate: getReport, 
@@ -86,22 +92,101 @@ const ReportsPage = () => {
         setSelectedReport(null);
     };
 
-    // Interaction handlers
     const handleLike = async (reportId: number) => {
+        const updatedReports = reports.map(report => {
+            if (report.id === reportId) {
+                const currentlyLiked = report.userInteraction?.hasLiked || false;
+                const currentlyDisliked = report.userInteraction?.hasDisliked || false;
+                
+                return {
+                    ...report,
+                    reactionStats: {
+                        ...report.reactionStats,
+                        likes: currentlyLiked 
+                            ? (report.reactionStats?.likes || 1) - 1 
+                            : (report.reactionStats?.likes || 0) + 1,
+                        dislikes: currentlyDisliked 
+                            ? (report.reactionStats?.dislikes || 1) - 1 
+                            : (report.reactionStats?.dislikes || 0)
+                    },
+                    userInteraction: {
+                        ...report.userInteraction,
+                        hasLiked: !currentlyLiked,
+                        hasDisliked: false
+                    }
+                };
+            }
+            return report;
+        });
+        
+        setReports(updatedReports);
+        
+        if (selectedReport && selectedReport.id === reportId) {
+            const updatedSelectedReport = updatedReports.find(r => r.id === reportId);
+            if (updatedSelectedReport) {
+                setSelectedReport(updatedSelectedReport);
+            }
+        }
+        
         try {
-
+            reactReport({
+                reportID: reportId,
+                data: {
+                    reactionType: 'LIKE'
+                }
+            });
         } catch (error) {
             console.error('Error liking report:', error);
         }
     };
 
     const handleDislike = async (reportId: number) => {
+        const updatedReports = reports.map(report => {
+            if (report.id === reportId) {
+                const currentlyLiked = report.userInteraction?.hasLiked || false;
+                const currentlyDisliked = report.userInteraction?.hasDisliked || false;
+                
+                return {
+                    ...report,
+                    reactionStats: {
+                        ...report.reactionStats,
+                        likes: currentlyLiked 
+                            ? (report.reactionStats?.likes || 1) - 1 
+                            : (report.reactionStats?.likes || 0),
+                        dislikes: currentlyDisliked 
+                            ? (report.reactionStats?.dislikes || 1) - 1 
+                            : (report.reactionStats?.dislikes || 0) + 1
+                    },
+                    userInteraction: {
+                        ...report.userInteraction,
+                        hasLiked: false,
+                        hasDisliked: !currentlyDisliked
+                    }
+                };
+            }
+            return report;
+        });
+        
+        setReports(updatedReports);
+        
+        if (selectedReport && selectedReport.id === reportId) {
+            const updatedSelectedReport = updatedReports.find(r => r.id === reportId);
+            if (updatedSelectedReport) {
+                setSelectedReport(updatedSelectedReport);
+            }
+        }
+        
         try {
-
+            reactReport({
+                reportID: reportId,
+                data: {
+                    reactionType: 'DISLIKE'
+                }
+            });
         } catch (error) {
             console.error('Error disliking report:', error);
         }
-    };
+    }
 
     const handleSave = async (reportId: number) => {
         try {
@@ -156,6 +241,20 @@ const ReportsPage = () => {
         isGetReportError, 
         getErrorResponseMessage(getReportError) || 'Terjadi kesalahan saat mengambil data laporan'
     );
+
+    // Add this new error toast for reaction errors
+    useErrorToast(
+        isReactReportError, 
+        getErrorResponseMessage(reactReportError) || 'Terjadi kesalahan saat bereaksi pada laporan'
+    );
+
+    // Rollback optimistic update on error
+    useEffect(() => {
+        if (isReactReportError) {
+            // Rollback by refetching data
+            getReport();
+        }
+    }, [isReactReportError, getReport]);
 
     if (getReportPending) {
         return <ReportSkeleton currentPath={currentPath} />;
