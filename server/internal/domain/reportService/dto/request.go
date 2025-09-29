@@ -24,3 +24,7 @@ type CreateReportRequest struct {
 	Image4URL       	*string  `json:"image4Url" validate:"omitempty,max=255"`
 	Image5URL       	*string  `json:"image5Url" validate:"omitempty,max=255"`
 }
+
+type ReactionReportRequest struct {
+	ReactionType string `json:"reactionType" validate:"required,oneof=LIKE DISLIKE"`
+}

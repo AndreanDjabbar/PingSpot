@@ -38,4 +38,16 @@ type GetReportResponse struct {
 	ProfilePicture *string `json:"profilePicture"`
 	Location        ReportLocationResponse `json:"location"`
 	Images          ReportImageResponse    `json:"images"`
+	TotalReactions  int64   `json:"totalReactions"`
+	TotalLikeReactions    *int64  `json:"totalLikeReactions"`
+	TotalDislikeReactions *int64  `json:"totalDislikeReactions"`
+	ReportReactions []ReactReportResponse `json:"reportReactions"`
+}
+
+type ReactReportResponse struct {
+	ReportID     uint   `json:"reportId"`
+	UserID       uint   `json:"userId"`
+	ReactionType string `json:"reactionType"`
+	CreatedAt    int64  `json:"createdAt"`
+	UpdatedAt    int64  `json:"updatedAt"`
 }
