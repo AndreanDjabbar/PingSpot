@@ -64,6 +64,7 @@ export interface UserInteraction {
 export interface Report {
     id: number;
     fullName: string;
+    userName: string;
     profilePicture?: string;
     reportTitle: string;
     reportType: ReportType;

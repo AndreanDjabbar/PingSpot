@@ -74,7 +74,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                 </div>
                             )}
                             <div>
-                                <div className="font-medium text-sky-900">{report?.fullName}</div>
+                                <div className="font-medium text-sky-900">{report?.userName}</div>
                                 <div className="text-xs text-gray-500 flex items-center">
                                 <FaCalendarAlt className="mr-1" size={12} />
                                 {formattedDate(report?.reportCreatedAt, {
