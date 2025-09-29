@@ -16,6 +16,7 @@ type ReportService struct {
 	reportRepo         reportRepository.ReportRepository
 	reportLocationRepo reportRepository.ReportLocationRepository
 	reportImageRepo    reportRepository.ReportImageRepository
+	reportReactionRepo reportRepository.ReportReactionRepository
 	userRepo 			userRepository.UserRepository
 	userProfileRepo 	userRepository.UserProfileRepository
 }
@@ -26,12 +27,13 @@ type FullReportResult = struct {
 	ReportImages   model.ReportImage
 }
 
-func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo reportRepository.ReportLocationRepository, imageRepo reportRepository.ReportImageRepository, userRepo userRepository.UserRepository, userProfileRepo userRepository.UserProfileRepository) *ReportService {
+func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo reportRepository.ReportLocationRepository, reportReaction reportRepository.ReportReactionRepository, imageRepo reportRepository.ReportImageRepository, userRepo userRepository.UserRepository, userProfileRepo userRepository.UserProfileRepository) *ReportService {
 	return &ReportService{
 		reportRepo:         reportRepo,
 		reportLocationRepo: locationRepo,
 		reportImageRepo:    imageRepo,
 		userRepo:			userRepo,
+		reportReactionRepo: reportReaction,
 		userProfileRepo:	userProfileRepo,
 	}
 }
@@ -125,21 +127,15 @@ func (s *ReportService) GetAllReport() ([]dto.GetReportResponse, error) {
 	var fullReports []dto.GetReportResponse
 
 	for _, report := range *reports {
-		location, err := s.reportLocationRepo.GetByReportID(report.ID)
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, errors.New("Lokasi laporan tidak ditemukan")
-			}
-			return nil, err
+		likeReactionCount, err := s.reportReactionRepo.GetLikeReactionCount(report.ID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("Gagal mendapatkan reaksi suka: %w", err)
 		}
-		images, err := s.reportImageRepo.GetByReportID(report.ID)
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, errors.New("Gambar laporan tidak ditemukan")
-			}
-			return nil, err
+		dislikeReactionCount, err := s.reportReactionRepo.GetDislikeReactionCount(report.ID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("Gagal mendapatkan reaksi tidak suka: %w", err)
 		}
-
+		
 		fullReports = append(fullReports, dto.GetReportResponse{
 			ID:                report.ID,
 			ReportTitle:       report.ReportTitle,
@@ -151,29 +147,45 @@ func (s *ReportService) GetAllReport() ([]dto.GetReportResponse, error) {
 			FullName:		   report.User.FullName,
 			ProfilePicture:    report.User.Profile.ProfilePicture,
 			Location: dto.ReportLocationResponse{
-				DetailLocation: location.DetailLocation,
-				Latitude:       location.Latitude,
-				Longitude:      location.Longitude,
-				DisplayName:    location.DisplayName,
-				AddressType:    location.AddressType,
-				Country:        location.Country,
-				CountryCode:    location.CountryCode,
-				Region:         location.Region,
-				Road:		   location.Road,
-				PostCode:       location.PostCode,
-				County:         location.County,
-				State:          location.State,
-				Village:        location.Village,
-				Suburb:         location.Suburb,
-				Geometry: 	 	&location.Geometry,
+				DetailLocation: report.ReportLocation.DetailLocation,
+				Latitude:       report.ReportLocation.Latitude,
+				Longitude:      report.ReportLocation.Longitude,
+				DisplayName:    report.ReportLocation.DisplayName,
+				AddressType:    report.ReportLocation.AddressType,
+				Country:        report.ReportLocation.Country,
+				CountryCode:    report.ReportLocation.CountryCode,
+				Region:         report.ReportLocation.Region,
+				Road:		    report.ReportLocation.Road,
+				PostCode:       report.ReportLocation.PostCode,
+				County:         report.ReportLocation.County,
+				State:          report.ReportLocation.State,
+				Village:        report.ReportLocation.Village,
+				Suburb:         report.ReportLocation.Suburb,
+				Geometry: 	 	&report.ReportLocation.Geometry,
 			},
 			Images: dto.ReportImageResponse{
-				Image1URL: images.Image1URL,
-				Image2URL: images.Image2URL,
-				Image3URL: images.Image3URL,
-				Image4URL: images.Image4URL,
-				Image5URL: images.Image5URL,
+				Image1URL: report.ReportImages.Image1URL,
+				Image2URL: report.ReportImages.Image2URL,
+				Image3URL: report.ReportImages.Image3URL,
+				Image4URL: report.ReportImages.Image4URL,
+				Image5URL: report.ReportImages.Image5URL,
 			},
+			TotalLikeReactions: &likeReactionCount,
+			TotalDislikeReactions: &dislikeReactionCount,
+			TotalReactions:    likeReactionCount + dislikeReactionCount,
+			ReportReactions: func() []dto.ReactReportResponse {
+				var reactions []dto.ReactReportResponse
+				for _, reaction := range *report.ReportReactions {
+					reactions = append(reactions, dto.ReactReportResponse{
+						ReportID:     reaction.ReportID,
+						UserID:       reaction.UserID,
+						ReactionType: string(reaction.Type),
+						CreatedAt:    reaction.CreatedAt,
+						UpdatedAt:    reaction.UpdatedAt,
+					})
+				}
+				return reactions
+			}(),
 		})
 	}
 	return fullReports, nil
@@ -208,4 +220,71 @@ func (s *ReportService) GetReportByID(reportID uint) (*FullReportResult, error) 
 		ReportImages:   *images,
 	}
 	return result, nil
+}
+
+func (s *ReportService) ReactToReport(db *gorm.DB, userID uint, reportID uint, reactionType string) (*dto.ReactReportResponse, error) {
+	tx := db.Begin()
+	if tx.Error != nil {
+		return nil, errors.New("Gagal memulai transaksi")
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+
+	modelReactionType := model.ReactionType(reactionType)
+	var resultReaction *model.ReportReaction
+
+	existingReport, err := s.reportReactionRepo.GetByUserReportIDTX(tx, userID, reportID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		tx.Rollback()
+		return nil, fmt.Errorf("Gagal mendapatkan reaksi laporan: %w", err)
+	}
+
+	switch {
+	case existingReport == nil:
+		newReaction := model.ReportReaction{
+			UserID:   userID,
+			ReportID: reportID,
+			Type:     modelReactionType,
+		}
+		newReportreaction, err := s.reportReactionRepo.CreateTX(tx, &newReaction)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("Gagal menambahkan reaksi: %w", err)
+		}
+		resultReaction = newReportreaction
+
+	case existingReport.Type == modelReactionType:
+		if err := s.reportReactionRepo.DeleteTX(tx, existingReport); err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("Gagal menghapus reaksi: %w", err)
+		}
+		resultReaction = nil
+
+	default:
+		existingReport.Type = modelReactionType
+		existingReport.UpdatedAt = time.Now().Unix()
+		updatedReportReaction, err := s.reportReactionRepo.UpdateTX(tx, existingReport)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("Gagal memperbarui reaksi: %w", err)
+		}
+		resultReaction = updatedReportReaction
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("Gagal menyimpan perubahan: %w", err)
+	}
+
+	return &dto.ReactReportResponse{
+		ReportID:     reportID,
+		UserID:       userID,
+		ReactionType: string(resultReaction.Type),
+		CreatedAt:    resultReaction.CreatedAt,
+		UpdatedAt:    resultReaction.UpdatedAt,
+	}, nil
 }
