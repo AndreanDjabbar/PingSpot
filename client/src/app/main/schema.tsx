@@ -61,6 +61,13 @@ export const CreateReportSchema = z.object({
     ).optional(),
 });
 
+export const ReactReportSchema = z.object({
+    reactionType: z.enum(['LIKE', 'DISLIKE'], {
+        message: "Tipe reaksi harus LIKE atau DISLIKE"
+    })
+});
+
 export type ISaveProfileFormType = z.infer<typeof SaveProfileSchema>;
 export type ISaveSecurityFormType = z.infer<typeof SaveSecuritySchema>;
 export type IReportFormType = z.infer<typeof CreateReportSchema>;
+export type IReactReportFormType = z.infer<typeof ReactReportSchema>;
