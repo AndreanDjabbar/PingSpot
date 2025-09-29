@@ -146,6 +146,45 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "29092025_add_report_status_field",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&model.Report{}, "") {
+					return tx.Migrator().AddColumn(&model.Report{}, "report_status")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&model.Report{}, "report_status") {
+					return tx.Migrator().DropColumn(&model.Report{}, "report_status")
+				}
+				return nil
+			},
+		},
+		{
+			ID: "18092025_add_report_reaction_table",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&model.ReportReaction{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&model.ReportReaction{})
+			},
+		},
+		{
+			ID: "29092025_add_updated_at_field_report_reaction",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&model.ReportReaction{}, "") {
+					return tx.Migrator().AddColumn(&model.ReportReaction{}, "updated_at")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&model.ReportReaction{}, "updated_at") {
+					return tx.Migrator().DropColumn(&model.ReportReaction{}, "updated_at")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()

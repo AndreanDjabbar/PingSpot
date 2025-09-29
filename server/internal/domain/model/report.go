@@ -18,4 +18,9 @@ type Report struct {
 	ReportType        ReportType `gorm:"type:varchar(30);not null"`
 	ReportDescription string     `gorm:"type:text;not null"`
 	CreatedAt         int64      `gorm:"autoCreateTime"`
+	ReportStatus      string     `gorm:"type:varchar(50);default:'PENDING';not null"`
+
+	ReportLocation *ReportLocation `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ReportImages   *ReportImage    `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ReportReactions   *[]ReportReaction `gorm:"foreignKey:ReportID"`
 }

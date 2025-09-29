@@ -24,4 +24,6 @@ type User struct {
 	Profile	UserProfile `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	CreatedAt  time.Time `gorm:"autoCreateTime"`
 	UpdatedAt  time.Time `gorm:"autoUpdateTime"`
+	
+	Reports    []Report  `gorm:"foreignKey:UserID"`
 }

@@ -2,8 +2,8 @@ package model
 
 type ReportLocation struct {
 	ID             uint    `gorm:"primaryKey"`
-	ReportID       uint    `gorm:"not null"`
-	Report         Report  `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ReportID       uint    `gorm:"unique;not null"`
+	Report         Report  `gorm:"foreignKey:ReportID;references:ID"`
 	DetailLocation string  `gorm:"type:text;not null"`
 	Latitude       float64 `gorm:"not null"`
 	Longitude      float64 `gorm:"not null"`
