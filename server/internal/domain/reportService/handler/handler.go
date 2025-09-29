@@ -168,3 +168,39 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 		return response.ResponseSuccess(c, 200, "Get report success", "data", report)
 	}
 }
+
+func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
+	logger.Info("REACTION REPORT HANDLER")
+	reportIDParam := c.Params("reportID")
+	uintReportID, err := mainutils.StringToUint(reportIDParam)
+	if err != nil {
+		logger.Error("Invalid reportID format", zap.String("reportID", reportIDParam), zap.Error(err))
+		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
+	}
+
+	var req dto.ReactionReportRequest
+	if err := c.BodyParser(&req); err != nil {
+		logger.Error("Failed to parse request body", zap.Error(err))
+		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+	}
+	if err := validation.Validate.Struct(req); err != nil {
+		errors := validation.FormatReactionReportValidationErrors(err)
+		logger.Error("Validation failed", zap.Error(err))
+		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+	}
+
+	claims, err := mainutils.GetJWTClaims(c)
+	if err != nil {
+		logger.Error("Failed to get JWT claims", zap.Error(err))
+		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+	}
+	userID := uint(claims["user_id"].(float64))
+	db := database.GetPostgresDB()
+
+	reaction, err := h.reportService.ReactToReport(db, userID, uintReportID, req.ReactionType) 
+	if err != nil {
+		logger.Error("Failed to react to report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
+		return response.ResponseError(c, 500, "Gagal mereaksi laporan", "", err.Error())
+	}
+	return response.ResponseSuccess(c, 200, "Reaksi laporan berhasil", "", reaction)
+}
