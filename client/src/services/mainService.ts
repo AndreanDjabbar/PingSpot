@@ -1,6 +1,7 @@
 import axios from "axios";
 import { IReverseLocationType } from "@/types/mainTypes";
 import getAuthToken from "@/utils/getAuthToken";
+import { IReactReportFormType } from "@/app/main/schema";
 
 type IResponseType = {
     message: string;
@@ -63,5 +64,12 @@ export const getReportByIDService = async (reportID: number): Promise<IResponseT
             'Authorization': `Bearer ${authToken || ''}`
         }
     });
+    return response.data;
+}
+
+export const reactReportService = async (reportID: number, data: IReactReportFormType): Promise<IResponseType> => {
+    const authToken = getAuthToken();
+    const response = await axios.post<IResponseType>(`${MAIN_API_URL}/report/${reportID}/reaction`, 
+        { reactionType: data.reactionType }, MULTIPART_HEADERS(authToken || ''));
     return response.data;
 }
