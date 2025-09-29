@@ -115,3 +115,22 @@ func FormatCreateReportValidationErrors(err error) map[string]string {
 	}
 	return errors
 }
+
+func FormatReactionReportValidationErrors(err error) map[string]string {
+	errors := map[string]string{}
+	if err == nil {
+		return errors
+	}
+	for _, e := range err.(validator.ValidationErrors) {
+		switch e.Field() {
+			case "ReactionType":
+				if e.Tag() == "required" {
+					errors["reactionType"] = "Tipe reaksi wajib diisi"
+				}
+				if e.Tag() == "oneof" {
+					errors["reactionType"] = "Tipe reaksi harus salah satu antara LIKE, DISLIKE"
+				}
+		}
+	}
+	return errors
+}
