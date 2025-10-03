@@ -41,12 +41,14 @@ type GetReportResponse struct {
 	TotalReactions  int64   `json:"totalReactions"`
 	TotalLikeReactions    *int64  `json:"totalLikeReactions"`
 	TotalDislikeReactions *int64  `json:"totalDislikeReactions"`
+	IsLikedByCurrentUser    bool    `json:"isLikedByCurrentUser"`
+	IsDislikedByCurrentUser bool    `json:"isDislikedByCurrentUser"`
 	ReportReactions []ReactReportResponse `json:"reportReactions"`
 }
 
 type ReactReportResponse struct {
-	ReportID     uint   `json:"reportId"`
-	UserID       uint   `json:"userId"`
+	ReportID     uint   `json:"reportID"`
+	UserID       uint   `json:"userID"`
 	ReactionType string `json:"reactionType"`
 	CreatedAt    int64  `json:"createdAt"`
 	UpdatedAt    int64  `json:"updatedAt"`
