@@ -115,7 +115,7 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 	return reportResult, nil
 }
 
-func (s *ReportService) GetAllReport() ([]dto.GetReportResponse, error) {
+func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, error) {
 	reports, err := s.reportRepo.Get()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -136,6 +136,8 @@ func (s *ReportService) GetAllReport() ([]dto.GetReportResponse, error) {
 			return nil, fmt.Errorf("Gagal mendapatkan reaksi tidak suka: %w", err)
 		}
 		
+		var isLikedByCurrentUser, isDislikedByCurrentUser bool
+
 		fullReports = append(fullReports, dto.GetReportResponse{
 			ID:                report.ID,
 			ReportTitle:       report.ReportTitle,
@@ -183,9 +185,19 @@ func (s *ReportService) GetAllReport() ([]dto.GetReportResponse, error) {
 						CreatedAt:    reaction.CreatedAt,
 						UpdatedAt:    reaction.UpdatedAt,
 					})
+					if reaction.UserID == userID {
+						if reaction.Type == model.Like {
+							isLikedByCurrentUser = true
+						}
+						if reaction.Type == model.Dislike {
+							isDislikedByCurrentUser = true
+						}
+					}
 				}
 				return reactions
 			}(),
+			IsLikedByCurrentUser:    isLikedByCurrentUser,
+			IsDislikedByCurrentUser: isDislikedByCurrentUser,
 		})
 	}
 	return fullReports, nil

@@ -148,8 +148,15 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	logger.Info("GET REPORT HANDLER")
 	reportID := c.Query("reportID")
 
+	claims, err := mainutils.GetJWTClaims(c);
+	if err != nil {
+		logger.Error("Failed to get JWT claims", zap.Error(err))
+		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+	}
+	userID := uint(claims["user_id"].(float64))
+
 	if reportID == "" {
-		reports, err := h.reportService.GetAllReport()
+		reports, err := h.reportService.GetAllReport(userID)
 		if err != nil {
 			logger.Error("Failed to get all reports", zap.Error(err))
 		}
