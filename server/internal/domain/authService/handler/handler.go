@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"server/internal/domain/authService/dto"
 	"server/internal/domain/authService/service"
 	"server/internal/domain/authService/validation"
 	"server/internal/infrastructure/cache"
@@ -32,7 +33,7 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 
 func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 	logger.Info("REGISTER HANDLER")
-	var req validation.RegisterRequest
+	var req dto.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
@@ -97,7 +98,7 @@ func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 
 	logger.Info("User registered successfully", zap.String("user_id", fmt.Sprintf("%d", user.ID)))
 
-	return response.ResponseSuccess(c, 200, "Registrasi berhasil. Silahkan cek email anda untuk verifikasi akun", "data", newUser)
+	return response.ResponseSuccess(c, 200, "Registrasi berhasil. Silahkan cek email anda untuk verifikasi akun", "data", nil)
 }
 
 func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
@@ -150,17 +151,16 @@ func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
 		logger.Error("Failed to delete verification link from Redis", zap.Error(err))
 	}
 
-	dataUser := map[string]any{
-		"username": user.Username,
-		"email":    user.Email,
-	}
-
-	return response.ResponseSuccess(c, 200, "Akun berhasil diverifikasi", "data", dataUser)
+	return response.ResponseSuccess(c, 200, "Akun berhasil diverifikasi", "data", dto.VerificationResponse{
+		Username: user.Username,
+		Email:    user.Email,
+		FullName: user.FullName,
+	})
 }
 
 func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 	logger.Info("LOGIN HANDLER")
-	var req validation.LoginRequest
+	var req dto.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
@@ -178,9 +178,7 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Login gagal", "", err.Error())
 	}
 
-	return response.ResponseSuccess(c, 200, "Login berhasil", "data", map[string]any{
-		"token": token,
-	})
+	return response.ResponseSuccess(c, 200, "Login berhasil", "data", dto.LoginResponse{Token: token})
 }
 
 func (h *AuthHandler) GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -215,7 +213,7 @@ func (h *AuthHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Reque
 
 	if existingUser == nil {
 
-		newUser := validation.RegisterRequest{
+		newUser := dto.RegisterRequest{
 			Username:   nickName,
 			Email:      email,
 			FullName:   fullName,
@@ -244,7 +242,7 @@ func (h *AuthHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Reque
 
 func (h *AuthHandler) ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 	logger.Info("FORGOT PASSWORD EMAIL VERIFICATION HANDLER")
-	var req validation.ForgotPasswordEmailVerificationRequest
+	var req dto.ForgotPasswordEmailVerificationRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
@@ -308,14 +306,14 @@ func (h *AuthHandler) ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error 
 		return response.ResponseError(c, 400, "Link verifikasi tidak valid", "", nil)
 	}
 
-	return response.ResponseSuccess(c, 200, "Link verifikasi berhasil", "data", map[string]any{
-		"email": email,
+	return response.ResponseSuccess(c, 200, "Link verifikasi berhasil", "data", dto.ForgotPasswordLinkVerificationResponse{
+		Email: email,
 	})
 }
 
 func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	logger.Info("FORGOT PASSWORD RESET PASSWORD HANDLER")
-	var req validation.ForgotPasswordResetPasswordRequest
+	var req dto.ForgotPasswordResetPasswordRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"server/internal/domain/authService/validation"
+	"server/internal/domain/authService/dto"
 	"server/internal/domain/model"
 	"server/internal/domain/userService/repository"
 	"server/internal/infrastructure/cache"
@@ -30,7 +30,7 @@ func NewAuthService(userRepo repository.UserRepository, userProfileRepo reposito
 	}
 }
 
-func (s *AuthService) Register(db *gorm.DB, req validation.RegisterRequest, isVerified bool) (*model.User, error) {
+func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified bool) (*model.User, error) {
     tx := db.Begin()
     if tx.Error != nil {
         return nil, errors.New("Gagal memulai transaksi")
@@ -90,7 +90,7 @@ func (s *AuthService) Register(db *gorm.DB, req validation.RegisterRequest, isVe
     return createdUser, nil
 }
 
-func (s *AuthService) Login(req validation.LoginRequest) (*model.User, string, error) {
+func (s *AuthService) Login(req dto.LoginRequest) (*model.User, string, error) {
 	user, err := s.userRepo.GetByEmail(req.Email)
 	if err != nil {
 		return nil, "", errors.New("Email atau password salah")
