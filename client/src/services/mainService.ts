@@ -1,7 +1,12 @@
 import axios from "axios";
-import { IReverseLocationType } from "@/types/mainTypes";
+import { 
+    ICreateReportResponse,
+    IGetReportResponse,
+    IReactReportResponse 
+} from "@/types/response/mainTypes";
 import getAuthToken from "@/utils/getAuthToken";
 import { IReactReportFormType } from "@/app/main/schema";
+import { ReverseLocation } from "@/types/entity/mainTypes";
 
 type IResponseType = {
     message: string;
@@ -31,21 +36,21 @@ const MULTIPART_HEADERS = (authToken: string) => {
     }
 }
 
-export const reverseCurrentLocationService = async (payload: IReverseLocationType): 
+export const reverseCurrentLocationService = async (payload: ReverseLocation): 
 Promise<IResponseType> => {
     const response = await axios.get<IResponseType>(`${REVERSE_LOCATION_API_URL}?lat=${payload.latitude}&lon=${payload.longitude}&format=json`);
     return response.data;
 };
 
-export const createReportService = async (payload: FormData): Promise<IResponseType> => {
+export const createReportService = async (payload: FormData): Promise<ICreateReportResponse> => {
     const authToken = getAuthToken();
-    const response = await axios.post<IResponseType>(`${MAIN_API_URL}/report`, payload, MULTIPART_HEADERS(authToken || ''));
+    const response = await axios.post<ICreateReportResponse>(`${MAIN_API_URL}/report`, payload, MULTIPART_HEADERS(authToken || ''));
     return response.data;
 }
 
-export const getReportService = async (): Promise<IResponseType> => {
+export const getReportService = async (): Promise<IGetReportResponse> => {
     const authToken = getAuthToken();
-    const response = await axios.get<IResponseType>(`${MAIN_API_URL}/report`, {
+    const response = await axios.get<IGetReportResponse>(`${MAIN_API_URL}/report`, {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -67,9 +72,9 @@ export const getReportByIDService = async (reportID: number): Promise<IResponseT
     return response.data;
 }
 
-export const reactReportService = async (reportID: number, data: IReactReportFormType): Promise<IResponseType> => {
+export const reactReportService = async (reportID: number, data: IReactReportFormType): Promise<IReactReportResponse> => {
     const authToken = getAuthToken();
-    const response = await axios.post<IResponseType>(`${MAIN_API_URL}/report/${reportID}/reaction`, 
+    const response = await axios.post<IReactReportResponse>(`${MAIN_API_URL}/report/${reportID}/reaction`, 
         { reactionType: data.reactionType }, MULTIPART_HEADERS(authToken || ''));
     return response.data;
 }

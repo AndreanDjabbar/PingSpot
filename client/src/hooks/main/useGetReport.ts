@@ -1,8 +1,10 @@
 import { getReportService } from "@/services/mainService"
-import { useMutation } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
+import { IGetReportResponse } from "@/types/response/mainTypes"
 
 export const useGetReport = () => {
-    return useMutation<unknown, Error>({
-        mutationFn: () => getReportService()
+    return useQuery<IGetReportResponse, Error>({
+        queryFn: () => getReportService(),
+        queryKey: ['report'],
     })
 }

@@ -1,8 +1,9 @@
 import { createReportService } from "@/services/mainService"
 import { useMutation } from "@tanstack/react-query"
+import { ICreateReportResponse } from "@/types/response/mainTypes"
 
 export const useCreateReport = () => {
-    return useMutation<unknown, Error, FormData>({
+    return useMutation<ICreateReportResponse, Error, FormData>({
         mutationFn: (data: FormData) => createReportService(data)
     })
 }

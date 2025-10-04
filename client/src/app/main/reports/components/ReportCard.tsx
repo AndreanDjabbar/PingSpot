@@ -3,11 +3,12 @@ import Image from 'next/image';
 import { FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa';
 import { BsThreeDots } from "react-icons/bs";
 import dynamic from 'next/dynamic';
-import { Report, ReportType, ReportImage } from '@/app/main/reports/types';
+import { ReportType, IReportImage } from '@/types/entity/mainTypes';
 import { getImageURL } from '@/utils/getImageURL';
 import { formattedDate } from '@/utils/getFormattedDate';
 import { ReportInteractionBar } from '@/app/main/reports/components/ReportInteractionBar';
 import StatusVoting from './StatusVoting';
+import { useReportsStore } from '@/stores/reportsStore';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,
@@ -15,7 +16,7 @@ const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
 });
 
 interface ReportCardProps {
-    report: Report;
+    reportID: number;
     onImageClick: (imageUrl: string) => void;
     onLike: (reportId: number) => void;
     onDislike: (reportId: number) => void;
@@ -35,7 +36,7 @@ const getReportTypeLabel = (type: ReportType): string => {
     return types[type] || 'Lainnya';
 };
 
-const getReportImages = (images: ReportImage): string[] => {
+const getReportImages = (images: IReportImage): string[] => {
     if (!images) return [];
     return [
         images.image1URL, 
@@ -47,7 +48,7 @@ const getReportImages = (images: ReportImage): string[] => {
 };
 
 const ReportCard: React.FC<ReportCardProps> = ({
-    report,
+    reportID,
     onImageClick,
     onLike,
     onDislike,
@@ -56,6 +57,11 @@ const ReportCard: React.FC<ReportCardProps> = ({
     onShare,
     onStatusVote
 }) => {
+    const { reports } = useReportsStore();
+    const report = reports.find(r => r.id === reportID);
+
+    if (!report) return null;
+
     return (
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl overflow-hidden transition-all duration-300">
             <div className="p-6">
@@ -150,7 +156,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 </div>
 
                 <ReportInteractionBar
-                reactionStats={report.reactionStats || { likes: 0, dislikes: 0 }}
+                reportID={report.id}
                 userInteraction={report.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}
                 commentCount={report.commentCount || 0}
                 onLike={() => onLike(report.id)}

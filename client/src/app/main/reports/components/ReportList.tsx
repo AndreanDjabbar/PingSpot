@@ -1,9 +1,8 @@
 import React from 'react';
-import { Report } from '@/app/main/reports/types';
 import ReportCard from './ReportCard';
+import { useReportsStore } from '@/stores/reportsStore';
 
 interface ReportListProps {
-    reports: Report[];
     onImageClick: (imageUrl: string) => void;
     onLike: (reportId: number) => void;
     onDislike: (reportId: number) => void;
@@ -14,7 +13,6 @@ interface ReportListProps {
 }
 
 const ReportList: React.FC<ReportListProps> = ({
-    reports,
     onImageClick,
     onLike,
     onDislike,
@@ -23,12 +21,13 @@ const ReportList: React.FC<ReportListProps> = ({
     onShare,
     onStatusVote
 }) => {
+    const { reports } = useReportsStore();
     return (
         <div className="space-y-6">
         {reports.map(report => (
             <ReportCard
             key={report.id}
-            report={report}
+            reportID={report.id}
             onImageClick={onImageClick}
             onLike={onLike}
             onDislike={onDislike}

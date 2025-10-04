@@ -1,17 +1,17 @@
 import { create } from "zustand";
-import { Report } from "@/app/main/reports/types";
+import { IReport } from "@/types/entity/mainTypes";
 
 interface ReportsStore {
-    reports: Report[];
-    filteredReports: Report[];
+    reports: IReport[];
+    filteredReports: IReport[];
     searchTerm: string;
-    activeFilter: Report | "all";
-    selectedReport: Report | null;
-    setReports: (reports: Report[]) => void;
-    setSelectedReport: (report: Report | null) => void;
-    setFilteredReports: (filteredReports: Report[]) => void;
+    activeFilter: IReport | "all";
+    selectedReport: IReport | null;
+    setReports: (reports: IReport[]) => void;
+    setSelectedReport: (report: IReport | null) => void;
+    setFilteredReports: (filteredReports: IReport[]) => void;
     setSearchTerm: (searchTerm: string) => void;
-    setActiveFilter: (activeFilter: Report | "all") => void;
+    setActiveFilter: (activeFilter: IReport | "all") => void;
     clearReportsData: () => void;
 }
 

@@ -3,21 +3,10 @@ import { create } from "zustand";
 import getAuthToken from "@/utils/getAuthToken"
 import { getMyProfileService } from "@/services/userService";
 import { formattedDate } from "@/utils/getFormattedDate";
+import { IUserProfile } from "@/types/entity/mainTypes";
 
-interface UserProfile {
-    id: string;
-    username: string;
-    fullName: string;
-    email: string;
-    profilePicture?: string;
-    gender?: string;
-    bio?: string;
-    age?: number;
-    birthday? : string;
-}
-
-interface UserProfileStore {
-    userProfile: UserProfile | null;
+export interface UserProfileStore {
+    userProfile: IUserProfile | null;
     loadUser: () => Promise<void>;
     clearUser: () => void;
 }
@@ -32,7 +21,7 @@ export const useUserProfileStore = create<UserProfileStore>((set) => ({
                 return;
             }
             const profileData = await getMyProfileService();
-            const profile: UserProfile = {
+            const profile: IUserProfile = {
                 id: profileData.data.userID,
                 username: profileData.data.username,
                 fullName: profileData.data.fullname,
@@ -40,7 +29,6 @@ export const useUserProfileStore = create<UserProfileStore>((set) => ({
                 gender: profileData.data.gender,
                 bio: profileData.data.bio,
                 birthday: formattedDate(profileData.data.birthday),
-                age: profileData.data.age,
                 profilePicture: profileData.data.profilePicture,
             }
             set({ userProfile:  profile});

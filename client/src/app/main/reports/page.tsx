@@ -10,8 +10,7 @@ import { useGetReport } from '@/hooks/main/useGetReport';
 import { RxCrossCircled } from "react-icons/rx";
 import useErrorToast from '@/hooks/useErrorToast';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
-import { getDataResponseDetails } from '@/utils/getDataResponse';
-import { ReportType, Report } from './types';
+import { IReport, ReportType } from '@/types/entity/mainTypes';
 import { EmptyState } from '@/components/UI';
 import { 
     ReportSkeleton, 
@@ -20,44 +19,45 @@ import {
     ReportList
 } from './components';
 import { useReactReport } from '@/hooks/main/useReactReport';
+import { useReportsStore } from '@/stores/reportsStore';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
-    const [reports, setReports] = useState<Report[]>([]);
-    const [filteredReports, setFilteredReports] = useState<Report[]>([]);
+    const [filteredReports, setFilteredReports] = useState<IReport[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [activeFilter, setActiveFilter] = useState<ReportType | "all">("all");
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
+    const {
+        reports,
+        setReports,
+        selectedReport,
+        setSelectedReport,
+    } = useReportsStore();
+
     const router = useRouter();
     const { 
         mutate: reactReport, 
         isError: isReactReportError,  
-        error: reactReportError, 
+        error: reactReportError,
     } = useReactReport();
 
     const { 
-        mutate: getReport, 
-        isPending: getReportPending, 
+        data: getReportData, 
+        isLoading: getReportLoading, 
+        isSuccess: isGetReportSuccess,
         isError: isGetReportError, 
-        isSuccess: isGetReportSuccess, 
-        error: getReportError, 
-        data: getReportData 
-    } = useGetReport();
-
-    useEffect(() => {
-        getReport();
-    }, [getReport]);
+        error: getReportError,
+        refetch: refetchGetReport,
+    } = useGetReport()
 
     useEffect(() => {
         if (isGetReportSuccess && getReportData) {
-            const reportData = getDataResponseDetails(getReportData) || [];
-            console.log(reportData);
-            setReports(reportData);
+            setReports(getReportData?.data ?? []);
         }
-    }, [isGetReportSuccess, getReportData]);
+    }, [isGetReportSuccess, getReportData])
 
     useEffect(() => {
         let filtered = reports;
@@ -95,25 +95,20 @@ const ReportsPage = () => {
     const handleLike = async (reportId: number) => {
         const updatedReports = reports.map(report => {
             if (report.id === reportId) {
-                const currentlyLiked = report.userInteraction?.hasLiked || false;
-                const currentlyDisliked = report.userInteraction?.hasDisliked || false;
+                const currentlyLiked = report.isLikedByCurrentUser || false;
+                const currentlyDisliked = report.isDislikedByCurrentUser || false;
                 
                 return {
                     ...report,
-                    reactionStats: {
-                        ...report.reactionStats,
-                        likes: currentlyLiked 
-                            ? (report.reactionStats?.likes || 1) - 1 
-                            : (report.reactionStats?.likes || 0) + 1,
-                        dislikes: currentlyDisliked 
-                            ? (report.reactionStats?.dislikes || 1) - 1 
-                            : (report.reactionStats?.dislikes || 0)
-                    },
-                    userInteraction: {
-                        ...report.userInteraction,
-                        hasLiked: !currentlyLiked,
-                        hasDisliked: false
-                    }
+                    totalLikeReactions: currentlyLiked 
+                        ? (report?.totalLikeReactions || 1) - 1 
+                        : (report?.totalLikeReactions || 0) + 1,
+                    totalDislikeReactions: currentlyDisliked 
+                        ? (report?.totalDislikeReactions || 1) - 1 
+                        : (report?.totalDislikeReactions || 0),
+                    totalReactions: report.totalReactions,
+                    isLikedByCurrentUser: currentlyLiked ? false : true,
+                    isDislikedByCurrentUser: currentlyDisliked ? false : false,
                 };
             }
             return report;
@@ -143,25 +138,20 @@ const ReportsPage = () => {
     const handleDislike = async (reportId: number) => {
         const updatedReports = reports.map(report => {
             if (report.id === reportId) {
-                const currentlyLiked = report.userInteraction?.hasLiked || false;
-                const currentlyDisliked = report.userInteraction?.hasDisliked || false;
+                const currentlyLiked = report.isLikedByCurrentUser || false;
+                const currentlyDisliked = report.isDislikedByCurrentUser || false;
                 
                 return {
                     ...report,
-                    reactionStats: {
-                        ...report.reactionStats,
-                        likes: currentlyLiked 
-                            ? (report.reactionStats?.likes || 1) - 1 
-                            : (report.reactionStats?.likes || 0),
-                        dislikes: currentlyDisliked 
-                            ? (report.reactionStats?.dislikes || 1) - 1 
-                            : (report.reactionStats?.dislikes || 0) + 1
-                    },
-                    userInteraction: {
-                        ...report.userInteraction,
-                        hasLiked: false,
-                        hasDisliked: !currentlyDisliked
-                    }
+                    totalReactions: report.totalReactions,
+                    totalLikeReactions: currentlyLiked 
+                        ? (report?.totalLikeReactions || 1) - 1 
+                        : (report?.totalLikeReactions || 0),
+                    totalDislikeReactions: currentlyDisliked 
+                        ? (report?.totalDislikeReactions || 1) - 1 
+                        : (report?.totalDislikeReactions || 0) + 1,
+                    isLikedByCurrentUser: currentlyLiked ? false : false,
+                    isDislikedByCurrentUser: currentlyDisliked ? false : true,
                 };
             }
             return report;
@@ -248,15 +238,13 @@ const ReportsPage = () => {
         getErrorResponseMessage(reactReportError) || 'Terjadi kesalahan saat bereaksi pada laporan'
     );
 
-    // Rollback optimistic update on error
     useEffect(() => {
         if (isReactReportError) {
-            // Rollback by refetching data
-            getReport();
+            refetchGetReport();
         }
-    }, [isReactReportError, getReport]);
+    }, [isReactReportError, refetchGetReport]);
 
-    if (getReportPending) {
+    if (getReportLoading) {
         return <ReportSkeleton currentPath={currentPath} />;
     }
 
@@ -280,7 +268,7 @@ const ReportsPage = () => {
                 />
             )}
 
-            {!getReportPending && reports.length > 0 && (
+            {!getReportLoading && reports.length > 0 && (
                 <ReportSearchAndFilter
                     searchTerm={searchTerm}
                     activeFilter={activeFilter}
@@ -289,11 +277,10 @@ const ReportsPage = () => {
                 />
             )}
             
-            {!getReportPending && (
+            {!getReportLoading && (
                 <>
                     {filteredReports.length > 0 ? (
                         <ReportList
-                            reports={filteredReports}
                             onImageClick={handleImageClick}
                             onLike={handleLike}
                             onDislike={handleDislike}
@@ -330,7 +317,6 @@ const ReportsPage = () => {
 
             {selectedReport && (
                 <ReportModal
-                    report={selectedReport}
                     isOpen={isReportModalOpen}
                     onClose={handleCloseReportModal}
                     currentUserId={1}

@@ -7,19 +7,7 @@ import { BiSend } from 'react-icons/bi';
 import { AnimatePresence } from 'framer-motion';
 import { getImageURL } from '@/utils/getImageURL';
 import CommentItem from './CommentItem';
-
-export interface CommentType {
-    id: number;
-    content: string;
-    createdAt: number;
-    updatedAt: number;
-    userId: number;
-    userName: string;
-    fullName: string;
-    profilePicture?: string;
-    parentId?: number;
-    replies?: CommentType[];
-}
+import { CommentType } from '@/types/entity/mainTypes';
 
 interface CommentSectionProps {
     comments: CommentType[];

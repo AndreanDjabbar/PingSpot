@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaSearch, FaFilter } from 'react-icons/fa';
-import { ReportType } from '@/app/main/reports/types';
+import { ReportType } from '@/types/entity/mainTypes';
 
 interface ReportSearchAndFilterProps {
     searchTerm: string;
@@ -32,7 +32,7 @@ const ReportSearchAndFilter: React.FC<ReportSearchAndFilterProps> = ({
                 </div>
                 
                 <div className="flex space-x-2 items-center overflow-x-auto pb-2 md:pb-0">
-                    <div className="flex items-center text-gray-500 mr-2">
+                    <div className="flex items-center text-sky-900 mr-2">
                         <FaFilter className="mr-1" /> Filter:
                     </div>
                     <button 

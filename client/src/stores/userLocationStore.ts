@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ILocation } from '@/types/mainTypes';
+import { Location } from '@/types/entity/mainTypes';
 
-type LocationState = {
-    location: (ILocation & { expiresAt?: number }) | null;
-    setLocation: (loc: ILocation, ttl?: number) => void;
+type LocationStore = {
+    location: (Location & { expiresAt?: number }) | null;
+    setLocation: (loc: Location, ttl?: number) => void;
     clearLocation: () => void;
 };
 
-export const useLocationStore = create<LocationState>()(
+export const useLocationStore = create<LocationStore>()(
     persist(
         (set) => ({
             location: null,

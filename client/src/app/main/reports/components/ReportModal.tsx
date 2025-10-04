@@ -10,12 +10,12 @@ import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { getImageURL } from '@/utils/getImageURL';
 import { formattedDate } from '@/utils/getFormattedDate';
-import { Report, ReportType, ReportImage } from '../../reports/types';
-import { CommentType } from '../../reports/types';
+import { ReportType, IReportImage, ICommentType } from '@/types/entity/mainTypes';
 import { ReportInteractionBar } from './ReportInteractionBar';
 import { BsThreeDots } from 'react-icons/bs';
 import StatusVoting from './StatusVoting';
 import CommentItem from './CommentItem';
+import { useReportsStore } from '@/stores/reportsStore';
 
 const StaticMap = dynamic(() => import('../../components/StaticMap'), {
     ssr: false,
@@ -23,7 +23,6 @@ const StaticMap = dynamic(() => import('../../components/StaticMap'), {
 });
 
 interface ReportModalProps {
-    report: Report;
     isOpen: boolean;
     onClose: () => void;
     currentUserId: number;
@@ -36,9 +35,6 @@ interface ReportModalProps {
     isInteractionLoading?: boolean;
 }
 
-// Remove the local CommentItemProps interface and CommentItem component
-// They're already defined in the imported CommentItem
-
 const getReportTypeLabel = (type: ReportType): string => {
     const types = {
         INFRASTRUCTURE: 'Infrastruktur',
@@ -49,7 +45,7 @@ const getReportTypeLabel = (type: ReportType): string => {
     return types[type] || 'Lainnya';
 };
 
-const getReportImages = (images: ReportImage): string[] => {
+const getReportImages = (images: IReportImage): string[] => {
     if (!images) return [];
     return [
         images.image1URL, 
@@ -61,7 +57,6 @@ const getReportImages = (images: ReportImage): string[] => {
 };
 
 const ReportModal: React.FC<ReportModalProps> = ({
-    report,
     isOpen,
     onClose,
     currentUserId,
@@ -77,8 +72,12 @@ const ReportModal: React.FC<ReportModalProps> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const commentInputRef = useRef<HTMLTextAreaElement>(null);
+    const {selectedReport: report} = useReportsStore();
 
-    const images = getReportImages(report.images);
+
+    const images = getReportImages(
+        report?.images ?? { id: 0, reportID: 0 }
+    );
 
     const handleSubmit = async () => {
         if (!newComment.trim() || isSubmitting) return;
@@ -98,9 +97,9 @@ const ReportModal: React.FC<ReportModalProps> = ({
         onAddComment(content, parentId);
     };
 
-    const organizeComments = (comments: CommentType[]): CommentType[] => {
-        const commentMap = new Map<number, CommentType>();
-        const rootComments: CommentType[] = [];
+    const organizeComments = (comments: ICommentType[]): ICommentType[] => {
+        const commentMap = new Map<number, ICommentType>();
+        const rootComments: ICommentType[] = [];
 
         comments.forEach(comment => {
             commentMap.set(comment.id, { ...comment, replies: [] });
@@ -123,7 +122,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
         return rootComments;
     };
 
-    const threadedComments = organizeComments(report.comments || []);
+    const threadedComments = organizeComments(report?.comments || []);
 
     const nextImage = () => {
         if (images.length > 1) {
@@ -161,8 +160,8 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             <div className="flex items-center space-x-3">
                                 <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-white shadow">
                                     <Image 
-                                        src={getImageURL(report?.profilePicture || '', "user")} 
-                                        alt={report?.fullName}
+                                        src={getImageURL(report?.profilePicture ?? '', "user")} 
+                                        alt={report?.fullName ?? 'User Profile'}
                                         width={32}
                                         height={32}
                                         className="object-cover h-full w-full"
@@ -172,13 +171,13 @@ const ReportModal: React.FC<ReportModalProps> = ({
                                     <div className="font-semibold text-sm text-sky-900">{report?.fullName}</div>
                                     <div className="text-xs text-gray-500 flex items-center">
                                         <FaCalendarAlt className="mr-1" size={10} />
-                                        {formattedDate(report?.reportCreatedAt, {
+                                        {formattedDate(report?.reportCreatedAt ?? '', {
                                             formatStr: 'dd MMMM yyyy - HH:mm',
                                         })}
                                     </div>
                                 </div>
                                 <span className={`inline-block px-2 py-1 text-xs font-medium text-white rounded-full bg-sky-900`}>
-                                    {getReportTypeLabel(report.reportType)}
+                                    {getReportTypeLabel(report?.reportType ?? 'OTHER')}
                                 </span>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -190,15 +189,15 @@ const ReportModal: React.FC<ReportModalProps> = ({
 
                         <div className="flex-1 overflow-y-auto p-6">
                             <div className="mb-4">
-                                <h2 className="text-xl font-bold text-gray-900 mb-2">{report.reportTitle}</h2>
-                                <p className="text-gray-700">{report.reportDescription}</p>
+                                <h2 className="text-xl font-bold text-gray-900 mb-2">{report?.reportTitle}</h2>
+                                <p className="text-gray-700">{report?.reportDescription}</p>
                             </div>
 
                             <div className="flex items-start mb-4 text-gray-600">
                                 <FaMapMarkerAlt className="mt-1 mr-2 flex-shrink-0 text-red-500" />
                                 <div>
-                                    <div className="font-medium">{report.location.detailLocation}</div>
-                                    {report.location.displayName && (
+                                    <div className="font-medium">{report?.location.detailLocation}</div>
+                                    {report?.location.displayName && (
                                         <div className="text-sm text-gray-500">{report.location.displayName}</div>
                                     )}
                                 </div>
@@ -207,11 +206,11 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             <div className="mb-4">
                                 <div className="h-48 rounded-lg overflow-hidden">
                                     <StaticMap
-                                        latitude={report.location.latitude}
-                                        longitude={report.location.longitude}
+                                        latitude={report?.location.latitude ?? 0}
+                                        longitude={report?.location.longitude ?? 0}
                                         height={200}
                                         markerColor='red'
-                                        popupText={report.reportTitle}
+                                        popupText={report?.reportTitle}
                                     />
                                 </div>
                             </div>
@@ -221,7 +220,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                                     <div className="relative aspect-[5/3] rounded-lg overflow-hidden bg-gray-100 mb-2">
                                         <Image 
                                             src={getImageURL(`/report/${images[currentImageIndex]}`, "main")}
-                                            alt={`Foto ${currentImageIndex + 1} untuk laporan ${report.reportTitle}`}
+                                            alt={`Foto ${currentImageIndex + 1} untuk laporan ${report?.reportTitle}`}
                                             fill
                                             className="object-cover"
                                         />
@@ -271,9 +270,9 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             )}
 
                             <ReportInteractionBar
-                                reactionStats={report.reactionStats || { likes: 0, dislikes: 0 }}
-                                userInteraction={report.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}
-                                commentCount={report.commentCount || 0}
+                                // reactionStats={report?.reactionStats || { likes: 0, dislikes: 0 }}
+                                userInteraction={report?.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}
+                                commentCount={report?.commentCount || 0}
                                 onLike={onLike}
                                 showSecondaryActions={false}
                                 onDislike={onDislike}
@@ -284,9 +283,9 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             />
 
                             <StatusVoting
-                                currentStatus={report.status || 'PENDING'}
-                                statusVoteStats={report.statusVoteStats || { resolved: 0, notResolved: 0, neutral: 0 }}
-                                userCurrentVote={report.userInteraction?.currentVote || null}
+                                currentStatus={report?.status || 'PENDING'}
+                                statusVoteStats={report?.statusVoteStats || { resolved: 0, notResolved: 0, neutral: 0 }}
+                                userCurrentVote={report?.userInteraction?.currentVote || null}
                                 onVote={(voteType: string) => onStatusVote(voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
                                 isLoading={isInteractionLoading}
                             />
@@ -296,7 +295,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                     <div className="w-full md:w-96 border-t md:border-t-0 md:border-l border-gray-100 flex flex-col max-h-96 md:max-h-none">
                         <div className="flex h-17 justify-between items-center p-4 border-b border-gray-100">
                             <h3 className="font-semibold text-sky-900">
-                                Komentar ({report.comments?.length || 0})
+                                Komentar ({report?.comments?.length || 0})
                             </h3>
                             <button
                                 onClick={onClose}
