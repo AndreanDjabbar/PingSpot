@@ -9,3 +9,14 @@ type SaveUserProfileResponse struct {
 	Gender 	   		*string `json:"gender"`
 	Birthday   		*string `json:"birthday"`
 }
+
+type GetProfileResponse struct {
+	UserID          uint    `json:"userId"`
+	FullName        string  `json:"fullName"`
+	Bio             *string `json:"bio"`
+	ProfilePicture  *string `json:"profilePicture"`
+	Username		string  `json:"username"`
+	Birthday   		*string `json:"birthday"`
+	Gender 	   		*string `json:"gender"`
+	Email			string  `json:"email"`	
+}

@@ -22,20 +22,6 @@ func NewUserService(userRepo repository.UserRepository, userProfileRepo reposito
     }
 }
 
-func (s *UserService) UpdateUserByEmail(email string, updatedUser *model.User) (*model.User, error) {
-	_, err := s.userRepo.GetByEmail(email)
-	if err != nil {
-		return nil, errors.New("user tidak ditemukan")
-	}
-
-	updated, err := s.userRepo.UpdateByEmail(email, updatedUser)
-	if err != nil {
-		return nil, errors.New("gagal update user")
-	}
-
-	return updated, nil
-}
-
 func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProfileRequest) (*dto.SaveUserProfileResponse, error) {
     tx := db.Begin()
     if tx.Error != nil {
@@ -106,8 +92,22 @@ func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProf
 }
 
 
-func (s *UserService) GetProfile(userID uint) (*model.User, error) {
-    return s.userRepo.GetByID(userID)
+func (s *UserService) GetProfile(userID uint) (*dto.GetProfileResponse, error) {
+    user, err := s.userRepo.GetByID(userID)
+    if err != nil {
+        return nil, errors.New("gagal mendapatkan profil user")
+    }
+
+    return &dto.GetProfileResponse{
+        UserID:         user.ID,
+        FullName:       user.FullName,
+        Bio:            user.Profile.Bio,
+        ProfilePicture: user.Profile.ProfilePicture,
+        Username:       user.Username,
+        Birthday:       user.Profile.Birthday,
+        Gender:         user.Profile.Gender,
+        Email:          user.Email,
+    }, nil
 }
 
 func (s *UserService) SaveSecurity(userID uint, req dto.SaveUserSecurityRequest) error {

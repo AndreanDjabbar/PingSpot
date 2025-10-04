@@ -121,15 +121,7 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 		logger.Error("Failed to save user profile", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal memperbarui profil pengguna", "", err.Error())
 	}
-	newProfileFormatted := map[string]any{
-		"bio":      newProfile.Bio,
-		"avatar":   newProfile.ProfilePicture,
-		"fullname": newProfile.FullName,
-		"username": newProfile.Username,
-		"gender":   newProfile.Gender,
-		"birthday": newProfile.Birthday,
-	}
-	return response.ResponseSuccess(c, 200, "Profil pengguna berhasil diperbarui", "data", newProfileFormatted)
+	return response.ResponseSuccess(c, 200, "Profil pengguna berhasil diperbarui", "data", newProfile)
 }
 
 func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
@@ -140,20 +132,10 @@ func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
-	user, err := h.userService.GetProfile(userId)
+	userProfile, err := h.userService.GetProfile(userId)
 	if err != nil {
 		logger.Error("Failed to get my profile", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal mendapatkan profil pengguna", "", err.Error())
 	}
-	myProfile := map[string]any{
-		"bio":            user.Profile.Bio,
-		"profilePicture": user.Profile.ProfilePicture,
-		"fullname":       user.FullName,
-		"username":       user.Username,
-		"birthday":       user.Profile.Birthday,
-		"gender":         user.Profile.Gender,
-		"email":          user.Email,
-		"userID":         user.ID,
-	}
-	return response.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", myProfile)
+	return response.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", userProfile)
 }
