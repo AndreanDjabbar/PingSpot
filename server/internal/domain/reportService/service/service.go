@@ -21,12 +21,6 @@ type ReportService struct {
 	userProfileRepo 	userRepository.UserProfileRepository
 }
 
-type FullReportResult = struct {
-	Report         model.Report
-	ReportLocation model.ReportLocation
-	ReportImages   model.ReportImage
-}
-
 func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo reportRepository.ReportLocationRepository, reportReaction reportRepository.ReportReactionRepository, imageRepo reportRepository.ReportImageRepository, userRepo userRepository.UserRepository, userProfileRepo userRepository.UserProfileRepository) *ReportService {
 	return &ReportService{
 		reportRepo:         reportRepo,
@@ -38,7 +32,7 @@ func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo
 	}
 }
 
-func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateReportRequest) (*FullReportResult, error) {
+func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateReportRequest) (*dto.CreateReportResponse, error) {
 	tx := db.Begin()
 	if tx.Error != nil {
 		return nil, errors.New("Gagal memulai transaksi")
@@ -107,7 +101,7 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 		return nil, errors.New("Gagal menyimpan perubahan")
 	}
 
-	reportResult := &FullReportResult{
+	reportResult := &dto.CreateReportResponse{
 		Report:         reportStruct,
 		ReportLocation: reportLocationStruct,
 		ReportImages:   reportImages,
@@ -203,7 +197,7 @@ func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, erro
 	return fullReports, nil
 }
 
-func (s *ReportService) GetReportByID(reportID uint) (*FullReportResult, error) {
+func (s *ReportService) GetReportByID(reportID uint) (*dto.CreateReportResponse, error) {
 	report, err := s.reportRepo.GetByID(reportID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -226,7 +220,7 @@ func (s *ReportService) GetReportByID(reportID uint) (*FullReportResult, error) 
 		return nil, err
 	}
 
-	result := &FullReportResult{
+	result := &dto.CreateReportResponse{
 		Report:         *report,
 		ReportLocation: *location,
 		ReportImages:   *images,
