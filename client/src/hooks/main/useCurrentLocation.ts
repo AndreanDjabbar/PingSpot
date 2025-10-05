@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useLocationStore } from "@/stores/userLocationStore";
 import getAuthToken from "@/utils/getAuthToken";
 import getJWTExpired from "@/utils/getJWTExpired";
-import { Location } from "@/types/entity/mainTypes";
+import { ICurrentLocation } from "@/types/entity/mainTypes";
 
 export const useCurrentLocation = () => {
     const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export const useCurrentLocation = () => {
         }
         navigator.geolocation.getCurrentPosition(
         (position) => {
-            const coords: Location = {
+            const coords: ICurrentLocation = {
                 lat: position.coords.latitude.toString(),
                 lng: position.coords.longitude.toString(),
                 lastUpdated: new Date().toLocaleString(),

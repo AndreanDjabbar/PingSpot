@@ -3,7 +3,7 @@ import { MdMailOutline } from "react-icons/md";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import InputField from "@/components/form/InputField";
 import { useForm } from "react-hook-form";
-import { IForgotPasswordFormEmailType } from "../Schema";
+import { IForgotPasswordEmailVerificationRequest } from "@/types/api/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ButtonSubmit from "@/components/form/ButtonSubmit";
 import { ErrorSection, SuccessSection } from "@/components/feedback";
@@ -21,7 +21,7 @@ const ForgotPasswordPage = () => {
         register, 
         handleSubmit, 
         formState: { errors } 
-    } = useForm<IForgotPasswordFormEmailType>({
+    } = useForm<IForgotPasswordEmailVerificationRequest>({
         resolver: zodResolver(ForgotPasswordEmailVerificationSchema)
     });
     
@@ -39,7 +39,7 @@ const ForgotPasswordPage = () => {
         }
     }, [isSuccess, data, router]);
 
-    const onSubmit = (data: IForgotPasswordFormEmailType) => {
+    const onSubmit = (data: IForgotPasswordEmailVerificationRequest) => {
         mutate({ ...data });
     };
     return (

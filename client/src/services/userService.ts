@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IForgotPasswordFormEmailType, IForgotPasswordResetPasswordType, ILoginFormType, IRegisterFormType, IVerificationFormType } from "@/app/auth/Schema";
 import { ISaveSecurityFormType } from "@/app/main/schema";
+import { IForgotPasswordEmailVerificationRequest, IForgotPasswordEmailVerificationResponse, IForgotPasswordLinkVerificationRequest, IForgotPasswordLinkVerificationResponse, IForgotPasswordResetPasswordRequest, IForgotPasswordResetPasswordResponse, ILoginRequest, ILoginResponse, IRegisterRequest, IRegisterResponse, IVerificationRequest, IVerificationResponse } from "@/types/api/auth";
 import getAuthToken from "@/utils/getAuthToken";
 import axios from "axios";
 
@@ -32,13 +32,13 @@ const MULTIPART_HEADERS = (authToken: string) => {
     }
 }
 
-export const registerService = async (payload: IRegisterFormType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/register`, payload);
+export const registerService = async (payload: IRegisterRequest): Promise<IRegisterResponse> => {
+    const response = await axios.post<IRegisterResponse>(`${AUTH_API_URL}/register`, payload);
     return response.data;
 };
 
-export const loginService = async (payload: ILoginFormType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/login`, payload);
+export const loginService = async (payload: ILoginRequest): Promise<ILoginResponse> => {
+    const response = await axios.post<ILoginResponse>(`${AUTH_API_URL}/login`, payload);
     return response.data;
 };
 
@@ -52,23 +52,23 @@ export const logoutService = async (): Promise<IResponseType> => {
     return response.data;
 }
 
-export const verificationService = async (payload: IVerificationFormType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/verification?code1=${payload.code1}&userId=${payload.userId}&code2=${payload.code2}`);
+export const verificationService = async (payload: IVerificationRequest): Promise<IVerificationResponse> => {
+    const response = await axios.post<IVerificationResponse>(`${AUTH_API_URL}/verification?code1=${payload.code1}&userId=${payload.userId}&code2=${payload.code2}`);
     return response.data;
 }
 
-export const sendForgotPasswordEmailVerificationService = async (payload: IForgotPasswordFormEmailType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/forgot-password/email-verification`, payload);
+export const sendForgotPasswordEmailVerificationService = async (payload: IForgotPasswordEmailVerificationRequest): Promise<IForgotPasswordEmailVerificationResponse> => {
+    const response = await axios.post<IForgotPasswordEmailVerificationResponse>(`${AUTH_API_URL}/forgot-password/email-verification`, payload);
     return response.data;
 }
 
-export const linkVerificationService = async ({ code, email }: { code: string; email: string }): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/forgot-password/link-verification?code=${code}&email=${email}`);
+export const linkVerificationService = async (payload: IForgotPasswordLinkVerificationRequest): Promise<IForgotPasswordLinkVerificationResponse> => {
+    const response = await axios.post<IForgotPasswordLinkVerificationResponse>(`${AUTH_API_URL}/forgot-password/link-verification?code=${payload.code}&email=${payload.email}`);
     return response.data;
 }
 
-export const resetPasswordService = async (payload: IForgotPasswordResetPasswordType): Promise<IResponseType> => {
-    const response = await axios.post<IResponseType>(`${AUTH_API_URL}/forgot-password/reset-password`, payload);
+export const resetPasswordService = async (payload: IForgotPasswordResetPasswordRequest): Promise<IForgotPasswordResetPasswordResponse> => {
+    const response = await axios.post<IForgotPasswordResetPasswordResponse>(`${AUTH_API_URL}/forgot-password/reset-password`, payload);
     return response.data;
 };
 

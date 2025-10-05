@@ -1,10 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import { registerService } from "@/services/userService";
 import { AxiosError } from "axios";
-import { IRegisterFormType } from "@/app/auth/Schema";
+import { IRegisterRequest, IRegisterResponse } from "@/types/api/auth";
 
 export const useRegister = () => {
-    return useMutation<unknown, AxiosError, IRegisterFormType>({
-        mutationFn: (data: IRegisterFormType) => registerService(data)
+    return useMutation<IRegisterResponse, AxiosError, IRegisterRequest>({
+        mutationFn: (data: IRegisterRequest) => registerService(data)
     });
 }

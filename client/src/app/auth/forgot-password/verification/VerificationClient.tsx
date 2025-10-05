@@ -9,7 +9,7 @@ import { useLinkVerification, useResetPassword } from '@/hooks/auth/useForgotPas
 import ButtonSubmit from '@/components/form/ButtonSubmit';
 import InputField from '@/components/form/InputField';
 import { LuLockKeyhole } from 'react-icons/lu';
-import { IForgotPasswordResetPasswordType } from '../../Schema';
+import { IForgotPasswordResetPasswordRequest } from '@/types/api/auth';
 import { ForgotPasswordResetPasswordSchema } from '../../Schema';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import useErrorToast from '@/hooks/useErrorToast';
@@ -25,7 +25,7 @@ const VerificationClient = () => {
         register, 
         handleSubmit, 
         formState: { errors } 
-    } = useForm<IForgotPasswordResetPasswordType>({
+    } = useForm<IForgotPasswordResetPasswordRequest>({
         resolver: zodResolver(ForgotPasswordResetPasswordSchema)
     });
     
@@ -112,7 +112,7 @@ const VerificationClient = () => {
         );
     }
 
-    const onSubmit = (formData: IForgotPasswordResetPasswordType) => {
+    const onSubmit = (formData: IForgotPasswordResetPasswordRequest) => {
         resetPassword({ 
             ...formData,
             email: email

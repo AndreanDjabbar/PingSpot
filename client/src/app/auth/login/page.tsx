@@ -5,13 +5,13 @@ import { LuLockKeyhole } from "react-icons/lu";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import InputField from "@/components/form/InputField";
 import { useForm } from "react-hook-form";
-import { ILoginFormType } from "../Schema";
+import { ILoginRequest } from "@/types/api/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema } from "../Schema";
 import { useLogin } from "@/hooks/auth/useLogin";
 import ButtonSubmit from "@/components/form/ButtonSubmit";
 import { ErrorSection, SuccessSection } from "@/components/feedback";
-import { getDataResponseDetails, getDataResponseMessage } from "@/utils/getDataResponse";
+import { getDataResponseMessage } from "@/utils/getDataResponse";
 import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,7 @@ const LoginPage = () => {
         register, 
         handleSubmit, 
         formState: { errors } 
-    } = useForm<ILoginFormType>({
+    } = useForm<ILoginRequest>({
         resolver: zodResolver(LoginSchema)
     });
     const { mutate, isPending, isError, isSuccess, error, data } = useLogin();
@@ -34,7 +34,7 @@ const LoginPage = () => {
     
     useEffect(() => {
         if (isSuccess && data) {
-            const token = getDataResponseDetails(data)?.token;
+            const token = data.data?.token || '';
             const payload = JSON.parse(atob(token.split('.')[1]));
             const jwtExpiration = payload.exp || 0;
             if (token) {
@@ -46,7 +46,7 @@ const LoginPage = () => {
         }
     }, [isSuccess, data, router]);
 
-    const onSubmit = (data: ILoginFormType) => {
+    const onSubmit = (data: ILoginRequest) => {
         mutate({ ...data });
     };
     return (

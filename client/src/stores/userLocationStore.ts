@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Location } from '@/types/entity/mainTypes';
+import { ICurrentLocation } from '@/types/mainTypes';
 
 type LocationStore = {
-    location: (Location & { expiresAt?: number }) | null;
-    setLocation: (loc: Location, ttl?: number) => void;
+    location: (ICurrentLocation & { expiresAt?: number }) | null;
+    setLocation: (loc: ICurrentLocation, ttl?: number) => void;
     clearLocation: () => void;
 };
 

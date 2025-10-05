@@ -1,21 +1,3 @@
-export type ReverseLocation = {
-    latitude: string;
-    longitude: string;
-}
-
-export type Location = {
-    lat: string;
-    lng: string;
-    lastUpdated?: string;
-    expiresAt?: number;
-    displayName?: string;
-    address?: object | null;
-    type?: string;
-    name?: string;
-    osmType?: string;
-    osmId?: string;
-};
-
 export type ReportType = 'INFRASTRUCTURE' | 'ENVIRONMENT' | 'SAFETY' | 'OTHER';
 export type ReportStatus = 'PENDING' | 'RESOLVED' | 'NOT_RESOLVED' | 'IN_PROGRESS';
 
@@ -118,15 +100,4 @@ export interface IReport {
     isDislikedByCurrentUser: boolean;
     totalDislikeReactions: number;
     totalReactions: number;
-}
-
-export interface IUserProfile {
-    id: string;
-    username: string;
-    fullName: string;
-    email: string;
-    profilePicture?: string;
-    gender?: string;
-    bio?: string;
-    birthday? : string;
 }

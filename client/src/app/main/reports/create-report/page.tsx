@@ -12,7 +12,7 @@ import { IoLocationOutline } from 'react-icons/io5';
 import { LuNotebookText } from "react-icons/lu";
 import { SuccessSection, ErrorSection, ConfirmationDialog, ImagePreviewModal } from '@/components/feedback';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
-import { getDataResponseDetails, getDataResponseMessage } from '@/utils/getDataResponse';
+import { getDataResponseMessage } from '@/utils/getDataResponse';
 import useErrorToast from '@/hooks/useErrorToast';
 import useSuccessToast from '@/hooks/useSuccessToast';
 import dynamic from 'next/dynamic';
@@ -85,7 +85,6 @@ const ReportsPage = () => {
 
     useEffect(() => {
         if (reverseLocationData && formDataToSubmit) {
-            const locationData = getDataResponseDetails(reverseLocationData);
             const {
                 country, 
                 country_code, 
@@ -96,8 +95,8 @@ const ReportsPage = () => {
                 state, 
                 village, 
                 suburb
-            } = locationData.address || {};
-            formDataToSubmit.append('displayName', locationData.display_name || '');
+            } = reverseLocationData.data?.address || {};
+            formDataToSubmit.append('displayName', reverseLocationData.data?.display_name || '');
             formDataToSubmit.append('road', road || '');
             formDataToSubmit.append('country', country || '');
             formDataToSubmit.append('countryCode', country_code || '');

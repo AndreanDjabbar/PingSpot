@@ -2,7 +2,6 @@
 "use client";
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react'
-import { IVerificationFormType } from '../Schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { VerificationSchema } from '../Schema';
 import { useForm } from 'react-hook-form';
@@ -12,6 +11,7 @@ import { getDataResponseDetails } from '@/utils/getDataResponse';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import useErrorToast from '@/hooks/useErrorToast';
 import useSuccessToast from '@/hooks/useSuccessToast';
+import { IVerificationRequest } from '@/types/api/auth';
 
 const VerificationClient = () => {
     const searchParams = useSearchParams();
@@ -22,7 +22,7 @@ const VerificationClient = () => {
     
     const { 
         formState: { } 
-    } = useForm<IVerificationFormType>({
+    } = useForm<IVerificationRequest>({
         resolver: zodResolver(VerificationSchema)
     });
     

@@ -5,7 +5,7 @@ import { FaGoogle, FaGithub } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
 import InputField from "@/components/form/InputField";
 import { useForm } from "react-hook-form";
-import { IRegisterFormType } from "../Schema";
+import { IRegisterRequest } from "@/types/api/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../Schema";
 import { useRegister } from "@/hooks/auth/useRegister";
@@ -23,7 +23,7 @@ const RegisterPage = () => {
         register, 
         handleSubmit, 
         formState: { errors } 
-    } = useForm<IRegisterFormType>({
+    } = useForm<IRegisterRequest>({
         resolver: zodResolver(RegisterSchema)
     });
     const { mutate, isPending, isError, isSuccess, error, data } = useRegister();
@@ -40,7 +40,7 @@ const RegisterPage = () => {
         }
     }, [isSuccess, data, router]);
 
-    const onSubmit = (data: IRegisterFormType) => {
+    const onSubmit = (data: IRegisterRequest) => {
         mutate({ ...data, provider: "EMAIL" });
     };
 

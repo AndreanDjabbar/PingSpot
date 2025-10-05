@@ -35,9 +35,3 @@ export const ForgotPasswordResetPasswordSchema = z.object({
     message: "Konfirmasi kata sandi tidak cocok",
     path: ["passwordConfirmation"],
 })
-
-export type IRegisterFormType = z.infer<typeof RegisterSchema>;
-export type ILoginFormType = z.infer<typeof LoginSchema>;
-export type IVerificationFormType = z.infer<typeof VerificationSchema>;
-export type IForgotPasswordFormEmailType = z.infer<typeof ForgotPasswordEmailVerificationSchema>;
-export type IForgotPasswordResetPasswordType = z.infer<typeof ForgotPasswordResetPasswordSchema>;

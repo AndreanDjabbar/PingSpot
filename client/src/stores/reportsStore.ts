@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { IReport } from "@/types/entity/mainTypes";
+import { IReport } from "@/types/mainTypes";
 
 interface ReportsStore {
     reports: IReport[];
