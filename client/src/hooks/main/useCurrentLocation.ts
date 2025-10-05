@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useLocationStore } from "@/stores/userLocationStore";
 import getAuthToken from "@/utils/getAuthToken";
 import getJWTExpired from "@/utils/getJWTExpired";
-import { ICurrentLocation } from "@/types/entity/mainTypes";
+import { ICurrentLocation } from "@/types/model/user";
 
 export const useCurrentLocation = () => {
     const [error, setError] = useState<string | null>(null);

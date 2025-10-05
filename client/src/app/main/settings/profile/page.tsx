@@ -10,7 +10,8 @@ import { IoPersonSharp } from 'react-icons/io5';
 import { LuNotebookText } from 'react-icons/lu';
 import { FaCalendarAlt } from 'react-icons/fa';
 import { TbGenderBigender } from "react-icons/tb";
-import { ISaveProfileFormType, SaveProfileSchema } from '../../schema';
+import { SaveProfileSchema } from '../../schema';
+import { ISaveProfileRequest } from '@/types/api/user';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSaveProfile } from '@/hooks/user/useSaveProfile';
@@ -45,7 +46,7 @@ const ProfilePage = () => {
         setValue,
         watch,
         formState: { errors } 
-    } = useForm<ISaveProfileFormType>({
+    } = useForm<ISaveProfileRequest>({
         resolver: zodResolver(SaveProfileSchema),
         defaultValues: defaultValues
     });
@@ -53,13 +54,13 @@ const ProfilePage = () => {
     const { mutate, isPending, isError, isSuccess, error, data } = useSaveProfile();
     const currentPath = usePathname();
     
-    const onSubmit = (formData: ISaveProfileFormType) => {
+    const onSubmit = (formData: ISaveProfileRequest) => {
         const preparedData = prepareFormData(formData);
         setFormDataToSubmit(preparedData);
         setIsSaveProfileModalOpen(true);
     };
 
-    const prepareFormData = (formData: ISaveProfileFormType): FormData => {
+    const prepareFormData = (formData: ISaveProfileRequest): FormData => {
         const data = new FormData();
 
         data.append('fullName', formData.fullName);

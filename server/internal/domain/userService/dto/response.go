@@ -1,7 +1,7 @@
 package dto
 
 type SaveUserProfileResponse struct {
-	UserID          uint    `json:"userId"`
+	UserID          uint    `json:"userID"`
 	FullName        string  `json:"fullName"`
 	Bio             *string `json:"bio"`
 	ProfilePicture  *string `json:"profilePicture"`
@@ -11,7 +11,7 @@ type SaveUserProfileResponse struct {
 }
 
 type GetProfileResponse struct {
-	UserID          uint    `json:"userId"`
+	UserID          uint    `json:"userID"`
 	FullName        string  `json:"fullName"`
 	Bio             *string `json:"bio"`
 	ProfilePicture  *string `json:"profilePicture"`

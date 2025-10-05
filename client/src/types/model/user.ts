@@ -35,7 +35,7 @@ export type ILogoutType = {
 }
 
 export interface IUserProfile {
-    id: string;
+    userID: string;
     username: string;
     fullName: string;
     email: string;
@@ -44,3 +44,4 @@ export interface IUserProfile {
     bio?: string;
     birthday? : string;
 }
+

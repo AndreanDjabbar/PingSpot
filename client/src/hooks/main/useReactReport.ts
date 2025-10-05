@@ -1,11 +1,10 @@
 import { reactReportService } from "@/services/mainService"
 import { useMutation } from "@tanstack/react-query"
-import { IReactReportFormType } from "@/app/main/schema"
-import { IReactReportResponse } from "@/types/response/mainTypes";
+import { IReactReportRequest, IReactReportResponse } from "@/types/api/report";
 
 type reactReportParams = {
     reportID: number;
-    data: IReactReportFormType;
+    data: IReactReportRequest;
 }
 
 export const useReactReport = () => {

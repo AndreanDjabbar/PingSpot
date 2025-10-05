@@ -1,10 +1,10 @@
 import { saveSecurityService } from "@/services/userService";
-import { ISaveSecurityFormType } from "@/app/main/schema";
+import { ISaveSecurityRequest, ISaveSecurityResponse } from "@/types/api/user";
 import { useMutation } from "@tanstack/react-query"
 import { AxiosError } from "axios";
 
 export const useSaveSecurity = () => {
-    return useMutation<unknown, AxiosError, ISaveSecurityFormType>({
-        mutationFn: (data: ISaveSecurityFormType) => saveSecurityService(data) 
+    return useMutation<ISaveSecurityResponse, AxiosError, ISaveSecurityRequest>({
+        mutationFn: (data: ISaveSecurityRequest) => saveSecurityService(data) 
     })
 }

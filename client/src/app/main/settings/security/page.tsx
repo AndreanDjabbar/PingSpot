@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { InputField, ButtonSubmit } from '@/components/form';
 import { SaveSecuritySchema } from '../../schema';
-import { ISaveSecurityFormType } from '../../schema';
+import { ISaveSecurityRequest } from '@/types/api/user';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import useErrorToast from '@/hooks/useErrorToast';
@@ -21,13 +21,13 @@ import { useLogout } from '@/hooks/auth/useLogout';
 
 const SecurityPage = () => {
     const [isSaveSecurityModalOpen, setIsSaveSecurityModalOpen] = useState(false);
-    const [securityData, setSecurityData] = useState<ISaveSecurityFormType | null>(null);
+    const [securityData, setSecurityData] = useState<ISaveSecurityRequest | null>(null);
 
     const { 
         register, 
         handleSubmit, 
         formState: { errors } 
-    } = useForm<ISaveSecurityFormType>({
+    } = useForm<ISaveSecurityRequest>({
         resolver: zodResolver(SaveSecuritySchema),
     });
     
@@ -36,7 +36,7 @@ const SecurityPage = () => {
     const currentPath = usePathname();
     const router = useRouter();
     
-    const onSubmit = (data: ISaveSecurityFormType) => {
+    const onSubmit = (data: ISaveSecurityRequest) => {
         setIsSaveSecurityModalOpen(true);
         setSecurityData(data);
     };

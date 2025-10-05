@@ -2,12 +2,11 @@ import axios from "axios";
 import { 
     ICreateReportResponse,
     IGetReportResponse,
-    IReactReportResponse,
-    IReverseLocationResponse
-} from "@/types/responseTypes";
+    IReactReportRequest,
+    IReactReportResponse
+} from "@/types/api/report";
+import { IReverseLocationResponse, IReverseLocationRequest } from "@/types/api/user";
 import getAuthToken from "@/utils/getAuthToken";
-import { IReactReportFormType } from "@/app/main/schema";
-import { IReverseLocationRequest } from "@/types/mainTypes";
 
 const REVERSE_LOCATION_API_URL = `${process.env.NEXT_PUBLIC_REVERSE_LOCATION_URL}`;
 const MAIN_API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
@@ -56,19 +55,19 @@ export const getReportService = async (): Promise<IGetReportResponse> => {
     return response.data;
 }
 
-export const getReportByIDService = async (reportID: number): Promise<IResponseType> => {
-    const authToken = getAuthToken();
-    const response = await axios.get<IResponseType>(`${MAIN_API_URL}/report?reportID=${reportID}`, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${authToken || ''}`
-        }
-    });
-    return response.data;
-}
+// export const getReportByIDService = async (reportID: number): Promise<IResponseType> => {
+//     const authToken = getAuthToken();
+//     const response = await axios.get<IResponseType>(`${MAIN_API_URL}/report?reportID=${reportID}`, {
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'Accept': 'application/json',
+//             'Authorization': `Bearer ${authToken || ''}`
+//         }
+//     });
+//     return response.data;
+// }
 
-export const reactReportService = async (reportID: number, data: IReactReportFormType): Promise<IReactReportResponse> => {
+export const reactReportService = async (reportID: number, data: IReactReportRequest): Promise<IReactReportResponse> => {
     const authToken = getAuthToken();
     const response = await axios.post<IReactReportResponse>(`${MAIN_API_URL}/report/${reportID}/reaction`, 
         { reactionType: data.reactionType }, MULTIPART_HEADERS(authToken || ''));

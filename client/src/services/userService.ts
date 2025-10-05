@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ISaveSecurityFormType } from "@/app/main/schema";
+import { ISaveSecurityRequest, ISaveSecurityResponse } from "@/types/api/user";
 import { IForgotPasswordEmailVerificationRequest, IForgotPasswordEmailVerificationResponse, IForgotPasswordLinkVerificationRequest, IForgotPasswordLinkVerificationResponse, IForgotPasswordResetPasswordRequest, IForgotPasswordResetPasswordResponse, ILoginRequest, ILoginResponse, IRegisterRequest, IRegisterResponse, IVerificationRequest, IVerificationResponse } from "@/types/api/auth";
+import { IGetProfileResponse, ISaveProfileResponse } from "@/types/api/user";
 import getAuthToken from "@/utils/getAuthToken";
 import axios from "axios";
 
@@ -72,20 +73,20 @@ export const resetPasswordService = async (payload: IForgotPasswordResetPassword
     return response.data;
 };
 
-export const saveProfileService = async (payload: FormData): Promise<IResponseType> => {
+export const saveProfileService = async (payload: FormData): Promise<ISaveProfileResponse> => {
     const authToken = getAuthToken();
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/profile`, payload, MULTIPART_HEADERS(authToken || ''));
+    const response = await axios.post<ISaveProfileResponse>(`${USER_API_URL}/profile`, payload, MULTIPART_HEADERS(authToken || ''));
     return response.data;
 }
 
-export const saveSecurityService = async (payload: ISaveSecurityFormType): Promise<IResponseType> => {
+export const saveSecurityService = async (payload: ISaveSecurityRequest): Promise<ISaveSecurityResponse> => {
     const authToken = getAuthToken();
-    const response = await axios.post<IResponseType>(`${USER_API_URL}/security`, payload, COMMON_HEADERS(authToken || ''));
+    const response = await axios.post<ISaveSecurityResponse>(`${USER_API_URL}/security`, payload, COMMON_HEADERS(authToken || ''));
     return response.data;
 }
 
-export const getMyProfileService = async (): Promise<IResponseType> => {
+export const getMyProfileService = async (): Promise<IGetProfileResponse> => {
     const authToken = getAuthToken();
-    const response = await axios.get<IResponseType>(`${USER_API_URL}/profile/`, COMMON_HEADERS(authToken || ''));
+    const response = await axios.get<IGetProfileResponse>(`${USER_API_URL}/profile/`, COMMON_HEADERS(authToken || ''));
     return response.data;
 }

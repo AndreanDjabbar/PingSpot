@@ -1,9 +1,11 @@
 import { getMyProfileService } from "@/services/userService";
-import { useMutation } from "@tanstack/react-query"
+import { IGetProfileResponse } from "@/types/api/user";
+import { useQuery } from "@tanstack/react-query"
 import { AxiosError } from "axios";
 
 export const useMyProfile = () => {
-    return useMutation<unknown, AxiosError, void>({
-        mutationFn: () => getMyProfileService()
+    return useQuery<IGetProfileResponse, AxiosError>({
+        queryKey: ['my-profile'],
+        queryFn: () => getMyProfileService(),
     })
 }

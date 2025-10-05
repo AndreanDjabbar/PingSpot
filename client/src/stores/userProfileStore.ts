@@ -2,8 +2,7 @@
 import { create } from "zustand";
 import getAuthToken from "@/utils/getAuthToken"
 import { getMyProfileService } from "@/services/userService";
-import { formattedDate } from "@/utils/getFormattedDate";
-import { IUserProfile } from "@/types/entity/mainTypes";
+import { IUserProfile } from "@/types/model/user";
 
 export interface UserProfileStore {
     userProfile: IUserProfile | null;
@@ -21,17 +20,7 @@ export const useUserProfileStore = create<UserProfileStore>((set) => ({
                 return;
             }
             const profileData = await getMyProfileService();
-            const profile: IUserProfile = {
-                id: profileData.data.userID,
-                username: profileData.data.username,
-                fullName: profileData.data.fullname,
-                email: profileData.data.email,
-                gender: profileData.data.gender,
-                bio: profileData.data.bio,
-                birthday: formattedDate(profileData.data.birthday),
-                profilePicture: profileData.data.profilePicture,
-            }
-            set({ userProfile:  profile});
+            set({ userProfile:  profileData?.data});
         } catch {
             set({ userProfile: null });
         }

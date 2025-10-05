@@ -1,5 +1,4 @@
-import { IReverseLocationRequest } from "@/types/entity/mainTypes";
-import { IReverseLocationResponse } from "@/types/response/mainTypes";
+import { IReverseLocationRequest, IReverseLocationResponse } from "@/types/api/user";
 import { reverseCurrentLocationService } from "@/services/mainService";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";

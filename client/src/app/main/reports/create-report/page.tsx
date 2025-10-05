@@ -19,7 +19,8 @@ import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { useCreateReport } from '@/hooks/main/useCreateReport';
 import { useReverseCurrentLocation } from '@/hooks/main/useReverseCurrentLocation';
-import { IReportFormType, CreateReportSchema } from '../../schema';
+import { CreateReportSchema } from '../../schema';
+import { ICreateReportRequest } from '@/types/api/report';
 import HeaderSection from '../../components/HeaderSection';
 
 const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
@@ -61,7 +62,7 @@ const ReportsPage = () => {
         formState: { errors },
         reset,
         watch
-    } = useForm<IReportFormType>({
+    } = useForm<ICreateReportRequest>({
         resolver: zodResolver(CreateReportSchema),
     });
 
@@ -123,7 +124,7 @@ const ReportsPage = () => {
         }
     }, [isSuccess, data]);
 
-    const prepareFormData = (formData: IReportFormType): FormData => {
+    const prepareFormData = (formData: ICreateReportRequest): FormData => {
         const data = new FormData();
         data.append('reportTitle', formData.reportTitle);
         data.append('reportDescription', formData.reportDescription);
@@ -139,7 +140,7 @@ const ReportsPage = () => {
         return data;
     }
 
-    const onSubmit = (formData: IReportFormType) => {
+    const onSubmit = (formData: ICreateReportRequest) => {
         const preparedData = prepareFormData(formData);
         setFormDataToSubmit(preparedData);
         setIsCreateReportModalOpen(true);
