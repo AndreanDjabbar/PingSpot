@@ -7,11 +7,10 @@ import { BiSend } from 'react-icons/bi';
 import { AnimatePresence } from 'framer-motion';
 import { getImageURL } from '@/utils/getImageURL';
 import CommentItem from './CommentItem';
-import { CommentType } from '@/types/entity/mainTypes';
+import { CommentType } from '@/types/model/report';
 
 interface CommentSectionProps {
     comments: CommentType[];
-    currentUserId: number;
     onAddComment: (content: string, parentId?: number) => void;
     onEditComment?: (commentId: number, content: string) => void;
     onDeleteComment?: (commentId: number) => void;
@@ -23,7 +22,6 @@ interface CommentSectionProps {
 
 const CommentSection: React.FC<CommentSectionProps> = ({
     comments,
-    currentUserId,
     onAddComment,
     onEditComment,
     onDeleteComment,
@@ -150,7 +148,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                             <CommentItem
                                 key={comment.id}
                                 comment={comment}
-                                currentUserId={currentUserId}
                                 variant={variant}
                                 showLikes={showLikes}
                                 onReply={handleReply}

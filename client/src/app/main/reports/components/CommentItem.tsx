@@ -7,6 +7,7 @@ import { BiSend } from 'react-icons/bi';
 import { motion } from 'framer-motion';
 import { getImageURL } from '@/utils/getImageURL';
 import { formattedDate } from '@/utils/getFormattedDate';
+import { useUserProfileStore } from '@/stores/userProfileStore';
 
 export interface CommentType {
     id: number;
@@ -23,7 +24,6 @@ export interface CommentType {
 
 interface CommentItemProps {
     comment: CommentType;
-    currentUserId: number;
     level?: number;
     variant: 'full' | 'compact';
     showLikes: boolean;
@@ -34,7 +34,6 @@ interface CommentItemProps {
 
 const CommentItem: React.FC<CommentItemProps> = ({ 
     comment, 
-    currentUserId, 
     level = 0, 
     variant = 'full',
     showLikes = true,
@@ -50,6 +49,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
     const [liked, setLiked] = useState(false);
     const replyInputRef = useRef<HTMLTextAreaElement>(null);
     const editInputRef = useRef<HTMLTextAreaElement>(null);
+    const { userProfile } = useUserProfileStore();
+    const currentUserId = userProfile ? Number(userProfile.userID) : null;
 
     useEffect(() => {
         if (isReplying && replyInputRef.current) {
@@ -178,7 +179,6 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                     <CommentItem
                                         key={reply.id}
                                         comment={reply}
-                                        currentUserId={currentUserId}
                                         level={level + 1}
                                         variant={variant}
                                         showLikes={showLikes}
@@ -376,7 +376,6 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 <CommentItem
                                     key={reply.id}
                                     comment={reply}
-                                    currentUserId={currentUserId}
                                     level={level + 1}
                                     variant={variant}
                                     showLikes={showLikes}

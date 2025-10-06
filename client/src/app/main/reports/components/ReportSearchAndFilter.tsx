@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaSearch, FaFilter } from 'react-icons/fa';
-import { ReportType } from '@/types/entity/mainTypes';
+import { ReportType } from '@/types/model/report';
 
 interface ReportSearchAndFilterProps {
     searchTerm: string;

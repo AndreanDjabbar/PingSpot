@@ -10,7 +10,7 @@ import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { getImageURL } from '@/utils/getImageURL';
 import { formattedDate } from '@/utils/getFormattedDate';
-import { ReportType, IReportImage, ICommentType } from '@/types/entity/mainTypes';
+import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
 import { ReportInteractionBar } from './ReportInteractionBar';
 import { BsThreeDots } from 'react-icons/bs';
 import StatusVoting from './StatusVoting';
@@ -25,18 +25,18 @@ const StaticMap = dynamic(() => import('../../components/StaticMap'), {
 interface ReportModalProps {
     isOpen: boolean;
     onClose: () => void;
-    currentUserId: number;
     onLike: () => void;
     onDislike: () => void;
     onSave: () => void;
     onShare: () => void;
     onAddComment: (content: string, parentId?: number) => void;
     onStatusVote: (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => void;
+    onStatusUpdate?: (reportID: number, newStatus: string) => void;
     isInteractionLoading?: boolean;
 }
 
 const getReportTypeLabel = (type: ReportType): string => {
-    const types = {
+    const types: Record<ReportType, string> = {
         INFRASTRUCTURE: 'Infrastruktur',
         ENVIRONMENT: 'Lingkungan',
         SAFETY: 'Keamanan',
@@ -59,13 +59,13 @@ const getReportImages = (images: IReportImage): string[] => {
 const ReportModal: React.FC<ReportModalProps> = ({
     isOpen,
     onClose,
-    currentUserId,
     onLike,
     onDislike,
     onSave,
     onShare,
     onAddComment,
     onStatusVote,
+    onStatusUpdate,
     isInteractionLoading = false
 }) => {
     const [newComment, setNewComment] = useState('');
@@ -274,6 +274,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                                 userInteraction={report?.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}
                                 commentCount={report?.commentCount || 0}
                                 onLike={onLike}
+                                reportID={report?.id || 0}
                                 showSecondaryActions={false}
                                 onDislike={onDislike}
                                 onSave={onSave}
@@ -283,10 +284,12 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             />
 
                             <StatusVoting
+                                reportID={report?.id}
                                 currentStatus={report?.status || 'PENDING'}
                                 statusVoteStats={report?.statusVoteStats || { resolved: 0, notResolved: 0, neutral: 0 }}
                                 userCurrentVote={report?.userInteraction?.currentVote || null}
                                 onVote={(voteType: string) => onStatusVote(voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
+                                onStatusUpdate={onStatusUpdate}
                                 isLoading={isInteractionLoading}
                             />
                         </div>
@@ -311,7 +314,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
                                     <CommentItem
                                         key={comment.id}
                                         comment={comment}
-                                        currentUserId={currentUserId}
                                         variant="compact" // Use compact variant for modal
                                         showLikes={false} // Don't show likes in modal
                                         onReply={handleReply}

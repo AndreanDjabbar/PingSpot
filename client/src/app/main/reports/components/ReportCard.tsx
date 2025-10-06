@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa';
 import { BsThreeDots } from "react-icons/bs";
 import dynamic from 'next/dynamic';
-import { ReportType, IReportImage } from '@/types/entity/mainTypes';
+import { ReportType, IReportImage } from '@/types/model/report';
 import { getImageURL } from '@/utils/getImageURL';
 import { formattedDate } from '@/utils/getFormattedDate';
 import { ReportInteractionBar } from '@/app/main/reports/components/ReportInteractionBar';
@@ -24,6 +24,7 @@ interface ReportCardProps {
     onComment: (reportId: number) => void;
     onShare: (reportId: number, reportTitle: string) => void;
     onStatusVote: (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => void;
+    onStatusUpdate?: (reportID: number, newStatus: string) => void;
 }
 
 const getReportTypeLabel = (type: ReportType): string => {
@@ -55,9 +56,11 @@ const ReportCard: React.FC<ReportCardProps> = ({
     onSave,
     onComment,
     onShare,
-    onStatusVote
+    onStatusVote,
+    onStatusUpdate
 }) => {
     const { reports } = useReportsStore();
+
     const report = reports.find(r => r.id === reportID);
 
     if (!report) return null;
@@ -168,11 +171,13 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 />
 
                 <StatusVoting
-                currentStatus={report.status || 'PENDING'}
-                statusVoteStats={report.statusVoteStats || { resolved: 0, notResolved: 0, neutral: 0 }}
-                userCurrentVote={report.userInteraction?.currentVote || null}
-                onVote={(voteType: string) => onStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
-                // isLoading={voteMutation.isPending}
+                    reportID={report.id}
+                    currentStatus={report.status || 'PENDING'}
+                    statusVoteStats={report.statusVoteStats || { resolved: 0, notResolved: 0, neutral: 0 }}
+                    userCurrentVote={report.userInteraction?.currentVote || null}
+                    onVote={(voteType: string) => onStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
+                    onStatusUpdate={onStatusUpdate}
+                    // isLoading={voteMutation.isPending}
                 />
             </div>
         </div>

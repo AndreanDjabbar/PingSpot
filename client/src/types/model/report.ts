@@ -79,6 +79,7 @@ export interface IUserInteraction {
 
 export interface IReport {
     id: number;
+    userID: number;
     fullName: string;
     userName: string;
     profilePicture?: string;

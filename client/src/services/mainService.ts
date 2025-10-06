@@ -3,7 +3,8 @@ import {
     ICreateReportResponse,
     IGetReportResponse,
     IReactReportRequest,
-    IReactReportResponse
+    IReactReportResponse,
+    IUpdateReportStatusResponse
 } from "@/types/api/report";
 import { IReverseLocationResponse, IReverseLocationRequest } from "@/types/api/user";
 import getAuthToken from "@/utils/getAuthToken";
@@ -71,5 +72,18 @@ export const reactReportService = async (reportID: number, data: IReactReportReq
     const authToken = getAuthToken();
     const response = await axios.post<IReactReportResponse>(`${MAIN_API_URL}/report/${reportID}/reaction`, 
         { reactionType: data.reactionType }, MULTIPART_HEADERS(authToken || ''));
+    return response.data;
+}
+
+export const updateReportStatusService = async (reportID: number, status: string): Promise<IUpdateReportStatusResponse> => {
+    const authToken = getAuthToken();
+    const response = await axios.patch(`${MAIN_API_URL}/report/${reportID}/status`, 
+        { status }, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${authToken || ''}`
+        }
+    });
     return response.data;
 }

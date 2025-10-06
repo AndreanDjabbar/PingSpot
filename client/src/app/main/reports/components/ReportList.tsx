@@ -10,6 +10,7 @@ interface ReportListProps {
     onComment: (reportId: number) => void;
     onShare: (reportId: number, reportTitle: string) => void;
     onStatusVote: (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => void;
+    onStatusUpdate?: (reportID: number, newStatus: string) => void;
 }
 
 const ReportList: React.FC<ReportListProps> = ({
@@ -19,7 +20,8 @@ const ReportList: React.FC<ReportListProps> = ({
     onSave,
     onComment,
     onShare,
-    onStatusVote
+    onStatusVote,
+    onStatusUpdate
 }) => {
     const { reports } = useReportsStore();
     return (
@@ -35,6 +37,7 @@ const ReportList: React.FC<ReportListProps> = ({
             onComment={onComment}
             onShare={onShare}
             onStatusVote={onStatusVote}
+            onStatusUpdate={onStatusUpdate}
             />
         ))}
         </div>

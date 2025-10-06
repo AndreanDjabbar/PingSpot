@@ -20,3 +20,12 @@ export interface IReactReportResponse {
     message: string;
     data?: IReportReactions;
 }
+
+export interface IUpdateReportStatusResponse {
+    message: string;
+    data?: {
+        id: number;
+        status: string;
+        updatedAt: number;
+    };
+}

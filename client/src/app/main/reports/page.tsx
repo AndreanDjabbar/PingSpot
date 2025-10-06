@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import HeaderSection from '../components/HeaderSection';
@@ -10,7 +9,7 @@ import { useGetReport } from '@/hooks/main/useGetReport';
 import { RxCrossCircled } from "react-icons/rx";
 import useErrorToast from '@/hooks/useErrorToast';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
-import { IReport, ReportType } from '@/types/entity/mainTypes';
+import { IReport, ReportType } from '@/types/model/report';
 import { EmptyState } from '@/components/UI';
 import { 
     ReportSkeleton, 
@@ -20,6 +19,7 @@ import {
 } from './components';
 import { useReactReport } from '@/hooks/main/useReactReport';
 import { useReportsStore } from '@/stores/reportsStore';
+import { useUserProfileStore } from '@/stores/userProfileStore';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
@@ -36,6 +36,7 @@ const ReportsPage = () => {
         selectedReport,
         setSelectedReport,
     } = useReportsStore();
+    const { userProfile } = useUserProfileStore();
 
     const router = useRouter();
     const { 
@@ -227,12 +228,17 @@ const ReportsPage = () => {
         }
     };
 
+    const handleStatusUpdate = async (reportID: number, newStatus: string) => {
+        // The status is already updated in the store by the StatusVoting component
+        // This is just a placeholder for any additional logic needed
+        console.log(`Report ${reportID} status updated to ${newStatus}`);
+    };
+
     useErrorToast(
         isGetReportError, 
         getErrorResponseMessage(getReportError) || 'Terjadi kesalahan saat mengambil data laporan'
     );
 
-    // Add this new error toast for reaction errors
     useErrorToast(
         isReactReportError, 
         getErrorResponseMessage(reactReportError) || 'Terjadi kesalahan saat bereaksi pada laporan'
@@ -288,6 +294,7 @@ const ReportsPage = () => {
                             onComment={handleComment}
                             onShare={handleShare}
                             onStatusVote={handleStatusVote}
+                            onStatusUpdate={handleStatusUpdate}
                         />
                     ) : reports.length === 0 && !isGetReportError ? (
                         <EmptyState 
@@ -319,13 +326,13 @@ const ReportsPage = () => {
                 <ReportModal
                     isOpen={isReportModalOpen}
                     onClose={handleCloseReportModal}
-                    currentUserId={1}
                     onLike={() => handleLike(selectedReport.id)}
                     onDislike={() => handleDislike(selectedReport.id)}
                     onSave={() => handleSave(selectedReport.id)}
                     onShare={() => handleShare(selectedReport.id, selectedReport.reportTitle)}
                     onAddComment={(content, parentId) => handleAddComment(selectedReport.id, content, parentId)}
                     onStatusVote={(voteType) => handleStatusVote(selectedReport.id, voteType)}
+                    onStatusUpdate={handleStatusUpdate}
                     // isInteractionLoading={reactionMutation.isPending || saveMutation.isPending || voteMutation.isPending || commentMutation.isPending}
                 />
             )}
