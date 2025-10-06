@@ -40,7 +40,7 @@ type GetReportResponse struct {
 	ReportType              string                 `json:"reportType"`
 	ReportDescription       string                 `json:"reportDescription"`
 	ReportCreatedAt         int64                  `json:"reportCreatedAt"`
-	UserID                  uint                   `json:"userId"`
+	UserID                  uint                   `json:"userID"`
 	UserName                string                 `json:"userName"`
 	FullName                string                 `json:"fullName"`
 	ProfilePicture          *string                `json:"profilePicture"`
