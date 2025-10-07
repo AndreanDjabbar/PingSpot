@@ -1,6 +1,7 @@
 package model
 
 type ReportType string
+type ReportStatus string
 
 const (
 	Infrastructure ReportType = "INFRASTRUCTURE"
@@ -8,6 +9,9 @@ const (
 	SocialIssue    ReportType = "SOCIAL_ISSUE"
 	Safety         ReportType = "SAFETY"
 	Other          ReportType = "OTHER"
+
+	RESOLVED  ReportStatus = "RESOLVED"
+	NOT_RESOLVED ReportStatus = "NOT_RESOLVED"
 )
 
 type Report struct {
@@ -18,9 +22,10 @@ type Report struct {
 	ReportType        ReportType `gorm:"type:varchar(30);not null"`
 	ReportDescription string     `gorm:"type:text;not null"`
 	CreatedAt         int64      `gorm:"autoCreateTime"`
-	ReportStatus      string     `gorm:"type:varchar(50);default:'PENDING';not null"`
+	ReportStatus      ReportStatus     `gorm:"type:varchar(50)"`
 
-	ReportLocation *ReportLocation `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	ReportImages   *ReportImage    `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	ReportReactions   *[]ReportReaction `gorm:"foreignKey:ReportID"`
+	ReportLocation  *ReportLocation `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ReportImages    *ReportImage    `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ReportReactions *[]ReportReaction `gorm:"foreignKey:ReportID"`
+	ReportProgress  *[]ReportProgress `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
