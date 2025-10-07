@@ -54,7 +54,8 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 
 	files := form.File["reportImages"]
 	if len(files) > 5 {
-		logger.Info("ADA YANG LEBIH DARI 5")
+		logger.Error("Too many report images", zap.Int("count", len(files)))
+		return response.ResponseError(c, 400, "Terlalu banyak gambar", "", "Maksimal 5 gambar")
 	}
 	for i, file := range files {
 		if file.Size > 5*1024*1024 {
@@ -210,4 +211,90 @@ func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 500, "Gagal mereaksi laporan", "", err.Error())
 	}
 	return response.ResponseSuccess(c, 200, "Reaksi laporan berhasil", "", reaction)
+}
+
+func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
+	logger.Info("UPLOAD PROGRESS REPORT HANDLER")
+	reportIDParam := c.Params("reportID")
+	uintReportID, err := mainutils.StringToUint(reportIDParam)
+	if err != nil {
+		logger.Error("Invalid reportID format", zap.String("reportID", reportIDParam), zap.Error(err))
+		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		logger.Error("Failed to parse multipart form", zap.Error(err))
+		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+	}
+
+	var images map[int]string = make(map[int]string)
+	status := c.FormValue("progressStatus")
+	notes := c.FormValue("progressNotes")
+	
+	files := form.File["progressAttachments"]
+	if len(files) > 2 {
+		logger.Error("Too many progress attachments", zap.Int("count", len(files)))
+		return response.ResponseError(c, 400, "Terlalu banyak lampiran", "", "Maksimal 2 lampiran")
+	}
+
+	totalImageSize := int64(0)
+	for i, file := range files {
+		if file.Size > 5*1024*1024 {
+			logger.Error("Report image file size too large", zap.Int64("size", files[i].Size))
+			return response.ResponseError(c, 400, "Ukuran salah satu gambar terlalu besar", "", "Maksimal ukuran gambar 5MB per gambar")
+		}
+		totalImageSize += file.Size
+	}
+
+	if totalImageSize > 10*1024*1024 {
+		logger.Error("Total progress attachments size too large", zap.Int64("total_size", totalImageSize))
+		return response.ResponseError(c, 400, "Ukuran total lampiran terlalu besar", "", "Maksimal ukuran total lampiran 10MB")
+	}
+
+	if len(files) > 0 {
+		for i, file := range files {
+			ext := filepath.Ext(file.Filename)
+			if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".pdf" {
+				logger.Error("Unsupported progress attachment file format", zap.String("extension", ext))
+				return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG, PNG, atau PDF")
+			}
+			fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+			savePath := filepath.Join("uploads/main/report/progress", fileName)
+			if err := c.SaveFile(file, savePath); err != nil {
+				logger.Error("Failed to save progress attachment", zap.Error(err))
+				return response.ResponseError(c, 500, "Gagal menyimpan lampiran", "", err.Error())
+			}
+			images[i] = fileName
+		}
+	}
+
+	req := dto.UploadProgressReportRequest{
+		Status: status,
+		Notes:  notes,
+		Attachment1: mainutils.StrPtrOrNil(images[0]),
+		Attachment2: mainutils.StrPtrOrNil(images[1]),
+	}
+
+	if err := validation.Validate.Struct(req); err != nil {
+		errors := validation.FormatUploadProgressReportValidationErrors(err)
+		logger.Error("Validation failed", zap.Error(err))
+		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+	}
+
+	claims, err := mainutils.GetJWTClaims(c)
+	if err != nil {
+		logger.Error("Failed to get JWT claims", zap.Error(err))
+		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+	}
+	userID := uint(claims["user_id"].(float64))
+
+	db := database.GetPostgresDB()
+	
+	newProgress, err := h.reportService.UploadProgressReport(db, userID, uintReportID, req)
+	if err != nil {
+		logger.Error("Failed to upload progress report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
+		return response.ResponseError(c, 500, "Gagal mengunggah progres laporan", "", err.Error())
+	}
+	return response.ResponseSuccess(c, 200, "Progres laporan berhasil diunggah", "data", newProgress)
 }
