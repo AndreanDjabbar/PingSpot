@@ -185,6 +185,30 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "07102025_add_report_progress_table",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&model.ReportProgress{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&model.ReportProgress{})
+			},
+		},
+		{
+			ID: "07102025_add_user_id_field_report_progress",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&model.ReportProgress{}, "") {
+					return tx.Migrator().AddColumn(&model.ReportProgress{}, "user_id")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&model.ReportProgress{}, "user_id") {
+					return tx.Migrator().DropColumn(&model.ReportProgress{}, "user_id")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()
