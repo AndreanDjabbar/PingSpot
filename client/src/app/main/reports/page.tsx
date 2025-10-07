@@ -29,6 +29,7 @@ const ReportsPage = () => {
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
 
     const {
         reports,
@@ -36,7 +37,6 @@ const ReportsPage = () => {
         selectedReport,
         setSelectedReport,
     } = useReportsStore();
-    const { userProfile } = useUserProfileStore();
 
     const router = useRouter();
     const { 
@@ -220,7 +220,7 @@ const ReportsPage = () => {
         }
     };
 
-    const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => {
+    const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED') => {
         try {
 
         } catch (error) {
@@ -229,8 +229,6 @@ const ReportsPage = () => {
     };
 
     const handleStatusUpdate = async (reportID: number, newStatus: string) => {
-        // The status is already updated in the store by the StatusVoting component
-        // This is just a placeholder for any additional logic needed
         console.log(`Report ${reportID} status updated to ${newStatus}`);
     };
 
@@ -318,7 +316,7 @@ const ReportsPage = () => {
             
             <ImagePreviewModal
                 imageUrl={previewImage}
-                isOpen={isModalOpen}
+                isOpen={isModalOpen || isAttachmentModalOpen}
                 onClose={handleCloseModal}
             />
 

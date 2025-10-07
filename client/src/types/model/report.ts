@@ -102,3 +102,12 @@ export interface IReport {
     totalDislikeReactions: number;
     totalReactions: number;
 }
+
+export interface IReportProgress {
+    reportID: number;
+    status: ReportStatus;
+    notes?: string;
+    attachment1?: string;
+    attachment2?: string;
+    createdAt: number;
+}

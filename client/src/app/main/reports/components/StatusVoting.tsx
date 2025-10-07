@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FaCheck, FaTimes, FaMinus, FaUsers, FaCrown } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaMinus, FaUsers, FaCrown, FaCamera, FaChevronDown } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useReportsStore } from '@/stores/reportsStore';
 import { useUserProfileStore } from '@/stores/userProfileStore';
 import { updateReportStatusService } from '@/services/mainService';
 import { toast } from 'react-toastify';
+import { MultipleImageField, TextAreaField } from '@/components/form';
+import { BiMessageDetail } from 'react-icons/bi';
 
 interface StatusVoteStatsType {
     resolved: number;
@@ -20,7 +22,8 @@ interface StatusVotingProps {
     statusVoteStats: StatusVoteStatsType;
     userCurrentVote: string | null;
     onVote: (voteType: string) => void;
-    onStatusUpdate?: (reportID: number, newStatus: string, note?: string) => void;
+    onImageClick: (imageUrl: string) => void;
+    onStatusUpdate?: (reportID: number, newStatus: string, note?: string, images?: File[]) => void;
     isLoading?: boolean;
 }
 
@@ -31,12 +34,15 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     onVote,
     onStatusUpdate,
     isLoading = false,
+    onImageClick,
     reportID
 }) => {
     const [animateButton, setAnimateButton] = useState<string | null>(null);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
     const [statusNote, setStatusNote] = useState<string>('');
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+    const [statusImages, setStatusImages] = useState<File[]>([]);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     const handleVote = (voteType: string) => {
         if (isLoading) return;
@@ -46,6 +52,10 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     };
 
     const { updateReportStatus } = useReportsStore();
+
+    const handleImageClick = (imageUrl: string) => {
+        onImageClick(imageUrl);
+    };
 
     const handleStatusUpdate = async (newStatus: string, note?: string) => {
         if (!reportID || isUpdatingStatus) return;
@@ -57,7 +67,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
             updateReportStatus(reportID, newStatus);
             
             if (onStatusUpdate) {
-                onStatusUpdate(reportID, newStatus, note);
+                onStatusUpdate(reportID, newStatus, note, statusImages);
             }
             
             if (newStatus === 'RESOLVED') {
@@ -72,6 +82,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
             setIsUpdatingStatus(false);
             setSelectedStatus(null);
             setStatusNote('');
+            setStatusImages([]);
         }
     };
 
@@ -112,10 +123,12 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
 
     const isReportOwner = report && currentUserId === report.userID;
-
+    console.log("IS isCollapsed", isCollapsed);
     return (
         <div className="bg-gray-50 rounded-2xl p-6 mt-4">
-            <div className="flex items-center justify-between mb-4">
+            <div 
+                className="flex items-center justify-between mb-4 cursor-pointer"
+            >
                 <div className="flex items-center space-x-3">
                     <FaUsers className="w-5 h-5 text-gray-600" />
                     <h3 className="text-lg font-semibold text-gray-900">Status Laporan</h3>
@@ -126,13 +139,82 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                         </div>
                     )}
                 </div>
-                {!isReportOwner && (
-                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(currentStatus)}`}>
-                        {getStatusLabel(currentStatus)}
-                    </div>
-                )}
+                <div className="flex items-center space-x-3">
+                    {!isReportOwner && (
+                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(currentStatus)}`}>
+                            {getStatusLabel(currentStatus)}
+                        </div>
+                    )}
+                    <motion.div
+                        animate={{ rotate: isCollapsed ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className='hover:bg-gray-100 rounded-lg p-2 -m-2 transition-colors duration-200'
+                    >
+                        <FaChevronDown 
+                        className="w-4 h-4 text-gray-500" />
+                    </motion.div>
+                </div>
             </div>
 
+            <div className='mb-4'>
+                <p className="text-sm font-medium text-gray-700 mb-3">
+                    Perbarui Status Laporan
+                </p>
+                
+                <div className="grid grid-cols-2 gap-3">
+                    <motion.button
+                        className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-1 ${
+                            selectedStatus === 'RESOLVED'
+                                ? 'bg-green-700 border-green-700 text-white shadow-lg'
+                                : currentStatus === 'RESOLVED'
+                                ? 'bg-green-100 text-green-700 border-green-500'
+                                : 'bg-white text-green-600 border-green-500 hover:bg-green-50'
+                        } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={() => {
+                            setSelectedStatus('RESOLVED')
+                            if (!isCollapsed) setIsCollapsed(true);
+                        }}
+                        disabled={isUpdatingStatus}
+                        whileTap={{ scale: isUpdatingStatus ? 1 : 0.98 }}
+                    >
+                        <FaCheck className="w-4 h-4" />
+                        <span className="text-sm">Tandai Selesai</span>
+                    </motion.button>
+
+                    <motion.button
+                        className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-2 ${
+                            selectedStatus === 'NOT_RESOLVED'
+                                ? 'bg-red-700 text-white border-red-700 shadow-lg'
+                                : currentStatus === 'NOT_RESOLVED'
+                                ? 'bg-red-100 text-red-700 border-red-500'
+                                : 'bg-white text-red-600 border-red-500 hover:bg-red-50'
+                        } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={() => {
+                            setSelectedStatus('NOT_RESOLVED')
+                            if (!isCollapsed) setIsCollapsed(true);
+                        }}
+                        disabled={isUpdatingStatus}
+                        whileTap={{ scale: isUpdatingStatus ? 1 : 0.98 }}
+                    >
+                        <FaTimes className="w-4 h-4" />
+                        <span className="text-sm">Belum Selesai</span>
+                    </motion.button>
+                </div>
+            </div>
+
+            <motion.div
+                initial={false}
+                animate={{
+                    height: isCollapsed ? "auto" : 0,
+                    opacity: isCollapsed ? 1 : 0
+                }}
+                transition={{
+                    duration: 0.3,
+                    ease: "easeInOut"
+                }}
+                style={{ overflow: "hidden" }}
+            >
             {totalVotes > 0 && (
                 <div className="mb-6">
                     <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
@@ -192,48 +274,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
 
             {isReportOwner ? (
                 <div className="space-y-4">
-                    <div>
-                        <p className="text-sm font-medium text-gray-700 mb-3">
-                            Perbarui Status Laporan
-                        </p>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                            <motion.button
-                                className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-1 ${
-                                    selectedStatus === 'RESOLVED'
-                                        ? 'bg-green-700 border-green-700 text-white shadow-lg'
-                                        : currentStatus === 'RESOLVED'
-                                        ? 'bg-green-100 text-green-700 border-green-500'
-                                        : 'bg-white text-green-600 border-green-500 hover:bg-green-50'
-                                } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                onClick={() => setSelectedStatus('RESOLVED')}
-                                disabled={isUpdatingStatus}
-                                whileTap={{ scale: isUpdatingStatus ? 1 : 0.98 }}
-                            >
-                                <FaCheck className="w-4 h-4" />
-                                <span className="text-sm">Tandai Selesai</span>
-                            </motion.button>
-
-                            <motion.button
-                                className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-2 ${
-                                    selectedStatus === 'NOT_RESOLVED'
-                                        ? 'bg-red-700 text-white border-red-700 shadow-lg'
-                                        : currentStatus === 'NOT_RESOLVED'
-                                        ? 'bg-red-100 text-red-700 border-red-500'
-                                        : 'bg-white text-red-600 border-red-500 hover:bg-red-50'
-                                } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                onClick={() => setSelectedStatus('NOT_RESOLVED')}
-                                disabled={isUpdatingStatus}
-                                whileTap={{ scale: isUpdatingStatus ? 1 : 0.98 }}
-                            >
-                                <FaTimes className="w-4 h-4" />
-                                <span className="text-sm">Belum Selesai</span>
-                            </motion.button>
-                        </div>
-                    </div>
-
-                    {/* Note Input Section */}
-                    {selectedStatus && (
+                    {isCollapsed && (
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
@@ -241,33 +282,45 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                             className="bg-white rounded-xl p-4 border border-gray-200"
                         >
                             <div className="space-y-3">
-                                <label className="text-sm font-medium text-gray-700 block">
-                                    {selectedStatus === 'RESOLVED' 
-                                        ? 'Catatan Penyelesaian (Akan diposting ke laporan)' 
-                                        : 'Update Progress (Akan diposting ke laporan)'}
-                                </label>
-                                <textarea
-                                    value={statusNote}
-                                    onChange={(e) => setStatusNote(e.target.value)}
-                                    placeholder={selectedStatus === 'RESOLVED' 
-                                        ? "Jelaskan bagaimana masalah ini telah diselesaikan..." 
-                                        : "Berikan update tentang progress pengerjaan laporan ini..."}
-                                    className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:border-blue-500 resize-none ${
-                                        selectedStatus === 'RESOLVED' 
-                                            ? 'focus:ring-green-700 focus:border-green-700 outline-none' 
-                                            : 'focus:ring-red-700 focus:border-red-700 outline-none'
-                                    }`}
-                                    rows={3}
+                                <TextAreaField
+                                id="progressNotes"
+                                // register={register("reportDescription")}
+                                rows={2}
+                                className="w-full"
+                                withLabel={true}
+                                labelTitle="Catatan Progress"
+                                icon={<BiMessageDetail size={20} />}
+                                placeHolder="Jelaskan progress dari laporan ini"
                                 />
+                                {/* <div className="text-red-500 text-sm font-semibold">{errors.reportDescription?.message as string}</div> */}
+                                
+                                <div className="space-y-2">
+                                    <div className="flex items-center space-x-2">
+                                        <FaCamera className="w-4 h-4 text-sky-900" />
+                                        <label className="text-sm font-medium text-sky-900">
+                                            Lampiran Foto (Opsional, Maks. 2)
+                                        </label>
+                                    </div>
+                                    <MultipleImageField
+                                        id="statusImages"
+                                        withLabel={false}
+                                        buttonTitle="Pilih Foto"
+                                        width={120}
+                                        height={120}
+                                        shape="square"
+                                        maxImages={2}
+                                        onChange={(files) => setStatusImages(files)}
+                                        onImageClick={handleImageClick}
+                                    />
+                                    <p className="text-xs text-gray-500">
+                                        Tambahkan foto untuk memperjelas status
+                                    </p>
+                                </div>
                                 
                                 <div className="flex space-x-2">
                                     <motion.button
-                                        className={`flex-1 w-1/2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                                            selectedStatus === 'RESOLVED' 
-                                                ? 'bg-green-700 hover:bg-green-800' 
-                                                : 'bg-red-700 hover:bg-red-800'
-                                        }`}
-                                        onClick={() => handleStatusUpdate(selectedStatus, statusNote)}
+                                        className={`flex-1 w-1/2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-sky-800 hover:bg-sky-900`}
+                                        onClick={() => handleStatusUpdate(selectedStatus ?? "", statusNote)}
                                         disabled={isUpdatingStatus}
                                         whileTap={{ scale: isUpdatingStatus ? 1 : 0.98 }}
                                     >
@@ -276,12 +329,12 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                     </motion.button>
                                     
                                     <motion.button
-                                        className="px-4 w-1/2 py-2 rounded-lg text-sm font-medium bg-gray-300 text-gray-700 hover:bg-gray-200 transition-colors duration-200"
+                                        className="px-4 w-1/2 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-200"
                                         onClick={() => {
                                             setSelectedStatus(null);
                                             setStatusNote('');
+                                            setIsCollapsed(false);
                                         }}
-                                        whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >
                                         Batal
@@ -362,6 +415,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                     )}
                 </div>
             )}
+            </motion.div>
         </div>
     );
 };

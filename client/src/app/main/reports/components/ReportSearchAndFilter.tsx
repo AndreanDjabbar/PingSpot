@@ -25,7 +25,7 @@ const ReportSearchAndFilter: React.FC<ReportSearchAndFilterProps> = ({
                     <input
                         type="text"
                         placeholder="Cari laporan berdasarkan judul, deskripsi atau lokasi"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200"
                         value={searchTerm}
                         onChange={(e) => onSearchChange(e.target.value)}
                     />

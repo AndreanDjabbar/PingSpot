@@ -177,6 +177,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                     userCurrentVote={report.userInteraction?.currentVote || null}
                     onVote={(voteType: string) => onStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
                     onStatusUpdate={onStatusUpdate}
+                    onImageClick={onImageClick}
                     // isLoading={voteMutation.isPending}
                 />
             </div>
