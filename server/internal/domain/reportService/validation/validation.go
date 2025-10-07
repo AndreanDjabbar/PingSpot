@@ -134,3 +134,34 @@ func FormatReactionReportValidationErrors(err error) map[string]string {
 	}
 	return errors
 }
+
+func FormatUploadProgressReportValidationErrors(err error) map[string]string {
+	errors := map[string]string{}
+	if err == nil {
+		return errors
+	}
+	for _, e := range err.(validator.ValidationErrors) {
+		switch e.Field() {
+			case "Status":
+				if e.Tag() == "required" {
+					errors["status"] = "Status wajib diisi"
+				}
+				if e.Tag() == "oneof" {
+					errors["status"] = "Status harus salah satu antara RESOLVED, NOT_RESOLVED"
+				}
+			case "Notes":
+				if e.Tag() == "omitempty" {
+					errors["notes"] = "Catatan tidak valid"
+				}	
+			case "Attachment1":
+				if e.Tag() == "omitempty" {
+					errors["attachment1"] = "Attachment 1 tidak valid"
+				}
+			case "Attachment2":
+				if e.Tag() == "omitempty" {
+					errors["attachment2"] = "Attachment 2 tidak valid"
+				}	
+		}
+	}
+	return errors
+}
