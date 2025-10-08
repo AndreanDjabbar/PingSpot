@@ -350,3 +350,25 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 		CreatedAt:   newReport.CreatedAt,
 	}, nil
 }
+
+func (s *ReportService) GetProgressReports(reportID uint) ([]dto.GetProgressReportResponse, error) {
+	reportProgresses, err := s.reportProgressRepo.GetByReportID(reportID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("progres laporan tidak ditemukan")
+		}
+		return nil, fmt.Errorf("gagal mengambil progres laporan: %w", err)
+	}
+	var response []dto.GetProgressReportResponse
+	for _, progress := range reportProgresses {
+		response = append(response, dto.GetProgressReportResponse{
+			ReportID:    progress.ReportID,
+			Status:      string(progress.Status),
+			Notes:       &progress.Notes,
+			Attachment1: progress.Attachment1,
+			Attachment2: progress.Attachment2,
+			CreatedAt:   progress.CreatedAt,
+		})
+	}
+	return response, nil
+}
