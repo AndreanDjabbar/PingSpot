@@ -70,3 +70,12 @@ type UploadProgressReportResponse struct {
 	Attachment2 *string `json:"attachment2"`
 	CreatedAt   int64   `json:"createdAt"`
 }
+
+type GetProgressReportResponse struct {
+	ReportID    uint    `json:"reportID"`
+	Status      string  `json:"status"`
+	Notes       *string `json:"notes"`
+	Attachment1 *string `json:"attachment1"`
+	Attachment2 *string `json:"attachment2"`
+	CreatedAt   int64   `json:"createdAt"`
+}
