@@ -8,6 +8,7 @@ import (
 
 type ReportProgressRepository interface {
 	Create(progress *model.ReportProgress, tx *gorm.DB) (*model.ReportProgress, error)
+	GetByReportID(reportID uint) ([]model.ReportProgress, error)
 }
 
 type reporProgressRepository struct {
@@ -23,4 +24,12 @@ func (r *reporProgressRepository) Create(progress *model.ReportProgress, tx *gor
 		return nil, err
 	}
 	return progress, nil
+}
+
+func (r *reporProgressRepository) GetByReportID(reportID uint) ([]model.ReportProgress, error) {
+	var progresses []model.ReportProgress
+	if err := r.db.Where("report_id = ?", reportID).Preload("User").Find(&progresses).Error; err != nil {
+		return nil, err
+	}
+	return progresses, nil
 }
