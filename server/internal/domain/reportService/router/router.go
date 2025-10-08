@@ -30,4 +30,5 @@ func RegisterReportRoutes(app *fiber.App) {
 	reportRoute.Get("/", reportHandler.GetReportHandler)
 	reportRoute.Post("/:reportID/reaction", reportHandler.ReactionReportHandler)
 	reportRoute.Post("/:reportID/progress", reportHandler.UploadProgressReportHandler)
+	reportRoute.Get("/:reportID/progress", reportHandler.GetProgressReportHandler)
 }
