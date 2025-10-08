@@ -298,3 +298,20 @@ func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 	}
 	return response.ResponseSuccess(c, 200, "Progres laporan berhasil diunggah", "data", newProgress)
 }
+
+func (h *ReportHandler) GetProgressReportHandler(c *fiber.Ctx) error {
+	logger.Info("GET PROGRESS REPORT HANDLER")
+	reportIDParam := c.Params("reportID")
+	uintReportID, err := mainutils.StringToUint(reportIDParam)
+	if err != nil {
+		logger.Error("Invalid reportID format", zap.String("reportID", reportIDParam), zap.Error(err))
+		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
+	}
+
+	progressList, err := h.reportService.GetProgressReports(uintReportID)
+	if err != nil {
+		logger.Error("Failed to get progress reports", zap.Uint("reportID", uintReportID), zap.Error(err))
+		return response.ResponseError(c, 500, "Gagal mendapatkan progres laporan", "", err.Error())
+	}
+	return response.ResponseSuccess(c, 200, "Get progress reports success", "data", progressList)
+}
