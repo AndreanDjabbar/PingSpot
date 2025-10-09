@@ -328,6 +328,8 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 		Status:    model.ReportStatus(req.Status),
 		Notes:     req.Notes,
 		CreatedAt: time.Now().Unix(),
+		Attachment1: req.Attachment1,
+		Attachment2: req.Attachment2,
 	}
 
 	newReport, err := s.reportProgressRepo.Create(reportProgress, tx)
