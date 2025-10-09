@@ -14,9 +14,9 @@ const useSuccessToast = (isSuccess: boolean, data: any) => {
                 toastSuccess(getDataResponseMessage(data) || 'Operasi berhasil');
                 successRef.current = currentSuccess;
             }
-            if (!isSuccess) {
-                successRef.current = null;
-            }
+        }
+        if (!isSuccess) {
+            successRef.current = null;
         }
     }, [isSuccess, data, toastSuccess]);
 
