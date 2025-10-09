@@ -59,6 +59,10 @@ func main() {
 		if err := os.MkdirAll("uploads/main/report", os.ModePerm); err != nil {
 			logger.Error("Failed to create uploads/main directory", zap.Error(err))
 		}
+
+		if err := os.MkdirAll("uploads/main/report/progress", os.ModePerm); err != nil {
+			logger.Error("Failed to create uploads/main/report/progress directory", zap.Error(err))
+		}
 	}
 
 	server := server.New()
