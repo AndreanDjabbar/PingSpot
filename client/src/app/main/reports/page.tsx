@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import HeaderSection from '../components/HeaderSection';
 import { BiPlus } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
-import { ErrorSection, ImagePreviewModal } from '@/components/feedback';
+import { ConfirmationDialog, ErrorSection, ImagePreviewModal } from '@/components/feedback';
 import { useGetReport } from '@/hooks/main/useGetReport';
 import { RxCrossCircled } from "react-icons/rx";
 import useErrorToast from '@/hooks/useErrorToast';
@@ -19,7 +19,7 @@ import {
 } from './components';
 import { useReactReport } from '@/hooks/main/useReactReport';
 import { useReportsStore } from '@/stores/reportsStore';
-import { useUserProfileStore } from '@/stores/userProfileStore';
+import { LuNotebookText } from 'react-icons/lu';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
@@ -29,7 +29,7 @@ const ReportsPage = () => {
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+    const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
 
     const {
         reports,
@@ -180,11 +180,7 @@ const ReportsPage = () => {
     }
 
     const handleSave = async (reportId: number) => {
-        try {
-
-        } catch (error) {
-            console.error('Error saving report:', error);
-        }
+        console.log('Saving report:', reportId);
     };
 
     const handleComment = (reportId: number) => {
@@ -214,14 +210,12 @@ const ReportsPage = () => {
     };
 
     const handleAddComment = async (reportId: number, content: string, parentId?: number) => {
-        try {
-        } catch (error) {
-            console.error('Error adding comment:', error);
-        }
+        console.log("Adding comment to report:", reportId, "Content:", content, "Parent ID:", parentId);
     };
 
-    const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED') => {
+    const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => {
         try {
+            console.log('Voting on report:', reportId, 'with vote:', voteType);
 
         } catch (error) {
             console.error('Error voting on status:', error);
@@ -231,6 +225,15 @@ const ReportsPage = () => {
     const handleStatusUpdate = async (reportID: number, newStatus: string) => {
         console.log(`Report ${reportID} status updated to ${newStatus}`);
     };
+
+    const confirmSubmit = () => {
+        // TODO: Implement confirmation submit logic
+        console.log('Confirmation submitted');
+        setIsCreateReportModalOpen(false);
+    };
+
+    const isPending = false; // TODO: Replace with actual pending state
+    const reverseLoading = false; // TODO: Replace with actual loading state
 
     useErrorToast(
         isGetReportError, 
@@ -316,8 +319,22 @@ const ReportsPage = () => {
             
             <ImagePreviewModal
                 imageUrl={previewImage}
-                isOpen={isModalOpen || isAttachmentModalOpen}
+                isOpen={isModalOpen}
                 onClose={handleCloseModal}
+            />
+
+            <ConfirmationDialog
+            isOpen={isCreateReportModalOpen}
+            onClose={() => setIsCreateReportModalOpen(false)}
+            onConfirm={confirmSubmit}
+            isPending={isPending || reverseLoading}
+            type='info'
+            cancelTitle='Batal'
+            confirmTitle='Buat'
+            title='Konfirmasi Pembuatan Laporan'
+            explanation="Laporan yang sudah diunggah masih bisa diubah dalam 10 menit pertama, setelah itu tidak bisa diubah lagi."
+            message='Apakah Anda yakin ingin membuat?'
+            icon={<LuNotebookText/>}
             />
 
             {selectedReport && (

@@ -1,14 +1,27 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { FaCheck, FaTimes, FaMinus, FaUsers, FaCrown, FaCamera, FaChevronDown } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useReportsStore } from '@/stores/reportsStore';
 import { useUserProfileStore } from '@/stores/userProfileStore';
-import { updateReportStatusService } from '@/services/mainService';
-import { toast } from 'react-toastify';
-import { MultipleImageField, TextAreaField } from '@/components/form';
+import { ButtonSubmit, MultipleImageField, TextAreaField } from '@/components/form';
 import { BiMessageDetail } from 'react-icons/bi';
+import { useGetProgressReport } from '@/hooks/main/useGetProgressReport';
+import { useUploadProgressReport } from '@/hooks/main/useUploadProgressReport';
+import { getImageURL } from '@/utils/getImageURL';
+import { IUploadProgressReportRequest } from '@/types/api/report';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { UploadProgressReportSchema } from '../../schema';
+import { useQueryClient } from '@tanstack/react-query';
+import useErrorToast from '@/hooks/useErrorToast';
+import useSuccessToast from '@/hooks/useSuccessToast';
+import { ErrorSection, SuccessSection } from '@/components/feedback';
+import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
+import { LuNotebookText } from 'react-icons/lu';
+import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 
 interface StatusVoteStatsType {
     resolved: number;
@@ -32,17 +45,16 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     statusVoteStats,
     userCurrentVote,
     onVote,
-    onStatusUpdate,
     isLoading = false,
     onImageClick,
-    reportID
+    reportID,
 }) => {
     const [animateButton, setAnimateButton] = useState<string | null>(null);
-    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-    const [statusNote, setStatusNote] = useState<string>('');
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-    const [statusImages, setStatusImages] = useState<File[]>([]);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isProgressCollapsed, setIsProgressCollapsed] = useState(false);
+    const [progressImages, setProgressImages] = useState<File[]>([]);
+    const { openConfirm } = useConfirmationModalStore();
 
     const handleVote = (voteType: string) => {
         if (isLoading) return;
@@ -51,39 +63,10 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
         setTimeout(() => setAnimateButton(null), 300);
     };
 
-    const { updateReportStatus } = useReportsStore();
+    const queryClient = useQueryClient();
 
     const handleImageClick = (imageUrl: string) => {
         onImageClick(imageUrl);
-    };
-
-    const handleStatusUpdate = async (newStatus: string, note?: string) => {
-        if (!reportID || isUpdatingStatus) return;
-        
-        try {
-            setIsUpdatingStatus(true);
-            await updateReportStatusService(reportID, newStatus);
-            
-            updateReportStatus(reportID, newStatus);
-            
-            if (onStatusUpdate) {
-                onStatusUpdate(reportID, newStatus, note, statusImages);
-            }
-            
-            if (newStatus === 'RESOLVED') {
-                toast.success('Laporan berhasil ditandai sebagai terselesaikan dan catatan telah diposting');
-            } else {
-                toast.success('Status berhasil diperbarui dan update progress telah diposting');
-            }
-        } catch (error) {
-            console.error('Error updating status:', error);
-            toast.error('Gagal mengubah status laporan');
-        } finally {
-            setIsUpdatingStatus(false);
-            setSelectedStatus(null);
-            setStatusNote('');
-            setStatusImages([]);
-        }
     };
 
     const totalVotes = statusVoteStats.resolved + statusVoteStats.notResolved + statusVoteStats.neutral || 0;
@@ -94,15 +77,39 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'RESOLVED':
-                return 'bg-green-500 text-white';
+                return 'bg-green-700 border-green-700 text-white';
             case 'NOT_RESOLVED':
-                return 'bg-red-500 text-white';
+                return 'bg-red-700 text-white';
             case 'IN_PROGRESS':
                 return 'bg-yellow-500 text-white';
             default:
                 return 'bg-gray-500 text-white';
         }
     };
+
+    const handleConfirmationModal = (formData: IUploadProgressReportRequest) => {
+        openConfirm({
+            type: "info",
+            title: "Konfirmasi Pembuatan Laporan",
+            message: "Apakah Anda yakin ingin membuat laporan baru?",
+            isPending: isUploadProgressReportPending,
+            explanation: "Laporan yang sudah diunggah masih bisa diubah dalam 10 menit pertama.",
+            confirmTitle: "Buat",
+            cancelTitle: "Batal",
+            icon: <LuNotebookText />,
+            onConfirm: () => onSubmit(formData),
+        });
+    }
+
+    const onSubmit = (formData: IUploadProgressReportRequest) => {
+        if (reportID) {
+            const preparedFormData = prepareFormData(formData);
+            uploadProgress({
+                reportID: reportID,
+                data: preparedFormData
+            });
+        }
+    }
 
     const getStatusLabel = (status: string) => {
         switch (status) {
@@ -116,6 +123,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                 return 'Menunggu';
         }
     };
+    
     const { reports } = useReportsStore();
     const { userProfile } = useUserProfileStore();
     
@@ -123,9 +131,88 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
 
     const isReportOwner = report && currentUserId === report.userID;
-    console.log("IS isCollapsed", isCollapsed);
+    
+    const { data: progressData, isLoading: isProgressLoading } = useGetProgressReport(reportID || 0);
+    
+    const { 
+        mutate: uploadProgress, 
+        isPending: isUploadProgressReportPending, 
+        isError: isUploadProgressError, 
+        isSuccess: isUploadProgressSuccess, 
+        error: uploadProgressError,
+        data: uploadProgressData,
+        reset: resetUploadProgress
+    } = useUploadProgressReport();
+
+    const {
+        register: registerProgress,
+        handleSubmit: handleSubmitProgress,
+        formState: { errors: progressErrors },
+        reset: resetProgress
+    } = useForm<IUploadProgressReportRequest>({
+        resolver: zodResolver(UploadProgressReportSchema),
+    });
+
+    const prepareFormData = (formData: IUploadProgressReportRequest): FormData => {
+        const data = new FormData();
+        console.log("DATA: ", formData);
+        data.append('reportID', String(reportID));
+        data.append('progressStatus', formData.progressStatus);
+        if (formData.progressNotes) {
+            data.append('progressNotes', formData.progressNotes);
+        }
+        if (progressImages && progressImages.length > 0 ) {
+            progressImages.forEach((file) => {
+                data.append('progressAttachments', file);
+            });
+        }
+        return data;
+    }
+
+    const handleProgressUpload = async (formData: IUploadProgressReportRequest) => {
+        if (!reportID) return;
+        handleConfirmationModal(formData);
+    };
+
+    useEffect(() => {
+        if (isUploadProgressSuccess && uploadProgressData) {
+            resetProgress();
+            setProgressImages([]);
+            setSelectedStatus(null);
+            setIsCollapsed(false);
+            resetUploadProgress();
+            queryClient.invalidateQueries({ queryKey: ['report-progress', reportID] });
+        }
+    }, [isUploadProgressSuccess, uploadProgressData, resetProgress, queryClient, reportID]);
+    
+    const formatDate = (timestamp: number) => {
+        return new Date(timestamp).toLocaleString('id-ID', {
+            day: '2-digit',
+            month: '2-digit', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    useErrorToast(isUploadProgressError, uploadProgressError);
+    useSuccessToast(isUploadProgressSuccess, uploadProgressData);
+    
     return (
         <div className="bg-gray-50 rounded-2xl p-6 mt-4">
+            <div className='mb-4'>
+                {isUploadProgressSuccess && (
+                    <SuccessSection message={uploadProgressData.message || "Laporan berhasil dikirim!"} />
+                )}
+
+                {isUploadProgressError && (
+                    <ErrorSection 
+                    message={getErrorResponseMessage(uploadProgressError)} 
+                    errors={getErrorResponseDetails(uploadProgressError)} 
+                    />
+                )}
+            </div>
+
             <div 
                 className="flex items-center justify-between mb-4 cursor-pointer"
             >
@@ -157,265 +244,377 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                 </div>
             </div>
 
-            <div className='mb-4'>
-                <p className="text-sm font-medium text-gray-700 mb-3">
-                    Perbarui Status Laporan
-                </p>
-                
-                <div className="grid grid-cols-2 gap-3">
-                    <motion.button
-                        className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-1 ${
-                            selectedStatus === 'RESOLVED'
-                                ? 'bg-green-700 border-green-700 text-white shadow-lg'
-                                : currentStatus === 'RESOLVED'
-                                ? 'bg-green-100 text-green-700 border-green-500'
-                                : 'bg-white text-green-600 border-green-500 hover:bg-green-50'
-                        } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={() => {
-                            setSelectedStatus('RESOLVED')
-                            if (!isCollapsed) setIsCollapsed(true);
-                        }}
-                        disabled={isUpdatingStatus}
-                        whileTap={{ scale: isUpdatingStatus ? 1 : 0.98 }}
-                    >
-                        <FaCheck className="w-4 h-4" />
-                        <span className="text-sm">Tandai Selesai</span>
-                    </motion.button>
+            {isReportOwner && (
+                <form onSubmit={handleSubmitProgress(handleProgressUpload)}>
+                    <div className='mb-4'>
+                        <p className="text-sm font-medium text-sky-900 mb-3">
+                            Perbarui Status Laporan
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <motion.button
+                                type="button"
+                                className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-1 ${
+                                    selectedStatus === 'RESOLVED'
+                                        ? 'bg-green-700 border-green-700 text-white shadow-lg'
+                                        : currentStatus === 'RESOLVED'
+                                        ? 'bg-green-100 text-green-700 border-green-500'
+                                        : 'bg-white text-green-600 border-green-500 hover:bg-green-50'
+                                } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                onClick={() => {
+                                    setSelectedStatus('RESOLVED')
+                                    registerProgress('progressStatus', { value: 'RESOLVED' });
+                                    if (!isCollapsed) setIsCollapsed(true);
+                                }}
+                                disabled={isUploadProgressReportPending}
+                                whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
+                            >
+                                <FaCheck className="w-4 h-4" />
+                                <span className="text-sm">Tandai Selesai</span>
+                            </motion.button>
 
-                    <motion.button
-                        className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-2 ${
-                            selectedStatus === 'NOT_RESOLVED'
-                                ? 'bg-red-700 text-white border-red-700 shadow-lg'
-                                : currentStatus === 'NOT_RESOLVED'
-                                ? 'bg-red-100 text-red-700 border-red-500'
-                                : 'bg-white text-red-600 border-red-500 hover:bg-red-50'
-                        } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={() => {
-                            setSelectedStatus('NOT_RESOLVED')
-                            if (!isCollapsed) setIsCollapsed(true);
-                        }}
-                        disabled={isUpdatingStatus}
-                        whileTap={{ scale: isUpdatingStatus ? 1 : 0.98 }}
-                    >
-                        <FaTimes className="w-4 h-4" />
-                        <span className="text-sm">Belum Selesai</span>
-                    </motion.button>
-                </div>
-            </div>
-
-            <motion.div
-                initial={false}
-                animate={{
-                    height: isCollapsed ? "auto" : 0,
-                    opacity: isCollapsed ? 1 : 0
-                }}
-                transition={{
-                    duration: 0.3,
-                    ease: "easeInOut"
-                }}
-                style={{ overflow: "hidden" }}
-            >
-            {totalVotes > 0 && (
-                <div className="mb-6">
-                    <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                        <span>Pendapat Komunitas ({totalVotes} vote)</span>
-                    </div>
-                    <div className="space-y-2">
-                        <div className="flex items-center space-x-3">
-                            <div className="flex items-center space-x-1 w-24">
-                                <FaCheck className="w-3 h-3 text-green-600" />
-                                <span className="text-xs font-medium text-green-600">Selesai</span>
-                            </div>
-                            <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                <div 
-                                    className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                                    style={{ width: `${resolvedPercentage}%` }}
-                                />
-                            </div>
-                            <span className="text-xs font-medium text-gray-600 w-8">
-                                {statusVoteStats.resolved}
-                            </span>
-                        </div>
-
-                        <div className="flex items-center space-x-3">
-                            <div className="flex items-center space-x-1 w-24">
-                                <FaTimes className="w-3 h-3 text-red-600" />
-                                <span className="text-xs font-medium text-red-600">Belum</span>
-                            </div>
-                            <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                <div 
-                                    className="bg-red-500 h-2 rounded-full transition-all duration-500"
-                                    style={{ width: `${notResolvedPercentage}%` }}
-                                />
-                            </div>
-                            <span className="text-xs font-medium text-gray-600 w-8">
-                                {statusVoteStats.notResolved}
-                            </span>
-                        </div>
-
-                        <div className="flex items-center space-x-3">
-                            <div className="flex items-center space-x-1 w-24">
-                                <FaMinus className="w-3 h-3 text-gray-600" />
-                                <span className="text-xs font-medium text-gray-600">Netral</span>
-                            </div>
-                            <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                <div 
-                                    className="bg-gray-400 h-2 rounded-full transition-all duration-500"
-                                    style={{ width: `${neutralPercentage}%` }}
-                                />
-                            </div>
-                            <span className="text-xs font-medium text-gray-600 w-8">
-                                {statusVoteStats.neutral}
-                            </span>
+                            <motion.button
+                                type="button"
+                                className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-2 ${
+                                    selectedStatus === 'NOT_RESOLVED'
+                                        ? 'bg-red-700 text-white border-red-700 shadow-lg'
+                                        : currentStatus === 'NOT_RESOLVED'
+                                        ? 'bg-red-100 text-red-700 border-red-500'
+                                        : 'bg-white text-red-600 border-red-500 hover:bg-red-50'
+                                } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                onClick={() => {
+                                    setSelectedStatus('NOT_RESOLVED')
+                                    registerProgress('progressStatus', { value: 'NOT_RESOLVED' });
+                                    if (!isCollapsed) setIsCollapsed(true);
+                                }}
+                                disabled={isUploadProgressReportPending}
+                                whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
+                            >
+                                <FaTimes className="w-4 h-4" />
+                                <span className="text-sm">Belum Selesai</span>
+                            </motion.button>
                         </div>
                     </div>
-                </div>
-            )}
-
-            {isReportOwner ? (
-                <div className="space-y-4">
-                    {isCollapsed && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="bg-white rounded-xl p-4 border border-gray-200"
-                        >
-                            <div className="space-y-3">
-                                <TextAreaField
-                                id="progressNotes"
-                                // register={register("reportDescription")}
-                                rows={2}
-                                className="w-full"
-                                withLabel={true}
-                                labelTitle="Catatan Progress"
-                                icon={<BiMessageDetail size={20} />}
-                                placeHolder="Jelaskan progress dari laporan ini"
-                                />
-                                {/* <div className="text-red-500 text-sm font-semibold">{errors.reportDescription?.message as string}</div> */}
-                                
+                    <motion.div
+                        initial={false}
+                        animate={{
+                            height: isCollapsed ? "auto" : 0,
+                            opacity: isCollapsed ? 1 : 0
+                        }}
+                        transition={{
+                            duration: 0.3,
+                            ease: "easeInOut"
+                        }}
+                        style={{ overflow: "hidden" }}
+                    >
+                        {totalVotes > 0 && (
+                            <div className="mb-6">
+                                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                                    <span>Pendapat Komunitas ({totalVotes} vote)</span>
+                                </div>
                                 <div className="space-y-2">
-                                    <div className="flex items-center space-x-2">
-                                        <FaCamera className="w-4 h-4 text-sky-900" />
-                                        <label className="text-sm font-medium text-sky-900">
-                                            Lampiran Foto (Opsional, Maks. 2)
-                                        </label>
+                                    <div className="flex items-center space-x-3">
+                                        <div className="flex items-center space-x-1 w-24">
+                                            <FaCheck className="w-3 h-3 text-green-600" />
+                                            <span className="text-xs font-medium text-green-600">Selesai</span>
+                                        </div>
+                                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                            <div 
+                                                className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                                                style={{ width: `${resolvedPercentage}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-600 w-8">
+                                            {statusVoteStats.resolved}
+                                        </span>
                                     </div>
-                                    <MultipleImageField
-                                        id="statusImages"
-                                        withLabel={false}
-                                        buttonTitle="Pilih Foto"
-                                        width={120}
-                                        height={120}
-                                        shape="square"
-                                        maxImages={2}
-                                        onChange={(files) => setStatusImages(files)}
-                                        onImageClick={handleImageClick}
-                                    />
-                                    <p className="text-xs text-gray-500">
-                                        Tambahkan foto untuk memperjelas status
-                                    </p>
-                                </div>
-                                
-                                <div className="flex space-x-2">
-                                    <motion.button
-                                        className={`flex-1 w-1/2 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-sky-800 hover:bg-sky-900`}
-                                        onClick={() => handleStatusUpdate(selectedStatus ?? "", statusNote)}
-                                        disabled={isUpdatingStatus}
-                                        whileTap={{ scale: isUpdatingStatus ? 1 : 0.98 }}
-                                    >
-                                        {isUpdatingStatus ? 'Memposting...' : 
-                                            selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Update Status'}
-                                    </motion.button>
-                                    
-                                    <motion.button
-                                        className="px-4 w-1/2 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-200"
-                                        onClick={() => {
-                                            setSelectedStatus(null);
-                                            setStatusNote('');
-                                            setIsCollapsed(false);
-                                        }}
-                                        whileTap={{ scale: 0.98 }}
-                                    >
-                                        Batal
-                                    </motion.button>
+
+                                    <div className="flex items-center space-x-3">
+                                        <div className="flex items-center space-x-1 w-24">
+                                            <FaTimes className="w-3 h-3 text-red-600" />
+                                            <span className="text-xs font-medium text-red-600">Belum</span>
+                                        </div>
+                                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                            <div 
+                                                className="bg-red-500 h-2 rounded-full transition-all duration-500"
+                                                style={{ width: `${notResolvedPercentage}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-600 w-8">
+                                            {statusVoteStats.notResolved}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center space-x-3">
+                                        <div className="flex items-center space-x-1 w-24">
+                                            <FaMinus className="w-3 h-3 text-gray-600" />
+                                            <span className="text-xs font-medium text-gray-600">Netral</span>
+                                        </div>
+                                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                            <div 
+                                                className="bg-gray-400 h-2 rounded-full transition-all duration-500"
+                                                style={{ width: `${neutralPercentage}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-600 w-8">
+                                            {statusVoteStats.neutral}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </motion.div>
-                    )}
+                        )}
 
-                    {currentStatus === 'RESOLVED' && (
-                        <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
-                            <FaCheck className="w-4 h-4 text-green-600" />
-                            <p className="text-sm text-green-700 font-medium">
-                                Laporan ini telah ditandai sebagai terselesaikan
-                            </p>
-                        </div>
-                    )}
+                        {reportID && (
+                            <div className="mb-6">
+                                <div 
+                                    className="flex items-center justify-between mb-3 cursor-pointer"
+                                    onClick={() => setIsProgressCollapsed(!isProgressCollapsed)}
+                                >
+                                    <div className="flex items-center space-x-2">
+                                        <BiMessageDetail className="w-4 h-4 text-gray-600" />
+                                        <h4 className="text-sm font-medium text-sky-900">
+                                            Progress Laporan
+                                            {progressData?.data && ` (${progressData.data.length} update)`}
+                                        </h4>
+                                    </div>
+                                    <motion.div
+                                        animate={{ rotate: isProgressCollapsed ? 180 : 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className='hover:bg-gray-100 rounded-lg p-2 -m-2 transition-colors duration-200'
+                                    >
+                                        <FaChevronDown 
+                                        className="w-4 h-4 text-gray-500" />
+                                    </motion.div>
+                                </div>
+                                
+                                <motion.div
+                                    initial={false}
+                                    animate={{
+                                        height: isProgressCollapsed ? "auto" : 0,
+                                        opacity: isProgressCollapsed ? 1 : 0
+                                    }}
+                                    transition={{
+                                        duration: 0.3,
+                                        ease: "easeInOut"
+                                    }}
+                                    style={{ overflow: "hidden" }}
+                                >
+                                    {isUploadProgressReportPending && (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="flex items-center justify-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200 mb-4"
+                                        >
+                                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                            <p className="text-sm text-blue-600 font-medium">Mengirim progress laporan...</p>
+                                        </motion.div>
+                                    )}
 
-                    {isUpdatingStatus && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex items-center justify-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200"
-                        >
-                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                            <p className="text-sm text-blue-600 font-medium">Memperbarui status...</p>
-                        </motion.div>
-                    )}
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    <p className="text-sm text-gray-600 mb-3">
-                        Bagaimana pendapat Anda tentang status laporan ini?
-                    </p>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                        <motion.button
-                            className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                                userCurrentVote === 'RESOLVED'
-                                    ? 'bg-green-500 text-white shadow-lg'
-                                    : 'bg-white text-green-600 border-2 border-green-500 hover:bg-green-50'
-                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            onClick={() => handleVote('RESOLVED')}
-                            disabled={isLoading}
-                            animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <FaCheck className="w-4 h-4" />
-                            <span className="text-sm">Terselesaikan</span>
-                        </motion.button>
+                                    {isProgressLoading ? (
+                                        <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
+                                            <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2"></div>
+                                            <span className="text-sm text-gray-600">Memuat progress...</span>
+                                        </div>
+                                    ) : progressData?.data && progressData.data.length > 0 ? (
+                                        <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                                            {progressData.data
+                                                .sort((a, b) => b.createdAt - a.createdAt)
+                                                .map((progress, index) => (
+                                                <div key={index} className="relative">
+                                                    {index < progressData.data!.length - 1 && (
+                                                        <div className="absolute left-[22px] top-12 w-0.5 h-8 bg-gray-300"></div>
+                                                    )}
+                                                    
+                                                    <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                                        <div className="flex items-start space-x-4">
+                                                            <div className={`w-3 h-3 rounded-full mt-2 flex-shrink-0 ${
+                                                                progress.status === 'RESOLVED' ? 'bg-green-700' : 'bg-red-700'
+                                                            }`}></div>
+                                                            
+                                                            <div className="flex-1">
+                                                                <div className="flex items-start justify-between mb-2">
+                                                                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(progress.status)}`}>
+                                                                        {getStatusLabel(progress.status)}
+                                                                    </div>
+                                                                    <span className="text-xs text-gray-500">
+                                                                        {formatDate(progress.createdAt)}
+                                                                    </span>
+                                                                </div>
+                                                                
+                                                                {progress.notes && (
+                                                                    <p className="text-sm text-gray-700 mb-3">{progress.notes}</p>
+                                                                )}
+                                                                
+                                                                {(progress.attachment1 || progress.attachment2) && (
+                                                                    <div className="flex space-x-2">
+                                                                        {progress.attachment1 && (
+                                                                            <Image 
+                                                                                src={getImageURL(`/report/progress/${progress.attachment1}`, "main")} 
+                                                                                alt="Progress attachment 1"
+                                                                                width={64}
+                                                                                height={64}
+                                                                                className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                                                                                onClick={() => handleImageClick(getImageURL(`/report/progress/${progress.attachment1}`, "main"))}
+                                                                            />
+                                                                        )}
+                                                                        {progress.attachment2 && (
+                                                                            <Image 
+                                                                                src={getImageURL(`/report/progress/${progress.attachment2}`, "main")} 
+                                                                                alt="Progress attachment 2"
+                                                                                width={64}
+                                                                                height={64}
+                                                                                className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                                                                                onClick={() => handleImageClick(getImageURL(`/report/progress/${progress.attachment2}`, "main"))}
+                                                                            />
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : !isProgressLoading && (
+                                        <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                            <BiMessageDetail className="w-4 h-4 text-gray-400 mr-2" />
+                                            <span className="text-sm text-gray-500">Belum ada progress yang dilaporkan</span>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            </div>
+                        )}
 
-                        <motion.button
-                            className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                                userCurrentVote === 'NOT_RESOLVED'
-                                    ? 'bg-red-500 text-white shadow-lg'
-                                    : 'bg-white text-red-600 border-2 border-red-500 hover:bg-red-50'
-                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            onClick={() => handleVote('NOT_RESOLVED')}
-                            disabled={isLoading}
-                            animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <FaTimes className="w-4 h-4" />
-                            <span className="text-sm">Belum Selesai</span>
-                        </motion.button>
-                    </div>
+                        {isReportOwner ? (
+                            <div className="space-y-4">
+                                {selectedStatus && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="bg-white rounded-xl p-4 border border-gray-200"
+                                    >
+                                        <div className="space-y-3">
+                                            <TextAreaField
+                                            id="progressNotes"
+                                            register={registerProgress("progressNotes")}
+                                            rows={2}
+                                            className="w-full"
+                                            withLabel={true}
+                                            labelTitle="Catatan Progress"
+                                            icon={<BiMessageDetail size={20} />}
+                                            placeHolder="Jelaskan progress dari laporan ini"
+                                            />
+                                            <div className="text-red-500 text-sm font-semibold">{progressErrors.progressNotes?.message as string}</div>
+                                            
+                                            <div className="space-y-2">
+                                                <div className="flex items-center space-x-2">
+                                                    <FaCamera className="w-4 h-4 text-sky-900" />
+                                                    <label className="text-sm font-medium text-sky-900">
+                                                        Lampiran Foto (Opsional, Maks. 2)
+                                                    </label>
+                                                </div>
+                                                <MultipleImageField
+                                                    id="statusImages"
+                                                    withLabel={false}
+                                                    buttonTitle="Pilih Foto"
+                                                    width={120}
+                                                    height={120}
+                                                    shape="square"
+                                                    maxImages={2}
+                                                    onChange={(files) => setProgressImages(files)}
+                                                    onImageClick={handleImageClick}
+                                                />
+                                                <p className="text-xs text-gray-500">
+                                                    Tambahkan foto untuk memperjelas status
+                                                </p>
+                                            </div>
+                                            
+                                            <div className="flex space-x-2">
+                                                <ButtonSubmit
+                                                className="group relative w-1/2 flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
+                                                title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Update Status'}
+                                                progressTitle="Memproses..."
+                                                isProgressing={isUploadProgressReportPending}
+                                                />
+                                                
+                                                <motion.button
+                                                    className="px-4 w-1/2 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-200"
+                                                    onClick={() => {
+                                                        setSelectedStatus(null);
+                                                        setIsCollapsed(false);
+                                                    }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                >
+                                                    Batal
+                                                </motion.button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
 
-                    {userCurrentVote && (
-                        <div className="mt-3 text-center">
-                            <p className="text-sm text-gray-500">
-                                Anda memilih: <span className="font-medium">
-                                    {userCurrentVote === 'RESOLVED' && 'Terselesaikan'}
-                                    {userCurrentVote === 'NOT_RESOLVED' && 'Belum Selesai'}
-                                    {userCurrentVote === 'NEUTRAL' && 'Tidak Yakin'}
-                                </span>
-                            </p>
-                        </div>
-                    )}
-                </div>
+                                {currentStatus === 'RESOLVED' && (
+                                    <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                                        <FaCheck className="w-4 h-4 text-green-600" />
+                                        <p className="text-sm text-green-700 font-medium">
+                                            Laporan ini telah ditandai sebagai terselesaikan
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <p className="text-sm text-gray-600 mb-3">
+                                    Bagaimana pendapat Anda tentang status laporan ini?
+                                </p>
+                                
+                                <div className="grid grid-cols-2 gap-3">
+                                    <motion.button
+                                        className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                                            userCurrentVote === 'RESOLVED'
+                                                ? 'bg-green-500 text-white shadow-lg'
+                                                : 'bg-white text-green-600 border-2 border-green-500 hover:bg-green-50'
+                                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        onClick={() => handleVote('RESOLVED')}
+                                        disabled={isLoading}
+                                        animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <FaCheck className="w-4 h-4" />
+                                        <span className="text-sm">Terselesaikan</span>
+                                    </motion.button>
+
+                                    <motion.button
+                                        className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                                            userCurrentVote === 'NOT_RESOLVED'
+                                                ? 'bg-red-500 text-white shadow-lg'
+                                                : 'bg-white text-red-600 border-2 border-red-500 hover:bg-red-50'
+                                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        onClick={() => handleVote('NOT_RESOLVED')}
+                                        disabled={isLoading}
+                                        animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <FaTimes className="w-4 h-4" />
+                                        <span className="text-sm">Belum Selesai</span>
+                                    </motion.button>
+                                </div>
+
+                                {userCurrentVote && (
+                                    <div className="mt-3 text-center">
+                                        <p className="text-sm text-gray-500">
+                                            Anda memilih: <span className="font-medium">
+                                                {userCurrentVote === 'RESOLVED' && 'Terselesaikan'}
+                                                {userCurrentVote === 'NOT_RESOLVED' && 'Belum Selesai'}
+                                                {userCurrentVote === 'NEUTRAL' && 'Tidak Yakin'}
+                                            </span>
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </motion.div>
+                </form>
             )}
-            </motion.div>
         </div>
     );
 };
