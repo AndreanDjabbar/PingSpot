@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import "./globals.css";
 import { ReactQueryClientProvider } from "@/provider/react-query-client";
+import { ConfirmationModalProvider } from "@/provider/confirmation-modal";
 import { ToastContainer } from "react-toastify";
 import ClientLayout from "./client-layout";
 
@@ -20,6 +21,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
           <ToastContainer />
             <ClientLayout>
               {children}
+              <ConfirmationModalProvider />
             </ClientLayout>
         </ReactQueryClientProvider>
       </body>
