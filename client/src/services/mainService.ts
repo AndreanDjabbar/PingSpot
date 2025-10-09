@@ -1,6 +1,7 @@
 import axios from "axios";
 import { 
     ICreateReportResponse,
+    IGetProgressReportResponse,
     IGetReportResponse,
     IReactReportRequest,
     IReactReportResponse,
@@ -48,6 +49,18 @@ export const createReportService = async (payload: FormData): Promise<ICreateRep
 export const getReportService = async (): Promise<IGetReportResponse> => {
     const authToken = getAuthToken();
     const response = await axios.get<IGetReportResponse>(`${MAIN_API_URL}/report`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${authToken || ''}`
+        }
+    });
+    return response.data;
+}
+
+export const getProgressReportService = async (reportID: number): Promise<IGetProgressReportResponse> => {
+    const authToken = getAuthToken();
+    const response = await axios.get<IGetProgressReportResponse>(`${MAIN_API_URL}/report/${reportID}/progress`, {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

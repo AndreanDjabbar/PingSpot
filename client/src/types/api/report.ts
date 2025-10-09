@@ -32,6 +32,11 @@ export interface IReactReportResponse {
     data?: IReportReactions;
 }
 
+export interface IGetProgressReportResponse {
+    message: string;
+    data?: IReportProgress[];
+}
+
 export interface IUpdateReportStatusResponse {
     message: string;
     data?: {
