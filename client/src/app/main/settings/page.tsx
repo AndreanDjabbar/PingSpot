@@ -15,15 +15,13 @@ import { useUserProfileStore } from '@/stores/userProfileStore';
 import SettingItem from './components/SettingItem';
 import ToggleSwitch from '@/components/UI/ToggleSwitch';
 import SettingCard from './components/SettingCard';
-import { ConfirmationModal } from '@/components/feedback';
 import HeaderSection from '../components/HeaderSection';
+import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 
 const SettingsPage = () => {
     const router = useRouter();
     const currentPath = usePathname();
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-    
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
     
@@ -34,6 +32,7 @@ const SettingsPage = () => {
     ];
     const { mutate: logout, isPending, isError, error, isSuccess, data } = useLogout();
     const user = useUserProfileStore(state => state.userProfile);
+    const { openConfirm } = useConfirmationModalStore();
     
     useErrorToast(isError, error);
     useSuccessToast(isSuccess, data);
@@ -41,7 +40,6 @@ const SettingsPage = () => {
     useEffect(() => {
         if (isSuccess) {
             document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
-            setIsLogoutModalOpen(false);
             setTimeout(() => {
                 router.push("/auth/login");
             }, 1000);
@@ -49,8 +47,22 @@ const SettingsPage = () => {
     }, [isSuccess, router]);
 
     const handleLogout = () => {
-        setIsLogoutModalOpen(true);
+        confirmationModal();
     };
+
+    const confirmationModal = () => {
+        openConfirm({
+            type: "info",
+            title: "Konfirmasi Keluar",
+            message: "Apakah Anda yakin ingin keluar?",
+            isPending: isPending,
+            explanation: "Anda akan keluar dari sesi Pingspot saat ini.",
+            confirmTitle: "Ubah",
+            cancelTitle: "Batal",
+            icon: <ImExit />,
+            onConfirm: () => confirmLogout(),
+        });
+    }
     
     const confirmLogout = () => {
         const token = getAuthToken();
@@ -186,20 +198,6 @@ const SettingsPage = () => {
             <PasswordForm 
                 isOpen={isPasswordModalOpen} 
                 onClose={() => setIsPasswordModalOpen(false)} 
-            />
-            
-            <ConfirmationModal
-                isOpen={isLogoutModalOpen}
-                onClose={() => setIsLogoutModalOpen(false)}
-                onConfirm={confirmLogout}
-                isPending={isPending}
-                type='warning'
-                cancelTitle='Batal'
-                confirmTitle='Keluar'
-                title='Konfirmasi Keluar'
-                explanation='Anda akan keluar dari sesi PingSpot saat ini.'
-                message='Apakah Anda yakin ingin keluar?'
-                icon={<ImExit/>}
             />
         </div>
     );

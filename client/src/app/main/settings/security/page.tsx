@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import useErrorToast from '@/hooks/useErrorToast';
 import useSuccessToast from '@/hooks/useSuccessToast';
-import { SuccessSection, ErrorSection, ConfirmationModal } from '@/components/feedback';
+import { SuccessSection, ErrorSection } from '@/components/feedback';
 import { getDataResponseMessage } from '@/utils/getDataResponse';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import HeaderSection from '../../components/HeaderSection';
@@ -18,10 +18,11 @@ import { LuLockKeyhole } from 'react-icons/lu';
 import { useSaveSecurity } from '@/hooks/user/useSaveSecurity';
 import { IoKey } from 'react-icons/io5';
 import { useLogout } from '@/hooks/auth/useLogout';
+import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 
 const SecurityPage = () => {
-    const [isSaveSecurityModalOpen, setIsSaveSecurityModalOpen] = useState(false);
     const [securityData, setSecurityData] = useState<ISaveSecurityRequest | null>(null);
+    const {openConfirm} = useConfirmationModalStore();
 
     const { 
         register, 
@@ -36,9 +37,23 @@ const SecurityPage = () => {
     const currentPath = usePathname();
     const router = useRouter();
     
+    const confirmationModal = () => {
+        openConfirm({
+            type: "info",
+            title: "Konfirmasi Perubahan keamanan",
+            message: "Apakah Anda yakin ingin ubah?",
+            isPending: isPending,
+            explanation: "Informasi keamanan (kata sandi) anda akan diubah.",
+            confirmTitle: "Ubah",
+            cancelTitle: "Batal",
+            icon: <IoKey />,
+            onConfirm: () => confirmSubmit(),
+        });
+    }
+
     const onSubmit = (data: ISaveSecurityRequest) => {
-        setIsSaveSecurityModalOpen(true);
         setSecurityData(data);
+        confirmationModal();
     };
     
     const confirmSubmit = () => {
@@ -56,7 +71,6 @@ const SecurityPage = () => {
     useEffect(() => {
         if (isLogoutSuccess) {
             document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
-            setIsSaveSecurityModalOpen(false);
             setTimeout(() => {
                 router.push("/auth/login");
             }, 1000)
@@ -160,19 +174,6 @@ const SecurityPage = () => {
                     </div>
                 </div>
             )}
-            <ConfirmationModal
-            isOpen={isSaveSecurityModalOpen}
-            onClose={() => setIsSaveSecurityModalOpen(false)}
-            onConfirm={confirmSubmit}
-            isPending={isPending}
-            type='info'
-            cancelTitle='Batal'
-            confirmTitle='Ubah'
-            title='Konfirmasi Perubahan keamanan'
-            explanation='Informasi keamanan (kata sandi) anda akan diubah.'
-            message='Apakah Anda yakin ingin ubah?'
-            icon={<IoKey/>}
-            />
         </div>
     );
 };

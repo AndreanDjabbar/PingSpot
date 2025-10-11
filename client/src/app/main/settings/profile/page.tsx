@@ -20,16 +20,17 @@ import useSuccessToast from '@/hooks/useSuccessToast';
 import { getDataResponseMessage } from '@/utils/getDataResponse';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import HeaderSection from '../../components/HeaderSection';
-import { SuccessSection, ErrorSection, ConfirmationModal } from '@/components/feedback';
+import { SuccessSection, ErrorSection } from '@/components/feedback';
 import { getImageURL } from '@/utils/getImageURL';
+import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 
 const ProfilePage = () => {
     const user = useUserProfileStore(state => state.userProfile);
     const [profilePicture, setProfilePicture] = useState<File | null>(null);
     const [birthdayDate, setBirthdayDate] = useState<string>(user?.birthday || '');
     const [removedProfilePicture, setRemovedProfilePicture] = useState(false);
-    const [isSaveProfileModalOpen, setIsSaveProfileModalOpen] = useState(false);
     const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
+    const {openConfirm} = useConfirmationModalStore();
     
     const defaultValues = {
         fullName: user?.fullName || '',
@@ -51,13 +52,27 @@ const ProfilePage = () => {
         defaultValues: defaultValues
     });
     
+    const confirmationModal = () => {
+        openConfirm({
+            type: "info",
+            title: "Konfirmasi Perubahan Profil",
+            message: "Apakah Anda yakin ingin ubah?",
+            isPending: isPending,
+            explanation: "Informasi profil anda akan diubah.",
+            confirmTitle: "Ubah",
+            cancelTitle: "Batal",
+            icon: <IoPersonSharp />,
+            onConfirm: () => confirmSubmit(),
+        });
+    }
+
     const { mutate, isPending, isError, isSuccess, error, data } = useSaveProfile();
     const currentPath = usePathname();
     
     const onSubmit = (formData: ISaveProfileRequest) => {
         const preparedData = prepareFormData(formData);
         setFormDataToSubmit(preparedData);
-        setIsSaveProfileModalOpen(true);
+        confirmationModal();
     };
 
     const prepareFormData = (formData: ISaveProfileRequest): FormData => {
@@ -121,7 +136,6 @@ const ProfilePage = () => {
 
     useEffect(() => {
         if (isSuccess && data) {
-            setIsSaveProfileModalOpen(false);
             setTimeout(() => {
                 window.location.reload();
             }, 500)
@@ -274,19 +288,6 @@ const ProfilePage = () => {
                     </div>
                 </div>
             )}
-            <ConfirmationModal
-            isOpen={isSaveProfileModalOpen}
-            onClose={() => setIsSaveProfileModalOpen(false)}
-            onConfirm={confirmSubmit}
-            isPending={isPending}
-            type='info'
-            cancelTitle='Batal'
-            confirmTitle='Ubah'
-            title='Konfirmasi Perubahan Profil'
-            explanation='Informasi profil anda akan diubah.'
-            message='Apakah Anda yakin ingin ubah?'
-            icon={<IoPersonSharp/>}
-            />
         </div>
     );
 };
