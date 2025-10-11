@@ -16,7 +16,6 @@ import { BsThreeDots } from 'react-icons/bs';
 import StatusVoting from './StatusVoting';
 import CommentItem from './CommentItem';
 import { useReportsStore } from '@/stores/reportsStore';
-import { ConfirmationDialog } from '@/components/feedback';
 
 const StaticMap = dynamic(() => import('../../components/StaticMap'), {
     ssr: false,
@@ -72,8 +71,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [isProgressConfirmModalOpen, setIsProgressConfirmModalOpen] = useState(false);
-    const [pendingProgressSubmit, setPendingProgressSubmit] = useState<(() => void) | null>(null);
     const commentInputRef = useRef<HTMLTextAreaElement>(null);
     const {selectedReport: report} = useReportsStore();
 
@@ -97,19 +94,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
 
     const handleReply = (content: string, parentId: number) => {
         onAddComment(content, parentId);
-    };
-
-    const handleConfirmProgressSubmit = () => {
-        if (pendingProgressSubmit) {
-            pendingProgressSubmit();
-            setPendingProgressSubmit(null);
-        }
-        setIsProgressConfirmModalOpen(false);
-    };
-
-    const handleCancelProgressSubmit = () => {
-        setPendingProgressSubmit(null);
-        setIsProgressConfirmModalOpen(false);
     };
 
     const organizeComments = (comments: ICommentType[]): ICommentType[] => {
@@ -376,20 +360,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
                         </div>
                     </div>
                 </motion.div>
-
-                <ConfirmationDialog
-                    isOpen={isProgressConfirmModalOpen}
-                    onClose={handleCancelProgressSubmit}
-                    onConfirm={handleConfirmProgressSubmit}
-                    isPending={false}
-                    type='info'
-                    cancelTitle='Batal'
-                    confirmTitle='Kirim'
-                    title='Konfirmasi Update Progress'
-                    explanation="Progress yang sudah dikirim tidak dapat diubah lagi."
-                    message='Apakah Anda yakin ingin mengirim update progress ini?'
-                    icon={<FaMapMarkerAlt />}
-                />
             </motion.div>
         </AnimatePresence>
     );

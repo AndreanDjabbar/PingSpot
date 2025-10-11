@@ -15,7 +15,7 @@ import { useUserProfileStore } from '@/stores/userProfileStore';
 import SettingItem from './components/SettingItem';
 import ToggleSwitch from '@/components/UI/ToggleSwitch';
 import SettingCard from './components/SettingCard';
-import { ConfirmationDialog } from '@/components/feedback';
+import { ConfirmationModal } from '@/components/feedback';
 import HeaderSection from '../components/HeaderSection';
 
 const SettingsPage = () => {
@@ -188,7 +188,7 @@ const SettingsPage = () => {
                 onClose={() => setIsPasswordModalOpen(false)} 
             />
             
-            <ConfirmationDialog
+            <ConfirmationModal
                 isOpen={isLogoutModalOpen}
                 onClose={() => setIsLogoutModalOpen(false)}
                 onConfirm={confirmLogout}

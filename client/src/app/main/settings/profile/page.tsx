@@ -20,7 +20,7 @@ import useSuccessToast from '@/hooks/useSuccessToast';
 import { getDataResponseMessage } from '@/utils/getDataResponse';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import HeaderSection from '../../components/HeaderSection';
-import { SuccessSection, ErrorSection, ConfirmationDialog } from '@/components/feedback';
+import { SuccessSection, ErrorSection, ConfirmationModal } from '@/components/feedback';
 import { getImageURL } from '@/utils/getImageURL';
 
 const ProfilePage = () => {
@@ -274,7 +274,7 @@ const ProfilePage = () => {
                     </div>
                 </div>
             )}
-            <ConfirmationDialog
+            <ConfirmationModal
             isOpen={isSaveProfileModalOpen}
             onClose={() => setIsSaveProfileModalOpen(false)}
             onConfirm={confirmSubmit}

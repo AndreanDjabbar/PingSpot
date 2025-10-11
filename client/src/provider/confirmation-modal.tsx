@@ -1,7 +1,7 @@
 "use client";
 
 import { useConfirmationModalStore } from "@/stores/confirmationModalStore";
-import { ConfirmationDialog } from "@/components/feedback";
+import { ConfirmationModal } from "@/components/feedback";
 
 export const ConfirmationModalProvider = () => {
     const {
@@ -21,7 +21,7 @@ export const ConfirmationModalProvider = () => {
     if (!isOpen) return null;
 
     return (
-        <ConfirmationDialog
+        <ConfirmationModal
         isOpen={isOpen}
         onClose={closeConfirm ?? (() => {})}
         onConfirm={() => {

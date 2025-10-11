@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import HeaderSection from '../components/HeaderSection';
 import { BiPlus } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
-import { ConfirmationDialog, ErrorSection, ImagePreviewModal } from '@/components/feedback';
+import { ErrorSection, ImagePreviewModal } from '@/components/feedback';
 import { useGetReport } from '@/hooks/main/useGetReport';
 import { RxCrossCircled } from "react-icons/rx";
 import useErrorToast from '@/hooks/useErrorToast';
@@ -19,7 +19,6 @@ import {
 } from './components';
 import { useReactReport } from '@/hooks/main/useReactReport';
 import { useReportsStore } from '@/stores/reportsStore';
-import { LuNotebookText } from 'react-icons/lu';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
@@ -29,7 +28,6 @@ const ReportsPage = () => {
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
 
     const {
         reports,
@@ -226,15 +224,6 @@ const ReportsPage = () => {
         console.log(`Report ${reportID} status updated to ${newStatus}`);
     };
 
-    const confirmSubmit = () => {
-        // TODO: Implement confirmation submit logic
-        console.log('Confirmation submitted');
-        setIsCreateReportModalOpen(false);
-    };
-
-    const isPending = false; // TODO: Replace with actual pending state
-    const reverseLoading = false; // TODO: Replace with actual loading state
-
     useErrorToast(
         isGetReportError, 
         getErrorResponseMessage(getReportError) || 'Terjadi kesalahan saat mengambil data laporan'
@@ -321,20 +310,6 @@ const ReportsPage = () => {
                 imageUrl={previewImage}
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-            />
-
-            <ConfirmationDialog
-            isOpen={isCreateReportModalOpen}
-            onClose={() => setIsCreateReportModalOpen(false)}
-            onConfirm={confirmSubmit}
-            isPending={isPending || reverseLoading}
-            type='info'
-            cancelTitle='Batal'
-            confirmTitle='Buat'
-            title='Konfirmasi Pembuatan Laporan'
-            explanation="Laporan yang sudah diunggah masih bisa diubah dalam 10 menit pertama, setelah itu tidak bisa diubah lagi."
-            message='Apakah Anda yakin ingin membuat?'
-            icon={<LuNotebookText/>}
             />
 
             {selectedReport && (

@@ -1,10 +1,10 @@
-import ConfirmationDialog from "./ConfirmationDialog";
+import ConfirmationModal from "./ConfirmationDialog";
 import ErrorSection from "./ErrorSection";
 import SuccessSection from "./SuccessSection";
 import ImagePreviewModal from "./ImagePreviewModal";
 
 export {
-    ConfirmationDialog,
+    ConfirmationModal,
     ErrorSection,
     SuccessSection,
     ImagePreviewModal

@@ -5,7 +5,7 @@ import { MdOutlineWarning } from 'react-icons/md';
 import { FaInfoCircle } from "react-icons/fa";
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
-interface ConfirmationDialogProps {
+interface ConfirmationModalProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
@@ -19,7 +19,7 @@ interface ConfirmationDialogProps {
     cancelTitle?: string;
 }
 
-const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({ 
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ 
     isOpen, 
     onClose, 
     onConfirm, 
@@ -147,4 +147,4 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     );
 };
 
-export default ConfirmationDialog;
+export default ConfirmationModal;
