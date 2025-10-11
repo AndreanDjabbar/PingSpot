@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import useErrorToast from '@/hooks/useErrorToast';
+import useSuccessToast from '@/hooks/useSuccessToast';
 import { FaCheck, FaTimes, FaMinus, FaUsers, FaCrown, FaCamera } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useReportsStore } from '@/stores/reportsStore';
@@ -16,14 +18,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UploadProgressReportSchema } from '../../schema';
 import { useQueryClient } from '@tanstack/react-query';
-import useErrorToast from '@/hooks/useErrorToast';
-import useSuccessToast from '@/hooks/useSuccessToast';
 import { ErrorSection, SuccessSection } from '@/components/feedback';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import { LuNotebookText } from 'react-icons/lu';
 import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 import { FiEdit } from 'react-icons/fi';
 import { Accordion } from '@/components/UI';
+import { formattedDate } from '@/utils/getFormattedDate';
 
 interface StatusVoteStatsType {
     resolved: number;
@@ -90,11 +91,17 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const handleConfirmationModal = (formData: IUploadProgressReportRequest) => {
         openConfirm({
             type: "info",
-            title: "Konfirmasi Pembuatan Laporan",
-            message: "Apakah Anda yakin ingin membuat laporan baru?",
+            title: formData.progressStatus === 'RESOLVED'
+                ?   "Konfirmasi Penutupan Laporan"
+                :   "Konfirmasi Pembaruan Status Laporan",
+            message: formData.progressStatus === 'RESOLVED'
+                ?   "Apakah Anda yakin ingin menutup laporan ini?."
+                :   "Apakah Anda yakin ingin memperbarui status laporan ini?",
             isPending: isUploadProgressReportPending,
-            explanation: "Laporan yang sudah diunggah masih bisa diubah dalam 10 menit pertama.",
-            confirmTitle: "Buat",
+            explanation: formData.progressStatus === 'RESOLVED'
+                ?   "Perkembangan Laporan yang sudah ditutup tidak bisa dibuka kembali."
+                :   "Perkembangan Laporan ini akan diperbarui.",
+            confirmTitle: formData.progressStatus === 'RESOLVED' ? "Tutup Laporan" : "Perbarui Status",
             cancelTitle: "Batal",
             icon: <LuNotebookText />,
             onConfirm: () => onSubmit(formData),
@@ -131,7 +138,6 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
 
     const isReportOwner = report && currentUserId === report.userID;
-    
     const { data: progressData, isLoading: isProgressLoading } = useGetProgressReport(reportID || 0);
     
     const { 
@@ -148,14 +154,14 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
         register: registerProgress,
         handleSubmit: handleSubmitProgress,
         formState: { errors: progressErrors },
-        reset: resetProgress
+        reset: resetProgress,
+        setValue: setProgressValue
     } = useForm<IUploadProgressReportRequest>({
         resolver: zodResolver(UploadProgressReportSchema),
     });
 
     const prepareFormData = (formData: IUploadProgressReportRequest): FormData => {
         const data = new FormData();
-        console.log("DATA: ", formData);
         data.append('reportID', String(reportID));
         data.append('progressStatus', formData.progressStatus);
         if (formData.progressNotes) {
@@ -183,16 +189,6 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
             queryClient.invalidateQueries({ queryKey: ['report-progress', reportID] });
         }
     }, [isUploadProgressSuccess, uploadProgressData, resetProgress, queryClient, reportID, resetUploadProgress]);
-    
-    const formatDate = (timestamp: number) => {
-        return new Date(timestamp).toLocaleString('id-ID', {
-            day: '2-digit',
-            month: '2-digit', 
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
 
     useErrorToast(isUploadProgressError, uploadProgressError);
     useSuccessToast(isUploadProgressSuccess, uploadProgressData);
@@ -234,6 +230,61 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                     <div className="space-y-4">
                         {reportID && (
                             <div className='mb-3'>
+                                {progressData?.data && progressData.data.length > 0 && (
+                                    <div className="mb-4 bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                                        <div className="flex items-center space-x-2 mb-3">
+                                            <h4 className="text-sm font-semibold text-sky-900">Perkembangan Terbaru</h4>
+                                        </div>
+                                        
+                                        {(() => {
+                                            const latestProgress = progressData.data
+                                                .sort((a, b) => b.createdAt - a.createdAt)[0];
+                                            
+                                            return (
+                                                <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                                    <div className="flex items-start justify-between mb-2">
+                                                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(latestProgress.status)}`}>
+                                                            {getStatusLabel(latestProgress.status)}
+                                                        </div>
+                                                        <span className="text-xs text-gray-500">
+                                                            {formattedDate(latestProgress.createdAt, { withTime: true })}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    {latestProgress.notes && (
+                                                        <p className="text-sm text-gray-700">{latestProgress.notes}</p>
+                                                    )}
+                                                    
+                                                    {(latestProgress.attachment1 || latestProgress.attachment2) && (
+                                                        <div className="flex space-x-2">
+                                                            {latestProgress.attachment1 && (
+                                                                <Image 
+                                                                    src={getImageURL(`/report/progress/${latestProgress.attachment1}`, "main")} 
+                                                                    alt="Progress attachment 1"
+                                                                    width={48}
+                                                                    height={48}
+                                                                    className="w-12 h-12 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                                                                    onClick={() => handleImageClick(getImageURL(`/report/progress/${latestProgress.attachment1}`, "main"))}
+                                                                />
+                                                            )}
+                                                            {latestProgress.attachment2 && (
+                                                                <Image 
+                                                                    src={getImageURL(`/report/progress/${latestProgress.attachment2}`, "main")} 
+                                                                    alt="Progress attachment 2"
+                                                                    width={48}
+                                                                    height={48}
+                                                                    className="w-12 h-12 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                                                                    onClick={() => handleImageClick(getImageURL(`/report/progress/${latestProgress.attachment2}`, "main"))}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
+                                )}
+
                                 <Accordion type="single">
                                     <Accordion.Item
                                         id="progress-report"
@@ -258,7 +309,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                 <span className="text-sm text-gray-600">Memuat progress...</span>
                                             </div>
                                         ) : progressData?.data && progressData.data.length > 0 ? (
-                                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2 pt-3 mt-3">
+                                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2 pt-3 mt-1">
                                                 {progressData.data
                                                     .sort((a, b) => b.createdAt - a.createdAt)
                                                     .map((progress, index) => (
@@ -267,7 +318,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                             <div className="absolute left-[22px] top-12 w-0.5 h-8 bg-gray-300"></div>
                                                         )}
                                                         
-                                                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md hover:bg-white transition-all duration-200">
+                                                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 shadow-sm transition-all duration-200">
                                                             <div className="flex items-start space-x-4">
                                                                 <div className={`w-3 h-3 rounded-full mt-2 flex-shrink-0 ${
                                                                     progress.status === 'RESOLVED' ? 'bg-green-700' : 'bg-red-700'
@@ -279,7 +330,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                                             {getStatusLabel(progress.status)}
                                                                         </div>
                                                                         <span className="text-xs text-gray-500">
-                                                                            {formatDate(progress.createdAt)}
+                                                                            {formattedDate(progress.createdAt, { withTime: true })}
                                                                         </span>
                                                                     </div>
                                                                     
@@ -349,8 +400,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                             : 'bg-white text-green-600 border-green-500 hover:bg-green-50'
                                                     } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     onClick={() => {
-                                                        setSelectedStatus('RESOLVED')
-                                                        registerProgress('progressStatus', { value: 'RESOLVED' });
+                                                        setSelectedStatus('RESOLVED');
+                                                        setProgressValue('progressStatus', 'RESOLVED');
                                                     }}
                                                     disabled={isUploadProgressReportPending}
                                                     whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
@@ -369,8 +420,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                             : 'bg-white text-red-600 border-red-500 hover:bg-red-50'
                                                     } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     onClick={() => {
-                                                        setSelectedStatus('NOT_RESOLVED')
-                                                        registerProgress('progressStatus', { value: 'NOT_RESOLVED' });
+                                                        setSelectedStatus('NOT_RESOLVED');
+                                                        setProgressValue('progressStatus', 'NOT_RESOLVED');
                                                     }}
                                                     disabled={isUploadProgressReportPending}
                                                     whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
@@ -396,7 +447,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                         className="w-full"
                                                         withLabel={true}
                                                         labelTitle="Catatan Progress"
-                                                        icon={<BiMessageDetail size={20} />}
+                                                        labelIcon={<BiMessageDetail size={20} />}
                                                         placeHolder="Jelaskan progress dari laporan ini"
                                                     />
                                                     <div className="text-red-500 text-sm font-semibold">{progressErrors.progressNotes?.message as string}</div>
@@ -427,7 +478,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                     <div className="flex space-x-2">
                                                         <ButtonSubmit
                                                             className="group relative w-1/2 flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
-                                                            title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Update Status'}
+                                                            title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
                                                             progressTitle="Memproses..."
                                                             isProgressing={isUploadProgressReportPending}
                                                         />
