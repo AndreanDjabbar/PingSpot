@@ -8,8 +8,9 @@ import {
     IUpdateReportStatusResponse,
     IUploadProgressReportResponse
 } from "@/types/api/report";
-import { IReverseLocationResponse, IReverseLocationRequest } from "@/types/api/user";
+import { IReverseLocationRequest } from "@/types/api/user";
 import getAuthToken from "@/utils/getAuthToken";
+import { IReverseLocation } from "@/types/model/user";
 
 const REVERSE_LOCATION_API_URL = `${process.env.NEXT_PUBLIC_REVERSE_LOCATION_URL}`;
 const MAIN_API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
@@ -35,8 +36,8 @@ const MULTIPART_HEADERS = (authToken: string) => {
 }
 
 export const reverseCurrentLocationService = async (payload: IReverseLocationRequest): 
-Promise<IReverseLocationResponse> => {
-    const response = await axios.get<IReverseLocationResponse>(`${REVERSE_LOCATION_API_URL}?lat=${payload.latitude}&lon=${payload.longitude}&format=json`);
+Promise<IReverseLocation> => {
+    const response = await axios.get<IReverseLocation>(`${REVERSE_LOCATION_API_URL}?lat=${payload.latitude}&lon=${payload.longitude}&format=json`);
     return response.data;
 };
 

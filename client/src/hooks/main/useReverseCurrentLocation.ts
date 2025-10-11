@@ -1,10 +1,14 @@
-import { IReverseLocationRequest, IReverseLocationResponse } from "@/types/api/user";
+import { IReverseLocationRequest } from "@/types/api/user";
 import { reverseCurrentLocationService } from "@/services/mainService";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { IReverseLocation } from "@/types/model/user";
 
-export const useReverseCurrentLocation = () => {
-    return useMutation<IReverseLocationResponse, AxiosError, IReverseLocationRequest>({
-        mutationFn: (data: IReverseLocationRequest) => reverseCurrentLocationService(data)
+export const useReverseCurrentLocation = (options?: {
+    onSuccess?: (data: IReverseLocation) => void;
+}) => {
+    return useMutation<IReverseLocation, AxiosError, IReverseLocationRequest>({
+        mutationFn: (data: IReverseLocationRequest) => reverseCurrentLocationService(data),
+        ...options,
     });
-}
+};
