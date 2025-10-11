@@ -7,6 +7,7 @@ interface TextAreaFieldProps {
     id: string;
     name?: string;
     required?: boolean;
+    labelIcon?: React.ReactNode;
     icon?: React.ReactNode;
     placeHolder?: string;
     value?: string;
@@ -24,6 +25,7 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
     placeHolder = '',
     withLabel = true,
     labelTitle = '',
+    labelIcon,
     icon,
     value,
     onChange,
@@ -34,9 +36,14 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
     return (
         <div className={`space-y-1 ${className}`}>
         {withLabel && (
-            <label htmlFor={id} className="block text-sm font-medium text-sky-800">
-            {labelTitle}
-            </label>
+            <div className='flex gap-2'>
+                {labelIcon && (
+                    <span className="text-sky-800">{labelIcon}</span>
+                )}
+                <label htmlFor={id} className="block text-sm font-medium text-sky-800">
+                {labelTitle}
+                </label>
+            </div>
         )}
         <div className="relative flex">
                 {icon && (
