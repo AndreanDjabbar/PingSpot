@@ -9,7 +9,7 @@ import { FaMapMarkerAlt } from 'react-icons/fa';
 import { MdOutlineCategory } from 'react-icons/md';
 import { IoLocationOutline } from 'react-icons/io5';
 import { LuNotebookText } from "react-icons/lu";
-import { SuccessSection, ErrorSection, ConfirmationDialog, ImagePreviewModal } from '@/components/feedback';
+import { SuccessSection, ErrorSection, ImagePreviewModal } from '@/components/feedback';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import { getDataResponseMessage } from '@/utils/getDataResponse';
 import useErrorToast from '@/hooks/useErrorToast';
@@ -21,6 +21,7 @@ import { useReverseCurrentLocation } from '@/hooks/main/useReverseCurrentLocatio
 import { CreateReportSchema } from '../../schema';
 import { ICreateReportRequest } from '@/types/api/report';
 import HeaderSection from '../../components/HeaderSection';
+import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 
 const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
     ssr: false,
@@ -32,11 +33,15 @@ const ReportsPage = () => {
     const [markerPosition, setMarkerPosition] = useState<{ lat: number, lng: number } | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isCreateReportModalOpen, setIsCreateReportModalOpen] = useState(false);
     const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
-    console.log("MArker Position: ", markerPosition);
     const { mutate, isPending, isError, isSuccess, error, data } = useCreateReport();
-    const { mutate: reverseLocation, data: reverseLocationData, isPending: reverseLoading } = useReverseCurrentLocation();
+    const { 
+        mutate: reverseLocation, 
+        data: reverseLocationData, 
+        isPending: reverseLoading,
+        isSuccess: reverseSuccess, 
+    } = useReverseCurrentLocation();
+    const { openConfirm } = useConfirmationModalStore();
     
     const issueTypes = [
         { value: 'infrastructure', label: 'Infrastruktur' },
@@ -67,12 +72,13 @@ const ReportsPage = () => {
 
     const reportTypeValue = watch('reportType');
 
-    const confirmSubmit = () => {
-        if (formDataToSubmit) {
+    const confirmSubmit = (dataToSubmit: FormData) => {
+        if (dataToSubmit && markerPosition) {
+            setFormDataToSubmit(dataToSubmit);
             reverseLocation({
-                latitude: markerPosition?.lat.toString() || '',
-                longitude: markerPosition?.lng.toString() || ''
-            })
+                latitude: markerPosition.lat.toString(),
+                longitude: markerPosition.lng.toString()
+            });
         }
     }
 
@@ -95,8 +101,9 @@ const ReportsPage = () => {
                 state, 
                 village, 
                 suburb
-            } = reverseLocationData.data?.address || {};
-            formDataToSubmit.append('displayName', reverseLocationData.data?.display_name || '');
+            } = reverseLocationData.address || {};
+            
+            formDataToSubmit.append('displayName', reverseLocationData.display_name || '');
             formDataToSubmit.append('road', road || '');
             formDataToSubmit.append('country', country || '');
             formDataToSubmit.append('countryCode', country_code || '');
@@ -106,12 +113,9 @@ const ReportsPage = () => {
             formDataToSubmit.append('state', state || '');
             formDataToSubmit.append('village', village || '');
             formDataToSubmit.append('suburb', suburb || '');
+            mutate(formDataToSubmit);
         }
-
-        if (formDataToSubmit) {
-            mutate(formDataToSubmit!);
-        }
-    }, [reverseLocationData]);
+    }, [reverseLocationData, reverseSuccess, formDataToSubmit, mutate]);
 
     useEffect(() => {
         if (isSuccess) {
@@ -119,7 +123,6 @@ const ReportsPage = () => {
             setReportImages([]);
             setMarkerPosition(null);
             setFormDataToSubmit(null);
-            setIsCreateReportModalOpen(false);
         }
     }, [isSuccess, data]);
 
@@ -141,9 +144,22 @@ const ReportsPage = () => {
 
     const onSubmit = (formData: ICreateReportRequest) => {
         const preparedData = prepareFormData(formData);
-        setFormDataToSubmit(preparedData);
-        setIsCreateReportModalOpen(true);
+        handleConfirmationModal(preparedData);
     };
+
+    const handleConfirmationModal = (preparedData: FormData) => {
+        openConfirm({
+            type: "info",
+            title: "Konfirmasi Pembuatan Laporan",
+            message: "Apakah Anda yakin ingin membuat laporan ?",
+            isPending: isPending || reverseLoading,
+            explanation: "Anda akan membuat laporan baru. Pastikan semua informasi sudah benar sebelum melanjutkan.",
+            confirmTitle: "Buat",
+            cancelTitle: "Batal",
+            icon: <LuNotebookText />,
+            onConfirm: () => confirmSubmit(preparedData),
+        });
+    }
 
     useErrorToast(isError, error);
     useSuccessToast(isSuccess, data);
@@ -287,19 +303,6 @@ const ReportsPage = () => {
             imageUrl={previewImage}
             isOpen={isModalOpen}
             onClose={handleCloseModal}
-        />
-        <ConfirmationDialog
-        isOpen={isCreateReportModalOpen}
-        onClose={() => setIsCreateReportModalOpen(false)}
-        onConfirm={confirmSubmit}
-        isPending={isPending || reverseLoading}
-        type='info'
-        cancelTitle='Batal'
-        confirmTitle='Buat'
-        title='Konfirmasi Pembuatan Laporan'
-        explanation="Laporan yang sudah diunggah masih bisa diubah dalam 10 menit pertama, setelah itu tidak bisa diubah lagi."
-        message='Apakah Anda yakin ingin membuat?'
-        icon={<LuNotebookText/>}
         />
         </div>
     );
