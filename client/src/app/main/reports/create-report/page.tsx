@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { InputField, ButtonSubmit, TextAreaField, RadioField, MultipleImageField } from '@/components/form';
 import { FaMapMarkerAlt } from 'react-icons/fa';
-import { BiMessageDetail } from 'react-icons/bi';
 import { MdOutlineCategory } from 'react-icons/md';
 import { IoLocationOutline } from 'react-icons/io5';
 import { LuNotebookText } from "react-icons/lu";
@@ -232,7 +231,6 @@ const ReportsPage = () => {
                             className="w-full"
                             withLabel={true}
                             labelTitle="Deskripsi Permasalahan"
-                            icon={<BiMessageDetail size={20} />}
                             placeHolder="Jelaskan permasalahan dengan detail"
                             />
                             <div className="text-red-500 text-sm font-semibold">{errors.reportDescription?.message as string}</div>
