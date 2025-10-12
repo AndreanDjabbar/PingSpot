@@ -8,17 +8,14 @@ import { SaveSecuritySchema } from '../../schema';
 import { ISaveSecurityRequest } from '@/types/api/user';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import useErrorToast from '@/hooks/useErrorToast';
-import useSuccessToast from '@/hooks/useSuccessToast';
+import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { SuccessSection, ErrorSection } from '@/components/feedback';
-import { getDataResponseMessage } from '@/utils/getDataResponse';
-import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
+import { getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
 import HeaderSection from '../../components/HeaderSection';
 import { LuLockKeyhole } from 'react-icons/lu';
-import { useSaveSecurity } from '@/hooks/user/useSaveSecurity';
+import { useSaveSecurity, useLogout } from '@/hooks/user';
 import { IoKey } from 'react-icons/io5';
-import { useLogout } from '@/hooks/auth/useLogout';
-import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
+import { useConfirmationModalStore } from '@/stores';
 
 const SecurityPage = () => {
     const [securityData, setSecurityData] = useState<ISaveSecurityRequest | null>(null);
@@ -66,7 +63,7 @@ const SecurityPage = () => {
         if (isSuccess && data) {
             logout();
         }
-    }, [isSuccess, data]);
+    }, [isSuccess, data, logout]);
 
     useEffect(() => {
         if (isLogoutSuccess) {

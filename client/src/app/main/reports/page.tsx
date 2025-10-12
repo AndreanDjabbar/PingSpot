@@ -5,10 +5,10 @@ import HeaderSection from '../components/HeaderSection';
 import { BiPlus } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
 import { ErrorSection, ImagePreviewModal } from '@/components/feedback';
-import { useGetReport } from '@/hooks/main/useGetReport';
+import { useGetReport, useReactReport } from '@/hooks/main';
 import { RxCrossCircled } from "react-icons/rx";
-import useErrorToast from '@/hooks/useErrorToast';
-import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
+import { useErrorToast } from '@/hooks/toast';
+import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
 import { IReport, ReportType } from '@/types/model/report';
 import { EmptyState } from '@/components/UI';
 import { 
@@ -17,8 +17,7 @@ import {
     ReportModal,
     ReportList
 } from './components';
-import { useReactReport } from '@/hooks/main/useReactReport';
-import { useReportsStore } from '@/stores/reportsStore';
+import { useReportsStore } from '@/stores';
 
 const ReportsPage = () => {
     const currentPath = usePathname();

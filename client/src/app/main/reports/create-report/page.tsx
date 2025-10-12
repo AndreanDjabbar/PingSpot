@@ -10,18 +10,15 @@ import { MdOutlineCategory } from 'react-icons/md';
 import { IoLocationOutline } from 'react-icons/io5';
 import { LuNotebookText } from "react-icons/lu";
 import { SuccessSection, ErrorSection, ImagePreviewModal } from '@/components/feedback';
-import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
-import { getDataResponseMessage } from '@/utils/getDataResponse';
-import useErrorToast from '@/hooks/useErrorToast';
-import useSuccessToast from '@/hooks/useSuccessToast';
+import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseMessage } from '@/utils';
+import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
-import { useCreateReport } from '@/hooks/main/useCreateReport';
-import { useReverseCurrentLocation } from '@/hooks/main/useReverseCurrentLocation';
+import { useCreateReport, useReverseCurrentLocation } from '@/hooks/main';
 import { CreateReportSchema } from '../../schema';
 import { ICreateReportRequest } from '@/types/api/report';
 import HeaderSection from '../../components/HeaderSection';
-import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
+import { useConfirmationModalStore } from '@/stores';
 
 const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
     ssr: false,
@@ -124,7 +121,7 @@ const ReportsPage = () => {
             setMarkerPosition(null);
             setFormDataToSubmit(null);
         }
-    }, [isSuccess, data]);
+    }, [isSuccess, data, reset]);
 
     const prepareFormData = (formData: ICreateReportRequest): FormData => {
         const data = new FormData();

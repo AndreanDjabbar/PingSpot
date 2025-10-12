@@ -2,21 +2,18 @@
 /* eslint-disable react/no-unescaped-entities */
 import { MdMailOutline } from "react-icons/md";
 import { LuLockKeyhole } from "react-icons/lu";
-import { FaGoogle, FaGithub } from "react-icons/fa";
-import InputField from "@/components/form/InputField";
+import { FaGoogle } from "react-icons/fa";
+import { InputField, ButtonSubmit } from "@/components/form";
 import { useForm } from "react-hook-form";
 import { ILoginRequest } from "@/types/api/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema } from "../Schema";
-import { useLogin } from "@/hooks/auth/useLogin";
-import ButtonSubmit from "@/components/form/ButtonSubmit";
+import { useLogin } from "@/hooks/auth";
 import { ErrorSection, SuccessSection } from "@/components/feedback";
-import { getDataResponseMessage } from "@/utils/getDataResponse";
-import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
+import { getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage } from "@/utils";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import useErrorToast from "@/hooks/useErrorToast";
-import useSuccessToast from "@/hooks/useSuccessToast";
+import { useErrorToast, useSuccessToast } from "@/hooks/toast";
 
 const LoginPage = () => {
     const { 
@@ -123,7 +120,7 @@ const LoginPage = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 gap-3">
                             <button
                                 type="button"
                                 className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring focus:ring-sky-800 transition-all duration-300"
@@ -131,14 +128,6 @@ const LoginPage = () => {
                             >
                                 <FaGoogle size={20}/>
                                 <span className="ml-2">Google</span>
-                            </button>
-                            
-                            <button
-                                type="button"
-                                className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring focus:ring-sky-800 transition-all duration-200"
-                            >
-                                <FaGithub size={20}/>
-                                <span className="ml-2">GitHub</span>
                             </button>
                         </div>
                     </form>

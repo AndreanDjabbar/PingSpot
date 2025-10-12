@@ -1,4 +1,3 @@
-// Export all report components
 import ReportCard from "./ReportCard";
 import ReportModal from "./ReportModal";
 import StatusVoting from "./StatusVoting";

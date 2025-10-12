@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { FaComment } from 'react-icons/fa';
 import { BiSend } from 'react-icons/bi';
 import { AnimatePresence } from 'framer-motion';
-import { getImageURL } from '@/utils/getImageURL';
+import { getImageURL } from '@/utils';
 import CommentItem from './CommentItem';
 import { CommentType } from '@/types/model/report';
 

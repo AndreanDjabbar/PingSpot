@@ -5,9 +5,8 @@ import Image from 'next/image';
 import { FaReply, FaEllipsisV, FaHeart, FaRegHeart } from 'react-icons/fa';
 import { BiSend } from 'react-icons/bi';
 import { motion } from 'framer-motion';
-import { getImageURL } from '@/utils/getImageURL';
-import { formattedDate } from '@/utils/getFormattedDate';
-import { useUserProfileStore } from '@/stores/userProfileStore';
+import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
+import { useUserProfileStore } from '@/stores';
 
 export interface CommentType {
     id: number;

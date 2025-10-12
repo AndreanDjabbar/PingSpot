@@ -1,10 +1,7 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
 import { useEffect } from "react";
-import { useUserProfileStore } from "@/stores/userProfileStore";
-import { useGlobalStore } from "@/stores/globalStore";
-import { useLocationStore } from "@/stores/userLocationStore";
+import { useUserProfileStore, useGlobalStore, useLocationStore } from "@/stores";
 
 const ClientLayout = ({ children }: { children: React.ReactNode }) => {
     const loadUser = useUserProfileStore((state) => state.loadUser);

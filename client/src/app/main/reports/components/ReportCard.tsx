@@ -4,11 +4,10 @@ import { FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa';
 import { BsThreeDots } from "react-icons/bs";
 import dynamic from 'next/dynamic';
 import { ReportType, IReportImage } from '@/types/model/report';
-import { getImageURL } from '@/utils/getImageURL';
-import { formattedDate } from '@/utils/getFormattedDate';
+import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { ReportInteractionBar } from '@/app/main/reports/components/ReportInteractionBar';
 import StatusVoting from './StatusVoting';
-import { useReportsStore } from '@/stores/reportsStore';
+import { useReportsStore } from '@/stores';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,

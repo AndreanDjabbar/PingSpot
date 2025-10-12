@@ -1,20 +1,17 @@
 'use client';
 import { MdMailOutline } from "react-icons/md";
 import { FaGoogle, FaGithub } from "react-icons/fa";
-import InputField from "@/components/form/InputField";
+import { InputField, ButtonSubmit } from "@/components/form";
 import { useForm } from "react-hook-form";
 import { IForgotPasswordEmailVerificationRequest } from "@/types/api/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import ButtonSubmit from "@/components/form/ButtonSubmit";
 import { ErrorSection, SuccessSection } from "@/components/feedback";
-import {  getDataResponseMessage } from "@/utils/getDataResponse";
-import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
+import { getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage } from "@/utils";
 import { useEffect } from "react";
-import { useEmailVerification } from "@/hooks/auth/useForgotPassword";
+import { useEmailVerification } from "@/hooks/auth";
 import { useRouter } from "next/navigation";
 import { ForgotPasswordEmailVerificationSchema } from "../Schema";
-import useErrorToast from "@/hooks/useErrorToast";
-import useSuccessToast from "@/hooks/useSuccessToast";
+import { useErrorToast, useSuccessToast } from "@/hooks/toast";
 
 const ForgotPasswordPage = () => {
     const { 

@@ -1,21 +1,18 @@
 "use client";
 import { MdMailOutline } from "react-icons/md";
 import { LuLockKeyhole } from "react-icons/lu";
-import { FaGoogle, FaGithub } from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
-import InputField from "@/components/form/InputField";
+import { InputField, ButtonSubmit } from "@/components/form";
 import { useForm } from "react-hook-form";
 import { IRegisterRequest } from "@/types/api/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../Schema";
-import { useRegister } from "@/hooks/auth/useRegister";
+import { useRegister } from "@/hooks/auth";
 import { useEffect } from "react";
-import { getErrorResponseDetails, getErrorResponseMessage } from "@/utils/gerErrorResponse";
-import ButtonSubmit from "@/components/form/ButtonSubmit";
-import { getDataResponseMessage } from "@/utils/getDataResponse";
+import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseMessage } from "@/utils";
 import { useRouter } from "next/navigation";
-import useErrorToast from "@/hooks/useErrorToast";
-import useSuccessToast from "@/hooks/useSuccessToast";
+import { useErrorToast, useSuccessToast } from "@/hooks/toast";
 import { SuccessSection, ErrorSection } from "@/components/feedback";
 
 const RegisterPage = () => {
@@ -154,7 +151,7 @@ const RegisterPage = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
                 <button
                     type="button"
                     className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring focus:ring-sky-800 transition-all duration-300"
@@ -162,13 +159,6 @@ const RegisterPage = () => {
                 >
                     <FaGoogle size={20}/>
                     <span className="ml-2">Google</span>
-                </button>
-                <button
-                    type="button"
-                    className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring focus:ring-sky-800 transition-all duration-200"
-                >
-                    <FaGithub size={20}/>
-                    <span className="ml-2">GitHub</span>
                 </button>
             </div>
             <p className="text-center text-sm text-sky-800">

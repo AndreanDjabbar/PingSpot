@@ -3,9 +3,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useUserProfileStore } from '@/stores/userProfileStore';
-import { InputField, DateTimeField, RadioField, ImageField, ButtonSubmit } from '@/components/form';
-import TextAreaField from '@/components/form/TextaAreaField';
+import { InputField, DateTimeField, RadioField, ImageField, ButtonSubmit, TextAreaField } from '@/components/form';
 import { IoPersonSharp } from 'react-icons/io5';
 import { LuNotebookText } from 'react-icons/lu';
 import { FaCalendarAlt } from 'react-icons/fa';
@@ -14,15 +12,12 @@ import { SaveProfileSchema } from '../../schema';
 import { ISaveProfileRequest } from '@/types/api/user';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSaveProfile } from '@/hooks/user/useSaveProfile';
-import useErrorToast from '@/hooks/useErrorToast';
-import useSuccessToast from '@/hooks/useSuccessToast';
-import { getDataResponseMessage } from '@/utils/getDataResponse';
-import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
+import { useSaveProfile } from '@/hooks/user';
 import HeaderSection from '../../components/HeaderSection';
 import { SuccessSection, ErrorSection } from '@/components/feedback';
-import { getImageURL } from '@/utils/getImageURL';
-import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
+import { useConfirmationModalStore, useUserProfileStore } from '@/stores';
+import { getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage, getImageURL } from '@/utils';
+import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 
 const ProfilePage = () => {
     const user = useUserProfileStore(state => state.userProfile);

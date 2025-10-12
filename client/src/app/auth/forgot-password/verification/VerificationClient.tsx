@@ -5,15 +5,13 @@ import React, { useEffect } from 'react'
 import { SuccessSection, ErrorSection } from '@/components/feedback';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useLinkVerification, useResetPassword } from '@/hooks/auth/useForgotPassword';
-import ButtonSubmit from '@/components/form/ButtonSubmit';
-import InputField from '@/components/form/InputField';
+import { useLinkVerification, useResetPassword } from '@/hooks/auth';
+import { ButtonSubmit, InputField } from '@/components/form';
 import { LuLockKeyhole } from 'react-icons/lu';
 import { IForgotPasswordResetPasswordRequest } from '@/types/api/auth';
 import { ForgotPasswordResetPasswordSchema } from '../../Schema';
-import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
-import useErrorToast from '@/hooks/useErrorToast';
-import useSuccessToast from '@/hooks/useSuccessToast';
+import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
+import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 
 const VerificationClient = () => {
     const searchParams = useSearchParams();

@@ -1,12 +1,10 @@
 /* eslint-disable react/no-unescaped-entities */
-import { useCurrentLocation } from '@/hooks/main/useCurrentLocation'
-import useErrorToast from '@/hooks/useErrorToast'
-import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse'
+import { useCurrentLocation, useReverseCurrentLocation } from '@/hooks/main'
+import { useErrorToast } from '@/hooks/toast'
+import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseDetails } from '@/utils'
 import React, { useEffect, useMemo } from 'react'
-import { useReverseCurrentLocation } from '@/hooks/main/useReverseCurrentLocation'
 import { FaMap, FaMapPin, FaSpinner } from 'react-icons/fa'
-import { getDataResponseDetails } from '@/utils/getDataResponse'
-import { useLocationStore } from '@/stores/userLocationStore'
+import { useLocationStore } from '@/stores'
 import camelize from 'camelize';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'

@@ -2,29 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import useErrorToast from '@/hooks/useErrorToast';
-import useSuccessToast from '@/hooks/useSuccessToast';
+import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { FaCheck, FaTimes, FaMinus, FaUsers, FaCrown, FaCamera } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { useReportsStore } from '@/stores/reportsStore';
-import { useUserProfileStore } from '@/stores/userProfileStore';
+import { useReportsStore, useUserProfileStore, useConfirmationModalStore } from '@/stores';
 import { ButtonSubmit, MultipleImageField, TextAreaField } from '@/components/form';
 import { BiMessageDetail } from 'react-icons/bi';
-import { useGetProgressReport } from '@/hooks/main/useGetProgressReport';
-import { useUploadProgressReport } from '@/hooks/main/useUploadProgressReport';
-import { getImageURL } from '@/utils/getImageURL';
+import { useGetProgressReport, useUploadProgressReport } from '@/hooks/main';
+import { getImageURL, getErrorResponseDetails, getErrorResponseMessage, getFormattedDate as formattedDate } from '@/utils';
 import { IUploadProgressReportRequest } from '@/types/api/report';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UploadProgressReportSchema } from '../../schema';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorSection, SuccessSection } from '@/components/feedback';
-import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils/gerErrorResponse';
 import { LuNotebookText } from 'react-icons/lu';
-import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 import { FiEdit } from 'react-icons/fi';
 import { Accordion } from '@/components/UI';
-import { formattedDate } from '@/utils/getFormattedDate';
 
 interface StatusVoteStatsType {
     resolved: number;

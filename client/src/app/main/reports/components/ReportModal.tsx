@@ -8,14 +8,13 @@ import { MdOutlineCategory } from 'react-icons/md';
 import { BiSend } from 'react-icons/bi';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
-import { getImageURL } from '@/utils/getImageURL';
-import { formattedDate } from '@/utils/getFormattedDate';
+import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
 import { ReportInteractionBar } from './ReportInteractionBar';
 import { BsThreeDots } from 'react-icons/bs';
 import StatusVoting from './StatusVoting';
 import CommentItem from './CommentItem';
-import { useReportsStore } from '@/stores/reportsStore';
+import { useReportsStore } from '@/stores';
 
 const StaticMap = dynamic(() => import('../../components/StaticMap'), {
     ssr: false,

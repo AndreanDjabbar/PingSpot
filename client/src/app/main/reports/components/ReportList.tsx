@@ -1,6 +1,6 @@
 import React from 'react';
 import ReportCard from './ReportCard';
-import { useReportsStore } from '@/stores/reportsStore';
+import { useReportsStore } from '@/stores';
 
 interface ReportListProps {
     onImageClick: (imageUrl: string) => void;

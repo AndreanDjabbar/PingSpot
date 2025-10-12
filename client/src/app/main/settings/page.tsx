@@ -3,25 +3,20 @@
 import React, { useEffect, useState } from 'react';
 import { BiLock, BiEnvelope, BiUser, BiCog } from 'react-icons/bi';
 import { MdOutlineLanguage, MdOutlineMarkEmailUnread } from 'react-icons/md';
-import PasswordForm from './components/PasswordForm';
-import useSuccessToast from '@/hooks/useSuccessToast';
-import getAuthToken from '@/utils/getAuthToken';
-import { useLogout } from '@/hooks/auth/useLogout';
-import useErrorToast from '@/hooks/useErrorToast';
+import { useErrorToast, useSuccessToast } from '@/hooks/toast';
+import { getAuthToken } from '@/utils';
+import { useLogout } from '@/hooks/user';
 import { usePathname, useRouter } from 'next/navigation';
 import { ImExit } from 'react-icons/im';
 import { IoIosNotifications } from "react-icons/io";
-import { useUserProfileStore } from '@/stores/userProfileStore';
-import SettingItem from './components/SettingItem';
-import ToggleSwitch from '@/components/UI/ToggleSwitch';
-import SettingCard from './components/SettingCard';
-import HeaderSection from '../components/HeaderSection';
-import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
+import { useUserProfileStore, useConfirmationModalStore } from '@/stores';
+import { SettingCard, SettingItem } from './components';
+import { HeaderSection } from '../components';
+import { ToggleSwitch } from '@/components/UI';
 
 const SettingsPage = () => {
     const router = useRouter();
     const currentPath = usePathname();
-    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
     
@@ -80,7 +75,7 @@ const SettingsPage = () => {
     
     return (
         <div className="space-y-8">
-            <HeaderSection 
+            <HeaderSection
             currentPath={currentPath}
             message='Sesuaikan PingSpot dengan preferensi Anda untuk pengalaman yang lebih baik.'/>
 
@@ -194,11 +189,6 @@ const SettingsPage = () => {
                 </div>
                 </SettingCard>
             </div>
-            
-            <PasswordForm 
-                isOpen={isPasswordModalOpen} 
-                onClose={() => setIsPasswordModalOpen(false)} 
-            />
         </div>
     );
 };

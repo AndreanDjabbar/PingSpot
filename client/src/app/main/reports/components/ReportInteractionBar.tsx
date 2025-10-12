@@ -13,7 +13,7 @@ import {
     FaShare
 } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { useReportsStore } from '@/stores/reportsStore';
+import { useReportsStore } from '@/stores';
 
 interface ReactionStatsType {
     totalLikes: number;
