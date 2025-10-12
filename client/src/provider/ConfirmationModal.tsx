@@ -1,6 +1,6 @@
 "use client";
 
-import { useConfirmationModalStore } from "@/stores/confirmationModalStore";
+import { useConfirmationModalStore } from "@/stores";
 import { ConfirmationModal } from "@/components/feedback";
 
 export const ConfirmationModalProvider = () => {
