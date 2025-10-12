@@ -1,6 +1,6 @@
 // store/useUserStore.ts
 import { create } from "zustand";
-import getAuthToken from "@/utils/getAuthToken"
+import { getAuthToken } from "@/utils"
 import { getMyProfileService } from "@/services/userService";
 import { IUserProfile } from "@/types/model/user";
 

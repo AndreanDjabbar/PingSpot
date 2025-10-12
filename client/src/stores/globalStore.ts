@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import getJWTExpired from '@/utils/getJWTExpired';
+import { getJWTExpired } from '@/utils';
 
 type GlobalState = {
     currentPage: string;
