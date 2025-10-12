@@ -9,7 +9,7 @@ import {
     IUploadProgressReportResponse
 } from "@/types/api/report";
 import { IReverseLocationRequest } from "@/types/api/user";
-import getAuthToken from "@/utils/getAuthToken";
+import { getAuthToken } from "@/utils";
 import { IReverseLocation } from "@/types/model/user";
 
 const REVERSE_LOCATION_API_URL = `${process.env.NEXT_PUBLIC_REVERSE_LOCATION_URL}`;

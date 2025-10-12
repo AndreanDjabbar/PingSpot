@@ -1,4 +1,4 @@
-const getAuthToken = (): string | null => {
+export const getAuthToken = (): string | null => {
     if (typeof document === "undefined") {
         return null;
     }
@@ -14,5 +14,3 @@ const getAuthToken = (): string | null => {
         return null;
     }
 };
-
-export default getAuthToken;

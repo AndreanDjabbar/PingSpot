@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef } from 'react'
-import { getErrorResponseMessage } from '@/utils/gerErrorResponse';
-import { useToast } from '@/hooks/useToast';
+import { getErrorResponseMessage } from '@/utils';
+import { useToast } from './useToast';
 
-const useErrorToast = (isError: boolean, error: any) => {
+export const useErrorToast = (isError: boolean, error: any) => {
     const { toastError } = useToast();
     const errorRef = useRef<string | null>(null);
 
@@ -21,5 +21,3 @@ const useErrorToast = (isError: boolean, error: any) => {
     }, [isError, error, toastError])
 
 }
-
-export default useErrorToast

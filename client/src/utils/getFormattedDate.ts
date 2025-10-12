@@ -7,7 +7,7 @@ type FormatDateOptions = {
     withTime?: boolean;
 };
 
-export const formattedDate = (
+export const getFormattedDate = (
     value: string | number,
     options: FormatDateOptions = {}
 ): string => {

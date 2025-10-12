@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
-import { useLocationStore } from "@/stores/userLocationStore";
-import getAuthToken from "@/utils/getAuthToken";
-import getJWTExpired from "@/utils/getJWTExpired";
+import { useLocationStore } from "@/stores";
+import { getAuthToken, getJWTExpired } from "@/utils";
 import { ICurrentLocation } from "@/types/model/user";
 
 export const useCurrentLocation = () => {

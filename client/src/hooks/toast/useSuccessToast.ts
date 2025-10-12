@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef } from 'react'
-import { useToast } from '@/hooks/useToast';
-import { getDataResponseMessage } from '@/utils/getDataResponse';
+import { useToast } from './useToast';
+import { getDataResponseMessage } from '@/utils';
 
-const useSuccessToast = (isSuccess: boolean, data: any) => {
+export const useSuccessToast = (isSuccess: boolean, data: any) => {
     const { toastSuccess } = useToast();
     const successRef = useRef<string | null>(null);
 
@@ -21,5 +21,3 @@ const useSuccessToast = (isSuccess: boolean, data: any) => {
     }, [isSuccess, data, toastSuccess]);
 
 }
-
-export default useSuccessToast

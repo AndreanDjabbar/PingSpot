@@ -1,5 +1,5 @@
 import React from 'react'
-import PingspotLogo from '@/components/UI/PingspotLogo'
+import { PingspotLogo } from '@/components/UI'
 import BackgroundTheme from './BackgroundTheme'
 const AuthLayout: React.FC<React.PropsWithChildren> = ({
     children

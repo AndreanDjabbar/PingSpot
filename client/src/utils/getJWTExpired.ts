@@ -1,7 +1,7 @@
 import { jwtDecode } from "jwt-decode"
-import getAuthToken from "./getAuthToken";
+import { getAuthToken } from "./getAuthToken";
 
-const getJWTExpired = (jwt = getAuthToken()): number => {
+export const getJWTExpired = (jwt = getAuthToken()): number => {
     if (!jwt) return 0;
 
     try {
@@ -17,5 +17,3 @@ const getJWTExpired = (jwt = getAuthToken()): number => {
         return 0;
     }
 };
-
-export default getJWTExpired;

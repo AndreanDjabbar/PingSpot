@@ -2,7 +2,7 @@
 import { ISaveSecurityRequest, ISaveSecurityResponse } from "@/types/api/user";
 import { IForgotPasswordEmailVerificationRequest, IForgotPasswordEmailVerificationResponse, IForgotPasswordLinkVerificationRequest, IForgotPasswordLinkVerificationResponse, IForgotPasswordResetPasswordRequest, IForgotPasswordResetPasswordResponse, ILoginRequest, ILoginResponse, IRegisterRequest, IRegisterResponse, IVerificationRequest, IVerificationResponse } from "@/types/api/auth";
 import { IGetProfileResponse, ISaveProfileResponse } from "@/types/api/user";
-import getAuthToken from "@/utils/getAuthToken";
+import { getAuthToken } from "@/utils";
 import axios from "axios";
 
 const USER_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/user`;
