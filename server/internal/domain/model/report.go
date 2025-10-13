@@ -22,7 +22,8 @@ type Report struct {
 	ReportType        ReportType `gorm:"type:varchar(30);not null"`
 	ReportDescription string     `gorm:"type:text;not null"`
 	CreatedAt         int64      `gorm:"autoCreateTime"`
-	ReportStatus      ReportStatus     `gorm:"type:varchar(50)"`
+	ReportStatus      ReportStatus     `gorm:"type:varchar(50);default:'NOT_RESOLVED'"`
+	HasProgress       bool       `gorm:"default:true"`
 
 	ReportLocation  *ReportLocation `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ReportImages    *ReportImage    `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
