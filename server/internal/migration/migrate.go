@@ -209,6 +209,21 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "13102025_add_has_progress_field_report",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&model.Report{}, "") {
+					return tx.Migrator().AddColumn(&model.Report{}, "has_progress")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&model.Report{}, "has_progress") {
+					return tx.Migrator().DropColumn(&model.Report{}, "has_progress")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()

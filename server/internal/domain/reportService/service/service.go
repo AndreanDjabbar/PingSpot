@@ -161,6 +161,8 @@ func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, erro
 				Suburb:         report.ReportLocation.Suburb,
 				Geometry: 	 	&report.ReportLocation.Geometry,
 			},
+			ReportStatus: string(report.ReportStatus),
+			HasProgress: report.HasProgress,
 			Images: dto.ReportImageResponse{
 				Image1URL: report.ReportImages.Image1URL,
 				Image2URL: report.ReportImages.Image2URL,
@@ -308,6 +310,12 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 		}
 	}()
 
+	defer func() {
+		if tx.Error != nil {
+			tx.Rollback()
+		}
+	}()
+
 	report, err := s.reportRepo.GetByID(reportID)
 	if err != nil {
 		tx.Rollback()
@@ -322,20 +330,47 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 		return nil, errors.New("anda tidak memiliki izin untuk mengunggah progres pada laporan ini")
 	}
 
-	reportProgress := &model.ReportProgress{
-		ReportID:  reportID,
-		UserID:    userID,
-		Status:    model.ReportStatus(req.Status),
-		Notes:     req.Notes,
-		CreatedAt: time.Now().Unix(),
-		Attachment1: req.Attachment1,
-		Attachment2: req.Attachment2,
+	if !report.HasProgress {
+		tx.Rollback()
+		return nil, errors.New("laporan ini tidak memerlukan progres (informasi saja)")
 	}
 
-	newReport, err := s.reportProgressRepo.Create(reportProgress, tx)
+	if report.ReportStatus == model.RESOLVED {
+		tx.Rollback()
+		return nil, errors.New("laporan sudah selesai, tidak dapat mengunggah progres lagi")
+	}
+
+	if req.Status == string(model.RESOLVED) {
+		report.ReportStatus = model.RESOLVED
+		if _, err := s.reportRepo.UpdateTX(tx, report); err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("gagal memperbarui status laporan: %w", err)
+		}
+	} 
+
+	reportProgress := &model.ReportProgress{
+		ReportID:   reportID,
+		UserID:     userID,
+		Status:     model.ReportStatus(req.Status),
+		Notes:      req.Notes,
+		Attachment1: req.Attachment1,
+		Attachment2: req.Attachment2,
+		CreatedAt:  time.Now().Unix(),
+	}
+
+	newProgress, err := s.reportProgressRepo.Create(reportProgress, tx)
 	if err != nil {
 		tx.Rollback()
 		return nil, fmt.Errorf("gagal mengunggah progres laporan: %w", err)
+	}
+
+	response := &dto.UploadProgressReportResponse{
+		ReportID:    newProgress.ReportID,
+		Status:      string(newProgress.Status),
+		Notes:       &newProgress.Notes,
+		Attachment1: newProgress.Attachment1,
+		Attachment2: newProgress.Attachment2,
+		CreatedAt:   newProgress.CreatedAt,
 	}
 
 	if err := tx.Commit().Error; err != nil {
@@ -343,15 +378,9 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 		return nil, fmt.Errorf("gagal menyimpan transaksi: %w", err)
 	}
 
-	return &dto.UploadProgressReportResponse{
-		ReportID:    newReport.ReportID,
-		Status:      string(newReport.Status),
-		Notes:       &newReport.Notes,
-		Attachment1: newReport.Attachment1,
-		Attachment2: newReport.Attachment2,
-		CreatedAt:   newReport.CreatedAt,
-	}, nil
+	return response, nil
 }
+
 
 func (s *ReportService) GetProgressReports(reportID uint) ([]dto.GetProgressReportResponse, error) {
 	reportProgresses, err := s.reportProgressRepo.GetByReportID(reportID)
