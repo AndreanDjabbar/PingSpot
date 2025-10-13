@@ -8,6 +8,7 @@ import (
 
 type ReportRepository interface {
 	Create(report *model.Report, tx *gorm.DB) error
+	UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error)
 	GetByID(reportID uint) (*model.Report, error)
 	Get() (*[]model.Report, error)
 }
@@ -33,6 +34,13 @@ func (r *reportRepository) Get() (*[]model.Report, error) {
 		return nil, err
 	}
 	return &reports, nil
+}
+
+func (r *reportRepository) UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error) {
+	if err := tx.Save(report).Error; err != nil {
+		return nil, err
+	}
+	return report, nil
 }
 
 func (r *reportRepository) GetByID(reportID uint) (*model.Report, error) {
