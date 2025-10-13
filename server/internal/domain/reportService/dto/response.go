@@ -40,6 +40,8 @@ type GetReportResponse struct {
 	ReportType              string                 `json:"reportType"`
 	ReportDescription       string                 `json:"reportDescription"`
 	ReportCreatedAt         int64                  `json:"reportCreatedAt"`
+	ReportStatus			string                 `json:"reportStatus"`
+	HasProgress				bool				   `json:"hasProgress"`
 	UserID                  uint                   `json:"userID"`
 	UserName                string                 `json:"userName"`
 	FullName                string                 `json:"fullName"`
