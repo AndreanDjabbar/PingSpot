@@ -86,6 +86,8 @@ export interface IReport {
     reportTitle: string;
     reportType: ReportType;
     reportDescription: string;
+    reportStatus: string;
+    hasProgress: boolean;
     status: ReportStatus;
     reportCreatedAt: number;
     reportUpdatedAt: number;
