@@ -52,7 +52,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const { openConfirm } = useConfirmationModalStore();
 
     const handleVote = (voteType: string) => {
-        if (isLoading) return;
+        if (isLoading || currentStatus === 'RESOLVED') return;
         setAnimateButton(voteType);
         onVote(voteType);
         setTimeout(() => setAnimateButton(null), 300);
@@ -132,6 +132,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
 
     const isReportOwner = report && currentUserId === report.userID;
+    const isReportResolved = (report?.reportStatus ?? currentStatus) === 'RESOLVED';
+
     const { data: progressData, isLoading: isProgressLoading } = useGetProgressReport(reportID || 0);
     
     const { 
@@ -170,6 +172,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     }
 
     const handleProgressUpload = async (formData: IUploadProgressReportRequest) => {
+        if (isReportResolved) return;
         if (!reportID) return;
         handleConfirmationModal(formData);
     };
@@ -381,126 +384,135 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                     icon={<FiEdit className="w-4 h-4 text-sky-900" />}
                                     headerClassName="text-sky-900"
                                 >
-                                    <form onSubmit={handleSubmitProgress(handleProgressUpload)} className='mt-4'>
-                                        <div className='mb-4'>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <motion.button
-                                                    type="button"
-                                                    className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-1 ${
-                                                        selectedStatus === 'RESOLVED'
-                                                            ? 'bg-green-700 border-green-700 text-white shadow-lg'
-                                                            : currentStatus === 'RESOLVED'
-                                                            ? 'bg-green-100 text-green-700 border-green-500'
-                                                            : 'bg-white text-green-600 border-green-500 hover:bg-green-50'
-                                                    } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    onClick={() => {
-                                                        setSelectedStatus('RESOLVED');
-                                                        setProgressValue('progressStatus', 'RESOLVED');
-                                                    }}
-                                                    disabled={isUploadProgressReportPending}
-                                                    whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
-                                                >
-                                                    <FaCheck className="w-4 h-4" />
-                                                    <span className="text-sm">Tandai Selesai</span>
-                                                </motion.button>
-
-                                                <motion.button
-                                                    type="button"
-                                                    className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-2 ${
-                                                        selectedStatus === 'NOT_RESOLVED'
-                                                            ? 'bg-red-700 text-white border-red-700 shadow-lg'
-                                                            : currentStatus === 'NOT_RESOLVED'
-                                                            ? 'bg-red-100 text-red-700 border-red-500'
-                                                            : 'bg-white text-red-600 border-red-500 hover:bg-red-50'
-                                                    } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    onClick={() => {
-                                                        setSelectedStatus('NOT_RESOLVED');
-                                                        setProgressValue('progressStatus', 'NOT_RESOLVED');
-                                                    }}
-                                                    disabled={isUploadProgressReportPending}
-                                                    whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
-                                                >
-                                                    <FaTimes className="w-4 h-4" />
-                                                    <span className="text-sm">Belum Selesai</span>
-                                                </motion.button>
-                                            </div>
+                                    {isReportResolved ? (
+                                        <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200 mt-4">
+                                            <FaCheck className="w-4 h-4 text-green-600" />
+                                            <p className="text-sm text-green-700 font-medium">
+                                                Laporan ini telah ditandai sebagai terselesaikan. Pembaruan progress dinonaktifkan.
+                                            </p>
                                         </div>
+                                    ) : (
+                                        <form onSubmit={handleSubmitProgress(handleProgressUpload)} className='mt-4'>
+                                            <div className='mb-4'>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <motion.button
+                                                        type="button"
+                                                        className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-1 ${
+                                                            selectedStatus === 'RESOLVED'
+                                                                ? 'bg-green-700 border-green-700 text-white shadow-lg'
+                                                                : currentStatus === 'RESOLVED'
+                                                                ? 'bg-green-100 text-green-700 border-green-500'
+                                                                : 'bg-white text-green-600 border-green-500 hover:bg-green-50'
+                                                        } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                        onClick={() => {
+                                                            setSelectedStatus('RESOLVED');
+                                                            setProgressValue('progressStatus', 'RESOLVED');
+                                                        }}
+                                                        disabled={isUploadProgressReportPending}
+                                                        whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
+                                                    >
+                                                        <FaCheck className="w-4 h-4" />
+                                                        <span className="text-sm">Tandai Selesai</span>
+                                                    </motion.button>
 
-                                        {selectedStatus && (
-                                            <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                className="bg-gray-50 rounded-xl p-4 border border-gray-200"
-                                            >
-                                                <div className="space-y-3">
-                                                    <TextAreaField
-                                                        id="progressNotes"
-                                                        register={registerProgress("progressNotes")}
-                                                        rows={2}
-                                                        className="w-full"
-                                                        withLabel={true}
-                                                        labelTitle="Catatan Progress"
-                                                        labelIcon={<BiMessageDetail size={20} />}
-                                                        placeHolder="Jelaskan progress dari laporan ini"
-                                                    />
-                                                    <div className="text-red-500 text-sm font-semibold">{progressErrors.progressNotes?.message as string}</div>
-                                                    
-                                                    <div className="space-y-2">
-                                                        <div className="flex items-center space-x-2">
-                                                            <FaCamera className="w-4 h-4 text-sky-900" />
-                                                            <label className="text-sm font-medium text-sky-900">
-                                                                Lampiran Foto (Opsional, Maks. 2)
-                                                            </label>
-                                                        </div>
-                                                        <MultipleImageField
-                                                            id="statusImages"
-                                                            withLabel={false}
-                                                            buttonTitle="Pilih Foto"
-                                                            width={120}
-                                                            height={120}
-                                                            shape="square"
-                                                            maxImages={2}
-                                                            onChange={(files) => setProgressImages(files)}
-                                                            onImageClick={handleImageClick}
-                                                        />
-                                                        <p className="text-xs text-gray-500">
-                                                            Tambahkan foto untuk memperjelas status
-                                                        </p>
-                                                    </div>
-                                                    
-                                                    <div className="flex space-x-2">
-                                                        <ButtonSubmit
-                                                            className="group relative w-1/2 flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
-                                                            title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
-                                                            progressTitle="Memproses..."
-                                                            isProgressing={isUploadProgressReportPending}
-                                                        />
-                                                        
-                                                        <motion.button
-                                                            type="button"
-                                                            className="px-4 w-1/2 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-200"
-                                                            onClick={() => {
-                                                                setSelectedStatus(null);
-                                                            }}
-                                                            whileTap={{ scale: 0.98 }}
-                                                        >
-                                                            Batal
-                                                        </motion.button>
-                                                    </div>
+                                                    <motion.button
+                                                        type="button"
+                                                        className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-2 ${
+                                                            selectedStatus === 'NOT_RESOLVED'
+                                                                ? 'bg-red-700 text-white border-red-700 shadow-lg'
+                                                                : currentStatus === 'NOT_RESOLVED'
+                                                                ? 'bg-red-100 text-red-700 border-red-500'
+                                                                : 'bg-white text-red-600 border-red-500 hover:bg-red-50'
+                                                        } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                        onClick={() => {
+                                                            setSelectedStatus('NOT_RESOLVED');
+                                                            setProgressValue('progressStatus', 'NOT_RESOLVED');
+                                                        }}
+                                                        disabled={isUploadProgressReportPending}
+                                                        whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
+                                                    >
+                                                        <FaTimes className="w-4 h-4" />
+                                                        <span className="text-sm">Belum Selesai</span>
+                                                    </motion.button>
                                                 </div>
-                                            </motion.div>
-                                        )}
-
-                                        {currentStatus === 'RESOLVED' && (
-                                            <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200 mt-4">
-                                                <FaCheck className="w-4 h-4 text-green-600" />
-                                                <p className="text-sm text-green-700 font-medium">
-                                                    Laporan ini telah ditandai sebagai terselesaikan
-                                                </p>
                                             </div>
-                                        )}
-                                    </form>
+
+                                            {selectedStatus && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    className="bg-gray-50 rounded-xl p-4 border border-gray-200"
+                                                >
+                                                    <div className="space-y-3">
+                                                        <TextAreaField
+                                                            id="progressNotes"
+                                                            register={registerProgress("progressNotes")}
+                                                            rows={2}
+                                                            className="w-full"
+                                                            withLabel={true}
+                                                            labelTitle="Catatan Progress"
+                                                            labelIcon={<BiMessageDetail size={20} />}
+                                                            placeHolder="Jelaskan progress dari laporan ini"
+                                                        />
+                                                        <div className="text-red-500 text-sm font-semibold">{progressErrors.progressNotes?.message as string}</div>
+                                                        
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center space-x-2">
+                                                                <FaCamera className="w-4 h-4 text-sky-900" />
+                                                                <label className="text-sm font-medium text-sky-900">
+                                                                    Lampiran Foto (Opsional, Maks. 2)
+                                                                </label>
+                                                            </div>
+                                                            <MultipleImageField
+                                                                id="statusImages"
+                                                                withLabel={false}
+                                                                buttonTitle="Pilih Foto"
+                                                                width={120}
+                                                                height={120}
+                                                                shape="square"
+                                                                maxImages={2}
+                                                                onChange={(files) => setProgressImages(files)}
+                                                                onImageClick={handleImageClick}
+                                                            />
+                                                            <p className="text-xs text-gray-500">
+                                                                Tambahkan foto untuk memperjelas status
+                                                            </p>
+                                                        </div>
+                                                        
+                                                        <div className="flex space-x-2">
+                                                            <ButtonSubmit
+                                                                className="group relative w-1/2 flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
+                                                                title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
+                                                                progressTitle="Memproses..."
+                                                                isProgressing={isUploadProgressReportPending}
+                                                            />
+                                                            
+                                                            <motion.button
+                                                                type="button"
+                                                                className="px-4 w-1/2 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-200"
+                                                                onClick={() => {
+                                                                    setSelectedStatus(null);
+                                                                }}
+                                                                whileTap={{ scale: 0.98 }}
+                                                            >
+                                                                Batal
+                                                            </motion.button>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+                                            {currentStatus === 'RESOLVED' && (
+                                                <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200 mt-4">
+                                                    <FaCheck className="w-4 h-4 text-green-600" />
+                                                    <p className="text-sm text-green-700 font-medium">
+                                                        Laporan ini telah ditandai sebagai terselesaikan
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </form>
+                                    )}
                                 </Accordion.Item>
                             </Accordion>
                         )}
@@ -564,41 +576,52 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                     </div>
                                 )}
 
-                                <p className="text-sm text-gray-600 mb-3">
-                                    Bagaimana pendapat Anda tentang status laporan ini?
-                                </p>
-                                
-                                <div className="grid grid-cols-2 gap-3">
-                                    <motion.button
-                                        className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                                            userCurrentVote === 'RESOLVED'
-                                                ? 'bg-green-500 text-white shadow-lg'
-                                                : 'bg-white text-green-600 border-2 border-green-500 hover:bg-green-50'
-                                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        onClick={() => handleVote('RESOLVED')}
-                                        disabled={isLoading}
-                                        animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <FaCheck className="w-4 h-4" />
-                                        <span className="text-sm">Terselesaikan</span>
-                                    </motion.button>
+                                {isReportResolved ? (
+                                    <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                                        <FaCheck className="w-4 h-4 text-green-600" />
+                                        <p className="text-sm text-green-700 font-medium">
+                                            Laporan ini telah ditandai sebagai terselesaikan. Voting ditutup.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p className="text-sm text-gray-600 mb-3">
+                                            Bagaimana pendapat Anda tentang status laporan ini?
+                                        </p>
+                                        
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <motion.button
+                                                className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                                                    userCurrentVote === 'RESOLVED'
+                                                        ? 'bg-green-500 text-white shadow-lg'
+                                                        : 'bg-white text-green-600 border-2 border-green-500 hover:bg-green-50'
+                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                onClick={() => handleVote('RESOLVED')}
+                                                disabled={isLoading}
+                                                animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <FaCheck className="w-4 h-4" />
+                                                <span className="text-sm">Terselesaikan</span>
+                                            </motion.button>
 
-                                    <motion.button
-                                        className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                                            userCurrentVote === 'NOT_RESOLVED'
-                                                ? 'bg-red-500 text-white shadow-lg'
-                                                : 'bg-white text-red-600 border-2 border-red-500 hover:bg-red-50'
-                                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        onClick={() => handleVote('NOT_RESOLVED')}
-                                        disabled={isLoading}
-                                        animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <FaTimes className="w-4 h-4" />
-                                        <span className="text-sm">Belum Selesai</span>
-                                    </motion.button>
-                                </div>
+                                            <motion.button
+                                                className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                                                    userCurrentVote === 'NOT_RESOLVED'
+                                                        ? 'bg-red-500 text-white shadow-lg'
+                                                        : 'bg-white text-red-600 border-2 border-red-500 hover:bg-red-50'
+                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                onClick={() => handleVote('NOT_RESOLVED')}
+                                                disabled={isLoading}
+                                                animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <FaTimes className="w-4 h-4" />
+                                                <span className="text-sm">Belum Selesai</span>
+                                            </motion.button>
+                                        </div>
+                                    </>
+                                )}
 
                                 {userCurrentVote && (
                                     <div className="mt-3 text-center">

@@ -169,16 +169,18 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 // isLoading={reactionMutation.isPending || saveMutation.isPending}
                 />
 
-                <StatusVoting
-                    reportID={report.id}
-                    currentStatus={report.status || 'PENDING'}
-                    statusVoteStats={report.statusVoteStats || { resolved: 0, notResolved: 0, neutral: 0 }}
-                    userCurrentVote={report.userInteraction?.currentVote || null}
-                    onVote={(voteType: string) => onStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
-                    onStatusUpdate={onStatusUpdate}
-                    onImageClick={onImageClick}
-                    // isLoading={voteMutation.isPending}
-                />
+                {report.hasProgress && (
+                    <StatusVoting
+                        reportID={report.id}
+                        currentStatus={report.status || 'PENDING'}
+                        statusVoteStats={report.statusVoteStats || { resolved: 0, notResolved: 0, neutral: 0 }}
+                        userCurrentVote={report.userInteraction?.currentVote || null}
+                        onVote={(voteType: string) => onStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
+                        onStatusUpdate={onStatusUpdate}
+                        onImageClick={onImageClick}
+                        // isLoading={voteMutation.isPending}
+                    />
+                )}
             </div>
         </div>
     );
