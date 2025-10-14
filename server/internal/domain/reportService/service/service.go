@@ -354,6 +354,85 @@ func (s *ReportService) ReactToReport(db *gorm.DB, userID uint, reportID uint, r
 	}, nil
 }
 
+func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, voteType string) (*dto.GetVoteReportResponse, error) {
+	tx := db.Begin()
+	if tx.Error != nil {
+		return nil, errors.New("Gagal memulai transaksi")
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	report, err := s.reportRepo.GetByID(reportID)
+	if err != nil {
+		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Laporan tidak ditemukan")
+		}
+		return nil, fmt.Errorf("Gagal mengambil laporan: %w", err)
+	}
+
+	if report.UserID == userID {
+		tx.Rollback()
+		return nil, errors.New("Anda tidak dapat memberikan suara pada laporan Anda sendiri")
+	}
+
+	modelVoteType := model.ReportStatus(voteType)
+	var resultVote *model.ReportVote
+
+	existingVote, err := s.reportVoteRepo.GetByUserReportIDTX(tx, userID, reportID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		tx.Rollback()
+		return nil, fmt.Errorf("Gagal mendapatkan suara laporan: %w", err)
+	}
+	switch {
+	case existingVote == nil:
+		newVote := model.ReportVote{
+			UserID:   userID,
+			ReportID: reportID,
+			VoteType: modelVoteType,
+			CreatedAt: time.Now().Unix(),
+			UpdatedAt: time.Now().Unix(),
+		}
+		newReportVote, err := s.reportVoteRepo.CreateTX(tx, &newVote)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("Gagal menambahkan suara: %w", err)
+		}
+		resultVote = newReportVote
+
+	case existingVote.VoteType == modelVoteType:
+		if err := s.reportVoteRepo.DeleteTX(tx, existingVote); err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("Gagal menghapus suara: %w", err)
+		}
+		resultVote = nil
+	default:
+		existingVote.VoteType = modelVoteType
+		existingVote.UpdatedAt = time.Now().Unix()
+		updatedReportVote, err := s.reportVoteRepo.UpdateTX(tx, existingVote)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("Gagal memperbarui suara: %w", err)
+		}
+		resultVote = updatedReportVote
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("Gagal menyimpan perubahan: %w", err)
+	}
+	return &dto.GetVoteReportResponse{
+		ID: resultVote.ID,
+		ReportID:     reportID,
+		UserID:       userID,
+		VoteType:     resultVote.VoteType,
+		CreatedAt:    resultVote.CreatedAt,
+		UpdatedAt:    resultVote.UpdatedAt,
+	}, nil
+}
+
 func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint, req dto.UploadProgressReportRequest) (*dto.UploadProgressReportResponse, error) {
 	tx := db.Begin()
 	if tx.Error != nil {
