@@ -29,4 +29,5 @@ type Report struct {
 	ReportImages    *ReportImage    `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ReportReactions *[]ReportReaction `gorm:"foreignKey:ReportID"`
 	ReportProgress  *[]ReportProgress `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ReportVotes     *[]ReportVote    `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
