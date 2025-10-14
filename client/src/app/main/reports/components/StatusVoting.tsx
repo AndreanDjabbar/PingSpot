@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { useReportsStore, useUserProfileStore, useConfirmationModalStore } from '@/stores';
 import { ButtonSubmit, MultipleImageField, TextAreaField } from '@/components/form';
 import { BiMessageDetail } from 'react-icons/bi';
-import { useGetProgressReport, useUploadProgressReport } from '@/hooks/main';
+import { useUploadProgressReport } from '@/hooks/main';
 import { getImageURL, getErrorResponseDetails, getErrorResponseMessage, getFormattedDate as formattedDate } from '@/utils';
 import { IUploadProgressReportRequest } from '@/types/api/report';
 import { useForm } from 'react-hook-form';
@@ -133,8 +133,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
 
     const isReportOwner = report && currentUserId === report.userID;
     const isReportResolved = (report?.reportStatus ?? currentStatus) === 'RESOLVED';
-
-    const { data: progressData, isLoading: isProgressLoading } = useGetProgressReport(reportID || 0);
+    const progressData = report?.reportProgress || [];
+    // const { data: progressData, isLoading: isProgressLoading } = useGetProgressReport(reportID || 0);
     
     const { 
         mutate: uploadProgress, 
@@ -227,14 +227,14 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                     <div className="space-y-4">
                         {reportID && (
                             <div className='mb-3'>
-                                {progressData?.data && progressData.data.length > 0 && (
+                                {progressData && progressData.length > 0 && (
                                     <div className="mb-4 bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
                                         <div className="flex items-center space-x-2 mb-3">
                                             <h4 className="text-sm font-semibold text-sky-900">Perkembangan Terbaru</h4>
                                         </div>
                                         
                                         {(() => {
-                                            const latestProgress = progressData.data
+                                            const latestProgress = progressData
                                                 .sort((a, b) => b.createdAt - a.createdAt)[0];
                                             
                                             return (
@@ -285,7 +285,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                 <Accordion type="single">
                                     <Accordion.Item
                                         id="progress-report"
-                                        title={`Perkembangan Laporan${progressData?.data ? ` (${progressData.data.length} pembaruan)` : ''}`}
+                                        title={`Perkembangan Laporan${progressData ? ` (${progressData.length} pembaruan)` : ''}`}
                                         icon={<BiMessageDetail className="w-4 h-4 text-sky-900" />}
                                         headerClassName="text-sky-900"
                                     >
@@ -300,18 +300,18 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                             </motion.div>
                                         )}
 
-                                        {isProgressLoading ? (
+                                        {false ? (
                                             <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-100">
                                                 <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2"></div>
                                                 <span className="text-sm text-gray-600">Memuat progress...</span>
                                             </div>
-                                        ) : progressData?.data && progressData.data.length > 0 ? (
+                                        ) : progressData && progressData.length > 0 ? (
                                             <div className="space-y-3 max-h-60 overflow-y-auto pr-2 pt-3 mt-1">
-                                                {progressData.data
+                                                {progressData
                                                     .sort((a, b) => b.createdAt - a.createdAt)
                                                     .map((progress, index) => (
                                                     <div key={index} className="relative">
-                                                        {index < progressData.data!.length - 1 && (
+                                                        {index < progressData!.length - 1 && (
                                                             <div className="absolute left-[22px] top-12 w-0.5 h-8 bg-gray-300"></div>
                                                         )}
                                                         
@@ -365,7 +365,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                     </div>
                                                 ))}
                                             </div>
-                                        ) : !isProgressLoading && (
+                                        ) : !progressData && (
                                             <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200 mt-3">
                                                 <BiMessageDetail className="w-4 h-4 text-gray-400 mr-2" />
                                                 <span className="text-sm text-gray-500">Belum ada progress yang dilaporkan</span>

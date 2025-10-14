@@ -96,6 +96,7 @@ export interface IReport {
     comments: ICommentType[];
     commentCount: number;
     reportReactions: IReportReactions[];
+    reportProgress: IReportProgress[];
     statusVoteStats: IStatusVoteStats;
     userInteraction: IUserInteraction;
     totalLikeReactions: number;
@@ -103,9 +104,25 @@ export interface IReport {
     isDislikedByCurrentUser: boolean;
     totalDislikeReactions: number;
     totalReactions: number;
+    totalResolvedVotes?: number;
+    totalNotResolvedVotes?: number;
+    totalVotes?: number;
+    isResolvedByCurrentUser?: boolean;
+    isNotResolvedByCurrentUser?: boolean;
+    reportVotes?: IReportVote[];
+}
+
+export interface IReportVote {
+    id: number;
+    userID: number;
+    reportID: number;
+    voteType: ReportStatus;
+    createdAt: number;
+    updatedAt: number;
 }
 
 export interface IReportProgress {
+    id: number;
     reportID: number;
     status: ReportStatus;
     notes?: string;
