@@ -135,6 +135,25 @@ func FormatReactionReportValidationErrors(err error) map[string]string {
 	return errors
 }
 
+func FormatVoteReportValidationErrors(err error) map[string]string {
+	errors := map[string]string{}
+	if err == nil {
+		return errors
+	}
+	for _, e := range err.(validator.ValidationErrors) {
+		switch e.Field() {
+			case "VoteType":
+				if e.Tag() == "required" {
+					errors["voteType"] = "Tipe vote wajib diisi"
+				}
+				if e.Tag() == "oneof" {
+					errors["voteType"] = "Tipe vote harus salah satu antara RESOLVED, NOT_RESOLVED"
+				}
+		}
+	}
+	return errors
+}
+
 func FormatUploadProgressReportValidationErrors(err error) map[string]string {
 	errors := map[string]string{}
 	if err == nil {
