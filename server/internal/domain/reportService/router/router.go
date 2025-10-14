@@ -17,11 +17,12 @@ func RegisterReportRoutes(app *fiber.App) {
 	reportLocationRepo := reportRepository.NewReportLocationRepository(database)
 	reportImageRepo := reportRepository.NewReportImageRepository(database)
 	reportReactionRepo := reportRepository.NewReportReactionRepository(database)
+	reportVoteRepo := reportRepository.NewReportVoteRepository(database)
 	reportProgressRepo := reportRepository.NewReportProgressRepository(database)
 	userProfileRepo := userRepository.NewUserProfileRepository(database)
 	userRepo := userRepository.NewUserRepository(database)
 
-	reportService := service.NewreportService(reportRepo, reportLocationRepo, reportReactionRepo, reportImageRepo, userRepo, userProfileRepo, reportProgressRepo)
+	reportService := service.NewreportService(reportRepo, reportLocationRepo, reportReactionRepo, reportImageRepo, userRepo, userProfileRepo, reportProgressRepo, reportVoteRepo)
 
 	reportHandler := handler.NewReportHandler(reportService)
 
