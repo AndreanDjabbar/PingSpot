@@ -1,9 +1,10 @@
 import { 
     CreateReportSchema, 
     ReactReportSchema,
-    UploadProgressReportSchema 
+    UploadProgressReportSchema, 
+    VoteReportSchema
 } from "@/app/main/schema";
-import { IReport, IReportProgress, IReportReactions } from "../model/report";
+import { IReport, IReportProgress, IReportReactions, IReportVote } from "../model/report";
 import z from "zod";
 
 export interface IGetReportResponse {
@@ -22,6 +23,8 @@ export interface IUploadProgressReportResponse {
 
 export type IReactReportRequest = z.infer<typeof ReactReportSchema>;
 
+export type IVoteReportRequest = z.infer<typeof VoteReportSchema>;
+
 export interface ICreateReportResponse {
     message: string;
     data?: IReport;
@@ -30,6 +33,11 @@ export interface ICreateReportResponse {
 export interface IReactReportResponse {
     message: string;
     data?: IReportReactions;
+}
+
+export interface IVoteReportResponse {
+    message: string;
+    data?: IReportVote;
 }
 
 export interface IGetProgressReportResponse {

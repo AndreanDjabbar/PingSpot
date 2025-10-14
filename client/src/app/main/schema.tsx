@@ -67,6 +67,12 @@ export const ReactReportSchema = z.object({
     })
 });
 
+export const VoteReportSchema = z.object({
+    voteType: z.enum(['RESOLVED', 'NOT_RESOLVED'], {
+        message: "Tipe vote harus RESOLVED atau NOT_RESOLVED"
+    })
+});
+
 export const UploadProgressReportSchema = z.object({
     progressStatus: z.enum(['RESOLVED', 'NOT_RESOLVED'], {
         message: "Status progres harus RESOLVED atau NOT_RESOLVED"
