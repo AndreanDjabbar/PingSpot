@@ -29,6 +29,10 @@ type ReactionReportRequest struct {
 	ReactionType string `json:"reactionType" validate:"required,oneof=LIKE DISLIKE"`
 }
 
+type VoteReportRequest struct {
+	VoteType string `json:"voteType" validate:"required,oneof=RESOLVED NOT_RESOLVED"`
+}
+
 type UploadProgressReportRequest struct {
 	Status string `json:"status" validate:"required,oneof=RESOLVED NOT_RESOLVED"`
 	Notes  string `json:"notes" validate:"omitempty"`
