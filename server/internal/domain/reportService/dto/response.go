@@ -51,9 +51,16 @@ type GetReportResponse struct {
 	TotalReactions          int64                  `json:"totalReactions"`
 	TotalLikeReactions      *int64                 `json:"totalLikeReactions"`
 	TotalDislikeReactions   *int64                 `json:"totalDislikeReactions"`
+	TotalResolvedVotes      *int64                 `json:"totalResolvedVotes"`
+	TotalNotResolvedVotes   *int64                 `json:"totalNotResolvedVotes"`
+	TotalVotes             int64                  `json:"totalVotes"`
 	IsLikedByCurrentUser    bool                   `json:"isLikedByCurrentUser"`
 	IsDislikedByCurrentUser bool                   `json:"isDislikedByCurrentUser"`
 	ReportReactions         []ReactReportResponse  `json:"reportReactions"`
+	ReportProgress		 	[]GetProgressReportResponse `json:"reportProgress"`
+	ReportVotes				[]GetVoteReportResponse		`json:"reportVotes,omitempty"`
+	IsResolvedByCurrentUser bool				   `json:"isResolvedByCurrentUser"`
+	IsNotResolvedByCurrentUser bool				   `json:"isNotResolvedByCurrentUser"`
 }
 
 type ReactReportResponse struct {
@@ -73,7 +80,17 @@ type UploadProgressReportResponse struct {
 	CreatedAt   int64   `json:"createdAt"`
 }
 
+type GetVoteReportResponse struct {
+	ID			   uint   `json:"id"`
+	ReportID       uint   `json:"reportID"`
+	UserID         uint   `json:"userID"`
+	VoteType 	 model.ReportStatus `json:"voteType"`
+	CreatedAt      int64  `json:"createdAt"`
+	UpdatedAt      int64  `json:"updatedAt"`
+}
+
 type GetProgressReportResponse struct {
+	ID          uint    `json:"id"`
 	ReportID    uint    `json:"reportID"`
 	Status      string  `json:"status"`
 	Notes       *string `json:"notes"`

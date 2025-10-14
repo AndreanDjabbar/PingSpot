@@ -17,12 +17,13 @@ type ReportService struct {
 	reportLocationRepo reportRepository.ReportLocationRepository
 	reportImageRepo    reportRepository.ReportImageRepository
 	reportReactionRepo reportRepository.ReportReactionRepository
+	reportVoteRepo    reportRepository.ReportVoteRepository
 	reportProgressRepo reportRepository.ReportProgressRepository
 	userRepo 			userRepository.UserRepository
 	userProfileRepo 	userRepository.UserProfileRepository
 }
 
-func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo reportRepository.ReportLocationRepository, reportReaction reportRepository.ReportReactionRepository, imageRepo reportRepository.ReportImageRepository, userRepo userRepository.UserRepository, userProfileRepo userRepository.UserProfileRepository, reportProgressRepo reportRepository.ReportProgressRepository) *ReportService {
+func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo reportRepository.ReportLocationRepository, reportReaction reportRepository.ReportReactionRepository, imageRepo reportRepository.ReportImageRepository, userRepo userRepository.UserRepository, userProfileRepo userRepository.UserProfileRepository, reportProgressRepo reportRepository.ReportProgressRepository, reportVoteRepo reportRepository.ReportVoteRepository) *ReportService {
 	return &ReportService{
 		reportRepo:         reportRepo,
 		reportLocationRepo: locationRepo,
@@ -31,6 +32,7 @@ func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo
 		reportReactionRepo: reportReaction,
 		reportProgressRepo: reportProgressRepo,
 		userProfileRepo:	userProfileRepo,
+		reportVoteRepo: 	reportVoteRepo,
 	}
 }
 
@@ -132,7 +134,17 @@ func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, erro
 			return nil, fmt.Errorf("Gagal mendapatkan reaksi tidak suka: %w", err)
 		}
 		
-		var isLikedByCurrentUser, isDislikedByCurrentUser bool
+		var isLikedByCurrentUser, isDislikedByCurrentUser, isResolvedByCurrentUser, isNotResolvedByCurrentUser bool
+
+		resolvedVoteCount, err := s.reportVoteRepo.GetResolvedVoteCount(report.ID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("Gagal mendapatkan suara 'RESOLVED': %w", err)
+		}
+
+		notResolvedVoteCount, err := s.reportVoteRepo.GetNotResolvedVoteCount(report.ID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("Gagal mendapatkan suara 'NOT_RESOLVED': %w", err)
+		}
 
 		fullReports = append(fullReports, dto.GetReportResponse{
 			ID:                report.ID,
@@ -194,8 +206,51 @@ func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, erro
 				}
 				return reactions
 			}(),
+			ReportProgress: func() []dto.GetProgressReportResponse {
+				var progresses []dto.GetProgressReportResponse
+				if report.ReportProgress != nil {
+					for _, progress := range *report.ReportProgress {
+						progresses = append(progresses, dto.GetProgressReportResponse{
+							ReportID:    progress.ReportID,
+							Status:      string(progress.Status),
+							Notes:       &progress.Notes,
+							Attachment1: progress.Attachment1,
+							Attachment2: progress.Attachment2,
+							CreatedAt:   progress.CreatedAt,
+						})
+					}
+				}
+				return progresses
+			}(),
 			IsLikedByCurrentUser:    isLikedByCurrentUser,
 			IsDislikedByCurrentUser: isDislikedByCurrentUser,
+			TotalResolvedVotes: &resolvedVoteCount,
+			TotalNotResolvedVotes: &notResolvedVoteCount,
+			TotalVotes: resolvedVoteCount + notResolvedVoteCount,
+			ReportVotes: func() []dto.GetVoteReportResponse {
+				var votes []dto.GetVoteReportResponse
+				for _, vote := range *report.ReportVotes {
+					votes = append(votes, dto.GetVoteReportResponse{
+						ID:        vote.ID,
+						ReportID:  vote.ReportID,
+						UserID:    vote.UserID,
+						VoteType:  vote.VoteType,
+						CreatedAt: vote.CreatedAt,
+						UpdatedAt: vote.UpdatedAt,
+					})
+					if vote.UserID == userID {
+						if vote.VoteType == model.RESOLVED {
+							isResolvedByCurrentUser = true
+						}
+						if vote.VoteType == model.NOT_RESOLVED {
+							isNotResolvedByCurrentUser = true
+						}	
+					}
+				}
+				return votes
+			}(),
+			IsResolvedByCurrentUser: isResolvedByCurrentUser,
+			IsNotResolvedByCurrentUser: isNotResolvedByCurrentUser,
 		})
 	}
 	return fullReports, nil
