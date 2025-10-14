@@ -30,7 +30,7 @@ func (r *reportRepository) Create(report *model.Report, tx *gorm.DB) error {
 
 func (r *reportRepository) Get() (*[]model.Report, error) {
 	var reports []model.Report
-	if err := r.db.Preload("User.Profile").Preload("ReportLocation").Preload("ReportImages").Preload("ReportReactions").Find(&reports).Error; err != nil {
+	if err := r.db.Preload("User.Profile").Preload("ReportLocation").Preload("ReportImages").Preload("ReportReactions").Preload("ReportVotes").Preload("ReportProgress").Find(&reports).Error; err != nil {
 		return nil, err
 	}
 	return &reports, nil
