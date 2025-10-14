@@ -6,7 +6,9 @@ import {
     IReactReportRequest,
     IReactReportResponse,
     IUpdateReportStatusResponse,
-    IUploadProgressReportResponse
+    IUploadProgressReportResponse,
+    IVoteReportRequest,
+    IVoteReportResponse
 } from "@/types/api/report";
 import { IReverseLocationRequest } from "@/types/api/user";
 import { getAuthToken } from "@/utils";
@@ -87,6 +89,13 @@ export const reactReportService = async (reportID: number, data: IReactReportReq
     const authToken = getAuthToken();
     const response = await axios.post<IReactReportResponse>(`${MAIN_API_URL}/report/${reportID}/reaction`, 
         { reactionType: data.reactionType }, MULTIPART_HEADERS(authToken || ''));
+    return response.data;
+}
+
+export const voteReportService = async (reportID: number, data: IVoteReportRequest): Promise<IVoteReportResponse> => {
+    const authToken = getAuthToken();
+    const response = await axios.post<IVoteReportResponse>(`${MAIN_API_URL}/report/${reportID}/vote`, 
+        { voteType: data.voteType }, MULTIPART_HEADERS(authToken || ''));
     return response.data;
 }
 
