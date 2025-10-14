@@ -6,6 +6,7 @@ import { BiPlus } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
 import { ErrorSection, ImagePreviewModal } from '@/components/feedback';
 import { useGetReport, useReactReport } from '@/hooks/main';
+import { useVoteReport } from '@/hooks/main/useVoteReport';
 import { RxCrossCircled } from "react-icons/rx";
 import { useErrorToast } from '@/hooks/toast';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
@@ -42,6 +43,12 @@ const ReportsPage = () => {
         error: reactReportError,
     } = useReactReport();
 
+    const {
+        mutate: voteReport,
+        isError: isVoteReportError,
+        error: voteReportError,
+    } = useVoteReport();
+
     const { 
         data: getReportData, 
         isLoading: getReportLoading, 
@@ -53,9 +60,10 @@ const ReportsPage = () => {
 
     useEffect(() => {
         if (isGetReportSuccess && getReportData) {
+            console.log("Fetched reports:", getReportData.data);
             setReports(getReportData?.data ?? []);
         }
-    }, [isGetReportSuccess, getReportData])
+    }, [isGetReportSuccess, getReportData, setReports])
 
     useEffect(() => {
         let filtered = reports;
@@ -211,9 +219,121 @@ const ReportsPage = () => {
     };
 
     const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => {
-        try {
-            console.log('Voting on report:', reportId, 'with vote:', voteType);
+        const updatedReports = reports.map(report => {
+            if (report.id !== reportId) return report;
 
+            let totalResolvedVotes = report.totalResolvedVotes || 0;
+            let totalNotResolvedVotes = report.totalNotResolvedVotes || 0;
+            let totalVotes = report.totalVotes !== undefined
+                ? report.totalVotes
+                : (totalResolvedVotes + totalNotResolvedVotes);
+
+            const isResolved = !!report.isResolvedByCurrentUser;
+            const isNotResolved = !!report.isNotResolvedByCurrentUser;
+
+            if (voteType === 'RESOLVED') {
+                if (isResolved) {
+                    totalResolvedVotes = Math.max(0, totalResolvedVotes - 1);
+                    totalVotes = Math.max(0, totalVotes - 1);
+                    return {
+                        ...report,
+                        totalResolvedVotes,
+                        totalVotes,
+                        isResolvedByCurrentUser: false,
+                        isNotResolvedByCurrentUser: false,
+                    };
+                } else if (isNotResolved) {
+                    totalNotResolvedVotes = Math.max(0, totalNotResolvedVotes - 1);
+                    totalResolvedVotes = totalResolvedVotes + 1;
+                    return {
+                        ...report,
+                        totalNotResolvedVotes,
+                        totalResolvedVotes,
+                        isResolvedByCurrentUser: true,
+                        isNotResolvedByCurrentUser: false,
+                    };
+                } else {
+                    totalResolvedVotes = totalResolvedVotes + 1;
+                    totalVotes = totalVotes + 1;
+                    return {
+                        ...report,
+                        totalResolvedVotes,
+                        totalVotes,
+                        isResolvedByCurrentUser: true,
+                        isNotResolvedByCurrentUser: false,
+                    };
+                }
+            }
+
+            if (voteType === 'NOT_RESOLVED') {
+                if (isNotResolved) {
+                    totalNotResolvedVotes = Math.max(0, totalNotResolvedVotes - 1);
+                    totalVotes = Math.max(0, totalVotes - 1);
+                    return {
+                        ...report,
+                        totalNotResolvedVotes,
+                        totalVotes,
+                        isResolvedByCurrentUser: false,
+                        isNotResolvedByCurrentUser: false,
+                    };
+                } else if (isResolved) {
+                    totalResolvedVotes = Math.max(0, totalResolvedVotes - 1);
+                    totalNotResolvedVotes = totalNotResolvedVotes + 1;
+                    return {
+                        ...report,
+                        totalResolvedVotes,
+                        totalNotResolvedVotes,
+                        isResolvedByCurrentUser: false,
+                        isNotResolvedByCurrentUser: true,
+                    };
+                } else {
+                    totalNotResolvedVotes = totalNotResolvedVotes + 1;
+                    totalVotes = totalVotes + 1;
+                    return {
+                        ...report,
+                        totalNotResolvedVotes,
+                        totalVotes,
+                        isResolvedByCurrentUser: false,
+                        isNotResolvedByCurrentUser: true,
+                    };
+                }
+            }
+
+            if (voteType === 'NEUTRAL') {
+                if (isResolved) {
+                    totalResolvedVotes = Math.max(0, totalResolvedVotes - 1);
+                    totalVotes = Math.max(0, totalVotes - 1);
+                } else if (isNotResolved) {
+                    totalNotResolvedVotes = Math.max(0, totalNotResolvedVotes - 1);
+                    totalVotes = Math.max(0, totalVotes - 1);
+                }
+                return {
+                    ...report,
+                    totalResolvedVotes,
+                    totalNotResolvedVotes,
+                    totalVotes,
+                    isResolvedByCurrentUser: false,
+                    isNotResolvedByCurrentUser: false,
+                };
+            }
+
+            return report;
+        });
+
+        setReports(updatedReports);
+        
+        if (selectedReport && selectedReport.id === reportId) {
+            const updatedSelected = updatedReports.find(r => r.id === reportId);
+            if (updatedSelected) setSelectedReport(updatedSelected);
+        }
+
+        try {
+            if (voteType !== 'NEUTRAL') {
+                voteReport({
+                    reportID: reportId,
+                    data: { voteType: voteType as 'RESOLVED' | 'NOT_RESOLVED' },
+                });
+            }
         } catch (error) {
             console.error('Error voting on status:', error);
         }
@@ -233,11 +353,22 @@ const ReportsPage = () => {
         getErrorResponseMessage(reactReportError) || 'Terjadi kesalahan saat bereaksi pada laporan'
     );
 
+    useErrorToast(
+        isVoteReportError,
+        getErrorResponseMessage(voteReportError) || 'Terjadi kesalahan saat melakukan vote status'
+    );
+
     useEffect(() => {
         if (isReactReportError) {
             refetchGetReport();
         }
     }, [isReactReportError, refetchGetReport]);
+
+    useEffect(() => {
+        if (isVoteReportError) {
+            refetchGetReport();
+        }
+    }, [isVoteReportError, refetchGetReport]);
 
     if (getReportLoading) {
         return <ReportSkeleton currentPath={currentPath} />;

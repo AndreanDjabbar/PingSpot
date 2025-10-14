@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { FaCheck, FaTimes, FaMinus, FaUsers, FaCrown, FaCamera } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaUsers, FaCrown, FaCamera } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useReportsStore, useUserProfileStore, useConfirmationModalStore } from '@/stores';
 import { ButtonSubmit, MultipleImageField, TextAreaField } from '@/components/form';
@@ -39,8 +39,6 @@ interface StatusVotingProps {
 
 const StatusVoting: React.FC<StatusVotingProps> = ({
     currentStatus,
-    statusVoteStats,
-    userCurrentVote,
     onVote,
     isLoading = false,
     onImageClick,
@@ -64,10 +62,24 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
         onImageClick(imageUrl);
     };
 
-    const totalVotes = statusVoteStats.resolved + statusVoteStats.notResolved + statusVoteStats.neutral || 0;
-    const resolvedPercentage = totalVotes > 0 ? (statusVoteStats.resolved / totalVotes) * 100 : 0;
-    const notResolvedPercentage = totalVotes > 0 ? (statusVoteStats.notResolved / totalVotes) * 100 : 0;
-    const neutralPercentage = totalVotes > 0 ? (statusVoteStats.neutral / totalVotes) * 100 : 0;
+    const { reports } = useReportsStore();
+    const { userProfile } = useUserProfileStore();
+    
+    const report = reports.find(r => r.id === reportID);
+    const currentUserId = userProfile ? Number(userProfile.userID) : null;
+
+    const isReportOwner = report && currentUserId === report.userID;
+    const isReportResolved = (report?.reportStatus ?? currentStatus) === 'RESOLVED';
+    const progressData = report?.reportProgress || [];
+
+    const totalVotes = report?.totalVotes || 0;
+    const resolvedPercentage = totalVotes > 0 ? ((report?.totalResolvedVotes || 0) / totalVotes) * 100 : 0;
+    const notResolvedPercentage = totalVotes > 0 ? ((report?.totalNotResolvedVotes || 0) / totalVotes) * 100 : 0;
+    const userCurrentVote = report?.isResolvedByCurrentUser 
+        ? 'RESOLVED'
+        : report?.isNotResolvedByCurrentUser
+            ? 'NOT_RESOLVED'
+            : null;
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -124,17 +136,6 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                 return 'Menunggu';
         }
     };
-    
-    const { reports } = useReportsStore();
-    const { userProfile } = useUserProfileStore();
-    
-    const report = reports.find(r => r.id === reportID);
-    const currentUserId = userProfile ? Number(userProfile.userID) : null;
-
-    const isReportOwner = report && currentUserId === report.userID;
-    const isReportResolved = (report?.reportStatus ?? currentStatus) === 'RESOLVED';
-    const progressData = report?.reportProgress || [];
-    // const { data: progressData, isLoading: isProgressLoading } = useGetProgressReport(reportID || 0);
     
     const { 
         mutate: uploadProgress, 
@@ -365,7 +366,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                     </div>
                                                 ))}
                                             </div>
-                                        ) : !progressData && (
+                                        ) : progressData.length <= 0 && (
                                             <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200 mt-3">
                                                 <BiMessageDetail className="w-4 h-4 text-gray-400 mr-2" />
                                                 <span className="text-sm text-gray-500">Belum ada progress yang dilaporkan</span>
@@ -522,54 +523,38 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                 {totalVotes > 0 && (
                                     <div className="mb-6">
                                         <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                                            <span>Pendapat Komunitas ({totalVotes} vote)</span>
+                                            <span>Pendapat orang lain ({totalVotes} vote)</span>
                                         </div>
                                         <div className="space-y-2">
                                             <div className="flex items-center space-x-3">
                                                 <div className="flex items-center space-x-1 w-24">
-                                                    <FaCheck className="w-3 h-3 text-green-600" />
-                                                    <span className="text-xs font-medium text-green-600">Selesai</span>
+                                                    <FaCheck className="w-3 h-3 text-green-700" />
+                                                    <span className="text-xs font-medium text-green-700">Selesai</span>
                                                 </div>
                                                 <div className="flex-1 bg-gray-200 rounded-full h-2">
                                                     <div 
-                                                        className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                                                        className="bg-green-700 h-2 rounded-full transition-all duration-500"
                                                         style={{ width: `${resolvedPercentage}%` }}
                                                     />
                                                 </div>
                                                 <span className="text-xs font-medium text-gray-600 w-8">
-                                                    {statusVoteStats.resolved}
+                                                    {report?.totalResolvedVotes}
                                                 </span>
                                             </div>
 
                                             <div className="flex items-center space-x-3">
                                                 <div className="flex items-center space-x-1 w-24">
-                                                    <FaTimes className="w-3 h-3 text-red-600" />
-                                                    <span className="text-xs font-medium text-red-600">Belum</span>
+                                                    <FaTimes className="w-3 h-3 text-red-700" />
+                                                    <span className="text-xs font-medium text-red-700">Belum</span>
                                                 </div>
                                                 <div className="flex-1 bg-gray-200 rounded-full h-2">
                                                     <div 
-                                                        className="bg-red-500 h-2 rounded-full transition-all duration-500"
+                                                        className="bg-red-700 h-2 rounded-full transition-all duration-500"
                                                         style={{ width: `${notResolvedPercentage}%` }}
                                                     />
                                                 </div>
                                                 <span className="text-xs font-medium text-gray-600 w-8">
-                                                    {statusVoteStats.notResolved}
-                                                </span>
-                                            </div>
-
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex items-center space-x-1 w-24">
-                                                    <FaMinus className="w-3 h-3 text-gray-600" />
-                                                    <span className="text-xs font-medium text-gray-600">Netral</span>
-                                                </div>
-                                                <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                                    <div 
-                                                        className="bg-gray-400 h-2 rounded-full transition-all duration-500"
-                                                        style={{ width: `${neutralPercentage}%` }}
-                                                    />
-                                                </div>
-                                                <span className="text-xs font-medium text-gray-600 w-8">
-                                                    {statusVoteStats.neutral}
+                                                    {report?.totalNotResolvedVotes}
                                                 </span>
                                             </div>
                                         </div>
@@ -589,12 +574,12 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                             Bagaimana pendapat Anda tentang status laporan ini?
                                         </p>
                                         
-                                        <div className="grid grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-2 gap-10">
                                             <motion.button
                                                 className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                                                     userCurrentVote === 'RESOLVED'
-                                                        ? 'bg-green-500 text-white shadow-lg'
-                                                        : 'bg-white text-green-600 border-2 border-green-500 hover:bg-green-50'
+                                                        ? 'bg-green-700 text-white shadow-lg'
+                                                        : 'bg-white text-green-700 border-2 border-green-700 hover:bg-green-50'
                                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 onClick={() => handleVote('RESOLVED')}
                                                 disabled={isLoading}
@@ -608,8 +593,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                             <motion.button
                                                 className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                                                     userCurrentVote === 'NOT_RESOLVED'
-                                                        ? 'bg-red-500 text-white shadow-lg'
-                                                        : 'bg-white text-red-600 border-2 border-red-500 hover:bg-red-50'
+                                                        ? 'bg-red-700 text-white shadow-lg'
+                                                        : 'bg-white text-red-700 border-2 border-red-700 hover:bg-red-50'
                                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 onClick={() => handleVote('NOT_RESOLVED')}
                                                 disabled={isLoading}
@@ -629,7 +614,6 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                             Anda memilih: <span className="font-medium">
                                                 {userCurrentVote === 'RESOLVED' && 'Terselesaikan'}
                                                 {userCurrentVote === 'NOT_RESOLVED' && 'Belum Selesai'}
-                                                {userCurrentVote === 'NEUTRAL' && 'Tidak Yakin'}
                                             </span>
                                         </p>
                                     </div>
