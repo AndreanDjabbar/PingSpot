@@ -213,6 +213,40 @@ func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
 	return response.ResponseSuccess(c, 200, "Reaksi laporan berhasil", "", reaction)
 }
 
+func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
+	logger.Info("VOTE REPORT HANDLER")
+	reportIDParam := c.Params("reportID")
+	uintReportID, err := mainutils.StringToUint(reportIDParam)
+	if err != nil {
+		logger.Error("Invalid reportID format", zap.String("reportID", reportIDParam), zap.Error(err))
+		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
+	}
+	var req dto.VoteReportRequest
+	if err := c.BodyParser(&req); err != nil {
+		logger.Error("Failed to parse request body", zap.Error(err))
+		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+	}
+	fmt.Println("REQ: ", req)
+	if err := validation.Validate.Struct(req); err != nil {
+		errors := validation.FormatVoteReportValidationErrors(err)
+		logger.Error("Validation failed", zap.Error(err))
+		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+	}
+	claims, err := mainutils.GetJWTClaims(c)
+	if err != nil {
+		logger.Error("Failed to get JWT claims", zap.Error(err))
+		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+	}
+	userID := uint(claims["user_id"].(float64))
+	db := database.GetPostgresDB()
+	vote, err := h.reportService.VoteToReport(db, userID, uintReportID, req.VoteType) 
+	if err != nil {
+		logger.Error("Failed to vote to report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
+		return response.ResponseError(c, 500, "Gagal vote laporan", "", err.Error())
+	}
+	return response.ResponseSuccess(c, 200, "Vote laporan berhasil", "", vote)
+}
+
 func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 	logger.Info("UPLOAD PROGRESS REPORT HANDLER")
 	reportIDParam := c.Params("reportID")
