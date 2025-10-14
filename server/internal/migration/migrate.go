@@ -224,6 +224,15 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "13102025_add_report_vote_table",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&model.ReportVote{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&model.ReportVote{})
+			},
+		},
 	})
 
 	err := m.Migrate()
