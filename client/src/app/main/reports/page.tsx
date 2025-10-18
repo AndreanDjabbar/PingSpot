@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import HeaderSection from '../components/HeaderSection';
 import { BiPlus } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
-import { ErrorSection, ImagePreviewModal } from '@/components/feedback';
+import { ErrorSection } from '@/components/feedback';
 import { useGetReport, useReactReport } from '@/hooks/main';
 import { useVoteReport } from '@/hooks/main/useVoteReport';
 import { RxCrossCircled } from "react-icons/rx";
@@ -25,8 +25,6 @@ const ReportsPage = () => {
     const [filteredReports, setFilteredReports] = useState<IReport[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [activeFilter, setActiveFilter] = useState<ReportType | "all">("all");
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
     const {
@@ -82,17 +80,7 @@ const ReportsPage = () => {
         
         setFilteredReports(filtered);
     }, [searchTerm, activeFilter, reports]);
-
-    const handleImageClick = (imageUrl: string) => {
-        setPreviewImage(imageUrl);
-        setIsModalOpen(true);
-    };
     
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setPreviewImage(null);
-    };
-
     const handleCloseReportModal = () => {
         setIsReportModalOpen(false);
         setSelectedReport(null);
@@ -407,7 +395,6 @@ const ReportsPage = () => {
                 <>
                     {filteredReports.length > 0 ? (
                         <ReportList
-                            onImageClick={handleImageClick}
                             onLike={handleLike}
                             onDislike={handleDislike}
                             onSave={handleSave}
@@ -435,12 +422,6 @@ const ReportsPage = () => {
                     )}
                 </>
             )}
-            
-            <ImagePreviewModal
-                imageUrl={previewImage}
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-            />
 
             {selectedReport && (
                 <ReportModal

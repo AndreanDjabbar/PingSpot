@@ -7,7 +7,7 @@ import { ReportType, IReportImage } from '@/types/model/report';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { ReportInteractionBar } from '@/app/main/reports/components/ReportInteractionBar';
 import StatusVoting from './StatusVoting';
-import { useReportsStore } from '@/stores';
+import { useReportsStore, useImagePreviewModalStore } from '@/stores';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,
@@ -16,7 +16,6 @@ const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
 
 interface ReportCardProps {
     reportID: number;
-    onImageClick: (imageUrl: string) => void;
     onLike: (reportId: number) => void;
     onDislike: (reportId: number) => void;
     onSave: (reportId: number) => void;
@@ -49,7 +48,6 @@ const getReportImages = (images: IReportImage): string[] => {
 
 const ReportCard: React.FC<ReportCardProps> = ({
     reportID,
-    onImageClick,
     onLike,
     onDislike,
     onSave,
@@ -59,10 +57,15 @@ const ReportCard: React.FC<ReportCardProps> = ({
     onStatusUpdate
 }) => {
     const { reports } = useReportsStore();
+    const { openImagePreview } = useImagePreviewModalStore();
 
     const report = reports.find(r => r.id === reportID);
 
     if (!report) return null;
+
+    const onImageClick = (imageURL: string) => {
+        openImagePreview(imageURL);
+    }
 
     return (
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl overflow-hidden transition-all duration-300">

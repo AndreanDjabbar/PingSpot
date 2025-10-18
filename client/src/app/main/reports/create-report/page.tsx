@@ -9,7 +9,7 @@ import { FaMapMarkerAlt } from 'react-icons/fa';
 import { MdOutlineCategory } from 'react-icons/md';
 import { IoLocationOutline } from 'react-icons/io5';
 import { LuNotebookText } from "react-icons/lu";
-import { SuccessSection, ErrorSection, ImagePreviewModal } from '@/components/feedback';
+import { SuccessSection, ErrorSection } from '@/components/feedback';
 import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseMessage } from '@/utils';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import dynamic from 'next/dynamic';
@@ -18,7 +18,7 @@ import { useCreateReport, useReverseCurrentLocation } from '@/hooks/main';
 import { CreateReportSchema } from '../../schema';
 import { ICreateReportRequest } from '@/types/api/report';
 import HeaderSection from '../../components/HeaderSection';
-import { useConfirmationModalStore } from '@/stores';
+import { useConfirmationModalStore, useImagePreviewModalStore } from '@/stores';
 
 const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
     ssr: false,
@@ -28,8 +28,6 @@ const ReportsPage = () => {
     const currentPath = usePathname();
     const [reportImages, setReportImages] = useState<File[]>([]);
     const [markerPosition, setMarkerPosition] = useState<{ lat: number, lng: number } | null>(null);
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
     const { mutate, isPending, isError, isSuccess, error, data } = useCreateReport();
     const { 
@@ -39,6 +37,11 @@ const ReportsPage = () => {
         isSuccess: reverseSuccess, 
     } = useReverseCurrentLocation();
     const { openConfirm } = useConfirmationModalStore();
+    const { openImagePreview } = useImagePreviewModalStore();
+
+    const handleImageClick = (imageUrl: string) => {
+        openImagePreview(imageUrl);
+    };
     
     const issueTypes = [
         { value: 'infrastructure', label: 'Infrastruktur' },
@@ -46,15 +49,6 @@ const ReportsPage = () => {
         { value: 'safety', label: 'Keamanan' },
         { value: 'other', label: 'Lainnya' }
     ];
-
-    const handleImageClick = (imageUrl: string) => {
-        setPreviewImage(imageUrl);
-        setIsModalOpen(true);
-    };
-    
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-    };
     
     const {
         register,
@@ -296,11 +290,11 @@ const ReportsPage = () => {
                 </form>
             </div>
         )}
-        <ImagePreviewModal
+        {/* <ImagePreviewModal
             imageUrl={previewImage}
             isOpen={isModalOpen}
             onClose={handleCloseModal}
-        />
+        /> */}
         </div>
     );
 };

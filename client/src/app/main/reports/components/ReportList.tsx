@@ -3,7 +3,6 @@ import ReportCard from './ReportCard';
 import { useReportsStore } from '@/stores';
 
 interface ReportListProps {
-    onImageClick: (imageUrl: string) => void;
     onLike: (reportId: number) => void;
     onDislike: (reportId: number) => void;
     onSave: (reportId: number) => void;
@@ -14,7 +13,6 @@ interface ReportListProps {
 }
 
 const ReportList: React.FC<ReportListProps> = ({
-    onImageClick,
     onLike,
     onDislike,
     onSave,
@@ -30,7 +28,6 @@ const ReportList: React.FC<ReportListProps> = ({
             <ReportCard
             key={report.id}
             reportID={report.id}
-            onImageClick={onImageClick}
             onLike={onLike}
             onDislike={onDislike}
             onSave={onSave}
