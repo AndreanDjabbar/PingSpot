@@ -3,6 +3,7 @@ import { useConfirmationModalStore } from "./confirmationModalStore";
 import { useUserProfileStore } from "./userProfileStore";
 import { useReportsStore } from "./reportsStore";
 import { useLocationStore } from "./userLocationStore";
+import { useImagePreviewModalStore } from "./imagePreviewModalStore";
 
 export {
     useGlobalStore,
@@ -10,4 +11,5 @@ export {
     useUserProfileStore,
     useReportsStore,
     useLocationStore,
+    useImagePreviewModalStore
 }
