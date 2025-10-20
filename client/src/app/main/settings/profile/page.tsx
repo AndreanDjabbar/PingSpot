@@ -1,13 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { InputField, DateTimeField, RadioField, ImageField, ButtonSubmit, TextAreaField } from '@/components/form';
 import { IoPersonSharp } from 'react-icons/io5';
-import { LuNotebookText } from 'react-icons/lu';
 import { FaCalendarAlt } from 'react-icons/fa';
-import { TbGenderBigender } from "react-icons/tb";
 import { SaveProfileSchema } from '../../schema';
 import { ISaveProfileRequest } from '@/types/api/user';
 import { useForm } from 'react-hook-form';
@@ -24,7 +20,6 @@ const ProfilePage = () => {
     const [profilePicture, setProfilePicture] = useState<File | null>(null);
     const [birthdayDate, setBirthdayDate] = useState<string>(user?.birthday || '');
     const [removedProfilePicture, setRemovedProfilePicture] = useState(false);
-    const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
     const {openConfirm} = useConfirmationModalStore();
     
     const defaultValues = {
@@ -46,8 +41,13 @@ const ProfilePage = () => {
         resolver: zodResolver(SaveProfileSchema),
         defaultValues: defaultValues
     });
+
+    const { mutate, isPending, isError, isSuccess, error, data } = useSaveProfile();
+    const currentPath = usePathname();
     
-    const confirmationModal = () => {
+    const onSubmit = (formData: ISaveProfileRequest) => {
+        const preparedData = prepareFormData(formData);
+        
         openConfirm({
             type: "info",
             title: "Konfirmasi Perubahan Profil",
@@ -57,17 +57,8 @@ const ProfilePage = () => {
             confirmTitle: "Ubah",
             cancelTitle: "Batal",
             icon: <IoPersonSharp />,
-            onConfirm: () => confirmSubmit(),
+            onConfirm: () => mutate(preparedData),  
         });
-    }
-
-    const { mutate, isPending, isError, isSuccess, error, data } = useSaveProfile();
-    const currentPath = usePathname();
-    
-    const onSubmit = (formData: ISaveProfileRequest) => {
-        const preparedData = prepareFormData(formData);
-        setFormDataToSubmit(preparedData);
-        confirmationModal();
     };
 
     const prepareFormData = (formData: ISaveProfileRequest): FormData => {
@@ -104,12 +95,6 @@ const ProfilePage = () => {
             }
         }
         return data;
-    }
-
-    const confirmSubmit = () => {
-        if (formDataToSubmit) {
-            mutate(formDataToSubmit);
-        }
     }
 
     const genderOptions = [
@@ -247,11 +232,9 @@ const ProfilePage = () => {
                                             options={genderOptions}
                                             value={genderValue || ''}
                                             onChange={(val) => {
-                                                console.log("Setting gender to:", val);
                                                 setValue("gender", val as "male" | "female");
                                             }}
                                             layout='horizontal'
-                                            icon={<TbGenderBigender size={20}/>}
                                         />
                                         <div className="text-red-500 text-sm font-semibold">{errors?.gender?.message as string}</div>
                                     </div>
@@ -264,7 +247,6 @@ const ProfilePage = () => {
                                         withLabel={true}
                                         register={register("bio")}
                                         labelTitle="Bio Anda"
-                                        icon={<LuNotebookText size={20}/>} 
                                         placeHolder="Masukkan bio Anda"
                                     />
                                     <div className="text-red-500 text-sm font-semibold">{errors.bio?.message as string}</div>
