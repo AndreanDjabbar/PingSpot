@@ -17,10 +17,10 @@ type ReportService struct {
 	reportLocationRepo reportRepository.ReportLocationRepository
 	reportImageRepo    reportRepository.ReportImageRepository
 	reportReactionRepo reportRepository.ReportReactionRepository
-	reportVoteRepo    reportRepository.ReportVoteRepository
+	reportVoteRepo     reportRepository.ReportVoteRepository
 	reportProgressRepo reportRepository.ReportProgressRepository
-	userRepo 			userRepository.UserRepository
-	userProfileRepo 	userRepository.UserProfileRepository
+	userRepo           userRepository.UserRepository
+	userProfileRepo    userRepository.UserProfileRepository
 }
 
 func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo reportRepository.ReportLocationRepository, reportReaction reportRepository.ReportReactionRepository, imageRepo reportRepository.ReportImageRepository, userRepo userRepository.UserRepository, userProfileRepo userRepository.UserProfileRepository, reportProgressRepo reportRepository.ReportProgressRepository, reportVoteRepo reportRepository.ReportVoteRepository) *ReportService {
@@ -28,11 +28,11 @@ func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo
 		reportRepo:         reportRepo,
 		reportLocationRepo: locationRepo,
 		reportImageRepo:    imageRepo,
-		userRepo:			userRepo,
+		userRepo:           userRepo,
 		reportReactionRepo: reportReaction,
 		reportProgressRepo: reportProgressRepo,
-		userProfileRepo:	userProfileRepo,
-		reportVoteRepo: 	reportVoteRepo,
+		userProfileRepo:    userProfileRepo,
+		reportVoteRepo:     reportVoteRepo,
 	}
 }
 
@@ -46,11 +46,11 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 			tx.Rollback()
 		}
 	}()
-
 	var reportStruct model.Report
 	reportStruct = model.Report{
 		UserID:            userID,
 		ReportTitle:       req.ReportTitle,
+		HasProgress:       req.HasProgress,
 		ReportType:        model.ReportType(req.ReportType),
 		ReportDescription: req.ReportDescription,
 		CreatedAt:         time.Now().Unix(),
@@ -67,7 +67,7 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 		ReportID:       reportID,
 		Latitude:       req.Latitude,
 		Longitude:      req.Longitude,
-		Geometry: 	 fmt.Sprintf("SRID=4326;POINT(%f %f)", req.Longitude, req.Latitude),
+		Geometry:       fmt.Sprintf("SRID=4326;POINT(%f %f)", req.Longitude, req.Latitude),
 		DetailLocation: req.DetailLocation,
 		DisplayName:    req.DisplayName,
 		AddressType:    req.AddressType,
@@ -133,7 +133,7 @@ func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, erro
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("Gagal mendapatkan reaksi tidak suka: %w", err)
 		}
-		
+
 		var isLikedByCurrentUser, isDislikedByCurrentUser, isResolvedByCurrentUser, isNotResolvedByCurrentUser bool
 
 		resolvedVoteCount, err := s.reportVoteRepo.GetResolvedVoteCount(report.ID)
@@ -154,7 +154,7 @@ func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, erro
 			ReportCreatedAt:   report.CreatedAt,
 			UserID:            report.UserID,
 			UserName:          report.User.Username,
-			FullName:		   report.User.FullName,
+			FullName:          report.User.FullName,
 			ProfilePicture:    report.User.Profile.ProfilePicture,
 			Location: dto.ReportLocationResponse{
 				DetailLocation: report.ReportLocation.DetailLocation,
@@ -165,16 +165,16 @@ func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, erro
 				Country:        report.ReportLocation.Country,
 				CountryCode:    report.ReportLocation.CountryCode,
 				Region:         report.ReportLocation.Region,
-				Road:		    report.ReportLocation.Road,
+				Road:           report.ReportLocation.Road,
 				PostCode:       report.ReportLocation.PostCode,
 				County:         report.ReportLocation.County,
 				State:          report.ReportLocation.State,
 				Village:        report.ReportLocation.Village,
 				Suburb:         report.ReportLocation.Suburb,
-				Geometry: 	 	&report.ReportLocation.Geometry,
+				Geometry:       &report.ReportLocation.Geometry,
 			},
 			ReportStatus: string(report.ReportStatus),
-			HasProgress: report.HasProgress,
+			HasProgress:  report.HasProgress,
 			Images: dto.ReportImageResponse{
 				Image1URL: report.ReportImages.Image1URL,
 				Image2URL: report.ReportImages.Image2URL,
@@ -182,9 +182,9 @@ func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, erro
 				Image4URL: report.ReportImages.Image4URL,
 				Image5URL: report.ReportImages.Image5URL,
 			},
-			TotalLikeReactions: &likeReactionCount,
+			TotalLikeReactions:    &likeReactionCount,
 			TotalDislikeReactions: &dislikeReactionCount,
-			TotalReactions:    likeReactionCount + dislikeReactionCount,
+			TotalReactions:        likeReactionCount + dislikeReactionCount,
 			ReportReactions: func() []dto.ReactReportResponse {
 				var reactions []dto.ReactReportResponse
 				for _, reaction := range *report.ReportReactions {
@@ -224,9 +224,9 @@ func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, erro
 			}(),
 			IsLikedByCurrentUser:    isLikedByCurrentUser,
 			IsDislikedByCurrentUser: isDislikedByCurrentUser,
-			TotalResolvedVotes: &resolvedVoteCount,
-			TotalNotResolvedVotes: &notResolvedVoteCount,
-			TotalVotes: resolvedVoteCount + notResolvedVoteCount,
+			TotalResolvedVotes:      &resolvedVoteCount,
+			TotalNotResolvedVotes:   &notResolvedVoteCount,
+			TotalVotes:              resolvedVoteCount + notResolvedVoteCount,
 			ReportVotes: func() []dto.GetVoteReportResponse {
 				var votes []dto.GetVoteReportResponse
 				for _, vote := range *report.ReportVotes {
@@ -244,12 +244,12 @@ func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, erro
 						}
 						if vote.VoteType == model.NOT_RESOLVED {
 							isNotResolvedByCurrentUser = true
-						}	
+						}
 					}
 				}
 				return votes
 			}(),
-			IsResolvedByCurrentUser: isResolvedByCurrentUser,
+			IsResolvedByCurrentUser:    isResolvedByCurrentUser,
 			IsNotResolvedByCurrentUser: isNotResolvedByCurrentUser,
 		})
 	}
@@ -297,7 +297,6 @@ func (s *ReportService) ReactToReport(db *gorm.DB, userID uint, reportID uint, r
 			tx.Rollback()
 		}
 	}()
-
 
 	modelReactionType := model.ReactionType(reactionType)
 	var resultReaction *model.ReportReaction
@@ -390,9 +389,9 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 	switch {
 	case existingVote == nil:
 		newVote := model.ReportVote{
-			UserID:   userID,
-			ReportID: reportID,
-			VoteType: modelVoteType,
+			UserID:    userID,
+			ReportID:  reportID,
+			VoteType:  modelVoteType,
 			CreatedAt: time.Now().Unix(),
 			UpdatedAt: time.Now().Unix(),
 		}
@@ -424,12 +423,12 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 		return nil, fmt.Errorf("Gagal menyimpan perubahan: %w", err)
 	}
 	return &dto.GetVoteReportResponse{
-		ID: resultVote.ID,
-		ReportID:     reportID,
-		UserID:       userID,
-		VoteType:     resultVote.VoteType,
-		CreatedAt:    resultVote.CreatedAt,
-		UpdatedAt:    resultVote.UpdatedAt,
+		ID:        resultVote.ID,
+		ReportID:  reportID,
+		UserID:    userID,
+		VoteType:  resultVote.VoteType,
+		CreatedAt: resultVote.CreatedAt,
+		UpdatedAt: resultVote.UpdatedAt,
 	}, nil
 }
 
@@ -464,7 +463,7 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 		return nil, errors.New("anda tidak memiliki izin untuk mengunggah progres pada laporan ini")
 	}
 
-	if !report.HasProgress {
+	if report.HasProgress == nil || !*report.HasProgress {
 		tx.Rollback()
 		return nil, errors.New("laporan ini tidak memerlukan progres (informasi saja)")
 	}
@@ -480,16 +479,16 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 			tx.Rollback()
 			return nil, fmt.Errorf("gagal memperbarui status laporan: %w", err)
 		}
-	} 
+	}
 
 	reportProgress := &model.ReportProgress{
-		ReportID:   reportID,
-		UserID:     userID,
-		Status:     model.ReportStatus(req.Status),
-		Notes:      req.Notes,
+		ReportID:    reportID,
+		UserID:      userID,
+		Status:      model.ReportStatus(req.Status),
+		Notes:       req.Notes,
 		Attachment1: req.Attachment1,
 		Attachment2: req.Attachment2,
-		CreatedAt:  time.Now().Unix(),
+		CreatedAt:   time.Now().Unix(),
 	}
 
 	newProgress, err := s.reportProgressRepo.Create(reportProgress, tx)
@@ -514,7 +513,6 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 
 	return response, nil
 }
-
 
 func (s *ReportService) GetProgressReports(reportID uint) ([]dto.GetProgressReportResponse, error) {
 	reportProgresses, err := s.reportProgressRepo.GetByReportID(reportID)

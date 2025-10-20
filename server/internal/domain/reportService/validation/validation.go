@@ -39,6 +39,10 @@ func FormatCreateReportValidationErrors(err error) map[string]string {
 				if e.Tag() == "required" {
 					errors["detailLocation"] = "Detail lokasi wajib diisi"
 				}
+			case "HasProgress":
+				if e.Tag() == "omitempty" {
+					errors["hasProgress"] = "HasProgress tidak valid"
+				}
 			case "Latitude":
 				if e.Tag() == "required" {
 					errors["latitude"] = "Latitude wajib diisi"

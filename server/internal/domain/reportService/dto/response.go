@@ -29,38 +29,38 @@ type ReportImageResponse struct {
 }
 
 type CreateReportResponse struct {
-	Report         model.Report `json:"report"`
+	Report         model.Report         `json:"report"`
 	ReportLocation model.ReportLocation `json:"reportLocation"`
-	ReportImages   model.ReportImage `json:"reportImages"`
+	ReportImages   model.ReportImage    `json:"reportImages"`
 }
 
 type GetReportResponse struct {
-	ID                      uint                   `json:"id"`
-	ReportTitle             string                 `json:"reportTitle"`
-	ReportType              string                 `json:"reportType"`
-	ReportDescription       string                 `json:"reportDescription"`
-	ReportCreatedAt         int64                  `json:"reportCreatedAt"`
-	ReportStatus			string                 `json:"reportStatus"`
-	HasProgress				bool				   `json:"hasProgress"`
-	UserID                  uint                   `json:"userID"`
-	UserName                string                 `json:"userName"`
-	FullName                string                 `json:"fullName"`
-	ProfilePicture          *string                `json:"profilePicture"`
-	Location                ReportLocationResponse `json:"location"`
-	Images                  ReportImageResponse    `json:"images"`
-	TotalReactions          int64                  `json:"totalReactions"`
-	TotalLikeReactions      *int64                 `json:"totalLikeReactions"`
-	TotalDislikeReactions   *int64                 `json:"totalDislikeReactions"`
-	TotalResolvedVotes      *int64                 `json:"totalResolvedVotes"`
-	TotalNotResolvedVotes   *int64                 `json:"totalNotResolvedVotes"`
-	TotalVotes             int64                  `json:"totalVotes"`
-	IsLikedByCurrentUser    bool                   `json:"isLikedByCurrentUser"`
-	IsDislikedByCurrentUser bool                   `json:"isDislikedByCurrentUser"`
-	ReportReactions         []ReactReportResponse  `json:"reportReactions"`
-	ReportProgress		 	[]GetProgressReportResponse `json:"reportProgress"`
-	ReportVotes				[]GetVoteReportResponse		`json:"reportVotes,omitempty"`
-	IsResolvedByCurrentUser bool				   `json:"isResolvedByCurrentUser"`
-	IsNotResolvedByCurrentUser bool				   `json:"isNotResolvedByCurrentUser"`
+	ID                         uint                        `json:"id"`
+	ReportTitle                string                      `json:"reportTitle"`
+	ReportType                 string                      `json:"reportType"`
+	ReportDescription          string                      `json:"reportDescription"`
+	ReportCreatedAt            int64                       `json:"reportCreatedAt"`
+	ReportStatus               string                      `json:"reportStatus"`
+	HasProgress                *bool                       `json:"hasProgress"`
+	UserID                     uint                        `json:"userID"`
+	UserName                   string                      `json:"userName"`
+	FullName                   string                      `json:"fullName"`
+	ProfilePicture             *string                     `json:"profilePicture"`
+	Location                   ReportLocationResponse      `json:"location"`
+	Images                     ReportImageResponse         `json:"images"`
+	TotalReactions             int64                       `json:"totalReactions"`
+	TotalLikeReactions         *int64                      `json:"totalLikeReactions"`
+	TotalDislikeReactions      *int64                      `json:"totalDislikeReactions"`
+	TotalResolvedVotes         *int64                      `json:"totalResolvedVotes"`
+	TotalNotResolvedVotes      *int64                      `json:"totalNotResolvedVotes"`
+	TotalVotes                 int64                       `json:"totalVotes"`
+	IsLikedByCurrentUser       bool                        `json:"isLikedByCurrentUser"`
+	IsDislikedByCurrentUser    bool                        `json:"isDislikedByCurrentUser"`
+	ReportReactions            []ReactReportResponse       `json:"reportReactions"`
+	ReportProgress             []GetProgressReportResponse `json:"reportProgress"`
+	ReportVotes                []GetVoteReportResponse     `json:"reportVotes,omitempty"`
+	IsResolvedByCurrentUser    bool                        `json:"isResolvedByCurrentUser"`
+	IsNotResolvedByCurrentUser bool                        `json:"isNotResolvedByCurrentUser"`
 }
 
 type ReactReportResponse struct {
@@ -81,12 +81,12 @@ type UploadProgressReportResponse struct {
 }
 
 type GetVoteReportResponse struct {
-	ID			   uint   `json:"id"`
-	ReportID       uint   `json:"reportID"`
-	UserID         uint   `json:"userID"`
-	VoteType 	 model.ReportStatus `json:"voteType"`
-	CreatedAt      int64  `json:"createdAt"`
-	UpdatedAt      int64  `json:"updatedAt"`
+	ID        uint               `json:"id"`
+	ReportID  uint               `json:"reportID"`
+	UserID    uint               `json:"userID"`
+	VoteType  model.ReportStatus `json:"voteType"`
+	CreatedAt int64              `json:"createdAt"`
+	UpdatedAt int64              `json:"updatedAt"`
 }
 
 type GetProgressReportResponse struct {

@@ -34,7 +34,6 @@ const ReportsPage = () => {
     const [markerPosition, setMarkerPosition] = useState<{ lat: number, lng: number } | null>(null);
     const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
     const [currentStep, setCurrentStep] = useState(0);
-    const [progressOptions, setProgressOptions] = useState<string[]>([]);
     const { mutate, isPending, isError, isSuccess, error, data } = useCreateReport();
     const { 
         mutate: reverseLocation, 
@@ -87,9 +86,13 @@ const ReportsPage = () => {
         watch
     } = useForm<ICreateReportRequest>({
         resolver: zodResolver(CreateReportSchema),
+        defaultValues: {
+            hasProgress: false
+        }
     });
 
     const reportTypeValue = watch('reportType');
+    const hasProgressValue = watch('hasProgress');
 
     const confirmSubmit = (dataToSubmit: FormData) => {
         if (dataToSubmit && markerPosition) {
@@ -157,6 +160,7 @@ const ReportsPage = () => {
         data.append('detailLocation', formData.location);
         data.append('latitude', formData.latitude);
         data.append('longitude', formData.longitude);
+        data.append('hasProgress', formData.hasProgress ? 'true' : 'false');
         if (reportImages && reportImages.length > 0 ) {
             reportImages.forEach((file) => {
                 data.append('reportImages', file);
@@ -300,10 +304,10 @@ const ReportsPage = () => {
 
                                     <div className="">
                                         <CheckboxField
-                                            id="progressFeatures"
-                                            name="progressFeatures"
-                                            values={progressOptions}
-                                            onChange={setProgressOptions}
+                                            id="hasProgress"
+                                            name="hasProgress"
+                                            values={hasProgressValue ? ['enable'] : []}
+                                            onChange={(values) => setValue('hasProgress', values.includes('enable'))}
                                             withLabel={true}
                                             labelTitle="Fitur Progress Laporan" 
                                             options={[
@@ -397,9 +401,9 @@ const ReportsPage = () => {
                                                     <div>
                                                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fitur Progress</label>
                                                         <p className="text-base text-gray-900 mt-2">
-                                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${progressOptions.includes('enable') ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                                {progressOptions.includes('enable') && <MdTrackChanges size={16} />}
-                                                                {progressOptions.includes('enable') ? 'Diaktifkan' : 'Tidak Diaktifkan'}
+                                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${hasProgressValue ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                                {hasProgressValue && <MdTrackChanges size={16} />}
+                                                                {hasProgressValue ? 'Diaktifkan' : 'Tidak Diaktifkan'}
                                                             </span>
                                                         </p>
                                                     </div>

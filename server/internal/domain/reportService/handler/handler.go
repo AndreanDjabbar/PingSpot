@@ -36,6 +36,7 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 	reportDescription := c.FormValue("reportDescription")
 	reportType := c.FormValue("reportType")
 	detailLocation := c.FormValue("detailLocation")
+	hasProgressStr := c.FormValue("hasProgress")
 	latitude := c.FormValue("latitude")
 	longitude := c.FormValue("longitude")
 	displayName := c.FormValue("displayName")
@@ -96,11 +97,17 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Format longitude tidak valid", "", "Longitude harus berupa angka desimal")
 	}
 
+	hasProgress, err := mainutils.StringToBool(hasProgressStr)
+	if err != nil && hasProgressStr != "" {
+		logger.Error("Invalid hasProgress format", zap.String("hasProgress", hasProgressStr), zap.Error(err))
+	}
+
 	req := dto.CreateReportRequest{
 		ReportTitle:       reportTitle,
 		ReportType:        reportType,
 		ReportDescription: reportDescription,
 		DetailLocation:    detailLocation,
+		HasProgress:       hasProgress,
 		Latitude:          floatLatitude,
 		Longitude:         floatLongitude,
 		DisplayName:       mainutils.StrPtrOrNil(displayName),
@@ -149,7 +156,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	logger.Info("GET REPORT HANDLER")
 	reportID := c.Query("reportID")
 
-	claims, err := mainutils.GetJWTClaims(c);
+	claims, err := mainutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
@@ -205,7 +212,7 @@ func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
 	userID := uint(claims["user_id"].(float64))
 	db := database.GetPostgresDB()
 
-	reaction, err := h.reportService.ReactToReport(db, userID, uintReportID, req.ReactionType) 
+	reaction, err := h.reportService.ReactToReport(db, userID, uintReportID, req.ReactionType)
 	if err != nil {
 		logger.Error("Failed to react to report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal mereaksi laporan", "", err.Error())
@@ -239,7 +246,7 @@ func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
 	}
 	userID := uint(claims["user_id"].(float64))
 	db := database.GetPostgresDB()
-	vote, err := h.reportService.VoteToReport(db, userID, uintReportID, req.VoteType) 
+	vote, err := h.reportService.VoteToReport(db, userID, uintReportID, req.VoteType)
 	if err != nil {
 		logger.Error("Failed to vote to report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal vote laporan", "", err.Error())
@@ -265,7 +272,7 @@ func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 	var images map[int]string = make(map[int]string)
 	status := c.FormValue("progressStatus")
 	notes := c.FormValue("progressNotes")
-	
+
 	files := form.File["progressAttachments"]
 	if len(files) > 2 {
 		logger.Error("Too many progress attachments", zap.Int("count", len(files)))
@@ -304,8 +311,8 @@ func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 	}
 
 	req := dto.UploadProgressReportRequest{
-		Status: status,
-		Notes:  notes,
+		Status:      status,
+		Notes:       notes,
 		Attachment1: mainutils.StrPtrOrNil(images[0]),
 		Attachment2: mainutils.StrPtrOrNil(images[1]),
 	}
@@ -324,7 +331,7 @@ func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 	userID := uint(claims["user_id"].(float64))
 
 	db := database.GetPostgresDB()
-	
+
 	newProgress, err := h.reportService.UploadProgressReport(db, userID, uintReportID, req)
 	if err != nil {
 		logger.Error("Failed to upload progress report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))

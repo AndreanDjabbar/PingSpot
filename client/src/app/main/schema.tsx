@@ -52,6 +52,7 @@ export const CreateReportSchema = z.object({
         (val) => !isNaN(parseFloat(val)) && isFinite(parseFloat(val)),
         { message: "Koordinat longitude tidak valid" }
     ),
+    hasProgress: z.boolean().optional(),
     reportImages: z
     .array(z.instanceof(File))
     .max(5, "Maksimal 5 gambar")
