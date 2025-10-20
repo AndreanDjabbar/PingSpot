@@ -5,6 +5,7 @@ import InputField from './InputField';
 import RadioField from './RadioField';
 import TextAreaField from './TextaAreaField';
 import MultipleImageField, { type ImageItem } from './MultipleImageField';
+import CheckboxField from './CheckboxField';
 
 export {
     ImageField,
@@ -13,7 +14,14 @@ export {
     InputField,
     RadioField,
     TextAreaField,
-    MultipleImageField
+    MultipleImageField,
+    CheckboxField
 };
 
 export type { ImageItem };
+
+export type CheckboxOption = {
+    value: string;
+    label: string;
+    disabled?: boolean;
+};
