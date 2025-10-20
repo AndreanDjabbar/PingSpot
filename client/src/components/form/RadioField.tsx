@@ -1,5 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { BsFillInfoCircleFill } from "react-icons/bs";
+import { useFormInformationModalStore } from '@/stores';
 
 interface RadioOption {
     value: string;
@@ -18,6 +20,9 @@ interface RadioFieldProps {
     onChange?: (value: string) => void;
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     register?: unknown;
+    informationTitle?: string;
+    informationDescription?: string;
+    informationAdditionalInfo?: string;
     layout?: 'vertical' | 'horizontal';
     icon?: React.ReactNode;
 }
@@ -34,6 +39,9 @@ const RadioField: React.FC<RadioFieldProps> = ({
     onChange,
     onBlur,
     register,
+    informationTitle,
+    informationDescription,
+    informationAdditionalInfo,
     layout = 'vertical',
     icon
 }) => {
@@ -42,15 +50,29 @@ const RadioField: React.FC<RadioFieldProps> = ({
         onChange(event.target.value);
         }
     };
+    const { openFormInfo } = useFormInformationModalStore();
+
+    const handleShowInfo = () => {
+        openFormInfo({
+            title: informationTitle || '',
+            description: informationDescription || '',
+            additionalInfo: informationAdditionalInfo
+        });
+    };
 
     return (
         <div className={`space-y-1 ${className}`}>
         {withLabel && (
             <div className="flex items-center space-x-2">
             {icon && <span className="text-sky-800">{icon}</span>}
-            <label htmlFor={id} className="block text-sm font-medium text-sky-800">
-                {labelTitle}
-            </label>
+                <label htmlFor={id} className="block text-sm font-medium text-sky-800">
+                    {labelTitle}
+                </label>
+                {informationTitle && (
+                <div className="flex items-center text-sky-600 hover:text-sky-800 hover:scale-110 transition-all duration-300" title={informationTitle} onClick={handleShowInfo}>
+                    <BsFillInfoCircleFill size={16} />
+                </div>
+                )}
             </div>
         )}
         <div className={cn(
@@ -73,7 +95,7 @@ const RadioField: React.FC<RadioFieldProps> = ({
                 />
                 <label
                 htmlFor={`${id}-${option.value}`}
-                className="ml-2 block text-sm font-medium text-black cursor-pointer"
+                className="ml-2 block text-sm font-medium text-gray-800 cursor-pointer"
                 >
                 {option.label}
                 </label>

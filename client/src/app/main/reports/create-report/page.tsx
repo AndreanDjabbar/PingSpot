@@ -4,9 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { InputField, ButtonSubmit, TextAreaField, RadioField, MultipleImageField } from '@/components/form';
+import { InputField, ButtonSubmit, TextAreaField, RadioField, MultipleImageField, CheckboxField } from '@/components/form';
 import { FaMapMarkerAlt, FaCheckCircle } from 'react-icons/fa';
-import { MdOutlineCategory, MdOutlineNoteAlt } from 'react-icons/md';
+import { MdOutlineNoteAlt } from 'react-icons/md';
 import { IoLocationOutline } from 'react-icons/io5';
 import { IoMdImages } from "react-icons/io";
 import { LuNotebookText } from "react-icons/lu";
@@ -22,6 +22,7 @@ import HeaderSection from '../../components/HeaderSection';
 import { useConfirmationModalStore, useImagePreviewModalStore } from '@/stores';
 import { BsFillInfoCircleFill } from "react-icons/bs";
 import { Stepper, Accordion } from '@/components/UI';
+import { MdTrackChanges } from "react-icons/md";
 
 const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
     ssr: false,
@@ -33,6 +34,7 @@ const ReportsPage = () => {
     const [markerPosition, setMarkerPosition] = useState<{ lat: number, lng: number } | null>(null);
     const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
     const [currentStep, setCurrentStep] = useState(0);
+    const [progressOptions, setProgressOptions] = useState<string[]>([]);
     const { mutate, isPending, isError, isSuccess, error, data } = useCreateReport();
     const { 
         mutate: reverseLocation, 
@@ -280,19 +282,39 @@ const ReportsPage = () => {
                                     <div className="text-red-500 text-sm font-semibold">{errors.reportDescription?.message as string}</div>
                                 </div>
 
-                                <div className="w-full">
-                                    <RadioField
-                                        id="reportType"
-                                        name="reportType"
-                                        value={reportTypeValue || ''}
-                                        register={register("reportType")}
-                                        withLabel={true}
-                                        labelTitle="Jenis Laporan"
-                                        icon={<MdOutlineCategory size={20} />}
-                                        options={issueTypes}
-                                        layout="horizontal"
-                                    />
-                                    <div className="text-red-500 text-sm font-semibold">{errors.reportType?.message as string}</div>
+
+                                <div className='w-full flex justify-between items-center'>
+                                    <div className="">
+                                        <RadioField
+                                            id="reportType"
+                                            name="reportType"
+                                            value={reportTypeValue || ''}
+                                            register={register("reportType")}
+                                            withLabel={true}
+                                            labelTitle="Jenis Laporan"
+                                            options={issueTypes}
+                                            layout="horizontal"
+                                        />
+                                        <div className="text-red-500 text-sm font-semibold">{errors.reportType?.message as string}</div>
+                                    </div>
+
+                                    <div className="">
+                                        <CheckboxField
+                                            id="progressFeatures"
+                                            name="progressFeatures"
+                                            values={progressOptions}
+                                            onChange={setProgressOptions}
+                                            withLabel={true}
+                                            labelTitle="Fitur Progress Laporan" 
+                                            options={[
+                                                { value: 'enable', label: 'Aktifkan progress laporan' }
+                                            ]}
+                                            informationTitle="Fitur Progress Laporan"
+                                            informationDescription="Dengan mengaktifkan fitur progress, Anda dapat melacak dan mendokumentasikan perkembangan penanganan laporan secara berkala. Setiap tahapan perbaikan atau tindak lanjut dapat Anda catat dengan menambahkan update progress beserta foto pendukung."
+                                            informationAdditionalInfo="Fitur ini sangat berguna untuk laporan yang memerlukan penanganan bertahap atau jangka panjang, sehingga Anda dan pihak terkait dapat memantau kemajuan perbaikan secara transparan dan terstruktur."
+                                            layout="vertical"
+                                        />
+                                    </div>
                                 </div>
                             </>
                         )}
@@ -369,6 +391,15 @@ const ReportsPage = () => {
                                                         <p className="text-base text-gray-900 mt-2">
                                                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-sky-100 text-sky-800">
                                                                 {issueTypes.find(t => t.value === watch('reportType'))?.label || '-'}
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fitur Progress</label>
+                                                        <p className="text-base text-gray-900 mt-2">
+                                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${progressOptions.includes('enable') ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                                {progressOptions.includes('enable') && <MdTrackChanges size={16} />}
+                                                                {progressOptions.includes('enable') ? 'Diaktifkan' : 'Tidak Diaktifkan'}
                                                             </span>
                                                         </p>
                                                     </div>
