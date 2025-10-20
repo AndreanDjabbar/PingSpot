@@ -54,7 +54,6 @@ const ReportCard: React.FC<ReportCardProps> = ({
     onComment,
     onShare,
     onStatusVote,
-    onStatusUpdate
 }) => {
     const { reports } = useReportsStore();
     const { openImagePreview } = useImagePreviewModalStore();
@@ -169,19 +168,14 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 onSave={() => onSave(report.id)}
                 onComment={() => onComment(report.id)}
                 onShare={() => onShare(report.id, report.reportTitle)}
-                // isLoading={reactionMutation.isPending || saveMutation.isPending}
                 />
 
                 {report.hasProgress && (
                     <StatusVoting
                         reportID={report.id}
                         currentStatus={report.status || 'PENDING'}
-                        statusVoteStats={report.statusVoteStats || { resolved: 0, notResolved: 0, neutral: 0 }}
-                        userCurrentVote={report.userInteraction?.currentVote || null}
                         onVote={(voteType: string) => onStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
-                        onStatusUpdate={onStatusUpdate}
                         onImageClick={onImageClick}
-                        // isLoading={voteMutation.isPending}
                     />
                 )}
             </div>

@@ -41,7 +41,6 @@ interface ReportInteractionBarProps {
 }
 
 export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
-    // reactionStats,
     reportID,
     userInteraction,
     commentCount,
@@ -58,7 +57,6 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
     const [animateSave, setAnimateSave] = useState(false);
     const {reports} = useReportsStore();
 
-    
     const report = reports.find(r => r.id === reportID);
 
     const isLikedByCurrentUser = report?.isLikedByCurrentUser || false;

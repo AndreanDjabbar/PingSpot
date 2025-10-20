@@ -55,31 +55,6 @@ const ReportsPage = () => {
         error: getReportError,
         refetch: refetchGetReport,
     } = useGetReport()
-
-    useEffect(() => {
-        if (isGetReportSuccess && getReportData) {
-            console.log("Fetched reports:", getReportData.data);
-            setReports(getReportData?.data ?? []);
-        }
-    }, [isGetReportSuccess, getReportData, setReports])
-
-    useEffect(() => {
-        let filtered = reports;
-        
-        if (searchTerm) {
-            filtered = filtered.filter(report => 
-                report.reportTitle.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                report.reportDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                report.location.detailLocation.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        
-        if (activeFilter !== "all") {
-            filtered = filtered.filter(report => report.reportType === activeFilter);
-        }
-        
-        setFilteredReports(filtered);
-    }, [searchTerm, activeFilter, reports]);
     
     const handleCloseReportModal = () => {
         setIsReportModalOpen(false);
@@ -170,40 +145,6 @@ const ReportsPage = () => {
         } catch (error) {
             console.error('Error disliking report:', error);
         }
-    }
-
-    const handleSave = async (reportId: number) => {
-        console.log('Saving report:', reportId);
-    };
-
-    const handleComment = (reportId: number) => {
-        const report = filteredReports.find(r => r.id === reportId);
-        if (report) {
-            setSelectedReport(report);
-            setIsReportModalOpen(true);
-        }
-    };
-
-    const handleShare = async (reportId: number, reportTitle: string) => {
-        try {
-            const shareUrl = `${window.location.origin}/main/reports/${reportId}`;
-            if (navigator.share) {
-                await navigator.share({
-                    title: reportTitle,
-                    text: 'Lihat laporan ini di PingSpot',
-                    url: shareUrl
-                });
-            } else {
-                await navigator.clipboard.writeText(shareUrl);
-                alert('Link telah disalin ke clipboard!');
-            }
-        } catch (error) {
-            console.error('Error sharing:', error);
-        }
-    };
-
-    const handleAddComment = async (reportId: number, content: string, parentId?: number) => {
-        console.log("Adding comment to report:", reportId, "Content:", content, "Parent ID:", parentId);
     };
 
     const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => {
@@ -327,8 +268,38 @@ const ReportsPage = () => {
         }
     };
 
-    const handleStatusUpdate = async (reportID: number, newStatus: string) => {
-        console.log(`Report ${reportID} status updated to ${newStatus}`);
+    const handleSave = async (reportId: number) => {
+        console.log('Saving report:', reportId);
+    };
+
+    const handleComment = (reportId: number) => {
+        const report = filteredReports.find(r => r.id === reportId);
+        if (report) {
+            setSelectedReport(report);
+            setIsReportModalOpen(true);
+        }
+    };
+
+    const handleShare = async (reportId: number, reportTitle: string) => {
+        try {
+            const shareUrl = `${window.location.origin}/main/reports/${reportId}`;
+            if (navigator.share) {
+                await navigator.share({
+                    title: reportTitle,
+                    text: 'Lihat laporan ini di PingSpot',
+                    url: shareUrl
+                });
+            } else {
+                await navigator.clipboard.writeText(shareUrl);
+                alert('Link telah disalin ke clipboard!');
+            }
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    };
+
+    const handleAddComment = async (reportId: number, content: string, parentId?: number) => {
+        console.log("Adding comment to report:", reportId, "Content:", content, "Parent ID:", parentId);
     };
 
     useErrorToast(
@@ -345,6 +316,31 @@ const ReportsPage = () => {
         isVoteReportError,
         getErrorResponseMessage(voteReportError) || 'Terjadi kesalahan saat melakukan vote status'
     );
+
+    useEffect(() => {
+        if (isGetReportSuccess && getReportData) {
+            console.log("Fetched reports:", getReportData.data);
+            setReports(getReportData?.data ?? []);
+        }
+    }, [isGetReportSuccess, getReportData, setReports]);
+
+    useEffect(() => {
+        let filtered = reports;
+        
+        if (searchTerm) {
+            filtered = filtered.filter(report => 
+                report.reportTitle.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                report.reportDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                report.location.detailLocation.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+        
+        if (activeFilter !== "all") {
+            filtered = filtered.filter(report => report.reportType === activeFilter);
+        }
+        
+        setFilteredReports(filtered);
+    }, [searchTerm, activeFilter, reports]);
 
     useEffect(() => {
         if (isReactReportError) {
@@ -401,7 +397,6 @@ const ReportsPage = () => {
                             onComment={handleComment}
                             onShare={handleShare}
                             onStatusVote={handleStatusVote}
-                            onStatusUpdate={handleStatusUpdate}
                         />
                     ) : reports.length === 0 && !isGetReportError ? (
                         <EmptyState 
@@ -433,8 +428,6 @@ const ReportsPage = () => {
                     onShare={() => handleShare(selectedReport.id, selectedReport.reportTitle)}
                     onAddComment={(content, parentId) => handleAddComment(selectedReport.id, content, parentId)}
                     onStatusVote={(voteType) => handleStatusVote(selectedReport.id, voteType)}
-                    onStatusUpdate={handleStatusUpdate}
-                    // isInteractionLoading={reactionMutation.isPending || saveMutation.isPending || voteMutation.isPending || commentMutation.isPending}
                 />
             )}
         </div>

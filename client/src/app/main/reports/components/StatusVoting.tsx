@@ -20,29 +20,20 @@ import { LuNotebookText } from 'react-icons/lu';
 import { FiEdit } from 'react-icons/fi';
 import { Accordion } from '@/components/UI';
 
-interface StatusVoteStatsType {
-    resolved: number;
-    notResolved: number;
-    neutral: number;
-}
-
 interface StatusVotingProps {
     reportID?: number;
     currentStatus: string;
-    statusVoteStats: StatusVoteStatsType;
-    userCurrentVote: string | null;
     onVote: (voteType: string) => void;
     onImageClick: (imageUrl: string) => void;
-    onStatusUpdate?: (reportID: number, newStatus: string, note?: string, images?: File[]) => void;
     isLoading?: boolean;
 }
 
 const StatusVoting: React.FC<StatusVotingProps> = ({
+    reportID,
     currentStatus,
     onVote,
-    isLoading = false,
     onImageClick,
-    reportID,
+    isLoading = false,
 }) => {
     const [animateButton, setAnimateButton] = useState<string | null>(null);
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);

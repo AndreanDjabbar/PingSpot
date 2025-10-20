@@ -31,7 +31,6 @@ interface ReportModalProps {
     onAddComment: (content: string, parentId?: number) => void;
     onStatusVote: (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => void;
     onStatusUpdate?: (reportID: number, newStatus: string) => void;
-    isInteractionLoading?: boolean;
 }
 
 const getReportTypeLabel = (type: ReportType): string => {
@@ -64,8 +63,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
     onShare,
     onAddComment,
     onStatusVote,
-    onStatusUpdate,
-    isInteractionLoading = false
 }) => {
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -268,7 +265,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             )}
 
                             <ReportInteractionBar
-                                // reactionStats={report?.reactionStats || { likes: 0, dislikes: 0 }}
                                 userInteraction={report?.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}
                                 commentCount={report?.commentCount || 0}
                                 onLike={onLike}
@@ -278,18 +274,13 @@ const ReportModal: React.FC<ReportModalProps> = ({
                                 onSave={onSave}
                                 onComment={() => {}}
                                 onShare={onShare}
-                                isLoading={isInteractionLoading}
                             />
 
                             <StatusVoting
                                 reportID={report?.id}
                                 currentStatus={report?.status || 'PENDING'}
-                                statusVoteStats={report?.statusVoteStats || { resolved: 0, notResolved: 0, neutral: 0 }}
-                                userCurrentVote={report?.userInteraction?.currentVote || null}
                                 onVote={(voteType: string) => onStatusVote(voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
-                                onStatusUpdate={onStatusUpdate}
                                 onImageClick={() => {}}
-                                isLoading={isInteractionLoading}
                             />
                         </div>
                     </div>
@@ -313,10 +304,9 @@ const ReportModal: React.FC<ReportModalProps> = ({
                                     <CommentItem
                                         key={comment.id}
                                         comment={comment}
-                                        variant="compact" // Use compact variant for modal
-                                        showLikes={false} // Don't show likes in modal
+                                        variant="compact"
+                                        showLikes={false}
                                         onReply={handleReply}
-                                        // onEdit and onDelete are optional, so they can be omitted
                                     />
                                 ))
                             ) : (
