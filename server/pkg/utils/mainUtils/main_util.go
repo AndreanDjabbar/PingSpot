@@ -275,6 +275,17 @@ func StringToFloat64(s string) (float64, error) {
     return value, nil
 }
 
+func StringToBool(s string) (*bool, error) {
+	if s == "" {
+		return nil, nil
+	}
+	value, err := strconv.ParseBool(s)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert string to bool: %w", err)
+	}
+	return &value, nil
+}
+
 func StringToUint(s string) (uint, error) {
 	if s == "" {
 		return 0, nil
