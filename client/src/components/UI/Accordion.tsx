@@ -71,7 +71,7 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
                 } ${disabled ? 'cursor-not-allowed opacity-60' : ''} ${headerClassName}`}
                 onClick={handleToggle}
             >
-                <div className="flex items-center space-x-3 flex-1 text-sky-900">
+                <div className="flex items-center space-x-3 flex-1 text-sky-800">
                     {icon && (
                         <div className="flex-shrink-0">
                             {icon}
