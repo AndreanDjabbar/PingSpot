@@ -2,10 +2,12 @@ import PingspotLogo from "./PingspotLogo";
 import ToggleSwitch from "./ToggleSwitch";
 import EmptyState from "./EmptyState";
 import Accordion from "./Accordion";
+import Stepper from "./Stepper";
 
 export {
     PingspotLogo,
     ToggleSwitch,
     EmptyState,
-    Accordion
+    Accordion,
+    Stepper
 }
