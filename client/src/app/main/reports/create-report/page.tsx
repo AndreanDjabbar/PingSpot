@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { InputField, ButtonSubmit, TextAreaField, RadioField, MultipleImageField } from '@/components/form';
-import { FaMapMarkerAlt } from 'react-icons/fa';
-import { MdOutlineCategory } from 'react-icons/md';
+import { FaMapMarkerAlt, FaCheckCircle } from 'react-icons/fa';
+import { MdOutlineCategory, MdOutlineNoteAlt } from 'react-icons/md';
 import { IoLocationOutline } from 'react-icons/io5';
+import { IoMdImages } from "react-icons/io";
 import { LuNotebookText } from "react-icons/lu";
 import { SuccessSection, ErrorSection } from '@/components/feedback';
 import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseMessage } from '@/utils';
@@ -19,6 +20,8 @@ import { CreateReportSchema } from '../../schema';
 import { ICreateReportRequest } from '@/types/api/report';
 import HeaderSection from '../../components/HeaderSection';
 import { useConfirmationModalStore, useImagePreviewModalStore } from '@/stores';
+import { BsFillInfoCircleFill } from "react-icons/bs";
+import { Stepper, Accordion } from '@/components/UI';
 
 const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
     ssr: false,
@@ -29,6 +32,7 @@ const ReportsPage = () => {
     const [reportImages, setReportImages] = useState<File[]>([]);
     const [markerPosition, setMarkerPosition] = useState<{ lat: number, lng: number } | null>(null);
     const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
+    const [currentStep, setCurrentStep] = useState(0);
     const { mutate, isPending, isError, isSuccess, error, data } = useCreateReport();
     const { 
         mutate: reverseLocation, 
@@ -38,6 +42,7 @@ const ReportsPage = () => {
     } = useReverseCurrentLocation();
     const { openConfirm } = useConfirmationModalStore();
     const { openImagePreview } = useImagePreviewModalStore();
+    const router = useRouter();
 
     const handleImageClick = (imageUrl: string) => {
         openImagePreview(imageUrl);
@@ -49,6 +54,27 @@ const ReportsPage = () => {
         { value: 'safety', label: 'Keamanan' },
         { value: 'other', label: 'Lainnya' }
     ];
+
+    const steps = [
+        { label: 'Lokasi', description: 'Pilih lokasi masalah' },
+        { label: 'Detail', description: 'Isi informasi laporan' },
+        { label: 'Lampiran', description: 'Isi lampiran terkait laporan' },
+        { label: 'Konfirmasi', description: 'Tinjau & kirim' }
+    ];
+
+    const validateStep = (stepIndex: number): boolean => {
+        if (stepIndex === 0) {
+            return !!markerPosition?.lat && !!markerPosition?.lng;
+        }
+        if (stepIndex === 1) {
+            const title = watch('reportTitle');
+            const description = watch('reportDescription');
+            const type = watch('reportType');
+            const location = watch('location');
+            return !!(title && description && type && location);
+        }
+        return true;
+    };
     
     const {
         register,
@@ -114,6 +140,10 @@ const ReportsPage = () => {
             setReportImages([]);
             setMarkerPosition(null);
             setFormDataToSubmit(null);
+            setCurrentStep(0);
+            setTimeout(() => {
+                router.push("/main/reports");
+            }, 1000);
         }
     }, [isSuccess, data, reset]);
 
@@ -175,126 +205,256 @@ const ReportsPage = () => {
 
         {!isSuccess && (
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8">
+                <div className="mb-8">
+                    <Stepper
+                        steps={steps}
+                        currentStep={currentStep}
+                        onStepChange={setCurrentStep}
+                        validateStep={validateStep}
+                    />
+                </div>
+
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col justify-center p-5 space-y-8 w-full" encType="multipart/form-data">
+                    <input type="hidden" {...register('latitude')} />
+                    <input type="hidden" {...register('longitude')} />
+
                     <div className="w-full flex flex-col gap-6">
-                        <div>
-
-                            <div className="w-full bg-gradient-to-br from-sky-100 to-indigo-100 rounded-lg p-4 border-2 border-dashed border-sky-200">
-                                <h2 className="text-xl font-semibold text-sky-800 mb-4 flex items-center">
-                                <FaMapMarkerAlt className="mr-2" />
-                                Pilih Lokasi
-                                </h2>
-                                <p className="text-gray-600 mb-4 text-sm">Klik pada peta untuk menentukan lokasi masalah atau aktifkan lokasi otomatis</p>
-                                <div className="h-[400px] w-full mb-4">
-                                    <DynamicMap onMarkerPositionChange={setMarkerPosition}/>
+                        {currentStep === 0 && (
+                            <div>
+                                <div className="w-full bg-gradient-to-br from-sky-100 to-indigo-100 rounded-lg p-4 border-2 border-dashed border-sky-200">
+                                    <h2 className="text-xl font-semibold text-sky-800 mb-4 flex items-center">
+                                        <FaMapMarkerAlt className="mr-2" />
+                                        Pilih Lokasi
+                                    </h2>
+                                    <p className="text-gray-600 mb-4 text-sm">Klik pada peta untuk menentukan lokasi masalah atau aktifkan lokasi otomatis</p>
+                                    <div className="h-[400px] w-full mb-4">
+                                        <DynamicMap onMarkerPositionChange={setMarkerPosition}/>
+                                    </div>
                                 </div>
-                                <input 
-                                type="hidden" 
-                                {...register('latitude')}
-                                />
-                                <input 
-                                type="hidden" 
-                                {...register('longitude')}
-                                />
+                                <div className="text-red-500 text-sm font-semibold">{errors?.latitude?.message as string || errors?.longitude?.message as string}</div>
                             </div>
-                            <div className="text-red-500 text-sm font-semibold">{errors?.latitude?.message as string || errors?.longitude?.message as string}</div>
-                        </div>
+                        )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="w-full">
-                                <InputField
-                                    id="title"
-                                    register={register("reportTitle")}
-                                    type="text"
-                                    className="w-full"
-                                    withLabel={true}
-                                    labelTitle="Judul Laporan"
-                                    icon={<LuNotebookText size={20} />}
-                                    placeHolder="Masukkan judul laporan"
-                                />
-                                <div className="text-red-500 text-sm font-semibold">{errors.reportTitle?.message as string}</div>
+                        {currentStep === 1 && (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="w-full">
+                                        <InputField
+                                            id="title"
+                                            register={register("reportTitle")}
+                                            type="text"
+                                            className="w-full"
+                                            withLabel={true}
+                                            labelTitle="Judul Laporan"
+                                            icon={<LuNotebookText size={20} />}
+                                            placeHolder="Masukkan judul laporan"
+                                        />
+                                        <div className="text-red-500 text-sm font-semibold">{errors.reportTitle?.message as string}</div>
+                                    </div>
+
+                                    <div className="w-full">
+                                        <InputField
+                                            id="location"
+                                            register={register("location")}
+                                            type="text"
+                                            className="w-full"
+                                            withLabel={true}
+                                            labelTitle="Alamat/Detail Lokasi"
+                                            icon={<IoLocationOutline size={20} />}
+                                            placeHolder="Detail alamat lokasi permasalahan"
+                                        />
+                                        <div className="text-red-500 text-sm font-semibold">{errors.location?.message as string}</div>
+                                    </div>
+                                </div>
+
+                                <div className="w-full">
+                                    <TextAreaField
+                                        id="description"
+                                        register={register("reportDescription")}
+                                        rows={4}
+                                        className="w-full"
+                                        withLabel={true}
+                                        labelTitle="Deskripsi Permasalahan"
+                                        placeHolder="Jelaskan permasalahan dengan detail"
+                                    />
+                                    <div className="text-red-500 text-sm font-semibold">{errors.reportDescription?.message as string}</div>
+                                </div>
+
+                                <div className="w-full">
+                                    <RadioField
+                                        id="reportType"
+                                        name="reportType"
+                                        value={reportTypeValue || ''}
+                                        register={register("reportType")}
+                                        withLabel={true}
+                                        labelTitle="Jenis Laporan"
+                                        icon={<MdOutlineCategory size={20} />}
+                                        options={issueTypes}
+                                        layout="horizontal"
+                                    />
+                                    <div className="text-red-500 text-sm font-semibold">{errors.reportType?.message as string}</div>
+                                </div>
+                            </>
+                        )}
+
+                        {currentStep === 2 && (
+                            <div>
+                                <div className="w-full">
+                                    <div className='flex flex-col justify-center items-center gap-6'>
+                                        <label htmlFor="reportImages" className="text-md font-medium text-sky-800 items-center">
+                                            Foto Permasalahan (Maks. 5 Foto)
+                                        </label>
+                                        <div>
+                                            <div className=''>
+                                                <MultipleImageField
+                                                    id="reportImages"
+                                                    withLabel={false}
+                                                    buttonTitle="Pilih Foto"
+                                                    width={200}
+                                                    height={200}
+                                                    shape="square"
+                                                    maxImages={5}
+                                                    onChange={(files) => setReportImages(files)}
+                                                    onImageClick={handleImageClick}
+                                                />
+                                            </div>
+                                            <p className="text-sm text-center text-gray-500 mt-1">
+                                                Unggah foto untuk membantu identifikasi masalah (opsional)
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        )}
 
-                            <div className="w-full">
-                                <InputField
-                                    id="location"
-                                    register={register("location")}
-                                    type="text"
-                                    className="w-full"
-                                    withLabel={true}
-                                    labelTitle="Alamat/Detail Lokasi"
-                                    icon={<IoLocationOutline size={20} />}
-                                    placeHolder="Detail alamat lokasi permasalahan"
-                                />
-                                <div className="text-red-500 text-sm font-semibold">{errors.location?.message as string}</div>
+                        {currentStep === 3 && (
+                            <div className="space-y-6">
+                                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-5 border-l-4 border-amber-400">
+                                    <div className="flex items-center gap-3">
+                                        <div className="">
+                                            <BsFillInfoCircleFill className	="w-5 h-5 text-amber-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-amber-800">
+                                                Pastikan semua informasi sudah benar sebelum mengirim laporan.
+                                            </p>
+                                            <p className="text-sm text-amber-700 mt-1">
+                                                Anda dapat kembali ke langkah sebelumnya untuk memeriksa atau mengubah data.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Accordion type="single" defaultValue={['summary']}>
+                                    <Accordion.Item
+                                        id="summary"
+                                        title="Ringkasan Laporan"
+                                        icon={<FaCheckCircle className="w-5 h-5 text-sky-800" />}
+                                        headerClassName="bg-gradient-to-r from-sky-50 to-indigo-50"
+                                        className="border-2 border-gray-300"
+                                    >
+                                        <Accordion type="multiple" defaultValue={['info', 'location', 'description', 'attachment']} className='mt-4'>
+                                            <Accordion.Item
+                                                id="info"
+                                                title="Informasi Dasar"
+                                                icon={<LuNotebookText className="w-5 h-5 text-sky-800" />}
+                                            >
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Judul Laporan</label>
+                                                        <p className="text-base text-gray-900 mt-1 font-medium">{watch('reportTitle') || '-'}</p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Jenis Laporan</label>
+                                                        <p className="text-base text-gray-900 mt-2">
+                                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-sky-100 text-sky-800">
+                                                                {issueTypes.find(t => t.value === watch('reportType'))?.label || '-'}
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </Accordion.Item>
+
+                                            <Accordion.Item
+                                                id="location"
+                                                title="Lokasi"
+                                                icon={<IoLocationOutline className="w-5 h-5 text-sky-800" />}
+                                            >
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Detail Lokasi</label>
+                                                    <p className="text-base text-gray-900 mt-1">{watch('location') || '-'}</p>
+                                                </div>
+                                            </Accordion.Item>
+
+                                            <Accordion.Item
+                                                id="description"
+                                                title="Deskripsi Permasalahan"
+                                                icon={<MdOutlineNoteAlt className="w-5 h-5 text-sky-800" />}
+                                            >
+                                                <div>
+                                                    <p className="text-base text-gray-700 leading-relaxed">{watch('reportDescription') || '-'}</p>
+                                                </div>
+                                            </Accordion.Item>
+
+                                            <Accordion.Item
+                                                id="attachment"
+                                                title="Lampiran Foto"
+                                                icon={<IoMdImages className	="w-5 h-5 text-sky-800" />}
+                                            >
+                                                <div>
+                                                    {reportImages.length > 0 ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-base text-gray-900 font-medium">
+                                                                {reportImages.length} foto dilampirkan
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-base text-gray-500 italic">Tidak ada foto yang dilampirkan</p>
+                                                    )}
+                                                </div>
+                                            </Accordion.Item>
+                                        </Accordion>
+                                    </Accordion.Item>
+                                </Accordion>
                             </div>
-                        </div>
+                        )}
 
-                        <div className="w-full">
-                            <TextAreaField
-                            id="description"
-                            register={register("reportDescription")}
-                            rows={4}
-                            className="w-full"
-                            withLabel={true}
-                            labelTitle="Deskripsi Permasalahan"
-                            placeHolder="Jelaskan permasalahan dengan detail"
-                            />
-                            <div className="text-red-500 text-sm font-semibold">{errors.reportDescription?.message as string}</div>
-                        </div>
+                        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+                                disabled={currentStep === 0}
+                                className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Kembali
+                            </button>
 
-                        <div className="w-full">
-                            <RadioField
-                            id="reportType"
-                            name="reportType"
-                            value={reportTypeValue || ''}
-                            register={register("reportType")}
-                            withLabel={true}
-                            labelTitle="Jenis Laporan"
-                            icon={<MdOutlineCategory size={20} />}
-                            options={issueTypes}
-                            layout="horizontal"
-                            />
-                            <div className="text-red-500 text-sm font-semibold">{errors.reportType?.message as string}</div>
-                        </div>
-
-                        <div className="w-full">
-                            <div className=''>
-                                <MultipleImageField
-                                id="reportImages"
-                                withLabel={true}
-                                labelTitle="Foto Permasalahan (Maks. 5 Foto)"
-                                buttonTitle="Pilih Foto"
-                                width={200}
-                                height={200}
-                                shape="square"
-                                maxImages={5}
-                                onChange={(files) => setReportImages(files)}
-                                onImageClick={handleImageClick}
+                            {currentStep < steps.length - 1 ? (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (validateStep(currentStep)) {
+                                            setCurrentStep(prev => Math.min(steps.length - 1, prev + 1));
+                                        }
+                                    }}
+                                    disabled={!validateStep(currentStep)}
+                                    className="px-6 py-2.5 rounded-lg bg-sky-800 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                >
+                                    Lanjut
+                                </button>
+                            ) : (
+                                <ButtonSubmit
+                                    className="px-6 py-2.5 rounded-lg bg-pingspot-gradient-hoverable text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300 flex justify-center items-center"
+                                    title="Kirim Laporan"
+                                    progressTitle="Mengirim Laporan..."
+                                    isProgressing={isPending || reverseLoading}
                                 />
-                            </div>
-                            <p className="text-sm text-center text-gray-500 mt-1">
-                            Unggah foto untuk membantu identifikasi masalah (opsional)
-                            </p>
-                        </div>
-
-                        <div className="w-full flex justify-end mt-6">
-                            <ButtonSubmit
-                            className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
-                            title="Kirim Laporan"
-                            progressTitle="Mengirim Laporan..."
-                            isProgressing={isPending || reverseLoading}
-                            />
+                            )}
                         </div>
                     </div>
                 </form>
             </div>
         )}
-        {/* <ImagePreviewModal
-            imageUrl={previewImage}
-            isOpen={isModalOpen}
-            onClose={handleCloseModal}
-        /> */}
         </div>
     );
 };
