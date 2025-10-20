@@ -49,7 +49,6 @@
                 )}
                 {idx < items.length - 1 ? (
                     <>
-                        {console.log("item: ", item)}
                         <Link
                         href={`/${parentPath}/${item.href}`}
                         className="hover:text-sky-800 transition-colors"

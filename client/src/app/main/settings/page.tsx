@@ -47,12 +47,12 @@ const SettingsPage = () => {
 
     const confirmationModal = () => {
         openConfirm({
-            type: "info",
+            type: "warning",
             title: "Konfirmasi Keluar",
             message: "Apakah Anda yakin ingin keluar?",
             isPending: isPending,
             explanation: "Anda akan keluar dari sesi Pingspot saat ini.",
-            confirmTitle: "Ubah",
+            confirmTitle: "Keluar",
             cancelTitle: "Batal",
             icon: <ImExit />,
             onConfirm: () => confirmLogout(),
