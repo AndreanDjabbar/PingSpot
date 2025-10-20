@@ -3,7 +3,8 @@ import "./globals.css";
 import { 
   ConfirmationModalProvider, 
   ImagePreviewModalProvider, 
-  ReactQueryClientProvider 
+  ReactQueryClientProvider,
+  FormInformationModalProvider
 } from "@/provider";
 import { ToastContainer } from "react-toastify";
 import ClientLayout from "./client-layout";
@@ -26,6 +27,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
               {children}
               <ConfirmationModalProvider />
               <ImagePreviewModalProvider />
+              <FormInformationModalProvider />
             </ClientLayout>
         </ReactQueryClientProvider>
       </body>
