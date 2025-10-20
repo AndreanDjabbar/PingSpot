@@ -4,6 +4,7 @@ import { useUserProfileStore } from "./userProfileStore";
 import { useReportsStore } from "./reportsStore";
 import { useLocationStore } from "./userLocationStore";
 import { useImagePreviewModalStore } from "./imagePreviewModalStore";
+import { useFormInformationModalStore } from "./formInformationModalStore";
 
 export {
     useGlobalStore,
@@ -11,5 +12,6 @@ export {
     useUserProfileStore,
     useReportsStore,
     useLocationStore,
-    useImagePreviewModalStore
+    useImagePreviewModalStore,
+    useFormInformationModalStore
 }
