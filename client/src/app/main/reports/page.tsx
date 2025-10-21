@@ -19,6 +19,7 @@ import {
     ReportList
 } from './components';
 import { useReportsStore } from '@/stores';
+import { useInView } from 'react-intersection-observer';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
@@ -27,11 +28,16 @@ const ReportsPage = () => {
     const [activeFilter, setActiveFilter] = useState<ReportType | "all">("all");
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
+    const { ref, inView } = useInView({
+        threshold: 0,
+    });
+
     const {
         reports,
         setReports,
         selectedReport,
         setSelectedReport,
+        setNextCursor
     } = useReportsStore();
 
     const router = useRouter();
@@ -53,9 +59,12 @@ const ReportsPage = () => {
         isSuccess: isGetReportSuccess,
         isError: isGetReportError, 
         error: getReportError,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
         refetch: refetchGetReport,
-    } = useGetReport()
-    
+    } = useGetReport();
+
     const handleCloseReportModal = () => {
         setIsReportModalOpen(false);
         setSelectedReport(null);
@@ -318,11 +327,20 @@ const ReportsPage = () => {
     );
 
     useEffect(() => {
-        if (isGetReportSuccess && getReportData) {
-            console.log("Fetched reports:", getReportData.data);
-            setReports(getReportData?.data ?? []);
+        if (inView && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
         }
-    }, [isGetReportSuccess, getReportData, setReports]);
+    }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    useEffect(() => {
+        if (isGetReportSuccess && getReportData) {
+            const allReports = getReportData.pages.flatMap(page => page.data?.reports ?? []);
+            setReports(allReports);
+            
+            const lastPage = getReportData.pages[getReportData.pages.length - 1];
+            setNextCursor(lastPage.data?.nextCursor ?? null);
+        }
+    }, [isGetReportSuccess, getReportData, setReports, setNextCursor]);
 
     useEffect(() => {
         let filtered = reports;
@@ -390,14 +408,28 @@ const ReportsPage = () => {
             {!getReportLoading && (
                 <>
                     {filteredReports.length > 0 ? (
-                        <ReportList
-                            onLike={handleLike}
-                            onDislike={handleDislike}
-                            onSave={handleSave}
-                            onComment={handleComment}
-                            onShare={handleShare}
-                            onStatusVote={handleStatusVote}
-                        />
+                        <>
+                            <ReportList
+                                onLike={handleLike}
+                                onDislike={handleDislike}
+                                onSave={handleSave}
+                                onComment={handleComment}
+                                onShare={handleShare}
+                                onStatusVote={handleStatusVote}
+                            />
+
+                            <div ref={ref} className="py-4 flex justify-center">
+                                {isFetchingNextPage && (
+                                    <div className="flex items-center space-x-2 text-sky-600">
+                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-600"></div>
+                                        <span>Memuat lebih banyak laporan...</span>
+                                    </div>
+                                )}
+                                {!hasNextPage && reports.length > 0 && (
+                                    <p className="text-gray-500 text-sm">Tidak ada laporan lagi</p>
+                                )}
+                            </div>
+                        </>
                     ) : reports.length === 0 && !isGetReportError ? (
                         <EmptyState 
                             emptyTitle='Belum ada laporan'
