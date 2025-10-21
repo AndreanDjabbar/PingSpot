@@ -49,9 +49,10 @@ export const createReportService = async (payload: FormData): Promise<ICreateRep
     return response.data;
 }
 
-export const getReportService = async (): Promise<IGetReportResponse> => {
+export const getReportService = async (cursorID ? : number): Promise<IGetReportResponse> => {
     const authToken = getAuthToken();
-    const response = await axios.get<IGetReportResponse>(`${MAIN_API_URL}/report`, {
+    const params = cursorID ? `?cursorID=${cursorID}` : '';
+    const response = await axios.get<IGetReportResponse>(`${MAIN_API_URL}/report${params}`, {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

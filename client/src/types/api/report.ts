@@ -9,7 +9,10 @@ import z from "zod";
 
 export interface IGetReportResponse {
     message: string;
-    data?: IReport[];
+    data?: {
+        reports: IReport[];
+        nextCursor?: number | null;
+    }
 }
 
 export type ICreateReportRequest = z.infer<typeof CreateReportSchema>;
