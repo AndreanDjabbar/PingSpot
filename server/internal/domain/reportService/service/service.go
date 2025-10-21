@@ -113,8 +113,8 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 	return reportResult, nil
 }
 
-func (s *ReportService) GetAllReport(userID uint) ([]dto.GetReportResponse, error) {
-	reports, err := s.reportRepo.Get()
+func (s *ReportService) GetAllReport(userID, limit, cursorID uint) ([]dto.GetReportResponse, error) {
+	reports, err := s.reportRepo.GetPaginated(limit, cursorID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("Laporan tidak ditemukan")

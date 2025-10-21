@@ -11,6 +11,7 @@ type ReportRepository interface {
 	UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error)
 	GetByID(reportID uint) (*model.Report, error)
 	Get() (*[]model.Report, error)
+	GetPaginated(limit, cursorID uint) (*[]model.Report, error)
 }
 
 type reportRepository struct {
@@ -35,6 +36,31 @@ func (r *reportRepository) Get() (*[]model.Report, error) {
 	}
 	return &reports, nil
 }
+
+func (r *reportRepository) GetPaginated(limit, cursorID uint) (*[]model.Report, error) {
+	var reports []model.Report
+
+	query := r.db.
+		Preload("User.Profile").
+		Preload("ReportLocation").
+		Preload("ReportImages").
+		Preload("ReportReactions").
+		Preload("ReportVotes").
+		Preload("ReportProgress").
+		Order("id DESC").
+		Limit(int(limit))
+
+	if cursorID != 0 {
+		query = query.Where("id < ?", cursorID)
+	}
+
+	if err := query.Find(&reports).Error; err != nil {
+		return nil, err
+	}
+
+	return &reports, nil
+}
+
 
 func (r *reportRepository) UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error) {
 	if err := tx.Save(report).Error; err != nil {
