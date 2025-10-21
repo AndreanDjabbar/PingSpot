@@ -263,6 +263,18 @@ func StrPtrOrNil(s string) *string {
 	return &s
 }
 
+func StringToTimePtr(s string) (*time.Time, error) {
+	if s == "" {
+		return nil, nil
+	}
+	layout := time.RFC3339
+	value, err := time.Parse(layout, s)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert string to time.Time: %w", err)
+	}
+	return &value, nil
+}
+
 func StringToFloat64(s string) (float64, error) {
     if s == "" {
         return 0.0, nil
