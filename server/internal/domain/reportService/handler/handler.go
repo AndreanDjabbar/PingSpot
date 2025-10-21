@@ -155,6 +155,13 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	logger.Info("GET REPORT HANDLER")
 	reportID := c.Query("reportID")
+	limit := 5
+	cursorID := c.Query("cursorID")
+	cursorIDUint, err := mainutils.StringToUint(cursorID)
+	if err != nil && cursorID != "" {
+		logger.Error("Invalid afterID format", zap.String("afterID", cursorID), zap.Error(err))
+		return response.ResponseError(c, 400, "Format afterID tidak valid", "", "afterID harus berupa angka")
+	}
 
 	claims, err := mainutils.GetJWTClaims(c)
 	if err != nil {
@@ -164,11 +171,20 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	userID := uint(claims["user_id"].(float64))
 
 	if reportID == "" {
-		reports, err := h.reportService.GetAllReport(userID)
+		reports, err := h.reportService.GetAllReport(userID, uint(limit), cursorIDUint)
 		if err != nil {
 			logger.Error("Failed to get all reports", zap.Error(err))
 		}
-		return response.ResponseSuccess(c, 200, "Get all reports success", "data", reports)
+		var nextCursor *uint = nil
+		if len(reports) > 0 {
+			lastReport := reports[len(reports)-1]
+			nextCursor = &lastReport.ID
+		}
+		mappedData := fiber.Map{
+			"reports": reports,
+			"nextCursor": nextCursor,
+		}
+		return response.ResponseSuccess(c, 200, "Get all reports success", "data", mappedData)
 	} else {
 		uintReportID, err := mainutils.StringToUint(reportID)
 		if err != nil {
