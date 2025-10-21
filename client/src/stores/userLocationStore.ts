@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ICurrentLocation } from '@/types/mainTypes';
+import { ICurrentLocation } from '@/types/model/user';
 
 type LocationStore = {
     location: (ICurrentLocation & { expiresAt?: number }) | null;
