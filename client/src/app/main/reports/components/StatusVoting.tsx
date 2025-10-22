@@ -183,7 +183,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     useSuccessToast(isUploadProgressSuccess, uploadProgressData);
     
     return (
-        <div className="bg-gray-50 rounded-2xl p-4 mt-4">
+        <div className="rounded-2xl p-4">
             <div className='mb-4'>
                 {isUploadProgressSuccess && (
                     <SuccessSection message={uploadProgressData.message || "Laporan berhasil dikirim!"} />
@@ -274,7 +274,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                     </div>
                                 )}
 
-                                <Accordion type="single">
+                                <Accordion type="single" className="mt-2">
                                     <Accordion.Item
                                         id="progress-report"
                                         title={`Perkembangan Laporan${progressData ? ` (${progressData.length} pembaruan)` : ''}`}

@@ -1,14 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
 import { 
     FaHeart, 
     FaRegHeart, 
-    FaThumbsDown, 
-    FaRegThumbsDown, 
-    FaBookmark, 
-    FaRegBookmark,
+    FaThumbsDown,
     FaComment,
     FaShare
 } from 'react-icons/fa';
@@ -21,15 +17,13 @@ interface ReactionStatsType {
     totalReactions: number;
 }
 
-interface UserInteractionType {
-    hasLiked: boolean;
-    hasDisliked: boolean;
-    hasSaved: boolean;
-}
-
 interface ReportInteractionBarProps {
     reportID?: number;
-    userInteraction: UserInteractionType;
+    userInteraction: {
+        hasLiked: boolean;
+        hasDisliked: boolean;
+        hasSaved: boolean;
+    };
     commentCount: number;
     onLike: () => void;
     onDislike: () => void;
@@ -42,25 +36,18 @@ interface ReportInteractionBarProps {
 
 export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
     reportID,
-    userInteraction,
     commentCount,
     onLike,
-    onDislike,
-    onSave,
     onComment,
     onShare,
-    showSecondaryActions = true,
-    isLoading = false
+    isLoading = false,
 }) => {
     const [animateLike, setAnimateLike] = useState(false);
-    const [animateDislike, setAnimateDislike] = useState(false);
-    const [animateSave, setAnimateSave] = useState(false);
     const {reports} = useReportsStore();
 
     const report = reports.find(r => r.id === reportID);
 
     const isLikedByCurrentUser = report?.isLikedByCurrentUser || false;
-    const isDislikedByCurrentUser = report?.isDislikedByCurrentUser || false; 
     const reactionStats: ReactionStatsType = {
         totalLikes: report?.totalLikeReactions || 0,
         totalDislikes: report?.totalDislikeReactions || 0,
@@ -74,125 +61,71 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
         setTimeout(() => setAnimateLike(false), 300);
     };
 
-    const handleDislike = () => {
-        if (isLoading) return;
-        setAnimateDislike(true);
-        onDislike();
-        setTimeout(() => setAnimateDislike(false), 300);
-    };
-
-    const handleSave = () => {
-        if (isLoading) return;
-        setAnimateSave(true);
-        onSave();
-        setTimeout(() => setAnimateSave(false), 300);
-    };
-
     return (
-        <div className="border-t border-gray-100 pt-3 mt-4">
-            <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                <div className="flex items-center space-x-4">
-                    {(reactionStats.totalLikes > 0 || reactionStats.totalDislikes > 0) && (
-                        <div className="flex items-center space-x-1">
-                            {reactionStats.totalLikes > 0 && (
-                                <div className="flex items-center space-x-1">
-                                    <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-                                        <FaHeart className="w-2 h-2 text-white" />
-                                    </div>
-                                    <span>{reactionStats.totalLikes}</span>
+        <div className="p-3 ">
+            {(reactionStats.totalLikes > 0 || reactionStats.totalDislikes > 0 || commentCount > 0) && (
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-2 px-1 ">
+                    <div className="flex items-center gap-2">
+                        {reactionStats.totalLikes > 0 && (
+                            <div className="flex items-center gap-1">
+                                <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                    <FaHeart className="w-2 h-2 text-white" />
                                 </div>
-                            )}
-                            {reactionStats.totalDislikes > 0 && (
-                                <div className="flex items-center space-x-1">
-                                    <div className="w-4 h-4 bg-gray-500 rounded-full flex items-center justify-center">
-                                        <FaThumbsDown className="w-2 h-2 text-white" />
-                                    </div>
-                                    <span>{reactionStats.totalDislikes}</span>
+                                <span className="font-medium">{reactionStats.totalLikes}</span>
+                            </div>
+                        )}
+                        {reactionStats.totalDislikes > 0 && (
+                            <div className="flex items-center gap-1">
+                                <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+                                    <FaThumbsDown className="w-2 h-2 text-white" />
                                 </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-                <div>
+                                <span className="font-medium">{reactionStats.totalDislikes}</span>
+                            </div>
+                        )}
+                    </div>
                     {commentCount > 0 && (
-                        <span>{commentCount} komentar</span>
+                        <button onClick={onComment} className="hover:underline">
+                            {commentCount} komentar
+                        </button>
                     )}
                 </div>
-            </div>
-
-            <div className={cn("flex items-center", !showSecondaryActions ? "justify-center" : "justify-center sm:justify-between")}>
-                <div className="flex items-center space-x-1">
+            )}
+    
+            <div className="flex items-center justify-between border-t border-b border-gray-200 py-1">
+                <div className="flex items-center flex-1">
                     <motion.button
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors flex-1 ${
                             isLikedByCurrentUser
-                                ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                                : 'text-gray-600 hover:text-gray-700 hover:bg-gray-100'
-                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+                                ? 'text-red-500'
+                                : 'text-gray-600 hover:bg-gray-100'
+                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         onClick={handleLike}
                         disabled={isLoading}
-                        animate={animateLike ? { scale: [1, 1.2, 1] } : {}}
-                        transition={{ duration: 0.3 }}
+                        animate={animateLike ? { scale: [1, 1.15, 1] } : {}}
+                        transition={{ duration: 0.2 }}
                     >
                         {isLikedByCurrentUser ? (
-                            <FaHeart className="w-5 h-5" />
+                            <FaHeart className="w-[18px] h-[18px]" />
                         ) : (
-                            <FaRegHeart className="w-5 h-5" />
+                            <FaRegHeart className="w-[18px] h-[18px]" />
                         )}
-                        <span className="font-medium">Suka</span>
-                    </motion.button>
-
-                    <motion.button
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                            isDislikedByCurrentUser
-                                ? 'text-gray-700 bg-gray-100 hover:bg-gray-200'
-                                : 'text-gray-600 hover:text-gray-700 hover:bg-gray-100'
-                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
-                        onClick={handleDislike}
-                        disabled={isLoading}
-                        animate={animateDislike ? { scale: [1, 1.2, 1] } : {}}
-                        transition={{ duration: 0.3 }}
-                    >
-                        {isDislikedByCurrentUser ? (
-                            <FaThumbsDown className="w-5 h-5" />
-                        ) : (
-                            <FaRegThumbsDown className="w-5 h-5" />
-                        )}
-                        <span className="font-medium">Tidak Suka</span>
+                        <span className="text-sm font-medium">Suka</span>
                     </motion.button>
 
                     <button
-                        className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-gray-600 hover:text-gray-700 hover:bg-gray-100 hover:scale-105"
+                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-1"
                         onClick={onComment}
                     >
-                        <FaComment className="w-5 h-5" />
-                        <span className="font-medium">Komentar</span>
+                        <FaComment className="w-[18px] h-[18px]" />
+                        <span className="text-sm font-medium">Komentar</span>
                     </button>
-                </div>
-
-                <div className={cn("items-center space-x-1 hidden", !showSecondaryActions ? "hidden" : "sm:flex")}>
-                    <motion.button
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                            userInteraction.hasSaved
-                                ? 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100'
-                                : 'text-gray-600 hover:text-gray-700 hover:bg-gray-100'
-                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
-                        onClick={handleSave}
-                        disabled={isLoading}
-                        animate={animateSave ? { scale: [1, 1.2, 1] } : {}}
-                        transition={{ duration: 0.3 }}
-                    >
-                        {userInteraction.hasSaved ? (
-                            <FaBookmark className="w-5 h-5" />
-                        ) : (
-                            <FaRegBookmark className="w-5 h-5" />
-                        )}
-                    </motion.button>
 
                     <button
-                        className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-gray-600 hover:text-gray-700 hover:bg-gray-100 hover:scale-105"
+                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-1"
                         onClick={onShare}
                     >
-                        <FaShare className="w-5 h-5" />
+                        <FaShare className="w-[18px] h-[18px]" />
+                        <span className="text-sm font-medium">Bagikan</span>
                     </button>
                 </div>
             </div>

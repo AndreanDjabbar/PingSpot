@@ -21,7 +21,7 @@ const ReportList: React.FC<ReportListProps> = ({
 }) => {
     const { reports } = useReportsStore();
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
         {reports.map(report => (
             <ReportCard
             key={report.id}

@@ -7,7 +7,7 @@ interface TopNavigationProps {
 
 const TopNavigation: React.FC<TopNavigationProps> = ({ onMenuToggle }) => {
     return (
-        <div className="lg:hidden bg-pingspot-gradient shadow-md">
+        <div className="xl:hidden bg-pingspot-gradient shadow-md">
             <div className="flex items-center justify-between px-4 py-3">
                 <button
                 onClick={onMenuToggle}

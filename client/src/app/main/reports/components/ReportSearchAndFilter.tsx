@@ -35,56 +35,6 @@ const ReportSearchAndFilter: React.FC<ReportSearchAndFilterProps> = ({
                     <div className="flex items-center text-sky-900 mr-2">
                         <FaFilter className="mr-1" /> Filter:
                     </div>
-                    <button 
-                        className={`px-3 py-2 rounded-full text-sm whitespace-nowrap ${
-                        activeFilter === "all" 
-                            ? "bg-sky-100 text-sky-800 font-medium" 
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                        onClick={() => onFilterChange("all")}
-                    >
-                        Semua
-                    </button>
-                    <button 
-                        className={`px-3 py-2 rounded-full text-sm whitespace-nowrap ${
-                        activeFilter === "INFRASTRUCTURE" 
-                            ? "bg-sky-100 text-sky-800 font-medium" 
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                        onClick={() => onFilterChange("INFRASTRUCTURE")}
-                    >
-                        Infrastruktur
-                    </button>
-                    <button 
-                        className={`px-3 py-2 rounded-full text-sm whitespace-nowrap ${
-                        activeFilter === "ENVIRONMENT" 
-                            ? "bg-sky-100 text-sky-800 font-medium" 
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                        onClick={() => onFilterChange("ENVIRONMENT")}
-                    >
-                        Lingkungan
-                    </button>
-                    <button 
-                        className={`px-3 py-2 rounded-full text-sm whitespace-nowrap ${
-                        activeFilter === "SAFETY" 
-                            ? "bg-sky-100 text-sky-800 font-medium" 
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                        onClick={() => onFilterChange("SAFETY")}
-                    >
-                        Keamanan
-                    </button>
-                    <button 
-                        className={`px-3 py-2 rounded-full text-sm whitespace-nowrap ${
-                        activeFilter === "OTHER" 
-                            ? "bg-sky-100 text-sky-800 font-medium" 
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                        onClick={() => onFilterChange("OTHER")}
-                    >
-                        Lainnya
-                    </button>
                 </div>
             </div>
         </div>

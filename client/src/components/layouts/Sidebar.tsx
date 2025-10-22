@@ -38,13 +38,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
     return (
         <>
             <div className={`
-                fixed overflow-y-auto lg:static inset-y-0 left-0 z-50 
-                ${collapsed ? 'w-16' : 'w-64'} bg-pingspot-gradient
+                fixed overflow-y-auto xl:static inset-y-0 left-0 z-50 
+                ${collapsed ? 'w-16' : 'w-80'} bg-pingspot-gradient
                 transform transition-transform duration-300 ease-in-out
-                ${isOpen ? '' : '-translate-x-full lg:translate-x-0'}
+                ${isOpen ? '' : '-translate-x-full xl:translate-x-0'}
             `}>
                 <div>
-
                     <div className="flex flex-col h-full">
                         <div className={`justify-center ${collapsed ? 'p-4' : 'p-4'} border-b  border-white`}>
                             <div className="flex justify-start w-full">
@@ -119,7 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                     <div className="fixed right-1/4 top-1/2 sm:right-1/3 md:right-1/3 ">
                         <button
                             onClick={onToggle}
-                            className="lg:hidden p-2 rounded-lg bg-gray-700 hover:bg-gray-600/50 
+                            className="xl:hidden p-2 rounded-lg bg-gray-700 hover:bg-gray-600/50 
                                 transition-all duration-300 ease-out transform hover:scale-105"
                         >
                             <BiX className="w-8 h-8 text-gray-300 group-hover:text-white 
@@ -131,7 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
 
             {isOpen && (
                 <div 
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 xl:hidden"
                 onClick={onToggle}
                 />
             )}
