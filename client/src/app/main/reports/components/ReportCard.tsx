@@ -8,6 +8,7 @@ import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { ReportInteractionBar } from '@/app/main/reports/components/ReportInteractionBar';
 import StatusVoting from './StatusVoting';
 import { useReportsStore, useImagePreviewModalStore } from '@/stores';
+import { useRouter } from 'next/navigation';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,
@@ -59,7 +60,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
     const [viewMode, setViewMode] = useState<'attachment' | 'map'>('map');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const { openImagePreview } = useImagePreviewModalStore();
-
+    const router = useRouter();
     const report = reports.find(r => r.id === reportID);
 
     const images = getReportImages(
@@ -119,10 +120,9 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 </div>
             </div>
 
-            <div className="px-4 pb-3">
-                <h2 className="text-base font-semibold text-gray-900 mb-1">{report.reportTitle}</h2>
+            <div className="px-4 pb-3 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg" onClick={() => router.push(`/main/reports/${report.id}`)}>
+                <h2 className="text-base font-semibold text-gray-900 mb-1 hover:text-blue-600 transition-colors">{report.reportTitle}</h2>
                 <p className="text-sm text-gray-700 mb-3 line-clamp-3">{report.reportDescription}</p>
-                
             </div>
 
             {images.length > 0 && (

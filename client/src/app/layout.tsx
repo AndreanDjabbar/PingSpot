@@ -20,7 +20,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <html lang="en">
-      <body className="antialiased" style={{ fontFamily: "var(--font-sf)" }}>
+      <body className="antialiased bg-gradient-to-br from-gray-50 to-gray-100" style={{ fontFamily: "var(--font-sf)" }}>
         <ReactQueryClientProvider>
           <ToastContainer />
             <ClientLayout>

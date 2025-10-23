@@ -19,6 +19,7 @@ import { ErrorSection, SuccessSection } from '@/components/feedback';
 import { LuNotebookText } from 'react-icons/lu';
 import { FiEdit } from 'react-icons/fi';
 import { Accordion } from '@/components/UI';
+import { RiProgress3Fill } from "react-icons/ri";
 
 interface StatusVotingProps {
     reportID?: number;
@@ -58,19 +59,21 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     
     const report = reports.find(r => r.id === reportID);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
-
     const isReportOwner = report && currentUserId === report.userID;
     const isReportResolved = (report?.reportStatus ?? currentStatus) === 'RESOLVED';
     const progressData = report?.reportProgress || [];
 
     const totalVotes = report?.totalVotes || 0;
     const resolvedPercentage = totalVotes > 0 ? ((report?.totalResolvedVotes || 0) / totalVotes) * 100 : 0;
+    const onProgressPercentage = totalVotes > 0 ? ((report?.totalOnProgressVotes || 0) / totalVotes) * 100 : 0;
     const notResolvedPercentage = totalVotes > 0 ? ((report?.totalNotResolvedVotes || 0) / totalVotes) * 100 : 0;
     const userCurrentVote = report?.isResolvedByCurrentUser 
         ? 'RESOLVED'
         : report?.isNotResolvedByCurrentUser
             ? 'NOT_RESOLVED'
-            : null;
+            : report?.isOnProgressByCurrentUser
+                ? 'ON_PROGRESS'
+                : null
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -554,10 +557,28 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
 
                                             <div className="flex items-center space-x-3">
                                                 <div className="flex items-center space-x-2 w-28">
+                                                    <div className="w-6 h-6 bg-yellow-600 rounded-full flex items-center justify-center shadow-sm">
+                                                        <RiProgress3Fill className="w-3 h-3 text-white" />
+                                                    </div>
+                                                    <span className="text-xs font-semibold text-yellow-700">Dalam proses</span>
+                                                </div>
+                                                <div className="flex-1 bg-gray-200 rounded-full h-2.5 shadow-inner">
+                                                    <div 
+                                                        className="bg-gradient-to-r from-yellow-600 to-yellow-500 h-2.5 rounded-full transition-all duration-500 shadow-sm"
+                                                        style={{ width: `${onProgressPercentage}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-xs font-bold text-gray-700 w-10 text-right">
+                                                    {report?.totalOnProgressVotes}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center space-x-3">
+                                                <div className="flex items-center space-x-2 w-28">
                                                     <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center shadow-sm">
                                                         <FaTimes className="w-3 h-3 text-white" />
                                                     </div>
-                                                    <span className="text-xs font-semibold text-red-700">Belum</span>
+                                                    <span className="text-xs font-semibold text-red-700">Tidak</span>
                                                 </div>
                                                 <div className="flex-1 bg-gray-200 rounded-full h-2.5 shadow-inner">
                                                     <div 
@@ -597,7 +618,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                         
                                         <div className="inline-flex items-center w-full rounded-xl overflow-hidden shadow-md border border-gray-200">
                                             <motion.button
-                                                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-4 font-semibold transition-all duration-200 ${
+                                                className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
                                                     userCurrentVote === 'RESOLVED'
                                                         ? 'bg-green-600 text-white shadow-inner'
                                                         : 'bg-gray-100 text-green-700 hover:bg-green-50'
@@ -613,7 +634,23 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                             </motion.button>
 
                                             <motion.button
-                                                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-4 font-semibold transition-all duration-200 ${
+                                                className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                    userCurrentVote === 'ON_PROGRESS'
+                                                        ? 'bg-yellow-600 text-white shadow-inner'
+                                                        : 'bg-gray-100 text-yellow-700 hover:bg-yellow-50'
+                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                onClick={() => handleVote('ON_PROGRESS')}
+                                                disabled={isLoading}
+                                                animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.02, 1] } : {}}
+                                                transition={{ duration: 0.3 }}
+                                                whileTap={{ scale: 0.98 }}
+                                            >
+                                                <RiProgress3Fill className="w-4 h-4" />
+                                                <span className="text-sm">Dalam Proses</span>
+                                            </motion.button>
+
+                                            <motion.button
+                                                className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
                                                     userCurrentVote === 'NOT_RESOLVED'
                                                         ? 'bg-red-600 text-white shadow-inner'
                                                         : 'bg-gray-100 text-red-700 hover:bg-red-50'
@@ -625,7 +662,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                 whileTap={{ scale: 0.98 }}
                                             >
                                                 <FaTimes className="w-4 h-4" />
-                                                <span className="text-sm">Belum Selesai</span>
+                                                <span className="text-sm">Tidak Ada Proses</span>
                                             </motion.button>
                                         </div>
                                     </>
@@ -636,6 +673,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                         <p className="text-sm text-gray-700">
                                             Anda memilih: <span className="font-bold text-gray-900">
                                                 {userCurrentVote === 'RESOLVED' && '✓ Terselesaikan'}
+                                                {userCurrentVote === 'ON_PROGRESS' && '-> Dalam Proses'}
                                                 {userCurrentVote === 'NOT_RESOLVED' && '✗ Belum Selesai'}
                                             </span>
                                         </p>

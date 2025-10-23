@@ -156,17 +156,19 @@
             }
         };
 
-        const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => {
+        const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' | 'NEUTRAL') => {
             const updatedReports = reports.map(report => {
                 if (report.id !== reportId) return report;
 
                 let totalResolvedVotes = report.totalResolvedVotes || 0;
+                let totalOnProgressVotes = report.totalOnProgressVotes || 0;
                 let totalNotResolvedVotes = report.totalNotResolvedVotes || 0;
                 let totalVotes = report.totalVotes !== undefined
                     ? report.totalVotes
-                    : (totalResolvedVotes + totalNotResolvedVotes);
+                    : (totalResolvedVotes + totalNotResolvedVotes + totalOnProgressVotes);
 
                 const isResolved = !!report.isResolvedByCurrentUser;
+                const isOnProgress = !!report.isOnProgressByCurrentUser;
                 const isNotResolved = !!report.isNotResolvedByCurrentUser;
 
                 if (voteType === 'RESOLVED') {
@@ -178,6 +180,18 @@
                             totalResolvedVotes,
                             totalVotes,
                             isResolvedByCurrentUser: false,
+                            isOnProgressByCurrentUser: false,
+                            isNotResolvedByCurrentUser: false,
+                        };
+                    } else if (isOnProgress) {
+                        totalOnProgressVotes = Math.max(0, totalOnProgressVotes - 1);
+                        totalResolvedVotes = totalResolvedVotes + 1;
+                        return {
+                            ...report,
+                            totalOnProgressVotes,
+                            totalResolvedVotes,
+                            isResolvedByCurrentUser: true,
+                            isOnProgressByCurrentUser: false,
                             isNotResolvedByCurrentUser: false,
                         };
                     } else if (isNotResolved) {
@@ -188,6 +202,7 @@
                             totalNotResolvedVotes,
                             totalResolvedVotes,
                             isResolvedByCurrentUser: true,
+                            isOnProgressByCurrentUser: false,
                             isNotResolvedByCurrentUser: false,
                         };
                     } else {
@@ -198,6 +213,55 @@
                             totalResolvedVotes,
                             totalVotes,
                             isResolvedByCurrentUser: true,
+                            isOnProgressByCurrentUser: false,
+                            isNotResolvedByCurrentUser: false,
+                        };
+                    }
+                }
+
+                if (voteType === 'ON_PROGRESS') {
+                    if (isOnProgress) {
+                        totalOnProgressVotes = Math.max(0, totalOnProgressVotes - 1);
+                        totalVotes = Math.max(0, totalVotes - 1);
+                        return {
+                            ...report,
+                            totalOnProgressVotes,
+                            totalVotes,
+                            isResolvedByCurrentUser: false,
+                            isOnProgressByCurrentUser: false,
+                            isNotResolvedByCurrentUser: false,
+                        };
+                    } else if (isResolved) {
+                        totalResolvedVotes = Math.max(0, totalResolvedVotes - 1);
+                        totalOnProgressVotes = totalOnProgressVotes + 1;
+                        return {
+                            ...report,
+                            totalResolvedVotes,
+                            totalOnProgressVotes,
+                            isResolvedByCurrentUser: false,
+                            isOnProgressByCurrentUser: true,
+                            isNotResolvedByCurrentUser: false,
+                        };
+                    } else if (isNotResolved) {
+                        totalNotResolvedVotes = Math.max(0, totalNotResolvedVotes - 1);
+                        totalOnProgressVotes = totalOnProgressVotes + 1;
+                        return {
+                            ...report,
+                            totalNotResolvedVotes,
+                            totalOnProgressVotes,
+                            isResolvedByCurrentUser: false,
+                            isOnProgressByCurrentUser: true,
+                            isNotResolvedByCurrentUser: false,
+                        };
+                    } else {
+                        totalOnProgressVotes = totalOnProgressVotes + 1;
+                        totalVotes = totalVotes + 1;
+                        return {
+                            ...report,
+                            totalOnProgressVotes,
+                            totalVotes,
+                            isResolvedByCurrentUser: false,
+                            isOnProgressByCurrentUser: true,
                             isNotResolvedByCurrentUser: false,
                         };
                     }
@@ -212,6 +276,7 @@
                             totalNotResolvedVotes,
                             totalVotes,
                             isResolvedByCurrentUser: false,
+                            isOnProgressByCurrentUser: false,
                             isNotResolvedByCurrentUser: false,
                         };
                     } else if (isResolved) {
@@ -222,6 +287,18 @@
                             totalResolvedVotes,
                             totalNotResolvedVotes,
                             isResolvedByCurrentUser: false,
+                            isOnProgressByCurrentUser: false,
+                            isNotResolvedByCurrentUser: true,
+                        };
+                    } else if (isOnProgress) {
+                        totalOnProgressVotes = Math.max(0, totalOnProgressVotes - 1);
+                        totalNotResolvedVotes = totalNotResolvedVotes + 1;
+                        return {
+                            ...report,
+                            totalOnProgressVotes,
+                            totalNotResolvedVotes,
+                            isResolvedByCurrentUser: false,
+                            isOnProgressByCurrentUser: false,
                             isNotResolvedByCurrentUser: true,
                         };
                     } else {
@@ -232,6 +309,7 @@
                             totalNotResolvedVotes,
                             totalVotes,
                             isResolvedByCurrentUser: false,
+                            isOnProgressByCurrentUser: false,
                             isNotResolvedByCurrentUser: true,
                         };
                     }
@@ -241,6 +319,9 @@
                     if (isResolved) {
                         totalResolvedVotes = Math.max(0, totalResolvedVotes - 1);
                         totalVotes = Math.max(0, totalVotes - 1);
+                    } else if (isOnProgress) {
+                        totalOnProgressVotes = Math.max(0, totalOnProgressVotes - 1);
+                        totalVotes = Math.max(0, totalVotes - 1);
                     } else if (isNotResolved) {
                         totalNotResolvedVotes = Math.max(0, totalNotResolvedVotes - 1);
                         totalVotes = Math.max(0, totalVotes - 1);
@@ -248,9 +329,11 @@
                     return {
                         ...report,
                         totalResolvedVotes,
+                        totalOnProgressVotes,
                         totalNotResolvedVotes,
                         totalVotes,
                         isResolvedByCurrentUser: false,
+                        isOnProgressByCurrentUser: false,
                         isNotResolvedByCurrentUser: false,
                     };
                 }
@@ -269,7 +352,7 @@
                 if (voteType !== 'NEUTRAL') {
                     voteReport({
                         reportID: reportId,
-                        data: { voteType: voteType as 'RESOLVED' | 'NOT_RESOLVED' },
+                        data: { voteType: voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' },
                     });
                 }
             } catch (error) {

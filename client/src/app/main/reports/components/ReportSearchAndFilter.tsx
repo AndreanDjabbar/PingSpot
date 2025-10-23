@@ -30,7 +30,7 @@ const ReportSearchAndFilter: React.FC<ReportSearchAndFilterProps> = ({
                         onChange={(e) => onSearchChange(e.target.value)}
                     />
                 </div>
-                
+                    
                 <div className="flex space-x-2 items-center overflow-x-auto pb-2 md:pb-0">
                     <div className="flex items-center text-sky-900 mr-2">
                         <FaFilter className="mr-1" /> Filter:
