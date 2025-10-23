@@ -1,5 +1,5 @@
 export type ReportType = 'INFRASTRUCTURE' | 'ENVIRONMENT' | 'SAFETY' | 'OTHER';
-export type ReportStatus = 'PENDING' | 'RESOLVED' | 'NOT_RESOLVED' | 'IN_PROGRESS';
+export type ReportStatus = 'PENDING' | 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS';
 
 export interface IReportImage {
     id: number;
@@ -105,9 +105,11 @@ export interface IReport {
     totalDislikeReactions: number;
     totalReactions: number;
     totalResolvedVotes?: number;
+    totalOnProgressVotes?: number;
     totalNotResolvedVotes?: number;
     totalVotes?: number;
     isResolvedByCurrentUser?: boolean;
+    isOnProgressByCurrentUser?: boolean;
     isNotResolvedByCurrentUser?: boolean;
     reportVotes?: IReportVote[];
 }
