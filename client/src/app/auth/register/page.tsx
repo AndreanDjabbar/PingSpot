@@ -44,8 +44,8 @@ const RegisterPage = () => {
     return (
         <div className="space-y-8 mb-8">
             <div className="text-center space-y-1">
-                <h1 className="text-3xl font-bold text-sky-800">Daftar</h1>
-                <p className="text-sky-800">Buat akun untuk mulai menggunakan PingSpot</p>
+                <h1 className="text-3xl font-bold text-gray-900">Daftar</h1>
+                <p className="text-gray-800">Buat akun untuk mulai menggunakan PingSpot</p>
             </div>
 
             {isSuccess && (
@@ -134,7 +134,7 @@ const RegisterPage = () => {
                     </div>
 
                     <ButtonSubmit
-                        className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
+                        className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
                         title="Daftar"
                         progressTitle="Mendaftar..."
                         isProgressing={isPending}
@@ -147,23 +147,23 @@ const RegisterPage = () => {
                     <div className="w-full border-t border-gray-300" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-sky-800">Atau lanjutkan dengan</span>
+                    <span className="px-2 bg-white text-gray-700">Atau lanjutkan dengan</span>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 gap-3">
                 <button
                     type="button"
-                    className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring focus:ring-sky-800 transition-all duration-300"
+                    className="w-full inline-flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring focus:ring-sky-700 transition-all duration-300"
                     onClick={() => window.location.href = process.env.NEXT_PUBLIC_GOOGLE_AUTH_URL || ''}
                 >
                     <FaGoogle size={20}/>
                     <span className="ml-2">Google</span>
                 </button>
             </div>
-            <p className="text-center text-sm text-sky-800">
+            <p className="text-center text-sm text-gray-700">
                 Sudah punya akun?{' '}
-                <a href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
+                <a href="/auth/login" className="font-medium text-sky-700 hover:text-sky-800 transition-colors duration-200">
                     Masuk
                 </a>
             </p>

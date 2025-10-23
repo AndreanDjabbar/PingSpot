@@ -227,12 +227,12 @@ const ReportsPage = () => {
                     <div className="w-full flex flex-col gap-6">
                         {currentStep === 0 && (
                             <div>
-                                <div className="w-full bg-gradient-to-br from-sky-100 to-indigo-100 rounded-lg p-4 border-2 border-dashed border-sky-200">
-                                    <h2 className="text-xl font-semibold text-sky-800 mb-4 flex items-center">
-                                        <FaMapMarkerAlt className="mr-2" />
+                                <div className="w-full bg-gray-100 rounded-lg p-4 border-2 border-dashed border-gray-200">
+                                    <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                                        <FaMapMarkerAlt className="mr-2 text-gray-700" />
                                         Pilih Lokasi
                                     </h2>
-                                    <p className="text-gray-600 mb-4 text-sm">Klik pada peta untuk menentukan lokasi masalah atau aktifkan lokasi otomatis</p>
+                                    <p className="text-gray-600 mb-4 text-sm">Klik  pada peta untuk menentukan lokasi masalah atau aktifkan lokasi otomatis</p>
                                     <div className="h-[400px] w-full mb-4">
                                         <DynamicMap onMarkerPositionChange={setMarkerPosition}/>
                                     </div>
@@ -327,7 +327,7 @@ const ReportsPage = () => {
                             <div>
                                 <div className="w-full">
                                     <div className='flex flex-col justify-center items-center gap-6'>
-                                        <label htmlFor="reportImages" className="text-md font-medium text-sky-800 items-center">
+                                        <label htmlFor="reportImages" className="text-md font-semibold text-gray-900 items-center">
                                             Foto Permasalahan (Maks. 5 Foto)
                                         </label>
                                         <div>
@@ -375,15 +375,15 @@ const ReportsPage = () => {
                                     <Accordion.Item
                                         id="summary"
                                         title="Ringkasan Laporan"
-                                        icon={<FaCheckCircle className="w-5 h-5 text-sky-800" />}
-                                        headerClassName="bg-gradient-to-r from-sky-50 to-indigo-50"
+                                        icon={<FaCheckCircle className="w-5 h-5 text-gray-700" />}
+                                        headerClassName="bg-gradient-to-r from-blue-50 to-indigo-50"
                                         className="border-2 border-gray-300"
                                     >
                                         <Accordion type="multiple" defaultValue={['info', 'location', 'description', 'attachment']} className='mt-4'>
                                             <Accordion.Item
                                                 id="info"
                                                 title="Informasi Dasar"
-                                                icon={<LuNotebookText className="w-5 h-5 text-sky-800" />}
+                                                icon={<LuNotebookText className="w-5 h-5 text-gray-700" />}
                                             >
                                                 <div className="space-y-4">
                                                     <div>
@@ -393,7 +393,7 @@ const ReportsPage = () => {
                                                     <div>
                                                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Jenis Laporan</label>
                                                         <p className="text-base text-gray-900 mt-2">
-                                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-sky-100 text-sky-800">
+                                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                                                                 {issueTypes.find(t => t.value === watch('reportType'))?.label || '-'}
                                                             </span>
                                                         </p>
@@ -413,7 +413,7 @@ const ReportsPage = () => {
                                             <Accordion.Item
                                                 id="location"
                                                 title="Lokasi"
-                                                icon={<IoLocationOutline className="w-5 h-5 text-sky-800" />}
+                                                icon={<IoLocationOutline className="w-5 h-5 text-gray-700" />}
                                             >
                                                 <div>
                                                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Detail Lokasi</label>
@@ -424,7 +424,7 @@ const ReportsPage = () => {
                                             <Accordion.Item
                                                 id="description"
                                                 title="Deskripsi Permasalahan"
-                                                icon={<MdOutlineNoteAlt className="w-5 h-5 text-sky-800" />}
+                                                icon={<MdOutlineNoteAlt className="w-5 h-5 text-gray-700" />}
                                             >
                                                 <div>
                                                     <p className="text-base text-gray-700 leading-relaxed">{watch('reportDescription') || '-'}</p>
@@ -434,7 +434,7 @@ const ReportsPage = () => {
                                             <Accordion.Item
                                                 id="attachment"
                                                 title="Lampiran Foto"
-                                                icon={<IoMdImages className	="w-5 h-5 text-sky-800" />}
+                                                icon={<IoMdImages className	="w-5 h-5 text-gray-700" />}
                                             >
                                                 <div>
                                                     {reportImages.length > 0 ? (
@@ -473,13 +473,13 @@ const ReportsPage = () => {
                                         }
                                     }}
                                     disabled={!validateStep(currentStep)}
-                                    className="px-6 py-2.5 rounded-lg bg-sky-800 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    className="px-6 py-2.5 rounded-lg bg-sky-700 text-white font-medium hover:bg-sky-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
                                     Lanjut
                                 </button>
                             ) : (
                                 <ButtonSubmit
-                                    className="px-6 py-2.5 rounded-lg bg-pingspot-gradient-hoverable text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300 flex justify-center items-center"
+                                    className="px-6 py-2.5 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-900 transition-colors duration-300 flex justify-center items-center"
                                     title="Kirim Laporan"
                                     progressTitle="Mengirim Laporan..."
                                     isProgressing={isPending || reverseLoading}

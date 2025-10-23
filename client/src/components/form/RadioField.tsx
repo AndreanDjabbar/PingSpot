@@ -64,12 +64,12 @@ const RadioField: React.FC<RadioFieldProps> = ({
         <div className={`space-y-1 ${className}`}>
         {withLabel && (
             <div className="flex items-center space-x-2">
-            {icon && <span className="text-sky-800">{icon}</span>}
-                <label htmlFor={id} className="block text-sm font-medium text-sky-800">
+            {icon && <span className="text-gray-700">{icon}</span>}
+                <label htmlFor={id} className="block text-sm font-semibold text-gray-900">
                     {labelTitle}
                 </label>
                 {informationTitle && (
-                <div className="flex items-center text-sky-600 hover:text-sky-800 hover:scale-110 transition-all duration-300" title={informationTitle} onClick={handleShowInfo}>
+                <div className="flex items-center text-sky-700 hover:text-sky-800 hover:scale-110 transition-all duration-300 cursor-pointer" title={informationTitle} onClick={handleShowInfo}>
                     <BsFillInfoCircleFill size={16} />
                 </div>
                 )}
@@ -91,7 +91,7 @@ const RadioField: React.FC<RadioFieldProps> = ({
                 onChange={handleChange}
                 onBlur={onBlur}
                 {...(register || {})}
-                className="h-4 w-4 focus:outline-none cursor-pointer accent-sky-800"
+                className="h-4 w-4 focus:outline-none cursor-pointer accent-blue-600"
                 />
                 <label
                 htmlFor={`${id}-${option.value}`}

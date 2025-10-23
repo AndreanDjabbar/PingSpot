@@ -31,10 +31,10 @@ const FormInformationModal: React.FC<FormInformationModalProps> = ({
             >
                 <div className="flex items-center justify-between p-5 border-b border-gray-200">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-sky-100">
-                            <BsFillInfoCircleFill className="text-sky-800" size={24} />
+                        <div className="p-2 rounded-full bg-gray-100">
+                            <BsFillInfoCircleFill className="text-gray-700" size={24} />
                         </div>
-                        <h3 className="text-xl font-semibold text-sky-800">
+                        <h3 className="text-xl font-semibold text-gray-900">
                             Informasi
                         </h3>
                     </div>
@@ -43,7 +43,7 @@ const FormInformationModal: React.FC<FormInformationModalProps> = ({
                         className="p-1 rounded-full hover:bg-gray-100 transition-colors"
                         aria-label="Close modal"
                     >
-                        <BiX className="w-6 h-6 text-sky-800" />
+                        <BiX className="w-6 h-6 text-gray-900" />
                     </button>
                 </div>
 
@@ -59,7 +59,7 @@ const FormInformationModal: React.FC<FormInformationModalProps> = ({
 
                     {additionalInfo && (
                         <div className="p-4 bg-sky-50 border border-sky-200 rounded-lg">
-                            <p className="text-sm text-sky-900">
+                            <p className="text-sm text-sky-700">
                                 {additionalInfo}
                             </p>
                         </div>
@@ -70,7 +70,7 @@ const FormInformationModal: React.FC<FormInformationModalProps> = ({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-5 py-2 bg-sky-800 hover:bg-sky-900 active:bg-sky-950 text-white rounded-lg font-medium transition-colors"
+                        className="px-5 py-2 bg-sky-700 hover:bg-sky-800 active:bg-sky-950 text-white rounded-lg font-medium transition-colors"
                     >
                         Mengerti
                     </button>

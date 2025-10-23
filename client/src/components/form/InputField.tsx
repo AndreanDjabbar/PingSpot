@@ -42,12 +42,12 @@ const InputField: React.FC<InputFieldProps> = ({
     return (
         <div className={`space-y-1 ${className}`}>
             {withLabel && (
-                <label htmlFor={id} className="block text-sm font-medium text-sky-800">
+                <label htmlFor={id} className="block text-sm font-semibold text-gray-900">
                     {labelTitle}
                 </label>
             )}
             <div className='relative'>
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-sky-800">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                     {icon}
                 </div>
                 <input
@@ -55,7 +55,7 @@ const InputField: React.FC<InputFieldProps> = ({
                     name={name}
                     type={inputType}
                     required={required}
-                    className={cn("block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200", disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white', )}
+                    className={cn("block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200", disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white', )}
                     placeholder={placeHolder || `Masukkan ${labelTitle.toLowerCase()}`}
                     value={value}
                     disabled={disabled}
@@ -67,7 +67,7 @@ const InputField: React.FC<InputFieldProps> = ({
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                         <button
                         type="button"
-                        className="text-sky-800"
+                        className="text-gray-500 hover:text-gray-700 transition-colors"
                         onClick={() => setShowPassword(!showPassword)}
                         >
                         {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}

@@ -285,7 +285,7 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
                         )}
                         {!location && (
                             <button 
-                                className="bg-sky-600 text-white hover:bg-sky-700 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm shadow-md"
+                                className="bg-sky-700 text-white hover:bg-sky-800 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm shadow-md"
                                 onClick={handleDetectLocation}
                                 disabled={loading}
                             >

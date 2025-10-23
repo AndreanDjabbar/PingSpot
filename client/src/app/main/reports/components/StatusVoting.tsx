@@ -183,7 +183,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     useSuccessToast(isUploadProgressSuccess, uploadProgressData);
     
     return (
-        <div className="rounded-2xl p-4">
+        <div className="rounded-xl p-4 bg-gradient-to-br from-gray-50 to-white">
             <div className='mb-4'>
                 {isUploadProgressSuccess && (
                     <SuccessSection message={uploadProgressData.message || "Laporan berhasil dikirim!"} />
@@ -203,13 +203,13 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                     title="Status Laporan"
                     icon={<FaUsers className="w-5 h-5" />}
                     badge={isReportOwner ? (
-                        <div className="flex items-center space-x-1 bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full border border-yellow-200">
+                        <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-100 to-yellow-50 text-yellow-700 px-3 py-1.5 rounded-full border border-yellow-300 shadow-sm">
                             <FaCrown size={14}/>
-                            <span className="text-sm font-bold">Laporan Anda</span>
+                            <span className="text-xs font-semibold">Laporan Anda</span>
                         </div>  
                     ) : undefined}
                     rightContent={!isReportOwner ? (
-                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(currentStatus)}`}>
+                        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(currentStatus)}`}>
                             {getStatusLabel(currentStatus)}
                         </div>
                     ) : undefined}
@@ -220,9 +220,10 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                         {reportID && (
                             <div className='mb-3'>
                                 {progressData && progressData.length > 0 && (
-                                    <div className="mb-4 bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                                        <div className="flex items-center space-x-2 mb-3">
-                                            <h4 className="text-sm font-semibold text-sky-900">Perkembangan Terbaru</h4>
+                                    <div className="mb-4 bg-white rounded-xl p-5 border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200">
+                                        <div className="flex items-center space-x-2 mb-4">
+                                            <div className="w-1 h-5 bg-gradient-to-b from-blue-600 to-sky-400 rounded-full"></div>
+                                            <h4 className="text-sm font-bold text-gray-900">Perkembangan Terbaru</h4>
                                         </div>
                                         
                                         {(() => {
@@ -230,41 +231,45 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                 .sort((a, b) => b.createdAt - a.createdAt)[0];
                                             
                                             return (
-                                                <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                                    <div className="flex items-start justify-between mb-2">
-                                                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(latestProgress.status)}`}>
+                                                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                                                    <div className="flex items-start justify-between mb-3">
+                                                        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(latestProgress.status)}`}>
                                                             {getStatusLabel(latestProgress.status)}
                                                         </div>
-                                                        <span className="text-xs text-gray-500">
+                                                        <span className="text-xs text-gray-500 font-medium">
                                                             {formattedDate(latestProgress.createdAt, { withTime: true })}
                                                         </span>
                                                     </div>
                                                     
                                                     {latestProgress.notes && (
-                                                        <p className="text-sm text-gray-700">{latestProgress.notes}</p>
+                                                        <p className="text-sm text-gray-700 leading-relaxed mb-3">{latestProgress.notes}</p>
                                                     )}
                                                     
                                                     {(latestProgress.attachment1 || latestProgress.attachment2) && (
-                                                        <div className="flex space-x-2">
+                                                        <div className="flex space-x-3 mt-3">
                                                             {latestProgress.attachment1 && (
-                                                                <Image 
-                                                                    src={getImageURL(`/report/progress/${latestProgress.attachment1}`, "main")} 
-                                                                    alt="Progress attachment 1"
-                                                                    width={48}
-                                                                    height={48}
-                                                                    className="w-12 h-12 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                                                                    onClick={() => handleImageClick(getImageURL(`/report/progress/${latestProgress.attachment1}`, "main"))}
-                                                                />
+                                                                <div className="relative group">
+                                                                    <Image 
+                                                                        src={getImageURL(`/report/progress/${latestProgress.attachment1}`, "main")} 
+                                                                        alt="Progress attachment 1"
+                                                                        width={80}
+                                                                        height={80}
+                                                                        className="w-20 h-20 object-cover rounded-xl cursor-pointer hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg border border-gray-200"
+                                                                        onClick={() => handleImageClick(getImageURL(`/report/progress/${latestProgress.attachment1}`, "main"))}
+                                                                    />
+                                                                </div>
                                                             )}
                                                             {latestProgress.attachment2 && (
-                                                                <Image 
-                                                                    src={getImageURL(`/report/progress/${latestProgress.attachment2}`, "main")} 
-                                                                    alt="Progress attachment 2"
-                                                                    width={48}
-                                                                    height={48}
-                                                                    className="w-12 h-12 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                                                                    onClick={() => handleImageClick(getImageURL(`/report/progress/${latestProgress.attachment2}`, "main"))}
-                                                                />
+                                                                <div className="relative group">
+                                                                    <Image 
+                                                                        src={getImageURL(`/report/progress/${latestProgress.attachment2}`, "main")} 
+                                                                        alt="Progress attachment 2"
+                                                                        width={80}
+                                                                        height={80}
+                                                                        className="w-20 h-20 object-cover rounded-xl cursor-pointer hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg border border-gray-200"
+                                                                        onClick={() => handleImageClick(getImageURL(`/report/progress/${latestProgress.attachment2}`, "main"))}
+                                                                    />
+                                                                </div>
                                                             )}
                                                         </div>
                                                     )}
@@ -278,8 +283,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                     <Accordion.Item
                                         id="progress-report"
                                         title={`Perkembangan Laporan${progressData ? ` (${progressData.length} pembaruan)` : ''}`}
-                                        icon={<BiMessageDetail className="w-4 h-4 text-sky-900" />}
-                                        headerClassName="text-sky-900"
+                                        icon={<BiMessageDetail className="w-4 h-4 text-gray-700" />}
+                                        headerClassName="text-gray-900 font-semibold"
                                     >
                                         {isUploadProgressReportPending && (
                                             <motion.div
@@ -293,49 +298,49 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                         )}
 
                                         {false ? (
-                                            <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2"></div>
-                                                <span className="text-sm text-gray-600">Memuat progress...</span>
+                                            <div className="flex items-center justify-center p-5 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 shadow-sm">
+                                                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                                                <span className="text-sm text-gray-700 font-medium">Memuat progress...</span>
                                             </div>
                                         ) : progressData && progressData.length > 0 ? (
-                                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2 pt-3 mt-1">
+                                            <div className="space-y-4 max-h-80 overflow-y-auto pr-2 pt-3 mt-2 custom-scrollbar">
                                                 {progressData
                                                     .sort((a, b) => b.createdAt - a.createdAt)
                                                     .map((progress, index) => (
                                                     <div key={index} className="relative">
                                                         {index < progressData!.length - 1 && (
-                                                            <div className="absolute left-[22px] top-12 w-0.5 h-8 bg-gray-300"></div>
+                                                            <div className="absolute left-[18px] top-14 w-0.5 h-10 bg-gradient-to-b from-gray-300 to-transparent"></div>
                                                         )}
                                                         
-                                                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 shadow-sm transition-all duration-200">
+                                                        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-md hover:shadow-lg transition-all duration-200">
                                                             <div className="flex items-start space-x-4">
-                                                                <div className={`w-3 h-3 rounded-full mt-2 flex-shrink-0 ${
-                                                                    progress.status === 'RESOLVED' ? 'bg-green-700' : 'bg-red-700'
+                                                                <div className={`w-2.5 h-2.5 rounded-full mt-2.5 flex-shrink-0 shadow-md ${
+                                                                    progress.status === 'RESOLVED' ? 'bg-green-600' : 'bg-red-600'
                                                                 }`}></div>
                                                                 
                                                                 <div className="flex-1">
-                                                                    <div className="flex items-start justify-between mb-2">
-                                                                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(progress.status)}`}>
+                                                                    <div className="flex items-start justify-between mb-3">
+                                                                        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(progress.status)}`}>
                                                                             {getStatusLabel(progress.status)}
                                                                         </div>
-                                                                        <span className="text-xs text-gray-500">
+                                                                        <span className="text-xs text-gray-500 font-medium">
                                                                             {formattedDate(progress.createdAt, { withTime: true })}
                                                                         </span>
                                                                     </div>
                                                                     
                                                                     {progress.notes && (
-                                                                        <p className="text-sm text-gray-700 mb-3">{progress.notes}</p>
+                                                                        <p className="text-sm text-gray-700 leading-relaxed mb-3">{progress.notes}</p>
                                                                     )}
                                                                     
                                                                     {(progress.attachment1 || progress.attachment2) && (
-                                                                        <div className="flex space-x-2">
+                                                                        <div className="flex space-x-3">
                                                                             {progress.attachment1 && (
                                                                                 <Image 
                                                                                     src={getImageURL(`/report/progress/${progress.attachment1}`, "main")} 
                                                                                     alt="Progress attachment 1"
-                                                                                    width={64}
-                                                                                    height={64}
-                                                                                    className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                                                                                    width={72}
+                                                                                    height={72}
+                                                                                    className="w-18 h-18 object-cover rounded-xl cursor-pointer hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg border border-gray-200"
                                                                                     onClick={() => handleImageClick(getImageURL(`/report/progress/${progress.attachment1}`, "main"))}
                                                                                 />
                                                                             )}
@@ -343,9 +348,9 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                                                 <Image 
                                                                                     src={getImageURL(`/report/progress/${progress.attachment2}`, "main")} 
                                                                                     alt="Progress attachment 2"
-                                                                                    width={64}
-                                                                                    height={64}
-                                                                                    className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                                                                                    width={72}
+                                                                                    height={72}
+                                                                                    className="w-18 h-18 object-cover rounded-xl cursor-pointer hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg border border-gray-200"
                                                                                     onClick={() => handleImageClick(getImageURL(`/report/progress/${progress.attachment2}`, "main"))}
                                                                                 />
                                                                             )}
@@ -358,9 +363,9 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                 ))}
                                             </div>
                                         ) : progressData.length <= 0 && (
-                                            <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200 mt-3">
-                                                <BiMessageDetail className="w-4 h-4 text-gray-400 mr-2" />
-                                                <span className="text-sm text-gray-500">Belum ada progress yang dilaporkan</span>
+                                            <div className="flex items-center justify-center p-6 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 shadow-sm mt-3">
+                                                <BiMessageDetail className="w-5 h-5 text-gray-400 mr-2" />
+                                                <span className="text-sm text-gray-600 font-medium">Belum ada progress yang dilaporkan</span>
                                             </div>
                                         )}
                                     </Accordion.Item>
@@ -373,28 +378,35 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                 <Accordion.Item
                                     id="update-status"
                                     title="Perbarui Status Laporan"
-                                    icon={<FiEdit className="w-4 h-4 text-sky-900" />}
-                                    headerClassName="text-sky-900"
+                                    icon={<FiEdit className="w-4 h-4 text-gray-700" />}
+                                    headerClassName="text-gray-900 font-semibold"
                                 >
                                     {isReportResolved ? (
-                                        <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200 mt-4">
-                                            <FaCheck className="w-4 h-4 text-green-600" />
-                                            <p className="text-sm text-green-700 font-medium">
-                                                Laporan ini telah ditandai sebagai terselesaikan. Pembaruan progress dinonaktifkan.
-                                            </p>
+                                        <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-300 shadow-sm mt-4">
+                                            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-md">
+                                                <FaCheck className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-green-800 font-semibold">
+                                                    Laporan Terselesaikan
+                                                </p>
+                                                <p className="text-xs text-green-700 mt-0.5">
+                                                    Pembaruan progress dinonaktifkan
+                                                </p>
+                                            </div>
                                         </div>
                                     ) : (
                                         <form onSubmit={handleSubmitProgress(handleProgressUpload)} className='mt-4'>
-                                            <div className='mb-4'>
-                                                <div className="grid grid-cols-2 gap-3">
+                                            <div className='mb-5'>
+                                                <div className="inline-flex items-center w-full rounded-xl overflow-hidden shadow-md border border-gray-200">
                                                     <motion.button
                                                         type="button"
-                                                        className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-1 ${
+                                                        className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3.5 font-semibold transition-all duration-200 ${
                                                             selectedStatus === 'RESOLVED'
-                                                                ? 'bg-green-700 border-green-700 text-white shadow-lg'
+                                                                ? 'bg-green-600 text-white shadow-inner'
                                                                 : currentStatus === 'RESOLVED'
-                                                                ? 'bg-green-100 text-green-700 border-green-500'
-                                                                : 'bg-white text-green-600 border-green-500 hover:bg-green-50'
+                                                                ? 'bg-green-100 text-green-700'
+                                                                : 'bg-gray-100 text-green-700 hover:bg-green-50'
                                                         } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                         onClick={() => {
                                                             setSelectedStatus('RESOLVED');
@@ -404,17 +416,17 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                         whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
                                                     >
                                                         <FaCheck className="w-4 h-4" />
-                                                        <span className="text-sm">Tandai Selesai</span>
+                                                        <span className="text-sm">Selesai</span>
                                                     </motion.button>
 
                                                     <motion.button
                                                         type="button"
-                                                        className={`flex items-center justify-center space-x-2 px-1 py-2 rounded-xl font-medium transition-all duration-200 border-2 ${
+                                                        className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3.5 font-semibold transition-all duration-200 ${
                                                             selectedStatus === 'NOT_RESOLVED'
-                                                                ? 'bg-red-700 text-white border-red-700 shadow-lg'
+                                                                ? 'bg-red-600 text-white shadow-inner'
                                                                 : currentStatus === 'NOT_RESOLVED'
-                                                                ? 'bg-red-100 text-red-700 border-red-500'
-                                                                : 'bg-white text-red-600 border-red-500 hover:bg-red-50'
+                                                                ? 'bg-red-100 text-red-700'
+                                                                : 'bg-gray-100 text-red-700 hover:bg-red-50'
                                                         } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                         onClick={() => {
                                                             setSelectedStatus('NOT_RESOLVED');
@@ -434,13 +446,13 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                     initial={{ opacity: 0, height: 0 }}
                                                     animate={{ opacity: 1, height: 'auto' }}
                                                     exit={{ opacity: 0, height: 0 }}
-                                                    className="bg-gray-50 rounded-xl p-4 border border-gray-200"
+                                                    className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 border border-gray-200 shadow-md"
                                                 >
-                                                    <div className="space-y-3">
+                                                    <div className="space-y-4">
                                                         <TextAreaField
                                                             id="progressNotes"
                                                             register={registerProgress("progressNotes")}
-                                                            rows={2}
+                                                            rows={3}
                                                             className="w-full"
                                                             withLabel={true}
                                                             labelTitle="Catatan Progress"
@@ -451,8 +463,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                         
                                                         <div className="space-y-2">
                                                             <div className="flex items-center space-x-2">
-                                                                <FaCamera className="w-4 h-4 text-sky-900" />
-                                                                <label className="text-sm font-medium text-sky-900">
+                                                                <FaCamera className="w-4 h-4 text-gray-700" />
+                                                                <label className="text-sm font-semibold text-gray-900">
                                                                     Lampiran Foto (Opsional, Maks. 2)
                                                                 </label>
                                                             </div>
@@ -467,14 +479,14 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                                 onChange={(files) => setProgressImages(files)}
                                                                 onImageClick={handleImageClick}
                                                             />
-                                                            <p className="text-xs text-gray-500">
+                                                            <p className="text-xs text-gray-600">
                                                                 Tambahkan foto untuk memperjelas status
                                                             </p>
                                                         </div>
                                                         
-                                                        <div className="flex space-x-2">
+                                                        <div className="flex space-x-3 pt-2">
                                                             <ButtonSubmit
-                                                                className="group relative w-1/2 flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
+                                                                className="group relative w-1/2 flex items-center justify-center py-3.5 px-4 text-sm font-semibold rounded-xl text-white bg-sky-700 hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-all duration-300 shadow-md hover:shadow-lg"
                                                                 title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
                                                                 progressTitle="Memproses..."
                                                                 isProgressing={isUploadProgressReportPending}
@@ -482,7 +494,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                             
                                                             <motion.button
                                                                 type="button"
-                                                                className="px-4 w-1/2 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-200"
+                                                                className="px-4 w-1/2 py-3.5 rounded-xl text-sm font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
                                                                 onClick={() => {
                                                                     setSelectedStatus(null);
                                                                 }}
@@ -496,9 +508,11 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                             )}
 
                                             {currentStatus === 'RESOLVED' && (
-                                                <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200 mt-4">
-                                                    <FaCheck className="w-4 h-4 text-green-600" />
-                                                    <p className="text-sm text-green-700 font-medium">
+                                                <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-300 shadow-sm mt-4">
+                                                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                                                        <FaCheck className="w-4 h-4 text-white" />
+                                                    </div>
+                                                    <p className="text-sm text-green-800 font-semibold">
                                                         Laporan ini telah ditandai sebagai terselesaikan
                                                     </p>
                                                 </div>
@@ -510,41 +524,48 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                         )}
 
                         {!isReportOwner && (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {totalVotes > 0 && (
-                                    <div className="mb-6">
-                                        <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                                            <span>Pendapat orang lain ({totalVotes} vote)</span>
+                                    <div className="mb-6 bg-white rounded-xl p-5 border border-gray-200 shadow-md">
+                                        <div className="flex items-center justify-between text-sm font-semibold text-gray-900 mb-4">
+                                            <span>Pendapat Komunitas</span>
+                                            <span className="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">
+                                                {totalVotes} vote
+                                            </span>
                                         </div>
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                             <div className="flex items-center space-x-3">
-                                                <div className="flex items-center space-x-1 w-24">
-                                                    <FaCheck className="w-3 h-3 text-green-700" />
-                                                    <span className="text-xs font-medium text-green-700">Selesai</span>
+                                                <div className="flex items-center space-x-2 w-28">
+                                                    <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center shadow-sm">
+                                                        <FaCheck className="w-3 h-3 text-white" />
+                                                    </div>
+                                                    <span className="text-xs font-semibold text-green-700">Selesai</span>
                                                 </div>
-                                                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                                <div className="flex-1 bg-gray-200 rounded-full h-2.5 shadow-inner">
                                                     <div 
-                                                        className="bg-green-700 h-2 rounded-full transition-all duration-500"
+                                                        className="bg-gradient-to-r from-green-600 to-green-500 h-2.5 rounded-full transition-all duration-500 shadow-sm"
                                                         style={{ width: `${resolvedPercentage}%` }}
                                                     />
                                                 </div>
-                                                <span className="text-xs font-medium text-gray-600 w-8">
+                                                <span className="text-xs font-bold text-gray-700 w-10 text-right">
                                                     {report?.totalResolvedVotes}
                                                 </span>
                                             </div>
 
                                             <div className="flex items-center space-x-3">
-                                                <div className="flex items-center space-x-1 w-24">
-                                                    <FaTimes className="w-3 h-3 text-red-700" />
-                                                    <span className="text-xs font-medium text-red-700">Belum</span>
+                                                <div className="flex items-center space-x-2 w-28">
+                                                    <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center shadow-sm">
+                                                        <FaTimes className="w-3 h-3 text-white" />
+                                                    </div>
+                                                    <span className="text-xs font-semibold text-red-700">Belum</span>
                                                 </div>
-                                                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                                <div className="flex-1 bg-gray-200 rounded-full h-2.5 shadow-inner">
                                                     <div 
-                                                        className="bg-red-700 h-2 rounded-full transition-all duration-500"
+                                                        className="bg-gradient-to-r from-red-600 to-red-500 h-2.5 rounded-full transition-all duration-500 shadow-sm"
                                                         style={{ width: `${notResolvedPercentage}%` }}
                                                     />
                                                 </div>
-                                                <span className="text-xs font-medium text-gray-600 w-8">
+                                                <span className="text-xs font-bold text-gray-700 w-10 text-right">
                                                     {report?.totalNotResolvedVotes}
                                                 </span>
                                             </div>
@@ -553,44 +574,55 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                 )}
 
                                 {isReportResolved ? (
-                                    <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
-                                        <FaCheck className="w-4 h-4 text-green-600" />
-                                        <p className="text-sm text-green-700 font-medium">
-                                            Laporan ini telah ditandai sebagai terselesaikan. Voting ditutup.
-                                        </p>
+                                    <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-300 shadow-sm">
+                                        <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-md">
+                                            <FaCheck className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-green-800 font-semibold">
+                                                Laporan Terselesaikan
+                                            </p>
+                                            <p className="text-xs text-green-700 mt-0.5">
+                                                Voting ditutup
+                                            </p>
+                                        </div>
                                     </div>
                                 ) : (
                                     <>
-                                        <p className="text-sm text-gray-600 mb-3">
-                                            Bagaimana pendapat Anda tentang status laporan ini?
-                                        </p>
+                                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                                            <p className="text-sm text-blue-800 font-medium text-center">
+                                                Bagaimana pendapat Anda tentang status laporan ini?
+                                            </p>
+                                        </div>
                                         
-                                        <div className="grid grid-cols-2 gap-10">
+                                        <div className="inline-flex items-center w-full rounded-xl overflow-hidden shadow-md border border-gray-200">
                                             <motion.button
-                                                className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                                                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-4 font-semibold transition-all duration-200 ${
                                                     userCurrentVote === 'RESOLVED'
-                                                        ? 'bg-green-700 text-white shadow-lg'
-                                                        : 'bg-white text-green-700 border-2 border-green-700 hover:bg-green-50'
+                                                        ? 'bg-green-600 text-white shadow-inner'
+                                                        : 'bg-gray-100 text-green-700 hover:bg-green-50'
                                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 onClick={() => handleVote('RESOLVED')}
                                                 disabled={isLoading}
-                                                animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
+                                                animate={animateButton === 'RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
                                                 transition={{ duration: 0.3 }}
+                                                whileTap={{ scale: 0.98 }}
                                             >
                                                 <FaCheck className="w-4 h-4" />
                                                 <span className="text-sm">Terselesaikan</span>
                                             </motion.button>
 
                                             <motion.button
-                                                className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                                                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-4 font-semibold transition-all duration-200 ${
                                                     userCurrentVote === 'NOT_RESOLVED'
-                                                        ? 'bg-red-700 text-white shadow-lg'
-                                                        : 'bg-white text-red-700 border-2 border-red-700 hover:bg-red-50'
+                                                        ? 'bg-red-600 text-white shadow-inner'
+                                                        : 'bg-gray-100 text-red-700 hover:bg-red-50'
                                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 onClick={() => handleVote('NOT_RESOLVED')}
                                                 disabled={isLoading}
-                                                animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
+                                                animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
                                                 transition={{ duration: 0.3 }}
+                                                whileTap={{ scale: 0.98 }}
                                             >
                                                 <FaTimes className="w-4 h-4" />
                                                 <span className="text-sm">Belum Selesai</span>
@@ -599,12 +631,12 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                     </>
                                 )}
 
-                                {userCurrentVote && (
-                                    <div className="mt-3 text-center">
-                                        <p className="text-sm text-gray-500">
-                                            Anda memilih: <span className="font-medium">
-                                                {userCurrentVote === 'RESOLVED' && 'Terselesaikan'}
-                                                {userCurrentVote === 'NOT_RESOLVED' && 'Belum Selesai'}
+                                {userCurrentVote && !isReportResolved && (
+                                    <div className="mt-3 text-center bg-gray-100 rounded-lg p-3 border border-gray-200">
+                                        <p className="text-sm text-gray-700">
+                                            Anda memilih: <span className="font-bold text-gray-900">
+                                                {userCurrentVote === 'RESOLVED' && '✓ Terselesaikan'}
+                                                {userCurrentVote === 'NOT_RESOLVED' && '✗ Belum Selesai'}
                                             </span>
                                         </p>
                                     </div>

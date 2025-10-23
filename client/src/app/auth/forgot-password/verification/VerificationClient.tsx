@@ -70,8 +70,8 @@ const VerificationClient = () => {
         return (
             <div className="space-y-8">
                 <div className="text-center space-y-1">
-                    <h1 className="text-3xl font-bold text-sky-800">Reset Password</h1>
-                    <p className="text-sky-800">Atur ulang kata sandi Anda</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Atur Ulang Kata Sandi</h1>
+                    <p className="text-gray-800">Atur ulang kata sandi Anda</p>
                 </div>
                 <ErrorSection 
                     message="Link reset password tidak valid. Silakan periksa kembali link yang Anda terima melalui email."
@@ -84,12 +84,12 @@ const VerificationClient = () => {
         return (
             <div className="space-y-8">
                 <div className="text-center space-y-1">
-                    <h1 className="text-3xl font-bold text-sky-800">Atur ulang Kata Sandi</h1>
-                    <p className="text-sky-800">Memverifikasi link atur ulang kata sandi...</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Atur ulang Kata Sandi</h1>
+                    <p className="text-gray-800">Memverifikasi link atur ulang kata sandi...</p>
                 </div>
                 <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-sky-800"></div>
-                    <p className="mt-2 text-sky-800">Memverifikasi link...</p>
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <p className="mt-2 text-gray-800">Memverifikasi link...</p>
                 </div>
             </div>
         );
@@ -99,8 +99,8 @@ const VerificationClient = () => {
         return (
             <div className="space-y-8">
                 <div className="text-center space-y-1">
-                    <h1 className="text-3xl font-bold text-sky-800">Atur ulang Kata Sandi</h1>
-                    <p className="text-sky-800">Verifikasi link gagal</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Atur ulang Kata Sandi</h1>
+                    <p className="text-gray-800">Verifikasi link gagal</p>
                 </div>
                 <ErrorSection 
                     message={getErrorResponseMessage(errorVerify) || 'Link reset password tidak valid atau sudah kadaluarsa.'}
@@ -120,8 +120,8 @@ const VerificationClient = () => {
     return (
         <div className="space-y-8">
             <div className="text-center space-y-1">
-                <h1 className="text-3xl font-bold text-sky-800">Atur ulang Kata Sandi</h1>
-                <p className="text-sky-800">Atur ulang kata sandi Anda</p>
+                <h1 className="text-3xl font-bold text-gray-900">Atur ulang Kata Sandi</h1>
+                <p className="text-gray-800">Atur ulang kata sandi Anda</p>
             </div>
             
             {isSuccess && (
@@ -182,7 +182,7 @@ const VerificationClient = () => {
                     </div>
 
                     <ButtonSubmit
-                        className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-gradient-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
+                        className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-300"
                         title="Atur Ulang Kata Sandi"
                         progressTitle="Memproses..."
                         isProgressing={isPending}

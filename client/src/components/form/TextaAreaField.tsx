@@ -38,16 +38,16 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
         {withLabel && (
             <div className='flex gap-2'>
                 {labelIcon && (
-                    <span className="text-sky-800">{labelIcon}</span>
+                    <span className="text-gray-700">{labelIcon}</span>
                 )}
-                <label htmlFor={id} className="block text-sm font-medium text-sky-800">
+                <label htmlFor={id} className="block text-sm font-semibold text-gray-900">
                 {labelTitle}
                 </label>
             </div>
         )}
         <div className="relative flex">
                 {icon && (
-                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 pl-3 flex items-center pointer-events-none text-sky-800">
+                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 pl-3 flex items-center pointer-events-none text-gray-500">
                         {icon}
                     </div>
                 )}

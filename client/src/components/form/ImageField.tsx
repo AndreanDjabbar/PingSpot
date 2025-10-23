@@ -81,7 +81,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
     return (
         <div className={`space-y-3 ${className}`}>
             {withLabel && (
-                <label htmlFor={id} className="block text-md font-medium text-center text-sky-800">
+                <label htmlFor={id} className="block text-md font-semibold text-center text-gray-900">
                 {labelTitle} {required && <span className="text-red-500">*</span>}
                 </label>
             )}
@@ -120,7 +120,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
                 <button
                     type="button"
                     onClick={handleAvatarClick}
-                    className="px-4 py-1 bg-sky-800 text-white rounded-lg hover:bg-sky-900 transition-colors text-md"
+                    className="px-4 py-1 bg-sky-700 text-white rounded-lg hover:bg-sky-800 transition-colors text-md"
                 >
                     {buttonTitle}
                 </button>

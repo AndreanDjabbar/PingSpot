@@ -50,8 +50,8 @@ const VerificationClient = () => {
         return (
             <div className="space-y-8">
                 <div className="text-center space-y-1">
-                    <h1 className="text-3xl font-bold text-sky-800">Verifikasi</h1>
-                    <p className="text-sky-800">Kami akan memverifikasi akun anda</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Verifikasi</h1>
+                    <p className="text-gray-800">Kami akan memverifikasi akun anda</p>
                 </div>
                 <ErrorSection 
                     message="Link verifikasi tidak valid. Silakan periksa kembali link verifikasi yang Anda terima."
@@ -63,14 +63,14 @@ const VerificationClient = () => {
     return (
         <div className="space-y-8">
             <div className="text-center space-y-1">
-                <h1 className="text-3xl font-bold text-sky-800">Verifikasi</h1>
-                <p className="text-sky-800">Kami akan memverifikasi akun anda</p>
+                <h1 className="text-3xl font-bold text-gray-900">Verifikasi</h1>
+                <p className="text-gray-800">Kami akan memverifikasi akun anda</p>
             </div>
             
             {isPending && (
                 <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-sky-800"></div>
-                    <p className="mt-2 text-sky-800">Memverifikasi akun...</p>
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <p className="mt-2 text-gray-800">Memverifikasi akun...</p>
                 </div>
             )}
             

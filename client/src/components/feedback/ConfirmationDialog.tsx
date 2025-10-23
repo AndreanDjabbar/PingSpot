@@ -35,8 +35,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     if (!isOpen) return null;
 
     const isWarning = type === 'warning';
-    const iconColorClass = isWarning ? 'text-red-600' : 'text-sky-800';
-    const iconBgClass = isWarning ? 'bg-red-100' : 'bg-sky-100';
+    const iconColorClass = isWarning ? 'text-red-600' : 'text-gray-800';
+    const iconBgClass = isWarning ? 'bg-red-100' : 'bg-gray-200';
 
     return (
         <div 
@@ -130,8 +130,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                 px-5 py-2 rounded-lg font-medium flex items-center justify-center gap-2
                                 text-white transition-colors
                                 ${isPending 
-                                    ? 'bg-sky-900 opacity-75 cursor-not-allowed' 
-                                    : 'bg-sky-800 hover:bg-sky-900 active:bg-sky-950'
+                                    ? 'bg-sky-800 opacity-75 cursor-not-allowed' 
+                                    : 'bg-sky-700 hover:bg-sky-800 active:bg-sky-900'
                                 }
                             `}
                         >

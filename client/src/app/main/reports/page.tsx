@@ -389,7 +389,7 @@
                                     </p>
                                 </div>
                                 <button 
-                                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-all flex items-center justify-center space-x-2 whitespace-nowrap"
+                                    className="bg-sky-700 hover:bg-sky-800 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-all flex items-center justify-center space-x-2 whitespace-nowrap"
                                     onClick={() => router.push('/main/reports/create-report')}>
                                     <BiPlus className="w-5 h-5" />
                                     <span>Buat Laporan</span>
