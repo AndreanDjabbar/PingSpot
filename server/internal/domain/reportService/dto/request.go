@@ -31,7 +31,7 @@ type ReactionReportRequest struct {
 }
 
 type VoteReportRequest struct {
-	VoteType string `json:"voteType" validate:"required,oneof=RESOLVED NOT_RESOLVED"`
+	VoteType string `json:"voteType" validate:"required,oneof=RESOLVED ON_PROGRESS NOT_RESOLVED"`
 }
 
 type UploadProgressReportRequest struct {

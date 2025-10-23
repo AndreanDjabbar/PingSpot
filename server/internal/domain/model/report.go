@@ -12,6 +12,7 @@ const (
 
 	RESOLVED     ReportStatus = "RESOLVED"
 	NOT_RESOLVED ReportStatus = "NOT_RESOLVED"
+	ON_PROGRESS  ReportStatus = "ON_PROGRESS"
 )
 
 type Report struct {

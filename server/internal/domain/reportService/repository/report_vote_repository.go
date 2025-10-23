@@ -13,6 +13,7 @@ type ReportVoteRepository interface {
 	UpdateTX(tx *gorm.DB, vote *model.ReportVote) (*model.ReportVote, error)
 	DeleteTX(tx *gorm.DB, vote *model.ReportVote) error
 	GetResolvedVoteCount(reportID uint) (int64, error)
+	GetOnProgressVoteCount(reportID uint) (int64, error)
 	GetNotResolvedVoteCount(reportID uint) (int64, error)
 }
 
@@ -65,6 +66,16 @@ func (r *reportVoteRepository) GetResolvedVoteCount(reportID uint) (int64, error
 	var count int64
 	if err := r.db.Model(&model.ReportVote{}).
 		Where("report_id = ? AND vote_type = ?", reportID, model.RESOLVED).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *reportVoteRepository) GetOnProgressVoteCount(reportID uint) (int64, error) {
+	var count int64
+	if err := r.db.Model(&model.ReportVote{}).
+		Where("report_id = ? AND vote_type = ?", reportID, model.ON_PROGRESS).
 		Count(&count).Error; err != nil {
 		return 0, err
 	}

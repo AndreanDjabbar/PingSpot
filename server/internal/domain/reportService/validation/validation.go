@@ -151,7 +151,7 @@ func FormatVoteReportValidationErrors(err error) map[string]string {
 					errors["voteType"] = "Tipe vote wajib diisi"
 				}
 				if e.Tag() == "oneof" {
-					errors["voteType"] = "Tipe vote harus salah satu antara RESOLVED, NOT_RESOLVED"
+					errors["voteType"] = "Tipe vote harus salah satu antara RESOLVED, ON_PROGRESS, NOT_RESOLVED"
 				}
 		}
 	}

@@ -134,11 +134,16 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint) ([]dto.GetRep
 			return nil, fmt.Errorf("Gagal mendapatkan reaksi tidak suka: %w", err)
 		}
 
-		var isLikedByCurrentUser, isDislikedByCurrentUser, isResolvedByCurrentUser, isNotResolvedByCurrentUser bool
+		var isLikedByCurrentUser, isDislikedByCurrentUser, isResolvedByCurrentUser, isOnProgressByCurrentUser,  isNotResolvedByCurrentUser bool
 
 		resolvedVoteCount, err := s.reportVoteRepo.GetResolvedVoteCount(report.ID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("Gagal mendapatkan suara 'RESOLVED': %w", err)
+		}
+
+		onProgressVoteCount, err := s.reportVoteRepo.GetOnProgressVoteCount(report.ID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("Gagal mendapatkan suara 'ON_PROGRESS': %w", err)
 		}
 
 		notResolvedVoteCount, err := s.reportVoteRepo.GetNotResolvedVoteCount(report.ID)
@@ -225,8 +230,9 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint) ([]dto.GetRep
 			IsLikedByCurrentUser:    isLikedByCurrentUser,
 			IsDislikedByCurrentUser: isDislikedByCurrentUser,
 			TotalResolvedVotes:      &resolvedVoteCount,
+			TotalOnProgressVotes:    &onProgressVoteCount,
 			TotalNotResolvedVotes:   &notResolvedVoteCount,
-			TotalVotes:              resolvedVoteCount + notResolvedVoteCount,
+			TotalVotes:              resolvedVoteCount + notResolvedVoteCount + onProgressVoteCount,
 			ReportVotes: func() []dto.GetVoteReportResponse {
 				var votes []dto.GetVoteReportResponse
 				for _, vote := range *report.ReportVotes {
@@ -245,12 +251,16 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint) ([]dto.GetRep
 						if vote.VoteType == model.NOT_RESOLVED {
 							isNotResolvedByCurrentUser = true
 						}
+						if vote.VoteType == model.ON_PROGRESS {
+							isOnProgressByCurrentUser = true
+						}
 					}
 				}
 				return votes
 			}(),
 			IsResolvedByCurrentUser:    isResolvedByCurrentUser,
 			IsNotResolvedByCurrentUser: isNotResolvedByCurrentUser,
+			IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
 		})
 	}
 	return fullReports, nil

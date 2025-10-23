@@ -52,6 +52,7 @@ type GetReportResponse struct {
 	TotalLikeReactions         *int64                      `json:"totalLikeReactions"`
 	TotalDislikeReactions      *int64                      `json:"totalDislikeReactions"`
 	TotalResolvedVotes         *int64                      `json:"totalResolvedVotes"`
+	TotalOnProgressVotes       *int64                      `json:"totalOnProgressVotes"`
 	TotalNotResolvedVotes      *int64                      `json:"totalNotResolvedVotes"`
 	TotalVotes                 int64                       `json:"totalVotes"`
 	IsLikedByCurrentUser       bool                        `json:"isLikedByCurrentUser"`
@@ -60,6 +61,7 @@ type GetReportResponse struct {
 	ReportProgress             []GetProgressReportResponse `json:"reportProgress"`
 	ReportVotes                []GetVoteReportResponse     `json:"reportVotes,omitempty"`
 	IsResolvedByCurrentUser    bool                        `json:"isResolvedByCurrentUser"`
+	IsOnProgressByCurrentUser  bool                        `json:"isOnProgressByCurrentUser"`
 	IsNotResolvedByCurrentUser bool                        `json:"isNotResolvedByCurrentUser"`
 }
 
