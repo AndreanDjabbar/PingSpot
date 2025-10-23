@@ -71,7 +71,15 @@ func (r *reportRepository) UpdateTX(tx *gorm.DB, report *model.Report) (*model.R
 
 func (r *reportRepository) GetByID(reportID uint) (*model.Report, error) {
 	var report model.Report
-	if err := r.db.Preload("User").First(&report, reportID).Error; err != nil {
+	if err := r.db.
+		Preload("User").
+		Preload("User.Profile").
+		Preload("ReportLocation").
+		Preload("ReportImages").
+		Preload("ReportReactions").
+		Preload("ReportVotes").
+		Preload("ReportProgress").
+		First(&report, reportID).Error; err != nil {
 		return nil, err
 	}
 	return &report, nil
