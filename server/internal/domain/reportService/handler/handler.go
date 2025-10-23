@@ -191,12 +191,16 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 			logger.Error("Invalid reportID format", zap.String("reportID", reportID), zap.Error(err))
 			return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
 		}
+
 		report, err := h.reportService.GetReportByID(uintReportID)
 		if err != nil {
 			logger.Error("Failed to get report by ID", zap.Uint("reportID", uintReportID), zap.Error(err))
 			return response.ResponseError(c, 500, "Gagal mendapatkan laporan", "", err.Error())
 		}
-		return response.ResponseSuccess(c, 200, "Get report success", "data", report)
+		mappedData := fiber.Map{
+			"report": report,
+		}
+		return response.ResponseSuccess(c, 200, "Get report success", "data", mappedData)
 	}
 }
 

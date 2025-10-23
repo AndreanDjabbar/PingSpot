@@ -266,7 +266,7 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint) ([]dto.GetRep
 	return fullReports, nil
 }
 
-func (s *ReportService) GetReportByID(reportID uint) (*dto.CreateReportResponse, error) {
+func (s *ReportService) GetReportByID(reportID uint) (*dto.GetReportResponse, error) {
 	report, err := s.reportRepo.GetByID(reportID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -274,27 +274,139 @@ func (s *ReportService) GetReportByID(reportID uint) (*dto.CreateReportResponse,
 		}
 		return nil, err
 	}
-	location, err := s.reportLocationRepo.GetByReportID(reportID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("Lokasi laporan tidak ditemukan")
-		}
-		return nil, err
+	var isLikedByCurrentUser, isDislikedByCurrentUser, isResolvedByCurrentUser, isOnProgressByCurrentUser,  isNotResolvedByCurrentUser bool
+	likeReactionCount, err := s.reportReactionRepo.GetLikeReactionCount(report.ID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("Gagal mendapatkan reaksi suka: %w", err)
 	}
-	images, err := s.reportImageRepo.GetByReportID(reportID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("Gambar laporan tidak ditemukan")
-		}
-		return nil, err
+	dislikeReactionCount, err := s.reportReactionRepo.GetDislikeReactionCount(report.ID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("Gagal mendapatkan reaksi tidak suka: %w", err)
 	}
-
-	result := &dto.CreateReportResponse{
-		Report:         *report,
-		ReportLocation: *location,
-		ReportImages:   *images,
+	resolvedVoteCount, err := s.reportVoteRepo.GetResolvedVoteCount(report.ID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("Gagal mendapatkan suara 'RESOLVED': %w", err)
 	}
-	return result, nil
+	notResolvedVoteCount, err := s.reportVoteRepo.GetNotResolvedVoteCount(report.ID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("Gagal mendapatkan suara 'NOT_RESOLVED': %w", err)
+	}
+	onProgressVoteCount, err := s.reportVoteRepo.GetOnProgressVoteCount(report.ID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("Gagal mendapatkan suara 'ON_PROGRESS': %w", err)
+	}
+	fullReport := dto.GetReportResponse{
+		ID:                report.ID,
+		ReportTitle:       report.ReportTitle,
+		ReportType:        string(report.ReportType),
+		ReportDescription: report.ReportDescription,
+		ReportCreatedAt:   report.CreatedAt,
+		UserID:            report.UserID,
+		UserName:          report.User.Username,
+		FullName:          report.User.FullName,
+		ProfilePicture:    report.User.Profile.ProfilePicture,
+		Location: dto.ReportLocationResponse{
+			DetailLocation: report.ReportLocation.DetailLocation,
+			Latitude:       report.ReportLocation.Latitude,
+			Longitude:      report.ReportLocation.Longitude,
+			DisplayName:    report.ReportLocation.DisplayName,
+			AddressType:    report.ReportLocation.AddressType,
+			Country:        report.ReportLocation.Country,
+			CountryCode:    report.ReportLocation.CountryCode,
+			Region:         report.ReportLocation.Region,
+			Road:           report.ReportLocation.Road,
+			PostCode:       report.ReportLocation.PostCode,
+			County:         report.ReportLocation.County,
+			State:          report.ReportLocation.State,
+			Village:        report.ReportLocation.Village,
+			Suburb:         report.ReportLocation.Suburb,
+			Geometry:       &report.ReportLocation.Geometry,
+		},
+		ReportStatus: string(report.ReportStatus),
+		HasProgress:  report.HasProgress,
+		Images: dto.ReportImageResponse{
+			Image1URL: report.ReportImages.Image1URL,
+			Image2URL: report.ReportImages.Image2URL,
+			Image3URL: report.ReportImages.Image3URL,
+			Image4URL: report.ReportImages.Image4URL,
+			Image5URL: report.ReportImages.Image5URL,
+		},
+		TotalLikeReactions:    &likeReactionCount,
+		TotalDislikeReactions: &dislikeReactionCount,
+		TotalReactions:        likeReactionCount + dislikeReactionCount,
+		ReportReactions: func() []dto.ReactReportResponse {
+			var reactions []dto.ReactReportResponse
+			for _, reaction := range *report.ReportReactions {
+				reactions = append(reactions, dto.ReactReportResponse{
+					ReportID:     reaction.ReportID,
+					UserID:       reaction.UserID,
+					ReactionType: string(reaction.Type),
+					CreatedAt:    reaction.CreatedAt,
+					UpdatedAt:    reaction.UpdatedAt,
+				})
+				if reaction.UserID == report.UserID {
+					if reaction.Type == model.Like {
+						isLikedByCurrentUser = true
+					}
+					if reaction.Type == model.Dislike {
+						isDislikedByCurrentUser = true
+					}
+				}
+			}
+			return reactions
+		}(),
+		ReportProgress: func() []dto.GetProgressReportResponse {
+			var progresses []dto.GetProgressReportResponse
+			if report.ReportProgress != nil {
+				for _, progress := range *report.ReportProgress {
+					progresses = append(progresses, dto.GetProgressReportResponse{
+						ReportID:    progress.ReportID,
+						Status:      string(progress.Status),
+						Notes:       &progress.Notes,
+						Attachment1: progress.Attachment1,
+						Attachment2: progress.Attachment2,
+						CreatedAt:   progress.CreatedAt,
+					})
+				}
+			}
+			return progresses
+		}(),
+		TotalResolvedVotes:    &resolvedVoteCount,
+		TotalOnProgressVotes:  &onProgressVoteCount,
+		TotalNotResolvedVotes: &notResolvedVoteCount,
+		TotalVotes:            resolvedVoteCount + notResolvedVoteCount + onProgressVoteCount,
+		ReportVotes: func() []dto.GetVoteReportResponse {
+			var votes []dto.GetVoteReportResponse
+			for _, vote := range *report.ReportVotes {
+				votes = append(votes, dto.GetVoteReportResponse{
+					ID:        vote.ID,
+					ReportID:  vote.ReportID,
+					UserID:    vote.UserID,
+					VoteType:  vote.VoteType,
+					CreatedAt: vote.CreatedAt,
+					UpdatedAt: vote.UpdatedAt,
+				})
+				if vote.UserID == report.UserID {
+					if vote.VoteType == model.RESOLVED {
+						isResolvedByCurrentUser = true
+					}
+					if vote.VoteType == model.NOT_RESOLVED {
+						isNotResolvedByCurrentUser = true
+					}
+					if vote.VoteType == model.ON_PROGRESS {
+						isOnProgressByCurrentUser = true
+					}
+				}
+			}
+			return votes
+		}(),
+		IsLikedByCurrentUser:    isLikedByCurrentUser,
+		IsDislikedByCurrentUser: isDislikedByCurrentUser,
+		IsResolvedByCurrentUser:    isResolvedByCurrentUser,
+		IsNotResolvedByCurrentUser: isNotResolvedByCurrentUser,
+		IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
+	}
+	return &fullReport, nil
 }
 
 func (s *ReportService) ReactToReport(db *gorm.DB, userID uint, reportID uint, reactionType string) (*dto.ReactReportResponse, error) {
