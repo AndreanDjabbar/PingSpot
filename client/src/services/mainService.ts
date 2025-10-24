@@ -2,6 +2,7 @@ import axios from "axios";
 import { 
     ICreateReportResponse,
     IGetProgressReportResponse,
+    IGetReportByIDResponse,
     IGetReportResponse,
     IReactReportRequest,
     IReactReportResponse,
@@ -46,6 +47,18 @@ Promise<IReverseLocation> => {
 export const createReportService = async (payload: FormData): Promise<ICreateReportResponse> => {
     const authToken = getAuthToken();
     const response = await axios.post<ICreateReportResponse>(`${MAIN_API_URL}/report`, payload, MULTIPART_HEADERS(authToken || ''));
+    return response.data;
+}
+
+export const getReportByIDService = async (reportID: number): Promise<IGetReportByIDResponse> => {
+    const authToken = getAuthToken();
+    const response = await axios.get<IGetReportByIDResponse>(`${MAIN_API_URL}/report?reportID=${reportID}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${authToken || ''}`
+        }
+    });
     return response.data;
 }
 
