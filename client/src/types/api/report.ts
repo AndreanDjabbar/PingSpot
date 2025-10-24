@@ -15,6 +15,13 @@ export interface IGetReportResponse {
     }
 }
 
+export interface IGetReportByIDResponse {
+    message: string;
+    data?: {
+        report: IReport;
+    }
+}
+
 export type ICreateReportRequest = z.infer<typeof CreateReportSchema>;
 
 export type IUploadProgressReportRequest = z.infer<typeof UploadProgressReportSchema>; 

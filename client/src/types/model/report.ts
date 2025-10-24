@@ -112,6 +112,7 @@ export interface IReport {
     isOnProgressByCurrentUser?: boolean;
     isNotResolvedByCurrentUser?: boolean;
     reportVotes?: IReportVote[];
+    majorityVote?: ReportStatus;
 }
 
 export interface IReportVote {
