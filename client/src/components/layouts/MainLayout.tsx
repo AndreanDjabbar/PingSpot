@@ -31,7 +31,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
                     collapsed={sidebarCollapsed}
                 />
 
-                <div className={`flex-1 overflow-y-auto`}>
+                <div className={`flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100`}>
                     <MainContent>{children}</MainContent>
                 </div>
             </div>
