@@ -63,6 +63,7 @@ type GetReportResponse struct {
 	IsResolvedByCurrentUser    bool                        `json:"isResolvedByCurrentUser"`
 	IsOnProgressByCurrentUser  bool                        `json:"isOnProgressByCurrentUser"`
 	IsNotResolvedByCurrentUser bool                        `json:"isNotResolvedByCurrentUser"`
+	MajorityVote				*string                     `json:"majorityVote,omitempty"`
 }
 
 type ReactReportResponse struct {

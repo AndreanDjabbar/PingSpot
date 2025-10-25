@@ -6,6 +6,7 @@ import (
 	"server/internal/domain/model"
 	"server/internal/domain/reportService/dto"
 	reportRepository "server/internal/domain/reportService/repository"
+	"server/internal/domain/reportService/util"
 	userRepository "server/internal/domain/userService/repository"
 	"time"
 
@@ -261,12 +262,13 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint) ([]dto.GetRep
 			IsResolvedByCurrentUser:    isResolvedByCurrentUser,
 			IsNotResolvedByCurrentUser: isNotResolvedByCurrentUser,
 			IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
+			MajorityVote: util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
 		})
 	}
 	return fullReports, nil
 }
 
-func (s *ReportService) GetReportByID(reportID uint) (*dto.GetReportResponse, error) {
+func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResponse, error) {
 	report, err := s.reportRepo.GetByID(reportID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -386,7 +388,7 @@ func (s *ReportService) GetReportByID(reportID uint) (*dto.GetReportResponse, er
 					CreatedAt: vote.CreatedAt,
 					UpdatedAt: vote.UpdatedAt,
 				})
-				if vote.UserID == report.UserID {
+				if vote.UserID == userID {
 					if vote.VoteType == model.RESOLVED {
 						isResolvedByCurrentUser = true
 					}
@@ -405,6 +407,7 @@ func (s *ReportService) GetReportByID(reportID uint) (*dto.GetReportResponse, er
 		IsResolvedByCurrentUser:    isResolvedByCurrentUser,
 		IsNotResolvedByCurrentUser: isNotResolvedByCurrentUser,
 		IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
+		MajorityVote: util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
 	}
 	return &fullReport, nil
 }

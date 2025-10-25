@@ -192,7 +192,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 			return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
 		}
 
-		report, err := h.reportService.GetReportByID(uintReportID)
+		report, err := h.reportService.GetReportByID(userID, uintReportID)
 		if err != nil {
 			logger.Error("Failed to get report by ID", zap.Uint("reportID", uintReportID), zap.Error(err))
 			return response.ResponseError(c, 500, "Gagal mendapatkan laporan", "", err.Error())
@@ -253,7 +253,7 @@ func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
-	fmt.Println("REQ: ", req)
+	
 	if err := validation.Validate.Struct(req); err != nil {
 		errors := validation.FormatVoteReportValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))
