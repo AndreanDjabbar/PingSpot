@@ -4,17 +4,23 @@ import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaArrowLeft, FaImage, FaMap } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaImage, FaMap, FaTimes, FaCheck } from 'react-icons/fa';
 import { BsThreeDots } from 'react-icons/bs';
-import { BiSend } from 'react-icons/bi';
+import { BiEdit, BiSend, BiX } from 'react-icons/bi';
+import { MdDone } from "react-icons/md";
 import 'leaflet/dist/leaflet.css';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
 import { ReportInteractionBar } from '../components/ReportInteractionBar';
-import StatusVoting from '../components/StatusVoting';
 import CommentItem from '../components/CommentItem';
-import { useReportsStore } from '@/stores';
+import { useUserProfileStore } from '@/stores';
 import { Breadcrumb } from '@/components/layouts';
+import { useGetReportByID, useVoteReport } from '@/hooks/main';
+import { Accordion } from '@/components/UI';
+import { motion } from 'framer-motion';
+import { RiProgress3Fill } from "react-icons/ri";
+import { useImagePreviewModalStore } from '@/stores';
+import { useErrorToast } from '@/hooks/toast';
 
 const StaticMap = dynamic(() => import('../../components/StaticMap'), {
     ssr: false,
@@ -120,12 +126,52 @@ const dummyComments: ICommentType[] = [
 const ReportDetailPage = () => {
     const params = useParams();
     const router = useRouter();
-    const reportId = Number(params.id);
+    const reportId = Number(params.id); 
+    const [animateButton, setAnimateButton] = useState<string | null>(null);
+    const { openImagePreview } = useImagePreviewModalStore();
     
-    const { reports } = useReportsStore();
-    const report = reports.find(r => r.id === reportId);
+    const { 
+        data: freshReportData,
+        isLoading,
+        isError,
+        refetch,
+    } = useGetReportByID(reportId);
     
-    // Use dummy comments if no real comments exist
+    const {
+        mutate: voteReport,
+        isError: isVoteReportError,
+        error: voteReportError,
+    } = useVoteReport();
+    
+    useErrorToast(isVoteReportError, voteReportError);
+    
+    const report = freshReportData?.data?.report;
+    const { userProfile } = useUserProfileStore();
+    const currentUserId = userProfile ? Number(userProfile.userID) : null;
+    const isReportOwner = report && currentUserId === report.userID;
+    const totalVotes = report?.totalVotes || 0;
+    const resolvedPercentage = totalVotes > 0 ? ((report?.totalResolvedVotes || 0) / totalVotes) * 100 : 0;
+    const onProgressPercentage = totalVotes > 0 ? ((report?.totalOnProgressVotes || 0) / totalVotes) * 100 : 0;
+    const notResolvedPercentage = totalVotes > 0 ? ((report?.totalNotResolvedVotes || 0) / totalVotes) * 100 : 0;
+    
+    const isReportResolved = report?.reportStatus === 'RESOLVED';
+    const majorityPercentage = 
+    report?.majorityVote === 'RESOLVED'
+        ? resolvedPercentage
+        : report?.majorityVote === 'ON_PROGRESS'
+            ? onProgressPercentage
+            : notResolvedPercentage;
+
+    const userCurrentVote = report?.isResolvedByCurrentUser 
+        ? 'RESOLVED'
+        : report?.isNotResolvedByCurrentUser
+            ? 'NOT_RESOLVED'
+            : report?.isOnProgressByCurrentUser
+                ? 'ON_PROGRESS'
+                : null
+                console.log("FRESH REPORT DATA", report);
+    console.log("CURRENT USER VOTE", userCurrentVote);
+    
     const displayComments = report?.comments && report.comments.length > 0 
         ? report.comments 
         : dummyComments;
@@ -153,9 +199,194 @@ const ReportDetailPage = () => {
     };
 
     const onImageClick = (imageURL: string) => {
-        const url = getImageURL(imageURL, "main");
-        // Open image preview modal
-        console.log('Open image:', url);
+        const url = getImageURL(`/report/progress/${imageURL}`, "main");
+        openImagePreview(url);
+    };
+
+    const handleVote = async (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS') => {
+        console.log("CURRENT STATUS: ", report?.reportStatus);
+        console.log("IS REPORT RESOLVED: ", isReportResolved);
+        console.log("USER CURRENT VOTE: ", userCurrentVote);
+        console.log("VOTE TYPE CLICKED: ", voteType);  
+        if (isLoading || isReportResolved) return;
+        setAnimateButton(voteType);
+        handleStatusVote(reportId, voteType);
+        setTimeout(() => setAnimateButton(null), 300);
+    };
+
+    const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' | 'NEUTRAL') => {
+        if (!report) return;
+
+        let totalResolvedVotes = report.totalResolvedVotes || 0;
+        let totalOnProgressVotes = report.totalOnProgressVotes || 0;
+        let totalNotResolvedVotes = report.totalNotResolvedVotes || 0;
+        let totalVotes = report.totalVotes !== undefined
+            ? report.totalVotes
+            : (totalResolvedVotes + totalNotResolvedVotes + totalOnProgressVotes);
+
+        const isResolved = !!report.isResolvedByCurrentUser;
+        const isOnProgress = !!report.isOnProgressByCurrentUser;
+        const isNotResolved = !!report.isNotResolvedByCurrentUser;
+
+        if (voteType === 'RESOLVED') {
+            if (isResolved) {
+                totalResolvedVotes = Math.max(0, totalResolvedVotes - 1);
+                totalVotes = Math.max(0, totalVotes - 1);
+                report.totalResolvedVotes = totalResolvedVotes;
+                report.totalVotes = totalVotes;
+                report.isResolvedByCurrentUser = false;
+                report.isOnProgressByCurrentUser = false;
+                report.isNotResolvedByCurrentUser = false;
+            } else if (isOnProgress) {
+                totalOnProgressVotes = Math.max(0, totalOnProgressVotes - 1);
+                totalResolvedVotes = totalResolvedVotes + 1;
+                report.totalOnProgressVotes = totalOnProgressVotes;
+                report.totalResolvedVotes = totalResolvedVotes;
+                report.isResolvedByCurrentUser = true;
+                report.isOnProgressByCurrentUser = false;
+                report.isNotResolvedByCurrentUser = false;
+            } else if (isNotResolved) {
+                totalNotResolvedVotes = Math.max(0, totalNotResolvedVotes - 1);
+                totalResolvedVotes = totalResolvedVotes + 1;
+                report.totalNotResolvedVotes = totalNotResolvedVotes;
+                report.totalResolvedVotes = totalResolvedVotes;
+                report.isResolvedByCurrentUser = true;
+                report.isOnProgressByCurrentUser = false;
+                report.isNotResolvedByCurrentUser = false;
+            } else {
+                totalResolvedVotes = totalResolvedVotes + 1;
+                totalVotes = totalVotes + 1;
+                report.totalResolvedVotes = totalResolvedVotes;
+                report.totalVotes = totalVotes;
+                report.isResolvedByCurrentUser = true;
+                report.isOnProgressByCurrentUser = false;
+                report.isNotResolvedByCurrentUser = false;
+            }
+        }
+
+        if (voteType === 'ON_PROGRESS') {
+            if (isOnProgress) {
+                totalOnProgressVotes = Math.max(0, totalOnProgressVotes - 1);
+                totalVotes = Math.max(0, totalVotes - 1);
+                report.totalOnProgressVotes = totalOnProgressVotes;
+                report.totalVotes = totalVotes;
+                report.isResolvedByCurrentUser = false;
+                report.isOnProgressByCurrentUser = false;
+                report.isNotResolvedByCurrentUser = false;
+            } else if (isResolved) {
+                totalResolvedVotes = Math.max(0, totalResolvedVotes - 1);
+                totalOnProgressVotes = totalOnProgressVotes + 1;
+                report.totalResolvedVotes = totalResolvedVotes;
+                report.totalOnProgressVotes = totalOnProgressVotes;
+                report.isResolvedByCurrentUser = false;
+                report.isOnProgressByCurrentUser = true;
+                report.isNotResolvedByCurrentUser = false;
+            } else if (isNotResolved) {
+                totalNotResolvedVotes = Math.max(0, totalNotResolvedVotes - 1);
+                totalOnProgressVotes = totalOnProgressVotes + 1;
+                report.totalNotResolvedVotes = totalNotResolvedVotes;
+                report.totalOnProgressVotes = totalOnProgressVotes;
+                report.isResolvedByCurrentUser = false;
+                report.isOnProgressByCurrentUser = true;
+                report.isNotResolvedByCurrentUser = false;
+            } else {
+                totalOnProgressVotes = totalOnProgressVotes + 1;
+                totalVotes = totalVotes + 1;
+                report.totalOnProgressVotes = totalOnProgressVotes;
+                report.totalVotes = totalVotes;
+                report.isResolvedByCurrentUser = false;
+                report.isOnProgressByCurrentUser = true;
+                report.isNotResolvedByCurrentUser = false;
+            }
+        }
+
+        if (voteType === 'NOT_RESOLVED') {
+            if (isNotResolved) {
+                totalNotResolvedVotes = Math.max(0, totalNotResolvedVotes - 1);
+                totalVotes = Math.max(0, totalVotes - 1);
+                report.totalNotResolvedVotes = totalNotResolvedVotes;
+                report.totalVotes = totalVotes;
+                report.isResolvedByCurrentUser = false;
+                report.isOnProgressByCurrentUser = false;
+                report.isNotResolvedByCurrentUser = false;
+            } else if (isResolved) {
+                totalResolvedVotes = Math.max(0, totalResolvedVotes - 1);
+                totalNotResolvedVotes = totalNotResolvedVotes + 1;
+                report.totalResolvedVotes = totalResolvedVotes;
+                report.totalNotResolvedVotes = totalNotResolvedVotes;
+                report.isResolvedByCurrentUser = false;
+                report.isOnProgressByCurrentUser = false;
+                report.isNotResolvedByCurrentUser = true;
+            } else if (isOnProgress) {
+                totalOnProgressVotes = Math.max(0, totalOnProgressVotes - 1);
+                totalNotResolvedVotes = totalNotResolvedVotes + 1;
+                report.totalOnProgressVotes = totalOnProgressVotes;
+                report.totalNotResolvedVotes = totalNotResolvedVotes;
+                report.isResolvedByCurrentUser = false;
+                report.isOnProgressByCurrentUser = false;
+                report.isNotResolvedByCurrentUser = true;
+            } else {
+                totalNotResolvedVotes = totalNotResolvedVotes + 1;
+                totalVotes = totalVotes + 1;
+                report.totalNotResolvedVotes = totalNotResolvedVotes;
+                report.totalVotes = totalVotes;
+                report.isResolvedByCurrentUser = false;
+                report.isOnProgressByCurrentUser = false;
+                report.isNotResolvedByCurrentUser = true;
+            }
+        }
+
+        if (voteType === 'NEUTRAL') {
+            if (isResolved) {
+                totalResolvedVotes = Math.max(0, totalResolvedVotes - 1);
+                totalVotes = Math.max(0, totalVotes - 1);
+            } else if (isOnProgress) {
+                totalOnProgressVotes = Math.max(0, totalOnProgressVotes - 1);
+                totalVotes = Math.max(0, totalVotes - 1);
+            } else if (isNotResolved) {
+                totalNotResolvedVotes = Math.max(0, totalNotResolvedVotes - 1);
+                totalVotes = Math.max(0, totalVotes - 1);
+            }
+            report.totalResolvedVotes = totalResolvedVotes;
+            report.totalOnProgressVotes = totalOnProgressVotes;
+            report.totalNotResolvedVotes = totalNotResolvedVotes;
+            report.totalVotes = totalVotes;
+            report.isResolvedByCurrentUser = false;
+            report.isOnProgressByCurrentUser = false;
+            report.isNotResolvedByCurrentUser = false;
+        }
+
+        try {
+            if (voteType !== 'NEUTRAL') {
+                voteReport({
+                    reportID: reportId,
+                    data: { voteType: voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' },
+                });
+            }
+        } catch (error) {
+            console.error('Error voting on status:', error);
+        }
+    };
+
+    useErrorToast(isVoteReportError, voteReportError);
+
+    React.useEffect(() => {
+        if (isVoteReportError) {
+            refetch();
+        }
+    }, [isVoteReportError, refetch]);
+
+    const getReportStatusLabel = (status: string): { label: string; color: string } => {
+        switch (status) {
+            case 'RESOLVED':
+                return { label: 'Terselesaikan', color: 'green' };
+            case 'ON_PROGRESS':
+                return { label: 'Dalam Proses', color: 'yellow' };
+            case 'NOT_RESOLVED':
+                return { label: 'Tidak Ada Proses', color: 'red' };
+            default:
+                return { label: 'Menunggu', color: 'gray' };
+        }
     };
 
     const handleSubmitComment = async () => {
@@ -163,7 +394,6 @@ const ReportDetailPage = () => {
         
         setIsSubmitting(true);
         try {
-            // Add comment logic here
             console.log('Adding comment:', newComment);
             setNewComment('');
         } catch (error) {
@@ -176,6 +406,30 @@ const ReportDetailPage = () => {
     const handleReply = (content: string, parentId: number) => {
         console.log('Reply to:', parentId, content);
     };
+
+    if (isLoading) {
+        return (
+            <div className="w-full min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-600 mb-4">Gagal memuat laporan</p>
+                    <button
+                        onClick={() => router.push('/main/reports')}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Kembali ke Daftar Laporan
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     if (!report) {
         return (
@@ -206,12 +460,9 @@ const ReportDetailPage = () => {
                 </div>
             </div>
 
-            {/* Main Content */}
             <div className="max-w-7xl mx-auto py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column - Report Details */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Report Header Card */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="p-6">
                                 <div className="flex items-center justify-between mb-4">
@@ -250,15 +501,14 @@ const ReportDetailPage = () => {
                                 <div className="flex items-start gap-2 text-gray-600 bg-gray-50 rounded-lg p-3 border border-gray-200">
                                     <FaMapMarkerAlt className="mt-1 text-red-500 flex-shrink-0" size={16} />
                                     <div className="flex-1">
-                                        <p className="text-sm font-medium text-gray-900">{report.location.detailLocation}</p>
-                                        {report.location.displayName && (
-                                            <p className="text-xs text-gray-600 mt-1">{report.location.displayName}</p>
+                                        <p className="text-sm font-medium text-gray-900">{report?.location?.detailLocation}</p>
+                                        {report?.location?.displayName && (
+                                            <p className="text-xs text-gray-600 mt-1">{report?.location?.displayName}</p>
                                         )}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Toggle View Button */}
                             {images.length > 0 && (
                                 <div className="px-6 pb-3">
                                     <div className="flex items-center justify-center">
@@ -290,7 +540,6 @@ const ReportDetailPage = () => {
                                 </div>
                             )}
 
-                            {/* Media Section */}
                             <div className="w-full px-6 pb-6">
                                 {viewMode === 'attachment' && images.length > 0 && (
                                     <div className="relative">
@@ -372,7 +621,6 @@ const ReportDetailPage = () => {
                                 )}
                             </div>
 
-                            {/* Interaction Bar */}
                             <div className="border-t border-gray-200">
                                 <ReportInteractionBar
                                     reportID={report.id}
@@ -385,21 +633,8 @@ const ReportDetailPage = () => {
                                     onShare={() => console.log('Share')}
                                 />
                             </div>
-
-                            {/* Status Voting */}
-                            {report.hasProgress && (
-                                <div className="border-t border-gray-200">
-                                    <StatusVoting
-                                        reportID={report.id}
-                                        currentStatus={report.status || 'PENDING'}
-                                        onVote={(voteType: string) => console.log('Vote:', voteType)}
-                                        onImageClick={onImageClick}
-                                    />
-                                </div>
-                            )}
                         </div>
 
-                        {/* Comments Section */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="p-6 border-b border-gray-200">
                                 <h2 className="text-lg font-bold text-gray-900">
@@ -407,7 +642,6 @@ const ReportDetailPage = () => {
                                 </h2>
                             </div>
 
-                            {/* Add Comment */}
                             <div className="p-6 border-b border-gray-200 bg-gray-50">
                                 <div className="flex items-start gap-3">
                                     <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0">
@@ -444,7 +678,6 @@ const ReportDetailPage = () => {
                                 </div>
                             </div>
 
-                            {/* Comments List */}
                             <div className="divide-y divide-gray-200">
                                 {displayComments.map((comment) => (
                                     <div key={comment.id} className="p-6">
@@ -460,21 +693,19 @@ const ReportDetailPage = () => {
                         </div>
                     </div>
 
-                    {/* Right Column - Sidebar */}
                     <div className="lg:col-span-1 space-y-6">
-                        {/* Report Info */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                             <h3 className="font-bold text-lg text-gray-900 mb-4">Informasi Laporan</h3>
                             <div className="space-y-3">
                                 <div>
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</p>
                                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                                        report.status === 'RESOLVED' ? 'bg-green-100 text-green-800' :
-                                        report.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-800' :
+                                        report.reportStatus === 'RESOLVED' ? 'bg-green-100 text-green-800' :
+                                        report.reportStatus === 'ON_PROGRESS' ? 'bg-yellow-100 text-yellow-800' :
                                         'bg-gray-100 text-gray-800'
                                     }`}>
-                                        {report.status === 'RESOLVED' ? 'Terselesaikan' :
-                                         report.status === 'IN_PROGRESS' ? 'Dalam Proses' : 'Menunggu'}
+                                        {report.reportStatus === 'RESOLVED' ? 'Terselesaikan' :
+                                        report.reportStatus === 'ON_PROGRESS' ? 'Dalam Proses' : 'Menunggu'}
                                     </span>
                                 </div>
                                 <div className="h-px bg-gray-200"></div>
@@ -494,73 +725,353 @@ const ReportDetailPage = () => {
                             </div>
                         </div>
 
-                        {/* Hasil Voting */}
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-bold text-lg text-gray-900">Perkembangan Laporan</h3>
+                                {isReportOwner && (
+                                    <button
+                                        onClick={() => router.push(`/main/reports/${report.id}/update-progress`)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-pingspot-hoverable text-white text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow-md"
+                                    >
+                                        <BiEdit size={16} />
+                                        <span>Perbarui</span>
+                                    </button>
+                                )}
+                            </div>
+                            
+                            {report.reportProgress && report.reportProgress.length > 0 ? (
+                                <div className="space-y-4">
+                                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                                        {(() => {
+                                            const latestProgress = report.reportProgress[0];
+                                            const latestImages = [
+                                                latestProgress.attachment1,
+                                                latestProgress.attachment2
+                                            ].filter((url): url is string => typeof url === 'string' && url.length > 0);
+                                            
+                                            return (
+                                                <>
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <p className="text-xs font-bold text-sky-700 uppercase tracking-wide">Perkembangan Terakhir</p>
+                                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                                                            latestProgress.status === 'RESOLVED' 
+                                                                ? 'bg-green-100 text-green-800' 
+                                                                : latestProgress.status === 'ON_PROGRESS'
+                                                                ? 'bg-yellow-100 text-yellow-800'
+                                                                : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {latestProgress.status === 'RESOLVED' 
+                                                                ? 'Terselesaikan' 
+                                                                : latestProgress.status === 'ON_PROGRESS'
+                                                                ? 'Dalam Proses'
+                                                                : 'Tidak Ada Proses'}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <p className="text-xs text-gray-500 mb-2">
+                                                        {formattedDate(latestProgress.createdAt, {
+                                                            formatStr: 'dd MMMM yyyy - HH:mm',
+                                                        })}
+                                                    </p>
+                                                    
+                                                    {latestProgress.notes && (
+                                                        <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                                                            {latestProgress.notes}
+                                                        </p>
+                                                    )}
+                                                    
+                                                    {latestImages.length > 0 && (
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {latestImages.map((imageUrl, imgIndex) => (
+                                                                <div 
+                                                                    key={imgIndex}
+                                                                    className="relative aspect-video rounded-lg overflow-hidden bg-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                                                    onClick={() => onImageClick(imageUrl)}
+                                                                >
+                                                                    <Image
+                                                                        src={getImageURL(`/report/progress/${imageUrl}`, "main")}
+                                                                        alt={`Latest progress - Image ${imgIndex + 1}`}
+                                                                        fill
+                                                                        className="object-cover"
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+
+                                    {report.reportProgress.length > 1 && (
+                                        <Accordion type="single" defaultValue={[]}>
+                                            <Accordion.Item id="timeline" title={`Semua Perkembangan (${report.reportProgress.length})`}>
+                                                <div className="max-h-[500px] overflow-y-auto  mt-2">
+                                                    <div className="space-y-4">
+                                                        <div className="relative">
+                                                            {report.reportProgress.map((progress, index) => {
+                                                                const isLast = index === report.reportProgress.length - 1;
+                                                                const progressImages = [
+                                                                    progress.attachment1,
+                                                                    progress.attachment2
+                                                                ].filter((url): url is string => typeof url === 'string' && url.length > 0);
+                                                                
+                                                                return (
+                                                                    <div key={`${progress.id}-${index}`} className="relative pb-6">
+                                                                        {!isLast && (
+                                                                            <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 to-gray-200"></div>
+                                                                        )}
+                                                                        
+                                                                        <div className="flex items-start gap-3">
+                                                                            <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-md ${
+                                                                                progress.status === 'RESOLVED' 
+                                                                                    ? 'bg-gradient-to-br from-green-400 to-green-600' 
+                                                                                    : progress.status === 'ON_PROGRESS'
+                                                                                    ? 'bg-gradient-to-br from-yellow-400 to-yellow-600'
+                                                                                    : 'bg-gradient-to-br from-red-400 to-red-600'
+                                                                            }`}>
+                                                                                {progress.status === 'RESOLVED' ? (
+                                                                                    <MdDone className='text-white' size={20}/>
+                                                                                ) : progress.status === 'ON_PROGRESS' ? (
+                                                                                    <RiProgress3Fill className='text-white' size={20}/>
+                                                                                ) : (
+                                                                                    <BiX className='text-white' size={20}/>
+                                                                                )}
+                                                                            </div>
+                                                                            
+                                                                            <div className="flex-1 min-w-0">
+                                                                                <div className={`rounded-lg p-3 border ${
+                                                                                    progress.status === 'RESOLVED' 
+                                                                                        ? 'bg-green-50 border-green-200' 
+                                                                                        : progress.status === 'ON_PROGRESS'
+                                                                                        ? 'bg-yellow-50 border-yellow-200'
+                                                                                        : 'bg-red-50 border-red-200'
+                                                                                }`}>
+                                                                                    <div className="flex items-center justify-between mb-2 lg:flex-col lg:items-start 2xl:flex-row">
+                                                                                        <span className={`text-xs font-bold uppercase tracking-wide ${
+                                                                                            progress.status === 'RESOLVED' 
+                                                                                                ? 'text-green-700' 
+                                                                                                : progress.status === 'ON_PROGRESS'
+                                                                                                ? 'text-yellow-700'
+                                                                                                : 'text-red-700'
+                                                                                        }`}>
+                                                                                            {progress.status === 'RESOLVED' 
+                                                                                                ? 'Terselesaikan' 
+                                                                                                : progress.status === 'ON_PROGRESS'
+                                                                                                ? 'Dalam Proses'
+                                                                                                : 'Tidak Ada Proses'}
+                                                                                        </span>
+                                                                                        <span className="text-xs text-gray-500">
+                                                                                            {formattedDate(progress.createdAt, {
+                                                                                                formatStr: 'dd MMM yyyy - HH:mm',
+                                                                                            })}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    
+                                                                                    {progress.notes && (
+                                                                                        <p className="text-sm text-gray-700 leading-relaxed">
+                                                                                            {progress.notes}
+                                                                                        </p>
+                                                                                    )}
+                                                                                    
+                                                                                    {progressImages.length > 0 && (
+                                                                                        <div className="mt-3 grid grid-cols-2 gap-2">
+                                                                                            {progressImages.map((imageUrl, imgIndex) => (
+                                                                                                <div 
+                                                                                                    key={`${imgIndex}-${index}`}
+                                                                                                    className="relative aspect-video rounded-lg overflow-hidden bg-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                                                                                    onClick={() => onImageClick(imageUrl)}
+                                                                                                >
+                                                                                                    <Image
+                                                                                                        src={getImageURL(`/report/progress/${imageUrl}`, "main")}
+                                                                                                        alt={`Progress ${index + 1} - Image ${imgIndex + 1}`}
+                                                                                                        fill
+                                                                                                        className="object-cover"
+                                                                                                    />
+                                                                                                </div>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </Accordion.Item>
+                                        </Accordion>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-sm font-medium text-gray-900 mb-1">Belum Ada Perkembangan</p>
+                                    <p className="text-xs text-gray-500">
+                                        Perkembangan laporan akan ditampilkan di sini
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                             <h3 className="font-bold text-lg text-gray-900 mb-4">Hasil Voting Pengguna</h3>
                             <div className="space-y-4">
-                                {/* Total Votes */}
                                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
-                                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">Total Voting</p>
-                                    <p className="text-3xl font-bold text-blue-700">247</p>
-                                    <p className="text-xs text-blue-600 mt-1">Pengguna telah memberikan voting</p>
+                                    <p className="text-xs font-semibold text-sky-700 uppercase tracking-wide mb-1">Total Voting</p>
+                                    <p className="text-3xl font-bold text-sky-800">{report.totalVotes}</p>
+                                    <p className="text-xs text-sky-700 mt-1">Pengguna telah memberikan voting</p>
                                 </div>
 
                                 <div className="h-px bg-gray-200"></div>
-
-                                {/* Vote Distribution */}
                                 <div className="space-y-3">
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Distribusi Vote</p>
-                                    
-                                    {/* Resolved Vote */}
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="font-medium text-green-700">Terselesaikan</span>
-                                            <span className="text-gray-600 font-semibold">142 (57%)</span>
+                                            <span className="text-gray-600 font-semibold">{report.totalResolvedVotes} ({resolvedPercentage.toFixed(0)}%)</span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                                            <div className="bg-gradient-to-r from-green-500 to-green-600 h-2.5 rounded-full shadow-sm" style={{ width: '57%' }}></div>
+                                            <div 
+                                                className="bg-gradient-to-r from-green-500 to-green-600 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
+                                                style={{ width: `${resolvedPercentage}%` }}
+                                            ></div>
                                         </div>
                                     </div>
-
-                                    {/* In Progress Vote */}
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="font-medium text-yellow-700">Dalam Proses</span>
-                                            <span className="text-gray-600 font-semibold">78 (32%)</span>
+                                            <span className="text-gray-600 font-semibold">{report.totalOnProgressVotes} ({onProgressPercentage.toFixed(0)}%)</span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                                            <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 h-2.5 rounded-full shadow-sm" style={{ width: '32%' }}></div>
+                                            <div 
+                                                className="bg-gradient-to-r from-yellow-500 to-yellow-600 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
+                                                style={{ width: `${onProgressPercentage}%` }}
+                                            ></div>
                                         </div>
                                     </div>
-
-                                    {/* Pending Vote */}
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between text-sm">
-                                            <span className="font-medium text-gray-700">Menunggu</span>
-                                            <span className="text-gray-600 font-semibold">27 (11%)</span>
+                                            <span className="font-medium text-red-700">Tidak Ada Proses</span>
+                                            <span className="text-gray-600 font-semibold">{report.totalNotResolvedVotes} ({notResolvedPercentage.toFixed(0)}%)</span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                                            <div className="bg-gradient-to-r from-gray-400 to-gray-500 h-2.5 rounded-full shadow-sm" style={{ width: '11%' }}></div>
+                                            <div 
+                                                className="bg-gradient-to-r from-red-400 to-red-500 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
+                                                style={{ width: `${notResolvedPercentage}%` }}
+                                            ></div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="h-px bg-gray-200"></div>
 
-                                {/* Majority Vote */}
                                 <div className="bg-green-50 rounded-lg p-3 border border-green-100">
-                                    <p className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-1">Vote Mayoritas</p>
+                                    <p className={`text-xs font-semibold uppercase tracking-wide mb-1 text-${getReportStatusLabel(report?.majorityVote || '').color}-700`}>Vote Mayoritas</p>
                                     <div className="flex items-center gap-2">
-                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
-                                            Terselesaikan
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold text-${getReportStatusLabel(report?.majorityVote || '').color}-700 bg-green-100`}>
+                                            {getReportStatusLabel(report?.majorityVote || '').label}
                                         </span>
-                                        <span className="text-sm text-green-700 font-medium">57% pengguna</span>
+                                        <span className={`text-sm text-${getReportStatusLabel(report?.majorityVote || '').color}-700 font-medium`}>{majorityPercentage}% pengguna</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Related Reports */}
+                            <div className='mt-4'>
+                                {isReportResolved ? (
+                                        <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-300 shadow-sm">
+                                            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-md">
+                                                <FaCheck className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-green-800 font-semibold">
+                                                    Laporan Terselesaikan
+                                                </p>
+                                                <p className="text-xs text-green-700 mt-0.5">
+                                                    Voting ditutup
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                                                <p className="text-sm text-blue-800 font-medium text-center">
+                                                    Bagaimana pendapat Anda tentang perkembangan laporan ini?
+                                                </p>
+                                            </div>
+                                            
+                                            <div className="inline-flex items-center w-full rounded-xl overflow-hidden shadow-md border border-gray-200">
+                                                <motion.button
+                                                    className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                        userCurrentVote === 'RESOLVED'
+                                                            ? 'bg-green-600 text-white shadow-inner'
+                                                            : 'bg-gray-100 text-green-700 hover:bg-green-50'
+                                                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    onClick={() => handleVote('RESOLVED')}
+                                                    disabled={isLoading}
+                                                    animate={animateButton === 'RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
+                                                    transition={{ duration: 0.3 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                >
+                                                    <FaCheck className="w-4 h-4" />
+                                                    <span className="text-sm">Terselesaikan</span>
+                                                </motion.button>
+
+                                                <motion.button
+                                                    className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                        userCurrentVote === 'ON_PROGRESS'
+                                                            ? 'bg-yellow-600 text-white shadow-inner'
+                                                            : 'bg-gray-100 text-yellow-700 hover:bg-yellow-50'
+                                                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    onClick={() => handleVote('ON_PROGRESS')}
+                                                    disabled={isLoading}
+                                                    animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.02, 1] } : {}}
+                                                    transition={{ duration: 0.3 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                >
+                                                    <RiProgress3Fill className="w-4 h-4" />
+                                                    <span className="text-sm">Dalam Proses</span>
+                                                </motion.button>
+
+                                                <motion.button
+                                                    className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                        userCurrentVote === 'NOT_RESOLVED'
+                                                            ? 'bg-red-600 text-white shadow-inner'
+                                                            : 'bg-gray-100 text-red-700 hover:bg-red-50'
+                                                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    onClick={() => handleVote('NOT_RESOLVED')}
+                                                    disabled={isLoading}
+                                                    animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
+                                                    transition={{ duration: 0.3 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                >
+                                                    <FaTimes className="w-4 h-4" />
+                                                    <span className="text-sm">Tidak Ada</span>
+                                                </motion.button>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {userCurrentVote && !isReportResolved && (
+                                        <div className="mt-3 text-center bg-gray-100 rounded-lg p-3 border border-gray-200">
+                                            <p className="text-sm text-gray-700">
+                                                Anda memilih: <span className="font-bold text-gray-900">
+                                                    {userCurrentVote === 'RESOLVED' && '✓ Terselesaikan'}
+                                                    {userCurrentVote === 'ON_PROGRESS' && '-> Dalam Proses'}
+                                                    {userCurrentVote === 'NOT_RESOLVED' && '✗ Tidak Ada Perkembangan'}
+                                                </span>
+                                            </p>
+                                        </div>
+                                    )}
+                            </div>
+                            
+                        </div>
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                             <h3 className="font-bold text-lg text-gray-900 mb-4">Laporan Terkait</h3>
                             <div className="space-y-3">

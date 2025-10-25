@@ -255,7 +255,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 <div className="border-t border-gray-200">
                     <StatusVoting
                         reportID={report.id}
-                        currentStatus={report.status || 'PENDING'}
+                        currentStatus={report.reportStatus || 'PENDING'}
                         onVote={(voteType: string) => onStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
                         onImageClick={onImageClick}
                     />
