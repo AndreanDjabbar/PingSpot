@@ -31,7 +31,17 @@ func (r *reportRepository) Create(report *model.Report, tx *gorm.DB) error {
 
 func (r *reportRepository) Get() (*[]model.Report, error) {
 	var reports []model.Report
-	if err := r.db.Preload("User.Profile").Preload("ReportLocation").Preload("ReportImages").Preload("ReportReactions").Preload("ReportVotes").Preload("ReportProgress").Find(&reports).Error; err != nil {
+	if err := r.db.
+		Preload("User.Profile").
+		Preload("ReportLocation").
+		Preload("ReportImages").
+		Preload("ReportReactions").
+		Preload("ReportVotes").
+		Preload("ReportProgress", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at DESC")
+		}).
+		Order("reports.created_at DESC").
+		Find(&reports).Error; err != nil {
 		return nil, err
 	}
 	return &reports, nil
@@ -46,12 +56,14 @@ func (r *reportRepository) GetPaginated(limit, cursorID uint) (*[]model.Report, 
 		Preload("ReportImages").
 		Preload("ReportReactions").
 		Preload("ReportVotes").
-		Preload("ReportProgress").
-		Order("id DESC").
+		Preload("ReportProgress", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at DESC")
+		}).
+		Order("reports.id DESC").
 		Limit(int(limit))
 
 	if cursorID != 0 {
-		query = query.Where("id < ?", cursorID)
+		query = query.Where("reports.id < ?", cursorID)
 	}
 
 	if err := query.Find(&reports).Error; err != nil {
@@ -60,7 +72,6 @@ func (r *reportRepository) GetPaginated(limit, cursorID uint) (*[]model.Report, 
 
 	return &reports, nil
 }
-
 
 func (r *reportRepository) UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error) {
 	if err := tx.Save(report).Error; err != nil {
@@ -71,16 +82,19 @@ func (r *reportRepository) UpdateTX(tx *gorm.DB, report *model.Report) (*model.R
 
 func (r *reportRepository) GetByID(reportID uint) (*model.Report, error) {
 	var report model.Report
+
 	if err := r.db.
-		Preload("User").
-		Preload("User.Profile").
+		Preload("User.Profile"). 
 		Preload("ReportLocation").
 		Preload("ReportImages").
 		Preload("ReportReactions").
 		Preload("ReportVotes").
-		Preload("ReportProgress").
-		First(&report, reportID).Error; err != nil {
+		Preload("ReportProgress", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at DESC")
+		}).
+		First(&report, "reports.id = ?", reportID).Error; err != nil {
 		return nil, err
 	}
+
 	return &report, nil
 }
