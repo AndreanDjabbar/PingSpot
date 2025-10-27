@@ -6,13 +6,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
-import { FaCheck, FaTimes, FaCamera, FaArrowLeft } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaCamera } from 'react-icons/fa';
 import { BiMessageDetail } from 'react-icons/bi';
 import { LuNotebookText } from 'react-icons/lu';
+import { RiProgress3Fill } from 'react-icons/ri';
 
 import { ButtonSubmit, MultipleImageField, TextAreaField } from '@/components/form';
 import { ErrorSection, SuccessSection } from '@/components/feedback';
 import { Breadcrumb } from '@/components/layouts';
+import { Guide } from '@/components/UI';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { useUploadProgressReport, useGetReportByID } from '@/hooks/main';
 import { useReportsStore, useUserProfileStore, useConfirmationModalStore } from '@/stores';
@@ -37,7 +39,7 @@ const UpdateProgressPage = () => {
     const { data: freshReportData } = useGetReportByID(reportId);
     const freshReport = freshReportData?.data?.report;
     const currentReport = freshReport || report;
-    
+    const customCurrentPath = `/main/reports/${reportId}/Perbarui Perkembangan`;
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = currentReport && currentUserId === currentReport.userID;
     const isReportResolved = currentReport?.reportStatus === 'RESOLVED';
@@ -126,7 +128,6 @@ const UpdateProgressPage = () => {
             queryClient.invalidateQueries({ queryKey: ['report-progress', reportId] });
             queryClient.invalidateQueries({ queryKey: ['report', reportId] });
             
-            // Navigate back to report detail page after success
             setTimeout(() => {
                 router.push(`/main/reports/${reportId}`);
             }, 1500);
@@ -136,7 +137,6 @@ const UpdateProgressPage = () => {
     useErrorToast(isUploadProgressError, uploadProgressError);
     useSuccessToast(isUploadProgressSuccess, uploadProgressData);
 
-    // Redirect if not report owner
     useEffect(() => {
         if (currentReport && !isReportOwner) {
             router.push(`/main/reports/${reportId}`);
@@ -164,7 +164,7 @@ const UpdateProgressPage = () => {
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className='flex flex-col gap-3'>
-                        <Breadcrumb path={`/main/reports/${currentReport.reportTitle}/update-progress`}/>
+                        <Breadcrumb path={customCurrentPath}/>
                         <p className="text-gray-600 text-sm">
                             Perbarui status perkembangan laporan Anda untuk memberi informasi terkini kepada komunitas.
                         </p>
@@ -173,16 +173,13 @@ const UpdateProgressPage = () => {
             </div>
             <div className="max-w-7xl mx-auto py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column - Update Form */}
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            {/* Header */}
-                            <div className="bg-gradient-to-r from-sky-600 to-sky-700 p-6">
-                                <h1 className="text-2xl font-bold text-white mb-2">Update Progress Laporan</h1>
-                                <p className="text-sky-100 text-sm">{currentReport.reportTitle}</p>
+                            <div className="p-6 border-b border-gray-300">
+                                <h1 className="text-2xl font-bold text-gray-900 mb-2">Perbarui Perkembangan Laporan</h1>
+                                <p className="text-gray-700 text-sm">{currentReport.reportTitle}</p>
                             </div>
 
-                            {/* Feedback Messages */}
                             <div className="p-6">
                                 {isUploadProgressSuccess && (
                                     <div className="mb-4">
@@ -200,7 +197,6 @@ const UpdateProgressPage = () => {
                                 )}
                             </div>
 
-                            {/* Form */}
                             <div className="p-6 pt-0">
                                 {isReportResolved ? (
                                     <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-300 shadow-sm">
@@ -218,46 +214,124 @@ const UpdateProgressPage = () => {
                                     </div>
                                 ) : (
                                     <form onSubmit={handleSubmit(handleProgressUpload)} className="space-y-6">
-                                        {/* Status Selection */}
                                         <div>
                                             <label className="block text-sm font-bold text-gray-900 mb-3">
                                                 Pilih Status Progress *
                                             </label>
-                                            <div className="inline-flex items-center w-full rounded-xl overflow-hidden shadow-md border border-gray-200">
+                                            <div className="grid grid-cols-3 gap-3">
                                                 <motion.button
                                                     type="button"
-                                                    className={`flex-1 flex items-center justify-center space-x-2 px-4 py-4 font-semibold transition-all duration-200 ${
+                                                    className={`relative flex flex-col items-center justify-center p-5 rounded-xl font-semibold transition-all duration-300 border-2 ${
                                                         selectedStatus === 'RESOLVED'
-                                                            ? 'bg-green-600 text-white shadow-inner'
-                                                            : 'bg-gray-100 text-green-700 hover:bg-green-50'
-                                                    } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                            ? 'bg-green-600 text-white border-green-700 shadow-lg scale-105'
+                                                            : 'bg-white text-green-700 border-gray-200 hover:border-green-300 hover:bg-green-50 shadow-sm'
+                                                    } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                     onClick={() => {
                                                         setSelectedStatus('RESOLVED');
                                                         setValue('progressStatus', 'RESOLVED');
+                                                        if (selectedStatus === 'RESOLVED') {
+                                                            setSelectedStatus(null);
+                                                            reset();
+                                                            setProgressImages([]);
+                                                        }
                                                     }}
                                                     disabled={isUploadProgressReportPending}
                                                     whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
                                                 >
-                                                    <FaCheck className="w-5 h-5" />
-                                                    <span className="text-sm">Terselesaikan</span>
+                                                    
+                                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-all duration-300 ${
+                                                        selectedStatus === 'RESOLVED'
+                                                            ? 'bg-white/20'
+                                                            : 'bg-green-100'
+                                                    }`}>
+                                                        <FaCheck className={`w-6 h-6 ${
+                                                            selectedStatus === 'RESOLVED' ? 'text-white' : 'text-green-600'
+                                                        }`} />
+                                                    </div>
+                                                    <span className="text-sm font-bold text-center leading-tight">
+                                                        Terselesaikan
+                                                    </span>
+                                                    <span className={`text-xs mt-1.5 text-center ${
+                                                        selectedStatus === 'RESOLVED' ? 'text-green-100' : 'text-gray-500'
+                                                    }`}>
+                                                        Masalah selesai
+                                                    </span>
                                                 </motion.button>
 
                                                 <motion.button
                                                     type="button"
-                                                    className={`flex-1 flex items-center justify-center space-x-2 px-4 py-4 font-semibold transition-all duration-200 ${
-                                                        selectedStatus === 'NOT_RESOLVED'
-                                                            ? 'bg-red-600 text-white shadow-inner'
-                                                            : 'bg-gray-100 text-red-700 hover:bg-red-50'
-                                                    } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    className={`relative flex flex-col items-center justify-center p-5 rounded-xl font-semibold transition-all duration-300 border-2 ${
+                                                        selectedStatus === 'ON_PROGRESS'
+                                                            ? 'bg-yellow-600 text-white border-yellow-700 shadow-lg scale-105'
+                                                            : 'bg-white text-yellow-700 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 shadow-sm'
+                                                    } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                     onClick={() => {
-                                                        setSelectedStatus('NOT_RESOLVED');
-                                                        setValue('progressStatus', 'NOT_RESOLVED');
+                                                        setSelectedStatus('ON_PROGRESS');
+                                                        setValue('progressStatus', 'ON_PROGRESS');
+                                                        if (selectedStatus === 'ON_PROGRESS') {
+                                                            setSelectedStatus(null);
+                                                            reset();
+                                                            setProgressImages([]);
+                                                        }
                                                     }}
                                                     disabled={isUploadProgressReportPending}
                                                     whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
                                                 >
-                                                    <FaTimes className="w-5 h-5" />
-                                                    <span className="text-sm">Belum Terselesaikan</span>
+                                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-all duration-300 ${
+                                                        selectedStatus === 'ON_PROGRESS'
+                                                            ? 'bg-white/20'
+                                                            : 'bg-yellow-100'
+                                                    }`}>
+                                                        <RiProgress3Fill className={`w-6 h-6 ${
+                                                            selectedStatus === 'ON_PROGRESS' ? 'text-white' : 'text-yellow-600'
+                                                        }`} />
+                                                    </div>
+                                                    <span className="text-sm font-bold text-center leading-tight">
+                                                        Dalam Proses
+                                                    </span>
+                                                    <span className={`text-xs mt-1.5 text-center ${
+                                                        selectedStatus === 'ON_PROGRESS' ? 'text-yellow-100' : 'text-gray-500'
+                                                    }`}>
+                                                        Sedang ditangani
+                                                    </span>
+                                                </motion.button>
+
+                                                <motion.button
+                                                    type="button"
+                                                    className={`relative flex flex-col items-center justify-center p-5 rounded-xl font-semibold transition-all duration-300 border-2 ${
+                                                        selectedStatus === 'NOT_RESOLVED'
+                                                            ? 'bg-red-600 text-white border-red-700 shadow-lg scale-105'
+                                                            : 'bg-white text-red-700 border-gray-200 hover:border-red-300 hover:bg-red-50 shadow-sm'
+                                                    } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                    onClick={() => {
+                                                        setSelectedStatus('NOT_RESOLVED');
+                                                        setValue('progressStatus', 'NOT_RESOLVED');
+                                                        if (selectedStatus === 'NOT_RESOLVED') {
+                                                            setSelectedStatus(null);
+                                                            reset();
+                                                            setProgressImages([]);
+                                                        }
+                                                    }}
+                                                    disabled={isUploadProgressReportPending}
+                                                    whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
+                                                >
+                                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-all duration-300 ${
+                                                        selectedStatus === 'NOT_RESOLVED'
+                                                            ? 'bg-white/20'
+                                                            : 'bg-red-100'
+                                                    }`}>
+                                                        <FaTimes className={`w-6 h-6 ${
+                                                            selectedStatus === 'NOT_RESOLVED' ? 'text-white' : 'text-red-600'
+                                                        }`} />
+                                                    </div>
+                                                    <span className="text-sm font-bold text-center leading-tight">
+                                                        Tidak Ada Proses
+                                                    </span>
+                                                    <span className={`text-xs mt-1.5 text-center ${
+                                                        selectedStatus === 'NOT_RESOLVED' ? 'text-red-100' : 'text-gray-500'
+                                                    }`}>
+                                                        Belum ditangani
+                                                    </span>
                                                 </motion.button>
                                             </div>
                                             {errors.progressStatus && (
@@ -267,7 +341,6 @@ const UpdateProgressPage = () => {
                                             )}
                                         </div>
 
-                                        {/* Progress Form */}
                                         {selectedStatus && (
                                             <motion.div
                                                 initial={{ opacity: 0, y: 20 }}
@@ -275,7 +348,6 @@ const UpdateProgressPage = () => {
                                                 exit={{ opacity: 0, y: -20 }}
                                                 className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border border-gray-200 shadow-md space-y-5"
                                             >
-                                                {/* Notes Field */}
                                                 <div>
                                                     <TextAreaField
                                                         id="progressNotes"
@@ -318,28 +390,13 @@ const UpdateProgressPage = () => {
                                                     </p>
                                                 </div>
 
-                                                {/* Action Buttons */}
-                                                <div className="flex space-x-3 pt-3">
+                                                <div className="flex">
                                                     <ButtonSubmit
                                                         className="group relative w-full flex items-center justify-center py-3.5 px-4 text-sm font-bold rounded-xl text-white bg-sky-700 hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                                         title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
                                                         progressTitle="Memproses..."
                                                         isProgressing={isUploadProgressReportPending}
                                                     />
-                                                    
-                                                    <motion.button
-                                                        type="button"
-                                                        className="px-4 w-1/3 py-3.5 rounded-xl text-sm font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onClick={() => {
-                                                            setSelectedStatus(null);
-                                                            reset();
-                                                            setProgressImages([]);
-                                                        }}
-                                                        disabled={isUploadProgressReportPending}
-                                                        whileTap={{ scale: 0.98 }}
-                                                    >
-                                                        Reset
-                                                    </motion.button>
                                                 </div>
                                             </motion.div>
                                         )}
@@ -350,107 +407,47 @@ const UpdateProgressPage = () => {
                     </div>
 
                     <div className="lg:col-span-1">
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden sticky top-6">
-                            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5">
-                                <div className="flex items-center gap-2 text-white mb-2">
-                                    <LuNotebookText className="w-5 h-5" />
-                                    <h3 className="font-bold text-lg">Panduan Memperbarui</h3>
-                                </div>
-                                <p className="text-blue-100 text-xs">
-                                    Ikuti langkah berikut untuk memperbarui progress laporan
-                                </p>
-                            </div>
-
-                            <div className="p-5 space-y-4">
-                                <div className="space-y-3">
-                                    <div className="flex gap-3">
-                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
-                                            1
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-900 mb-1">
-                                                Pilih Status Progress
-                                            </p>
-                                            <p className="text-xs text-gray-600">
-                                                Tentukan apakah laporan sudah terselesaikan atau belum terselesaikan
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-3">
-                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
-                                            2
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-900 mb-1">
-                                                Tulis Catatan Detail
-                                            </p>
-                                            <p className="text-xs text-gray-600">
-                                                Jelaskan perkembangan laporan secara detail (minimal 5 karakter)
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-3">
-                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
-                                            3
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-900 mb-1">
-                                                Tambahkan Foto
-                                            </p>
-                                            <p className="text-xs text-gray-600">
-                                                Upload foto pendukung (opsional, maksimal 2 foto)
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-3">
-                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
-                                            4
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-900 mb-1">
-                                                Konfirmasi Update
-                                            </p>
-                                            <p className="text-xs text-gray-600">
-                                                Klik tombol untuk menyimpan perubahan progress laporan
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-3 border-t border-gray-200">
-                                    <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
-                                        <div className="flex items-start gap-2">
-                                            <span className="text-amber-600 text-lg">⚠️</span>
-                                            <div>
-                                                <p className="text-xs font-semibold text-amber-900 mb-1">
-                                                    Penting!
-                                                </p>
-                                                <p className="text-xs text-amber-800">
-                                                    Jika laporan ditutup (status: Terselesaikan), Anda tidak bisa membuka atau memperbarui progress lagi.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-                                    <div className="flex items-start gap-2">
-                                        <span className="text-green-600 text-lg">💡</span>
-                                        <div>
-                                            <p className="text-xs font-semibold text-green-900 mb-1">
-                                                Tips
-                                            </p>
-                                            <p className="text-xs text-green-800">
-                                                Berikan informasi yang jelas dan transparan agar komunitas dapat memantau perkembangan laporan dengan baik.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <Guide
+                            title="Panduan Memperbarui"
+                            subtitle="Ikuti langkah berikut untuk memperbarui progress laporan"
+                            icon={<LuNotebookText size={20}/>}
+                            steps={[
+                                {
+                                    number: 1,
+                                    title: "Pilih Status Progress",
+                                    description: "Tentukan apakah laporan sudah terselesaikan, dalam proses, atau belum ada perkembangan"
+                                },
+                                {
+                                    number: 2,
+                                    title: "Tulis Catatan Detail",
+                                    description: "Jelaskan perkembangan laporan secara detail (minimal 5 karakter)"
+                                },
+                                {
+                                    number: 3,
+                                    title: "Tambahkan Foto",
+                                    description: "Upload foto pendukung (opsional, maksimal 2 foto)"
+                                },
+                                {
+                                    number: 4,
+                                    title: "Konfirmasi Update",
+                                    description: "Klik tombol untuk menyimpan perubahan progress laporan"
+                                }
+                            ]}
+                            alerts={[
+                                {
+                                    type: 'warning',
+                                    emoji: '⚠️',
+                                    title: 'Penting!',
+                                    message: 'Jika laporan ditutup (status: Terselesaikan), Anda tidak bisa membuka atau memperbarui progress lagi.'
+                                },
+                                {
+                                    type: 'success',
+                                    emoji: '💡',
+                                    title: 'Tips',
+                                    message: 'Berikan informasi yang jelas dan transparan agar komunitas dapat memantau perkembangan laporan dengan baik.'
+                                }
+                            ]}
+                        />
                     </div>
                 </div>
             </div>

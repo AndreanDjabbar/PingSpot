@@ -75,8 +75,8 @@ export const VoteReportSchema = z.object({
 });
 
 export const UploadProgressReportSchema = z.object({
-    progressStatus: z.enum(['RESOLVED', 'NOT_RESOLVED'], {
-        message: "Status progres harus RESOLVED atau NOT_RESOLVED"
+    progressStatus: z.enum(['RESOLVED', 'ON_PROGRESS', 'NOT_RESOLVED'], {
+        message: "Status progres harus RESOLVED, ON_PROGRESS, atau NOT_RESOLVED"
     }),
     progressNotes: z.string().min(5, "Catatan minimal 5 karakter").max(300, "Catatan maksimal 300 karakter"),
     progressAttachments: z
