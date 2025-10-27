@@ -25,6 +25,9 @@ interface ReportInteractionBarProps {
         hasSaved: boolean;
     };
     commentCount: number;
+    isLikedByCurrentUser?: boolean;
+    totalLikeReactions?: number;
+    totalDislikeReactions?: number;
     onLike: () => void;
     onDislike: () => void;
     onSave: () => void;
@@ -37,6 +40,9 @@ interface ReportInteractionBarProps {
 export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
     reportID,
     commentCount,
+    isLikedByCurrentUser: propIsLikedByCurrentUser,
+    totalLikeReactions: propTotalLikeReactions,
+    totalDislikeReactions: propTotalDislikeReactions,
     onLike,
     onComment,
     onShare,
@@ -47,11 +53,23 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
 
     const report = reports.find(r => r.id === reportID);
 
-    const isLikedByCurrentUser = report?.isLikedByCurrentUser || false;
+    const isLikedByCurrentUser = propIsLikedByCurrentUser !== undefined 
+        ? propIsLikedByCurrentUser 
+        : report?.isLikedByCurrentUser || false;
+        
     const reactionStats: ReactionStatsType = {
-        totalLikes: report?.totalLikeReactions || 0,
-        totalDislikes: report?.totalDislikeReactions || 0,
-        totalReactions: (report?.totalLikeReactions || 0) + (report?.totalDislikeReactions || 0)
+        totalLikes: propTotalLikeReactions !== undefined 
+            ? propTotalLikeReactions 
+            : report?.totalLikeReactions || 0,
+        totalDislikes: propTotalDislikeReactions !== undefined 
+            ? propTotalDislikeReactions 
+            : report?.totalDislikeReactions || 0,
+        totalReactions: ((propTotalLikeReactions !== undefined 
+            ? propTotalLikeReactions 
+            : report?.totalLikeReactions || 0) + 
+            (propTotalDislikeReactions !== undefined 
+            ? propTotalDislikeReactions 
+            : report?.totalDislikeReactions || 0))
     };
 
     const handleLike = () => {

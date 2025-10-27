@@ -17,7 +17,7 @@ import { Breadcrumb } from '@/components/layouts';
 import { Guide } from '@/components/UI';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { useUploadProgressReport, useGetReportByID } from '@/hooks/main';
-import { useReportsStore, useUserProfileStore, useConfirmationModalStore } from '@/stores';
+import { useReportsStore, useUserProfileStore, useConfirmationModalStore, useImagePreviewModalStore } from '@/stores';
 import { IUploadProgressReportRequest } from '@/types/api/report';
 import { UploadProgressReportSchema } from '../../../schema';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
@@ -43,6 +43,7 @@ const UpdateProgressPage = () => {
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = currentReport && currentUserId === currentReport.userID;
     const isReportResolved = currentReport?.reportStatus === 'RESOLVED';
+    const { openImagePreview } = useImagePreviewModalStore();
 
     const {
         register,
@@ -116,7 +117,7 @@ const UpdateProgressPage = () => {
     };
 
     const handleImageClick = (imageUrl: string) => {
-        console.log('Image clicked:', imageUrl);
+        openImagePreview(imageUrl);
     };
 
     useEffect(() => {

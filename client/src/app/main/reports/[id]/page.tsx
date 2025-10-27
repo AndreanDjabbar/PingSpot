@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -10,13 +10,13 @@ import { IoDocumentText } from "react-icons/io5";
 import { BiEdit, BiSend, BiX } from 'react-icons/bi';
 import { MdDone } from "react-icons/md";
 import 'leaflet/dist/leaflet.css';
-import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
+import { getImageURL, getFormattedDate as formattedDate, getErrorResponseMessage } from '@/utils';
 import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
 import { ReportInteractionBar } from '../components/ReportInteractionBar';
 import CommentItem from '../components/CommentItem';
-import { useUserProfileStore } from '@/stores';
+import { useUserProfileStore, useReportsStore } from '@/stores';
 import { Breadcrumb } from '@/components/layouts';
-import { useGetReportByID, useVoteReport } from '@/hooks/main';
+import { useGetReportByID, useReactReport, useVoteReport } from '@/hooks/main';
 import { Accordion } from '@/components/UI';
 import { motion } from 'framer-motion';
 import { RiProgress3Fill } from "react-icons/ri";
@@ -126,10 +126,18 @@ const dummyComments: ICommentType[] = [
 const ReportDetailPage = () => {
     const params = useParams();
     const router = useRouter();
-    const reportId = Number(params.id); 
-    const [animateButton, setAnimateButton] = useState<string | null>(null);
-    const { openImagePreview } = useImagePreviewModalStore();
+    const reportId = Number(params.id);
     
+    const [viewMode, setViewMode] = useState<'attachment' | 'map'>('map');
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [newComment, setNewComment] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [animateButton, setAnimateButton] = useState<string | null>(null);
+
+    const { openImagePreview } = useImagePreviewModalStore();
+    const { reports, setReports, selectedReport, setSelectedReport } = useReportsStore();
+    const { userProfile } = useUserProfileStore();
+
     const { 
         data: freshReportData,
         isLoading,
@@ -137,24 +145,30 @@ const ReportDetailPage = () => {
         refetch,
     } = useGetReportByID(reportId);
     
+    const { 
+        mutate: reactReport, 
+        isError: isReactReportError,  
+        error: reactReportError,
+    } = useReactReport();
+    
     const {
         mutate: voteReport,
         isError: isVoteReportError,
         error: voteReportError,
     } = useVoteReport();
+
+    const [report, setReport] = useState(freshReportData?.data?.report);
     
-    useErrorToast(isVoteReportError, voteReportError);
-    
-    const report = freshReportData?.data?.report;
-    const { userProfile } = useUserProfileStore();
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
     const totalVotes = report?.totalVotes || 0;
     const resolvedPercentage = totalVotes > 0 ? ((report?.totalResolvedVotes || 0) / totalVotes) * 100 : 0;
     const onProgressPercentage = totalVotes > 0 ? ((report?.totalOnProgressVotes || 0) / totalVotes) * 100 : 0;
     const notResolvedPercentage = totalVotes > 0 ? ((report?.totalNotResolvedVotes || 0) / totalVotes) * 100 : 0;
-    
     const isReportResolved = report?.reportStatus === 'RESOLVED';
+    const customCurrentPath = `/main/reports/${report?.id}`;
+    const images = getReportImages(report?.images ?? { id: 0, reportID: 0 });
+    const displayComments = report?.comments && report.comments.length > 0 ? report.comments : dummyComments;
     
     const calculateMajorityVote = () => {
         const resolvedVotes = report?.totalResolvedVotes || 0;
@@ -184,21 +198,7 @@ const ReportDetailPage = () => {
             ? 'NOT_RESOLVED'
             : report?.isOnProgressByCurrentUser
                 ? 'ON_PROGRESS'
-                : null
-    
-    const displayComments = report?.comments && report.comments.length > 0 
-        ? report.comments 
-        : dummyComments;
-    
-    const [viewMode, setViewMode] = useState<'attachment' | 'map'>('map');
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [newComment, setNewComment] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const customCurrentPath = `/main/reports/${report?.id}`;
-
-    const images = getReportImages(
-        report?.images ?? { id: 0, reportID: 0 }
-    );
+                : null;
 
     const nextImage = () => {
         if (images.length > 1) {
@@ -217,11 +217,53 @@ const ReportDetailPage = () => {
         openImagePreview(url);
     };
 
+    const handleLike = async() => {
+        if (!report) return;
+
+        const currentlyLiked = report.isLikedByCurrentUser || false;
+        const updatedReport = {
+            ...report,
+            isLikedByCurrentUser: !currentlyLiked,
+            totalLikeReactions: currentlyLiked 
+                ? Math.max(0, (report.totalLikeReactions || 1) - 1)
+                : (report.totalLikeReactions || 0) + 1,
+        };
+        
+        setReport(updatedReport);
+        
+        const existingReportIndex = reports.findIndex(r => r.id === reportId);
+        if (existingReportIndex !== -1) {
+            const updatedReports = [...reports];
+            updatedReports[existingReportIndex] = updatedReport;
+            setReports(updatedReports);
+        }
+        
+        if (selectedReport?.id === reportId) {
+            setSelectedReport(updatedReport);
+        }
+
+        try {
+            reactReport({
+                reportID: reportId,
+                data: {
+                    reactionType: 'LIKE'
+                }
+            });
+        } catch (error) {
+            console.error('Error liking report:', error);
+            setReport(report);
+            if (existingReportIndex !== -1) {
+                const revertedReports = [...reports];
+                revertedReports[existingReportIndex] = report;
+                setReports(revertedReports);
+            }
+            if (selectedReport?.id === reportId) {
+                setSelectedReport(report);
+            }
+        }
+    }
+
     const handleVote = async (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS') => {
-        console.log("CURRENT STATUS: ", report?.reportStatus);
-        console.log("IS REPORT RESOLVED: ", isReportResolved);
-        console.log("USER CURRENT VOTE: ", userCurrentVote);
-        console.log("VOTE TYPE CLICKED: ", voteType);  
         if (isLoading || isReportResolved) return;
         setAnimateButton(voteType);
         handleStatusVote(reportId, voteType);
@@ -382,14 +424,6 @@ const ReportDetailPage = () => {
         }
     };
 
-    useErrorToast(isVoteReportError, voteReportError);
-
-    React.useEffect(() => {
-        if (isVoteReportError) {
-            refetch();
-        }
-    }, [isVoteReportError, refetch]);
-
     const handleSubmitComment = async () => {
         if (!newComment.trim() || isSubmitting) return;
         
@@ -407,6 +441,27 @@ const ReportDetailPage = () => {
     const handleReply = (content: string, parentId: number) => {
         console.log('Reply to:', parentId, content);
     };
+
+    useErrorToast(isVoteReportError, voteReportError);
+    useErrorToast(isReactReportError, getErrorResponseMessage(reactReportError) || 'Terjadi kesalahan saat bereaksi pada laporan');
+
+    useEffect(() => {
+        if (freshReportData?.data?.report) {
+            setReport(freshReportData.data.report);
+        }
+    }, [freshReportData]);
+
+    useEffect(() => {
+        if (isVoteReportError) {
+            refetch();
+        }
+    }, [isVoteReportError, refetch]);
+    
+    useEffect(() => {
+        if (isReactReportError) {
+            refetch();
+        }
+    }, [isReactReportError, refetch]);
 
     if (isLoading) {
         return (
@@ -627,7 +682,10 @@ const ReportDetailPage = () => {
                                     reportID={report.id}
                                     userInteraction={report.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}
                                     commentCount={report.commentCount || 0}
-                                    onLike={() => console.log('Like')}
+                                    isLikedByCurrentUser={report.isLikedByCurrentUser}
+                                    totalLikeReactions={report.totalLikeReactions}
+                                    totalDislikeReactions={report.totalDislikeReactions}
+                                    onLike={handleLike}
                                     onDislike={() => console.log('Dislike')}
                                     onSave={() => console.log('Save')}
                                     onComment={() => document.getElementById('comment-input')?.focus()}

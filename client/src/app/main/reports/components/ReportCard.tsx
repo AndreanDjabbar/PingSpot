@@ -185,7 +185,6 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                         <FaChevronRight className="w-4 h-4" />
                                     </button>
                                     
-                                    {/* Image counter */}
                                     <div className="absolute bottom-3 right-3 bg-black bg-opacity-70 text-white px-3 py-1.5 rounded-full text-xs font-medium">
                                         {currentImageIndex + 1} / {images.length}
                                     </div>
@@ -193,7 +192,6 @@ const ReportCard: React.FC<ReportCardProps> = ({
                             )}
                         </div>
                         
-                        {/* Image dots indicator */}
                         {images.length > 1 && (
                             <div className="flex justify-center gap-1.5 mt-3">
                                 {images.map((_, index) => (
