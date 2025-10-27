@@ -94,10 +94,10 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
             type: "info",
             title: formData.progressStatus === 'RESOLVED'
                 ?   "Konfirmasi Penutupan Laporan"
-                :   "Konfirmasi Pembaruan Status Laporan",
+                :   "Konfirmasi Pembaruan Perkembangan Laporan",
             message: formData.progressStatus === 'RESOLVED'
                 ?   "Apakah Anda yakin ingin menutup laporan ini?."
-                :   "Apakah Anda yakin ingin memperbarui status laporan ini?",
+                :   "Apakah Anda yakin ingin memperbarui perkembangan laporan ini?",
             isPending: isUploadProgressReportPending,
             explanation: formData.progressStatus === 'RESOLVED'
                 ?   "Perkembangan Laporan yang sudah ditutup tidak bisa dibuka kembali."
@@ -399,7 +399,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                             <Accordion type="single">
                                 <Accordion.Item
                                     id="update-status"
-                                    title="Perbarui Status Laporan"
+                                    title="Perbarui Perkembangan Laporan"
                                     icon={<FiEdit className="w-4 h-4 text-gray-700" />}
                                     headerClassName="text-gray-900 font-semibold"
                                 >
@@ -420,111 +420,194 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                     ) : (
                                         <form onSubmit={handleSubmitProgress(handleProgressUpload)} className='mt-4'>
                                             <div className='mb-5'>
-                                                <div className="inline-flex items-center w-full rounded-xl overflow-hidden shadow-md border border-gray-200">
+                                                <label className="block text-sm font-bold text-gray-900 mb-3">
+                                                    Pilih Status Perkembangan
+                                                </label>
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                                     <motion.button
                                                         type="button"
-                                                        className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3.5 font-semibold transition-all duration-200 ${
+                                                        className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
                                                             selectedStatus === 'RESOLVED'
-                                                                ? 'bg-green-600 text-white shadow-inner'
-                                                                : currentStatus === 'RESOLVED'
-                                                                ? 'bg-green-100 text-green-700'
-                                                                : 'bg-gray-100 text-green-700 hover:bg-green-50'
-                                                        } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                ? 'bg-green-600 text-white border-green-700 shadow-lg scale-105'
+                                                                : 'bg-white text-green-700 border-gray-200 hover:border-green-300 hover:bg-green-50 shadow-sm'
+                                                        } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                         onClick={() => {
-                                                            setSelectedStatus('RESOLVED');
-                                                            setProgressValue('progressStatus', 'RESOLVED');
+                                                            if (selectedStatus === 'RESOLVED') {
+                                                                setSelectedStatus(null);
+                                                                setProgressImages([]);
+                                                            } else {
+                                                                setSelectedStatus('RESOLVED');
+                                                                setProgressValue('progressStatus', 'RESOLVED');
+                                                            }
                                                         }}
                                                         disabled={isUploadProgressReportPending}
                                                         whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
                                                     >
-                                                        <FaCheck className="w-4 h-4" />
-                                                        <span className="text-sm">Selesai</span>
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                            selectedStatus === 'RESOLVED'
+                                                                ? 'bg-white/20'
+                                                                : 'bg-green-100'
+                                                        }`}>
+                                                            <FaCheck className={`w-5 h-5 ${
+                                                                selectedStatus === 'RESOLVED' ? 'text-white' : 'text-green-600'
+                                                            }`} />
+                                                        </div>
+                                                        <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                            Terselesaikan
+                                                        </span>
+                                                        <span className={`text-xs mt-1 text-center ${
+                                                            selectedStatus === 'RESOLVED' ? 'text-green-100' : 'text-gray-500'
+                                                        }`}>
+                                                            Masalah selesai
+                                                        </span>
                                                     </motion.button>
 
                                                     <motion.button
                                                         type="button"
-                                                        className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3.5 font-semibold transition-all duration-200 ${
-                                                            selectedStatus === 'NOT_RESOLVED'
-                                                                ? 'bg-red-600 text-white shadow-inner'
-                                                                : currentStatus === 'NOT_RESOLVED'
-                                                                ? 'bg-red-100 text-red-700'
-                                                                : 'bg-gray-100 text-red-700 hover:bg-red-50'
-                                                        } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                        className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
+                                                            selectedStatus === 'ON_PROGRESS'
+                                                                ? 'bg-yellow-600 text-white border-yellow-700 shadow-lg scale-105'
+                                                                : 'bg-white text-yellow-700 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 shadow-sm'
+                                                        } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                         onClick={() => {
-                                                            setSelectedStatus('NOT_RESOLVED');
-                                                            setProgressValue('progressStatus', 'NOT_RESOLVED');
+                                                            if (selectedStatus === 'ON_PROGRESS') {
+                                                                setSelectedStatus(null);
+                                                                setProgressImages([]);
+                                                            } else {
+                                                                setSelectedStatus('ON_PROGRESS');
+                                                                setProgressValue('progressStatus', 'ON_PROGRESS');
+                                                            }
                                                         }}
                                                         disabled={isUploadProgressReportPending}
                                                         whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
                                                     >
-                                                        <FaTimes className="w-4 h-4" />
-                                                        <span className="text-sm">Belum Selesai</span>
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                            selectedStatus === 'ON_PROGRESS'
+                                                                ? 'bg-white/20'
+                                                                : 'bg-yellow-100'
+                                                        }`}>
+                                                            <RiProgress3Fill className={`w-5 h-5 ${
+                                                                selectedStatus === 'ON_PROGRESS' ? 'text-white' : 'text-yellow-600'
+                                                            }`} />
+                                                        </div>
+                                                        <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                            Dalam Proses
+                                                        </span>
+                                                        <span className={`text-xs mt-1 text-center ${
+                                                            selectedStatus === 'ON_PROGRESS' ? 'text-yellow-100' : 'text-gray-500'
+                                                        }`}>
+                                                            Sedang ditangani
+                                                        </span>
+                                                    </motion.button>
+
+                                                    <motion.button
+                                                        type="button"
+                                                        className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
+                                                            selectedStatus === 'NOT_RESOLVED'
+                                                                ? 'bg-red-600 text-white border-red-700 shadow-lg scale-105'
+                                                                : 'bg-white text-red-700 border-gray-200 hover:border-red-300 hover:bg-red-50 shadow-sm'
+                                                        } ${isUploadProgressReportPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                        onClick={() => {
+                                                            if (selectedStatus === 'NOT_RESOLVED') {
+                                                                setSelectedStatus(null);
+                                                                setProgressImages([]);
+                                                            } else {
+                                                                setSelectedStatus('NOT_RESOLVED');
+                                                                setProgressValue('progressStatus', 'NOT_RESOLVED');
+                                                            }
+                                                        }}
+                                                        disabled={isUploadProgressReportPending}
+                                                        whileTap={{ scale: isUploadProgressReportPending ? 1 : 0.98 }}
+                                                    >
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                            selectedStatus === 'NOT_RESOLVED'
+                                                                ? 'bg-white/20'
+                                                                : 'bg-red-100'
+                                                        }`}>
+                                                            <FaTimes className={`w-5 h-5 ${
+                                                                selectedStatus === 'NOT_RESOLVED' ? 'text-white' : 'text-red-600'
+                                                            }`} />
+                                                        </div>
+                                                        <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                            Tidak Ada Proses
+                                                        </span>
+                                                        <span className={`text-xs mt-1 text-center ${
+                                                            selectedStatus === 'NOT_RESOLVED' ? 'text-red-100' : 'text-gray-500'
+                                                        }`}>
+                                                            Belum ditangani
+                                                        </span>
                                                     </motion.button>
                                                 </div>
                                             </div>
 
                                             {selectedStatus && (
                                                 <motion.div
-                                                    initial={{ opacity: 0, height: 0 }}
-                                                    animate={{ opacity: 1, height: 'auto' }}
-                                                    exit={{ opacity: 0, height: 0 }}
-                                                    className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 border border-gray-200 shadow-md"
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -20 }}
+                                                    className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 border border-gray-200 shadow-md space-y-4"
                                                 >
-                                                    <div className="space-y-4">
+                                                    <div>
                                                         <TextAreaField
                                                             id="progressNotes"
                                                             register={registerProgress("progressNotes")}
-                                                            rows={3}
+                                                            rows={4}
                                                             className="w-full"
                                                             withLabel={true}
                                                             labelTitle="Catatan Progress"
                                                             labelIcon={<BiMessageDetail size={20} />}
-                                                            placeHolder="Jelaskan progress dari laporan ini"
+                                                            placeHolder="Jelaskan detail progress dari laporan ini. Misalnya: perbaikan sudah dimulai, material sudah disiapkan, dll."
                                                         />
-                                                        <div className="text-red-500 text-sm font-semibold">{progressErrors.progressNotes?.message as string}</div>
-                                                        
-                                                        <div className="space-y-2">
-                                                            <div className="flex items-center space-x-2">
-                                                                <FaCamera className="w-4 h-4 text-gray-700" />
-                                                                <label className="text-sm font-semibold text-gray-900">
-                                                                    Lampiran Foto (Opsional, Maks. 2)
-                                                                </label>
-                                                            </div>
-                                                            <MultipleImageField
-                                                                id="statusImages"
-                                                                withLabel={false}
-                                                                buttonTitle="Pilih Foto"
-                                                                width={120}
-                                                                height={120}
-                                                                shape="square"
-                                                                maxImages={2}
-                                                                onChange={(files) => setProgressImages(files)}
-                                                                onImageClick={handleImageClick}
-                                                            />
-                                                            <p className="text-xs text-gray-600">
-                                                                Tambahkan foto untuk memperjelas status
+                                                        {progressErrors.progressNotes && (
+                                                            <p className="text-red-500 text-sm font-semibold mt-2">
+                                                                {progressErrors.progressNotes.message as string}
                                                             </p>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center space-x-2">
+                                                            <FaCamera className="w-5 h-5 text-gray-700" />
+                                                            <label className="text-sm font-bold text-gray-900">
+                                                                Lampiran Foto (Opsional, Maksimal 2)
+                                                            </label>
                                                         </div>
+                                                        <MultipleImageField
+                                                            id="statusImages"
+                                                            withLabel={false}
+                                                            buttonTitle="Pilih Foto Progress"
+                                                            width={150}
+                                                            height={150}
+                                                            shape="square"
+                                                            maxImages={2}
+                                                            onChange={(files) => setProgressImages(files)}
+                                                            onImageClick={handleImageClick}
+                                                        />
+                                                        <p className="text-xs text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                                            💡 Tips: Tambahkan foto untuk memperjelas perkembangan laporan dan meningkatkan kepercayaan komunitas
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                                        <ButtonSubmit
+                                                            className="group relative flex-1 flex items-center justify-center py-3.5 px-4 text-sm font-bold rounded-xl text-white bg-sky-700 hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
+                                                            progressTitle="Memproses..."
+                                                            isProgressing={isUploadProgressReportPending}
+                                                        />
                                                         
-                                                        <div className="flex space-x-3 pt-2">
-                                                            <ButtonSubmit
-                                                                className="group relative w-1/2 flex items-center justify-center py-3.5 px-4 text-sm font-semibold rounded-xl text-white bg-sky-700 hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-all duration-300 shadow-md hover:shadow-lg"
-                                                                title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
-                                                                progressTitle="Memproses..."
-                                                                isProgressing={isUploadProgressReportPending}
-                                                            />
-                                                            
-                                                            <motion.button
-                                                                type="button"
-                                                                className="px-4 w-1/2 py-3.5 rounded-xl text-sm font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
-                                                                onClick={() => {
-                                                                    setSelectedStatus(null);
-                                                                }}
-                                                                whileTap={{ scale: 0.98 }}
-                                                            >
-                                                                Batal
-                                                            </motion.button>
-                                                        </div>
+                                                        <motion.button
+                                                            type="button"
+                                                            className="px-4 flex-1 sm:flex-none sm:w-32 py-3.5 rounded-xl text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                                                            onClick={() => {
+                                                                setSelectedStatus(null);
+                                                                setProgressImages([]);
+                                                            }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            disabled={isUploadProgressReportPending}
+                                                        >
+                                                            Batal
+                                                        </motion.button>
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -549,65 +632,60 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                             <div className="space-y-4">
                                 {totalVotes > 0 && (
                                     <div className="mb-6 bg-white rounded-xl p-5 border border-gray-200 shadow-md">
-                                        <div className="flex items-center justify-between text-sm font-semibold text-gray-900 mb-4">
-                                            <span>Pendapat Komunitas</span>
-                                            <span className="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">
-                                                {totalVotes} vote
-                                            </span>
+                                        <div className='mb-4'>
+                                            <div className="flex items-center justify-between text-sm font-semibold text-gray-900">
+                                                <span>Pendapat Komunitas</span>
+                                                <span className="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">
+                                                    {totalVotes} vote
+                                                </span>
+                                            </div>
+                                            <span className='text-sm text-gray-600'>Pendapat komunitas mengenai proses perkembangan laporan:</span>
                                         </div>
                                         <div className="space-y-3">
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex items-center space-x-2 w-28">
-                                                    <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center shadow-sm">
-                                                        <FaCheck className="w-3 h-3 text-white" />
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <div className='flex gap-2 font-medium text-green-700 items-center'>
+                                                        <FaCheck/>
+                                                        <span className="">Terselesaikan</span>
                                                     </div>
-                                                    <span className="text-xs font-semibold text-green-700">Selesai</span>
+                                                    <span className="text-gray-600 font-semibold">{report?.totalResolvedVotes} ({resolvedPercentage.toFixed(0)}%)</span>
                                                 </div>
-                                                <div className="flex-1 bg-gray-200 rounded-full h-2.5 shadow-inner">
+                                                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                                                     <div 
-                                                        className="bg-gradient-to-r from-green-600 to-green-500 h-2.5 rounded-full transition-all duration-500 shadow-sm"
+                                                        className="bg-gradient-to-r from-green-500 to-green-600 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
                                                         style={{ width: `${resolvedPercentage}%` }}
-                                                    />
+                                                    ></div>
                                                 </div>
-                                                <span className="text-xs font-bold text-gray-700 w-10 text-right">
-                                                    {report?.totalResolvedVotes}
-                                                </span>
                                             </div>
-
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex items-center space-x-2 w-28">
-                                                    <div className="w-6 h-6 bg-yellow-600 rounded-full flex items-center justify-center shadow-sm">
-                                                        <RiProgress3Fill className="w-3 h-3 text-white" />
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <div className='flex gap-2 font-medium text-yellow-700 items-center'>
+                                                        <RiProgress3Fill/>
+                                                        <span className="">Dalam Proses</span>
                                                     </div>
-                                                    <span className="text-xs font-semibold text-yellow-700">Dalam proses</span>
+                                                    <span className="text-gray-600 font-semibold">{report?.totalOnProgressVotes} ({onProgressPercentage.toFixed(0)}%)</span>
                                                 </div>
-                                                <div className="flex-1 bg-gray-200 rounded-full h-2.5 shadow-inner">
+                                                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                                                     <div 
-                                                        className="bg-gradient-to-r from-yellow-600 to-yellow-500 h-2.5 rounded-full transition-all duration-500 shadow-sm"
+                                                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
                                                         style={{ width: `${onProgressPercentage}%` }}
-                                                    />
+                                                    ></div>
                                                 </div>
-                                                <span className="text-xs font-bold text-gray-700 w-10 text-right">
-                                                    {report?.totalOnProgressVotes}
-                                                </span>
                                             </div>
-
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex items-center space-x-2 w-28">
-                                                    <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center shadow-sm">
-                                                        <FaTimes className="w-3 h-3 text-white" />
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <div className='flex items-center gap-2 font-medium text-red-700'>
+                                                        <FaTimes/>
+                                                        <span className="">Tidak Ada Proses</span>
                                                     </div>
-                                                    <span className="text-xs font-semibold text-red-700">Tidak</span>
+                                                    <span className="text-gray-600 font-semibold">{report?.totalNotResolvedVotes} ({notResolvedPercentage.toFixed(0)}%)</span>
                                                 </div>
-                                                <div className="flex-1 bg-gray-200 rounded-full h-2.5 shadow-inner">
+                                                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                                                     <div 
-                                                        className="bg-gradient-to-r from-red-600 to-red-500 h-2.5 rounded-full transition-all duration-500 shadow-sm"
+                                                        className="bg-gradient-to-r from-red-400 to-red-500 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
                                                         style={{ width: `${notResolvedPercentage}%` }}
-                                                    />
+                                                    ></div>
                                                 </div>
-                                                <span className="text-xs font-bold text-gray-700 w-10 text-right">
-                                                    {report?.totalNotResolvedVotes}
-                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -629,73 +707,134 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                                            <p className="text-sm text-blue-800 font-medium text-center">
-                                                Bagaimana pendapat Anda tentang perkembangan laporan ini?
+                                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
+                                            <p className="text-sm text-blue-800 font-bold text-center">
+                                                Bagaimana pendapat Anda tentang laporan ini?
+                                            </p>
+                                            <p className="text-xs text-blue-600 text-center mt-1">
+                                                Pilih salah satu untuk memberikan pendapat
                                             </p>
                                         </div>
                                         
-                                        <div className="inline-flex items-center w-full rounded-xl overflow-hidden shadow-md border border-gray-200">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                             <motion.button
-                                                className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
                                                     userCurrentVote === 'RESOLVED'
-                                                        ? 'bg-green-600 text-white shadow-inner'
-                                                        : 'bg-gray-100 text-green-700 hover:bg-green-50'
-                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                        ? 'bg-green-600 text-white border-green-700 shadow-lg scale-105'
+                                                        : 'bg-white text-green-700 border-gray-200 hover:border-green-300 hover:bg-green-50 shadow-sm'
+                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                 onClick={() => handleVote('RESOLVED')}
                                                 disabled={isLoading}
-                                                animate={animateButton === 'RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
+                                                animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
                                                 transition={{ duration: 0.3 }}
-                                                whileTap={{ scale: 0.98 }}
+                                                whileTap={{ scale: isLoading ? 1 : 0.98 }}
                                             >
-                                                <FaCheck className="w-4 h-4" />
-                                                <span className="text-sm">Terselesaikan</span>
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                    userCurrentVote === 'RESOLVED'
+                                                        ? 'bg-white/20'
+                                                        : 'bg-green-100'
+                                                }`}>
+                                                    <FaCheck className={`w-6 h-6 ${
+                                                        userCurrentVote === 'RESOLVED' ? 'text-white' : 'text-green-600'
+                                                    }`} />
+                                                </div>
+                                                <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                    Terselesaikan
+                                                </span>
+                                                <span className={`text-xs mt-1 text-center ${
+                                                    userCurrentVote === 'RESOLVED' ? 'text-green-100' : 'text-gray-500'
+                                                }`}>
+                                                    Masalah selesai
+                                                </span>
                                             </motion.button>
 
                                             <motion.button
-                                                className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
                                                     userCurrentVote === 'ON_PROGRESS'
-                                                        ? 'bg-yellow-600 text-white shadow-inner'
-                                                        : 'bg-gray-100 text-yellow-700 hover:bg-yellow-50'
-                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                        ? 'bg-yellow-600 text-white border-yellow-700 shadow-lg scale-105'
+                                                        : 'bg-white text-yellow-700 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 shadow-sm'
+                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                 onClick={() => handleVote('ON_PROGRESS')}
                                                 disabled={isLoading}
-                                                animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.02, 1] } : {}}
+                                                animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.05, 1] } : {}}
                                                 transition={{ duration: 0.3 }}
-                                                whileTap={{ scale: 0.98 }}
+                                                whileTap={{ scale: isLoading ? 1 : 0.98 }}
                                             >
-                                                <RiProgress3Fill className="w-4 h-4" />
-                                                <span className="text-sm">Dalam Proses</span>
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                    userCurrentVote === 'ON_PROGRESS'
+                                                        ? 'bg-white/20'
+                                                        : 'bg-yellow-100'
+                                                }`}>
+                                                    <RiProgress3Fill className={`w-6 h-6 ${
+                                                        userCurrentVote === 'ON_PROGRESS' ? 'text-white' : 'text-yellow-600'
+                                                    }`} />
+                                                </div>
+                                                <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                    Dalam Proses
+                                                </span>
+                                                <span className={`text-xs mt-1 text-center ${
+                                                    userCurrentVote === 'ON_PROGRESS' ? 'text-yellow-100' : 'text-gray-500'
+                                                }`}>
+                                                    Sedang ditangani
+                                                </span>
                                             </motion.button>
 
                                             <motion.button
-                                                className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
                                                     userCurrentVote === 'NOT_RESOLVED'
-                                                        ? 'bg-red-600 text-white shadow-inner'
-                                                        : 'bg-gray-100 text-red-700 hover:bg-red-50'
-                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                        ? 'bg-red-600 text-white border-red-700 shadow-lg scale-105'
+                                                        : 'bg-white text-red-700 border-gray-200 hover:border-red-300 hover:bg-red-50 shadow-sm'
+                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                 onClick={() => handleVote('NOT_RESOLVED')}
                                                 disabled={isLoading}
-                                                animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
+                                                animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
                                                 transition={{ duration: 0.3 }}
-                                                whileTap={{ scale: 0.98 }}
+                                                whileTap={{ scale: isLoading ? 1 : 0.98 }}
                                             >
-                                                <FaTimes className="w-4 h-4" />
-                                                <span className="text-sm">Tidak Ada</span>
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                    userCurrentVote === 'NOT_RESOLVED'
+                                                        ? 'bg-white/20'
+                                                        : 'bg-red-100'
+                                                }`}>
+                                                    <FaTimes className={`w-6 h-6 ${
+                                                        userCurrentVote === 'NOT_RESOLVED' ? 'text-white' : 'text-red-600'
+                                                    }`} />
+                                                </div>
+                                                <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                    Tidak Ada Proses
+                                                </span>
+                                                <span className={`text-xs mt-1 text-center ${
+                                                    userCurrentVote === 'NOT_RESOLVED' ? 'text-red-100' : 'text-gray-500'
+                                                }`}>
+                                                    Belum ditangani
+                                                </span>
                                             </motion.button>
                                         </div>
                                     </>
                                 )}
 
                                 {userCurrentVote && !isReportResolved && (
-                                    <div className="mt-3 text-center bg-gray-100 rounded-lg p-3 border border-gray-200">
-                                        <p className="text-sm text-gray-700">
-                                            Anda memilih: <span className="font-bold text-gray-900">
-                                                {userCurrentVote === 'RESOLVED' && '✓ Terselesaikan'}
-                                                {userCurrentVote === 'ON_PROGRESS' && '-> Dalam Proses'}
-                                                {userCurrentVote === 'NOT_RESOLVED' && '✗ Tidak Ada Perkembangan'}
-                                            </span>
-                                        </p>
+                                    <div className="mt-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 shadow-sm">
+                                        <div className="flex items-center justify-center space-x-2">
+                                            <div className="flex-1">
+                                                <p className="text-sm text-gray-700">
+                                                    Pendapat Anda: <span className={`font-bold ${
+                                                        userCurrentVote === 'RESOLVED' 
+                                                            ? 'text-green-700' 
+                                                            : userCurrentVote === 'ON_PROGRESS'
+                                                            ? 'text-yellow-700'
+                                                            : 'text-red-700'
+                                                    }`}>
+                                                        {userCurrentVote === 'RESOLVED' && 'Terselesaikan'}
+                                                        {userCurrentVote === 'ON_PROGRESS' && 'Dalam Proses'}
+                                                        {userCurrentVote === 'NOT_RESOLVED' && 'Tidak Ada Proses'}
+                                                    </span>
+                                                </p>
+                                                <p className="text-xs text-gray-500 mt-0.5">
+                                                    Klik lagi untuk mengubah pendapat
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>

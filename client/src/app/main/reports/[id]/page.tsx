@@ -190,7 +190,7 @@ const ReportDetailPage = () => {
         ? report.comments 
         : dummyComments;
     
-    const [viewMode, setViewMode] = useState<'attachment' | 'map'>('attachment');
+    const [viewMode, setViewMode] = useState<'attachment' | 'map'>('map');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -515,17 +515,6 @@ const ReportDetailPage = () => {
                                     <div className="flex items-center justify-center">
                                         <div className="inline-flex items-center w-full max-w-md rounded-lg overflow-hidden shadow-sm">
                                             <button
-                                                onClick={() => setViewMode('attachment')}
-                                                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium transition-all duration-200 ${
-                                                    viewMode === 'attachment'
-                                                        ? 'bg-gray-400 text-white'
-                                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                }`}
-                                            >
-                                                <FaImage className="w-4 h-4" />
-                                                <span>Lampiran</span>
-                                            </button>
-                                            <button
                                                 onClick={() => setViewMode('map')}
                                                 className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium transition-all duration-200 ${
                                                     viewMode === 'map'
@@ -535,6 +524,17 @@ const ReportDetailPage = () => {
                                             >
                                                 <FaMap className="w-4 h-4" />
                                                 <span>Peta</span>
+                                            </button>
+                                            <button
+                                                onClick={() => setViewMode('attachment')}
+                                                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium transition-all duration-200 ${
+                                                    viewMode === 'attachment'
+                                                        ? 'bg-gray-400 text-white'
+                                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                }`}
+                                            >
+                                                <FaImage className="w-4 h-4" />
+                                                <span>Lampiran</span>
                                             </button>
                                         </div>
                                     </div>
@@ -935,7 +935,10 @@ const ReportDetailPage = () => {
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Distribusi Vote</p>
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between text-sm">
-                                            <span className="font-medium text-green-700">Terselesaikan</span>
+                                            <div className='flex gap-2 font-medium text-green-700 items-center'>
+                                                                                                                <FaCheck/>
+                                                                                                                <span className="">Terselesaikan</span>
+                                                                                                            </div>
                                             <span className="text-gray-600 font-semibold">{report.totalResolvedVotes} ({resolvedPercentage.toFixed(0)}%)</span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
@@ -947,7 +950,10 @@ const ReportDetailPage = () => {
                                     </div>
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between text-sm">
-                                            <span className="font-medium text-yellow-700">Dalam Proses</span>
+                                            <div className='flex gap-2 font-medium text-yellow-700 items-center'>
+                                                                                                                <RiProgress3Fill/>
+                                                                                                                <span className="">Dalam Proses</span>
+                                                                                                            </div>
                                             <span className="text-gray-600 font-semibold">{report.totalOnProgressVotes} ({onProgressPercentage.toFixed(0)}%)</span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
@@ -959,7 +965,10 @@ const ReportDetailPage = () => {
                                     </div>
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between text-sm">
-                                            <span className="font-medium text-red-700">Tidak Ada Proses</span>
+                                            <div className='flex items-center gap-2 font-medium text-red-700'>
+                                                                                                                <FaTimes/>
+                                                                                                                <span className="">Tidak Ada Proses</span>
+                                                                                                            </div>
                                             <span className="text-gray-600 font-semibold">{report.totalNotResolvedVotes} ({notResolvedPercentage.toFixed(0)}%)</span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
@@ -1031,59 +1040,107 @@ const ReportDetailPage = () => {
                                         <>
                                             {!isReportOwner && (
                                                 <>
-                                                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                                                        <p className="text-sm text-blue-800 font-medium text-center">
-                                                            Bagaimana pendapat Anda tentang perkembangan laporan ini?
+                                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
+                                                        <p className="text-sm text-blue-800 font-bold text-center">
+                                                            Bagaimana pendapat Anda tentang laporan ini?
+                                                        </p>
+                                                        <p className="text-xs text-blue-600 text-center mt-1">
+                                                            Pilih salah satu untuk memberikan pendapat
                                                         </p>
                                                     </div>
                                                     
-                                                    <div className="inline-flex items-center w-full rounded-xl overflow-hidden shadow-md border border-gray-200">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                                         <motion.button
-                                                            className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                            className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
                                                                 userCurrentVote === 'RESOLVED'
-                                                                    ? 'bg-green-600 text-white shadow-inner'
-                                                                    : 'bg-gray-100 text-green-700 hover:bg-green-50'
-                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                    ? 'bg-green-600 text-white border-green-700 shadow-lg scale-105'
+                                                                    : 'bg-white text-green-700 border-gray-200 hover:border-green-300 hover:bg-green-50 shadow-sm'
+                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                             onClick={() => handleVote('RESOLVED')}
                                                             disabled={isLoading}
-                                                            animate={animateButton === 'RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
+                                                            animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
                                                             transition={{ duration: 0.3 }}
-                                                            whileTap={{ scale: 0.98 }}
+                                                            whileTap={{ scale: isLoading ? 1 : 0.98 }}
                                                         >
-                                                            <FaCheck className="w-4 h-4" />
-                                                            <span className="text-sm">Terselesaikan</span>
+                                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                                userCurrentVote === 'RESOLVED'
+                                                                    ? 'bg-white/20'
+                                                                    : 'bg-green-100'
+                                                            }`}>
+                                                                <FaCheck className={`w-6 h-6 ${
+                                                                    userCurrentVote === 'RESOLVED' ? 'text-white' : 'text-green-600'
+                                                                }`} />
+                                                            </div>
+                                                            <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                                Terselesaikan
+                                                            </span>
+                                                            <span className={`text-xs mt-1 text-center ${
+                                                                userCurrentVote === 'RESOLVED' ? 'text-green-100' : 'text-gray-500'
+                                                            }`}>
+                                                                Masalah selesai
+                                                            </span>
                                                         </motion.button>
 
                                                         <motion.button
-                                                            className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                            className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
                                                                 userCurrentVote === 'ON_PROGRESS'
-                                                                    ? 'bg-yellow-600 text-white shadow-inner'
-                                                                    : 'bg-gray-100 text-yellow-700 hover:bg-yellow-50'
-                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                    ? 'bg-yellow-600 text-white border-yellow-700 shadow-lg scale-105'
+                                                                    : 'bg-white text-yellow-700 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 shadow-sm'
+                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                             onClick={() => handleVote('ON_PROGRESS')}
                                                             disabled={isLoading}
-                                                            animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.02, 1] } : {}}
+                                                            animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.05, 1] } : {}}
                                                             transition={{ duration: 0.3 }}
-                                                            whileTap={{ scale: 0.98 }}
+                                                            whileTap={{ scale: isLoading ? 1 : 0.98 }}
                                                         >
-                                                            <RiProgress3Fill className="w-4 h-4" />
-                                                            <span className="text-sm">Dalam Proses</span>
+                                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                                userCurrentVote === 'ON_PROGRESS'
+                                                                    ? 'bg-white/20'
+                                                                    : 'bg-yellow-100'
+                                                            }`}>
+                                                                <RiProgress3Fill className={`w-6 h-6 ${
+                                                                    userCurrentVote === 'ON_PROGRESS' ? 'text-white' : 'text-yellow-600'
+                                                                }`} />
+                                                            </div>
+                                                            <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                                Dalam Proses
+                                                            </span>
+                                                            <span className={`text-xs mt-1 text-center ${
+                                                                userCurrentVote === 'ON_PROGRESS' ? 'text-yellow-100' : 'text-gray-500'
+                                                            }`}>
+                                                                Sedang ditangani
+                                                            </span>
                                                         </motion.button>
 
                                                         <motion.button
-                                                            className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                            className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
                                                                 userCurrentVote === 'NOT_RESOLVED'
-                                                                    ? 'bg-red-600 text-white shadow-inner'
-                                                                    : 'bg-gray-100 text-red-700 hover:bg-red-50'
-                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                    ? 'bg-red-600 text-white border-red-700 shadow-lg scale-105'
+                                                                    : 'bg-white text-red-700 border-gray-200 hover:border-red-300 hover:bg-red-50 shadow-sm'
+                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                                             onClick={() => handleVote('NOT_RESOLVED')}
                                                             disabled={isLoading}
-                                                            animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
+                                                            animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
                                                             transition={{ duration: 0.3 }}
-                                                            whileTap={{ scale: 0.98 }}
+                                                            whileTap={{ scale: isLoading ? 1 : 0.98 }}
                                                         >
-                                                            <FaTimes className="w-4 h-4" />
-                                                            <span className="text-sm">Tidak Ada</span>
+                                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                                userCurrentVote === 'NOT_RESOLVED'
+                                                                    ? 'bg-white/20'
+                                                                    : 'bg-red-100'
+                                                            }`}>
+                                                                <FaTimes className={`w-6 h-6 ${
+                                                                    userCurrentVote === 'NOT_RESOLVED' ? 'text-white' : 'text-red-600'
+                                                                }`} />
+                                                            </div>
+                                                            <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                                Tidak Ada Proses
+                                                            </span>
+                                                            <span className={`text-xs mt-1 text-center ${
+                                                                userCurrentVote === 'NOT_RESOLVED' ? 'text-red-100' : 'text-gray-500'
+                                                            }`}>
+                                                                Belum ditangani
+                                                            </span>
                                                         </motion.button>
                                                     </div>
                                                 </>
@@ -1092,14 +1149,38 @@ const ReportDetailPage = () => {
                                     )}
 
                                     {userCurrentVote && !isReportResolved && (
-                                        <div className="mt-3 text-center bg-gray-100 rounded-lg p-3 border border-gray-200">
-                                            <p className="text-sm text-gray-700">
-                                                Anda memilih: <span className="font-bold text-gray-900">
-                                                    {userCurrentVote === 'RESOLVED' && '✓ Terselesaikan'}
-                                                    {userCurrentVote === 'ON_PROGRESS' && '-> Dalam Proses'}
-                                                    {userCurrentVote === 'NOT_RESOLVED' && '✗ Tidak Ada Perkembangan'}
-                                                </span>
-                                            </p>
+                                        <div className="mt-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 shadow-sm">
+                                            <div className="flex items-center justify-center space-x-2">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                                    userCurrentVote === 'RESOLVED' 
+                                                        ? 'bg-green-100' 
+                                                        : userCurrentVote === 'ON_PROGRESS'
+                                                        ? 'bg-yellow-100'
+                                                        : 'bg-red-100'
+                                                }`}>
+                                                    {userCurrentVote === 'RESOLVED' && <FaCheck className="w-4 h-4 text-green-600" />}
+                                                    {userCurrentVote === 'ON_PROGRESS' && <RiProgress3Fill className="w-4 h-4 text-yellow-600" />}
+                                                    {userCurrentVote === 'NOT_RESOLVED' && <FaTimes className="w-4 h-4 text-red-600" />}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-700">
+                                                        Pendapat Anda: <span className={`font-bold ${
+                                                            userCurrentVote === 'RESOLVED' 
+                                                                ? 'text-green-700' 
+                                                                : userCurrentVote === 'ON_PROGRESS'
+                                                                ? 'text-yellow-700'
+                                                                : 'text-red-700'
+                                                        }`}>
+                                                            {userCurrentVote === 'RESOLVED' && 'Terselesaikan'}
+                                                            {userCurrentVote === 'ON_PROGRESS' && 'Dalam Proses'}
+                                                            {userCurrentVote === 'NOT_RESOLVED' && 'Tidak Ada Proses'}
+                                                        </span>
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">
+                                                        Klik lagi untuk mengubah pendapat
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                             </div>
