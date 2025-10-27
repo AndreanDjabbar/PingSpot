@@ -3,11 +3,13 @@ import ToggleSwitch from "./ToggleSwitch";
 import EmptyState from "./EmptyState";
 import Accordion from "./Accordion";
 import Stepper from "./Stepper";
+import Guide from "./Guide";
 
 export {
     PingspotLogo,
     ToggleSwitch,
     EmptyState,
     Accordion,
-    Stepper
+    Stepper,
+    Guide
 }
