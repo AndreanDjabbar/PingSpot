@@ -170,7 +170,7 @@ func FormatUploadProgressReportValidationErrors(err error) map[string]string {
 					errors["status"] = "Status wajib diisi"
 				}
 				if e.Tag() == "oneof" {
-					errors["status"] = "Status harus salah satu antara RESOLVED, NOT_RESOLVED"
+					errors["status"] = "Status harus salah satu antara RESOLVED, NOT_RESOLVED, ON_PROGRESS"
 				}
 			case "Notes":
 				if e.Tag() == "omitempty" {

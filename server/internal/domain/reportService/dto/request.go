@@ -35,7 +35,7 @@ type VoteReportRequest struct {
 }
 
 type UploadProgressReportRequest struct {
-	Status      string  `json:"status" validate:"required,oneof=RESOLVED NOT_RESOLVED"`
+	Status      string  `json:"status" validate:"required,oneof=RESOLVED NOT_RESOLVED ON_PROGRESS"`
 	Notes       string  `json:"notes" validate:"omitempty"`
 	Attachment1 *string `json:"attachment1" validate:"omitempty,max=255"`
 	Attachment2 *string `json:"attachment2" validate:"omitempty,max=255"`
