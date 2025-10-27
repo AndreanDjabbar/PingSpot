@@ -6,6 +6,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaImage, FaMap, FaTimes, FaCheck } from 'react-icons/fa';
 import { BsThreeDots } from 'react-icons/bs';
+import { IoDocumentText } from "react-icons/io5";
 import { BiEdit, BiSend, BiX } from 'react-icons/bi';
 import { MdDone } from "react-icons/md";
 import 'leaflet/dist/leaflet.css';
@@ -155,12 +156,28 @@ const ReportDetailPage = () => {
     const notResolvedPercentage = totalVotes > 0 ? ((report?.totalNotResolvedVotes || 0) / totalVotes) * 100 : 0;
     
     const isReportResolved = report?.reportStatus === 'RESOLVED';
+    
+    const calculateMajorityVote = () => {
+        const resolvedVotes = report?.totalResolvedVotes || 0;
+        const onProgressVotes = report?.totalOnProgressVotes || 0;
+        const notResolvedVotes = report?.totalNotResolvedVotes || 0;
+        
+        const maxVotes = Math.max(resolvedVotes, onProgressVotes, notResolvedVotes);
+        
+        if (maxVotes === 0) return null;
+        
+        if (resolvedVotes === maxVotes) return 'RESOLVED';
+        if (onProgressVotes === maxVotes) return 'ON_PROGRESS';
+        return 'NOT_RESOLVED';
+    };
+    
+    const majorityVote = calculateMajorityVote();
     const majorityPercentage = 
-    report?.majorityVote === 'RESOLVED'
-        ? resolvedPercentage
-        : report?.majorityVote === 'ON_PROGRESS'
-            ? onProgressPercentage
-            : notResolvedPercentage;
+        majorityVote === 'RESOLVED'
+            ? resolvedPercentage
+            : majorityVote === 'ON_PROGRESS'
+                ? onProgressPercentage
+                : notResolvedPercentage;
 
     const userCurrentVote = report?.isResolvedByCurrentUser 
         ? 'RESOLVED'
@@ -169,8 +186,6 @@ const ReportDetailPage = () => {
             : report?.isOnProgressByCurrentUser
                 ? 'ON_PROGRESS'
                 : null
-                console.log("FRESH REPORT DATA", report);
-    console.log("CURRENT USER VOTE", userCurrentVote);
     
     const displayComments = report?.comments && report.comments.length > 0 
         ? report.comments 
@@ -375,19 +390,6 @@ const ReportDetailPage = () => {
             refetch();
         }
     }, [isVoteReportError, refetch]);
-
-    const getReportStatusLabel = (status: string): { label: string; color: string } => {
-        switch (status) {
-            case 'RESOLVED':
-                return { label: 'Terselesaikan', color: 'green' };
-            case 'ON_PROGRESS':
-                return { label: 'Dalam Proses', color: 'yellow' };
-            case 'NOT_RESOLVED':
-                return { label: 'Tidak Ada Proses', color: 'red' };
-            default:
-                return { label: 'Menunggu', color: 'gray' };
-        }
-    };
 
     const handleSubmitComment = async () => {
         if (!newComment.trim() || isSubmitting) return;
@@ -701,10 +703,12 @@ const ReportDetailPage = () => {
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</p>
                                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                                         report.reportStatus === 'RESOLVED' ? 'bg-green-100 text-green-800' :
+                                        report.reportStatus === 'NOT_RESOLVED' ? 'bg-red-100 text-red-800' :
                                         report.reportStatus === 'ON_PROGRESS' ? 'bg-yellow-100 text-yellow-800' :
                                         'bg-gray-100 text-gray-800'
                                     }`}>
                                         {report.reportStatus === 'RESOLVED' ? 'Terselesaikan' :
+                                        report.reportStatus === 'NOT_RESOLVED' ? 'Belum Terselesaikan' :
                                         report.reportStatus === 'ON_PROGRESS' ? 'Dalam Proses' : 'Menunggu'}
                                     </span>
                                 </div>
@@ -908,9 +912,7 @@ const ReportDetailPage = () => {
                             ) : (
                                 <div className="text-center py-8">
                                     <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-                                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
+                                        <IoDocumentText size={32}/>
                                     </div>
                                     <p className="text-sm font-medium text-gray-900 mb-1">Belum Ada Perkembangan</p>
                                     <p className="text-xs text-gray-500">
@@ -972,13 +974,41 @@ const ReportDetailPage = () => {
 
                                 <div className="h-px bg-gray-200"></div>
 
-                                <div className="bg-green-50 rounded-lg p-3 border border-green-100">
-                                    <p className={`text-xs font-semibold uppercase tracking-wide mb-1 text-${getReportStatusLabel(report?.majorityVote || '').color}-700`}>Vote Mayoritas</p>
+                                <div className={`rounded-lg p-3 border transition-all duration-500 ${
+                                    majorityVote === 'RESOLVED' 
+                                        ? 'bg-green-50 border-green-100' 
+                                        : majorityVote === 'ON_PROGRESS'
+                                        ? 'bg-yellow-50 border-yellow-100'
+                                        : 'bg-red-50 border-red-100'
+                                }`}>
+                                    <p className={`text-xs font-semibold uppercase tracking-wide mb-1 transition-colors duration-500 ${
+                                        majorityVote === 'RESOLVED'
+                                            ? 'text-green-700'
+                                            : majorityVote === 'ON_PROGRESS'
+                                            ? 'text-yellow-700'
+                                            : 'text-red-700'
+                                    }`}>Vote Mayoritas</p>
                                     <div className="flex items-center gap-2">
-                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold text-${getReportStatusLabel(report?.majorityVote || '').color}-700 bg-green-100`}>
-                                            {getReportStatusLabel(report?.majorityVote || '').label}
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold transition-colors duration-500 ${
+                                            majorityVote === 'RESOLVED'
+                                                ? 'bg-green-100 text-green-700'
+                                                : majorityVote === 'ON_PROGRESS'
+                                                ? 'bg-yellow-100 text-yellow-700'
+                                                : 'bg-red-100 text-red-700'
+                                        }`}>
+                                            {majorityVote === 'RESOLVED' 
+                                                ? 'Terselesaikan' 
+                                                : majorityVote === 'ON_PROGRESS'
+                                                ? 'Dalam Proses'
+                                                : 'Tidak Ada Proses'}   
                                         </span>
-                                        <span className={`text-sm text-${getReportStatusLabel(report?.majorityVote || '').color}-700 font-medium`}>{majorityPercentage}% pengguna</span>
+                                        <span className={`text-sm font-medium transition-colors duration-500 ${
+                                            majorityVote === 'RESOLVED'
+                                                ? 'text-green-700'
+                                                : majorityVote === 'ON_PROGRESS'
+                                                ? 'text-yellow-700'
+                                                : 'text-red-700'
+                                        }`}>{majorityPercentage.toFixed(0)}% pengguna</span>
                                     </div>
                                 </div>
                             </div>
@@ -1000,61 +1030,65 @@ const ReportDetailPage = () => {
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                                                <p className="text-sm text-blue-800 font-medium text-center">
-                                                    Bagaimana pendapat Anda tentang perkembangan laporan ini?
-                                                </p>
-                                            </div>
-                                            
-                                            <div className="inline-flex items-center w-full rounded-xl overflow-hidden shadow-md border border-gray-200">
-                                                <motion.button
-                                                    className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
-                                                        userCurrentVote === 'RESOLVED'
-                                                            ? 'bg-green-600 text-white shadow-inner'
-                                                            : 'bg-gray-100 text-green-700 hover:bg-green-50'
-                                                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    onClick={() => handleVote('RESOLVED')}
-                                                    disabled={isLoading}
-                                                    animate={animateButton === 'RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
-                                                    transition={{ duration: 0.3 }}
-                                                    whileTap={{ scale: 0.98 }}
-                                                >
-                                                    <FaCheck className="w-4 h-4" />
-                                                    <span className="text-sm">Terselesaikan</span>
-                                                </motion.button>
+                                            {!isReportOwner && (
+                                                <>
+                                                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                                                        <p className="text-sm text-blue-800 font-medium text-center">
+                                                            Bagaimana pendapat Anda tentang perkembangan laporan ini?
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div className="inline-flex items-center w-full rounded-xl overflow-hidden shadow-md border border-gray-200">
+                                                        <motion.button
+                                                            className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                                userCurrentVote === 'RESOLVED'
+                                                                    ? 'bg-green-600 text-white shadow-inner'
+                                                                    : 'bg-gray-100 text-green-700 hover:bg-green-50'
+                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                            onClick={() => handleVote('RESOLVED')}
+                                                            disabled={isLoading}
+                                                            animate={animateButton === 'RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
+                                                            transition={{ duration: 0.3 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                        >
+                                                            <FaCheck className="w-4 h-4" />
+                                                            <span className="text-sm">Terselesaikan</span>
+                                                        </motion.button>
 
-                                                <motion.button
-                                                    className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
-                                                        userCurrentVote === 'ON_PROGRESS'
-                                                            ? 'bg-yellow-600 text-white shadow-inner'
-                                                            : 'bg-gray-100 text-yellow-700 hover:bg-yellow-50'
-                                                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    onClick={() => handleVote('ON_PROGRESS')}
-                                                    disabled={isLoading}
-                                                    animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.02, 1] } : {}}
-                                                    transition={{ duration: 0.3 }}
-                                                    whileTap={{ scale: 0.98 }}
-                                                >
-                                                    <RiProgress3Fill className="w-4 h-4" />
-                                                    <span className="text-sm">Dalam Proses</span>
-                                                </motion.button>
+                                                        <motion.button
+                                                            className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                                userCurrentVote === 'ON_PROGRESS'
+                                                                    ? 'bg-yellow-600 text-white shadow-inner'
+                                                                    : 'bg-gray-100 text-yellow-700 hover:bg-yellow-50'
+                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                            onClick={() => handleVote('ON_PROGRESS')}
+                                                            disabled={isLoading}
+                                                            animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.02, 1] } : {}}
+                                                            transition={{ duration: 0.3 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                        >
+                                                            <RiProgress3Fill className="w-4 h-4" />
+                                                            <span className="text-sm">Dalam Proses</span>
+                                                        </motion.button>
 
-                                                <motion.button
-                                                    className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
-                                                        userCurrentVote === 'NOT_RESOLVED'
-                                                            ? 'bg-red-600 text-white shadow-inner'
-                                                            : 'bg-gray-100 text-red-700 hover:bg-red-50'
-                                                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    onClick={() => handleVote('NOT_RESOLVED')}
-                                                    disabled={isLoading}
-                                                    animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
-                                                    transition={{ duration: 0.3 }}
-                                                    whileTap={{ scale: 0.98 }}
-                                                >
-                                                    <FaTimes className="w-4 h-4" />
-                                                    <span className="text-sm">Tidak Ada</span>
-                                                </motion.button>
-                                            </div>
+                                                        <motion.button
+                                                            className={`flex-1 flex items-center justify-center space-x-2 px-2 py-4 font-semibold transition-all duration-200 ${
+                                                                userCurrentVote === 'NOT_RESOLVED'
+                                                                    ? 'bg-red-600 text-white shadow-inner'
+                                                                    : 'bg-gray-100 text-red-700 hover:bg-red-50'
+                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                            onClick={() => handleVote('NOT_RESOLVED')}
+                                                            disabled={isLoading}
+                                                            animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.02, 1] } : {}}
+                                                            transition={{ duration: 0.3 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                        >
+                                                            <FaTimes className="w-4 h-4" />
+                                                            <span className="text-sm">Tidak Ada</span>
+                                                        </motion.button>
+                                                    </div>
+                                                </>
+                                            )}
                                         </>
                                     )}
 
