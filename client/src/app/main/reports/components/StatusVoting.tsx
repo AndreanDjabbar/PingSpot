@@ -59,8 +59,6 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const { userProfile } = useUserProfileStore();
     
     const report = reports.find(r => r.id === reportID);
-    const selectedReport = reports.find((report) => report.reportTitle.includes("Aansda"));
-    console.log('Report in StatusVoting:', selectedReport);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
     const isReportResolved = (report?.reportStatus ?? currentStatus) === 'RESOLVED';

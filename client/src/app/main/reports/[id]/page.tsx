@@ -49,12 +49,11 @@ const getReportImages = (images: IReportImage): string[] => {
     ].filter((url): url is string => typeof url === 'string');
 };
 
-// Dummy comments data
 const dummyComments: ICommentType[] = [
     {
         id: 1,
         content: "Terima kasih laporannya! Saya juga merasakan hal yang sama di area tersebut. Semoga segera ditindaklanjuti oleh pihak terkait.",
-        createdAt: Date.now() - 86400000, // 1 day ago
+        createdAt: Date.now() - 86400000,
         updatedAt: Date.now() - 86400000,
         userId: 101,
         userName: "budisantoso",
@@ -65,7 +64,7 @@ const dummyComments: ICommentType[] = [
             {
                 id: 4,
                 content: "Setuju! Saya sudah melapor juga beberapa kali tapi belum ada tindakan.",
-                createdAt: Date.now() - 43200000, // 12 hours ago
+                createdAt: Date.now() - 43200000,
                 updatedAt: Date.now() - 43200000,
                 userId: 104,
                 userName: "dewilestari",
@@ -78,7 +77,7 @@ const dummyComments: ICommentType[] = [
     {
         id: 2,
         content: "Lokasi ini memang sudah lama bermasalah. Sudah beberapa kali saya lewat dan kondisinya semakin parah. Tolong segera diperbaiki 🙏",
-        createdAt: Date.now() - 172800000, // 2 days ago
+        createdAt: Date.now() - 172800000,
         updatedAt: Date.now() - 172800000,
         userId: 102,
         userName: "sitinurhayati",
@@ -195,7 +194,7 @@ const ReportDetailPage = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const customCurrentPath = `/main/reports/${report?.reportTitle}`;
+    const customCurrentPath = `/main/reports/${report?.id}`;
 
     const images = getReportImages(
         report?.images ?? { id: 0, reportID: 0 }
