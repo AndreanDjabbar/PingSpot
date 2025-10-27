@@ -37,14 +37,14 @@
 
         return (
             <nav
-            className="flex items-center text-3xl text-gray-600"
+            className="flex items-center text-2xl text-gray-600"
             aria-label="Breadcrumb"
             >
             {items.map((item, idx) => (
                 <div key={idx} className="flex items-center">
                 {idx > 0 && (
                     <HiChevronRight 
-                    className="mx-2 text-gray-400"
+                    className="mx-1 text-gray-400"
                     size={30} />
                 )}
                 {idx < items.length - 1 ? (
