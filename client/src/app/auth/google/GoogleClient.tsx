@@ -6,8 +6,10 @@ import { SuccessSection } from '@/components/feedback';
 
 const GoogleAuthClient = () => {
     const searchParams = useSearchParams();
-    const token = searchParams.get('token');
     const router = useRouter();
+
+    const token = searchParams.get('token');
+
     const { toastSuccess } = useToast();
 
     useEffect(() => {

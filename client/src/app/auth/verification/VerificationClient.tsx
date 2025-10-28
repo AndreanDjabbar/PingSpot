@@ -12,18 +12,19 @@ import { IVerificationRequest } from '@/types/api/auth';
 
 const VerificationClient = () => {
     const searchParams = useSearchParams();
+    const router = useRouter();
+
     const code1 = searchParams.get('code1');
     const userId = searchParams.get('userId');
     const code2 = searchParams.get('code2');
-    const router = useRouter();
-    
+
+    const { mutate, isPending, isError, isSuccess, error, data } = useVerification();
+
     const { 
         formState: { } 
     } = useForm<IVerificationRequest>({
         resolver: zodResolver(VerificationSchema)
     });
-    
-    const { mutate, isPending, isError, isSuccess, error, data } = useVerification();
 
     useErrorToast(isError, error);
     useSuccessToast(isSuccess, data);

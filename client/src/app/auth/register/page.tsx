@@ -16,6 +16,10 @@ import { useErrorToast, useSuccessToast } from "@/hooks/toast";
 import { SuccessSection, ErrorSection } from "@/components/feedback";
 
 const RegisterPage = () => {
+    const router = useRouter();
+
+    const { mutate, isPending, isError, isSuccess, error, data } = useRegister();
+
     const { 
         register, 
         handleSubmit, 
@@ -23,8 +27,10 @@ const RegisterPage = () => {
     } = useForm<IRegisterRequest>({
         resolver: zodResolver(RegisterSchema)
     });
-    const { mutate, isPending, isError, isSuccess, error, data } = useRegister();
-    const router = useRouter();
+
+    const onSubmit = (data: IRegisterRequest) => {
+        mutate({ ...data, provider: "EMAIL" });
+    };
 
     useErrorToast(isError, error);
     useSuccessToast(isSuccess, data);
@@ -36,10 +42,6 @@ const RegisterPage = () => {
             }, 1000);
         }
     }, [isSuccess, data, router]);
-
-    const onSubmit = (data: IRegisterRequest) => {
-        mutate({ ...data, provider: "EMAIL" });
-    };
 
     return (
         <div className="space-y-8 mb-8">

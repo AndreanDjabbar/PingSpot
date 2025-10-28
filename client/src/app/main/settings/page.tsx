@@ -17,32 +17,23 @@ import { ToggleSwitch } from '@/components/UI';
 const SettingsPage = () => {
     const router = useRouter();
     const currentPath = usePathname();
+
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
-    
     const [selectedLanguage, setSelectedLanguage] = useState('id');
+
+    const user = useUserProfileStore(state => state.userProfile);
+    const { openConfirm } = useConfirmationModalStore();
+
+    const { mutate: logout, isPending, isError, error, isSuccess, data } = useLogout();
+
     const languages = [
         { code: 'id', name: 'Bahasa Indonesia' },
         { code: 'en', name: 'English' },
     ];
-    const { mutate: logout, isPending, isError, error, isSuccess, data } = useLogout();
-    const user = useUserProfileStore(state => state.userProfile);
-    const { openConfirm } = useConfirmationModalStore();
-    
-    useErrorToast(isError, error);
-    useSuccessToast(isSuccess, data);
 
-    useEffect(() => {
-        if (isSuccess) {
-            document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
-            setTimeout(() => {
-                router.push("/auth/login");
-            }, 1000);
-        }
-    }, [isSuccess, router]);
-
-    const handleLogout = () => {
-        confirmationModal();
+    const handleLanguageChange = (langCode: string) => {
+        setSelectedLanguage(langCode);
     };
 
     const confirmationModal = () => {
@@ -69,9 +60,21 @@ const SettingsPage = () => {
         }
     };
 
-    const handleLanguageChange = (langCode: string) => {
-        setSelectedLanguage(langCode);
+    const handleLogout = () => {
+        confirmationModal();
     };
+
+    useErrorToast(isError, error);
+    useSuccessToast(isSuccess, data);
+
+    useEffect(() => {
+        if (isSuccess) {
+            document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
+            setTimeout(() => {
+                router.push("/auth/login");
+            }, 1000);
+        }
+    }, [isSuccess, router]);
     
     return (
         <div className="space-y-8">

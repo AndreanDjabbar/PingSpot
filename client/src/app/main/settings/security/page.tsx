@@ -18,8 +18,15 @@ import { IoKey } from 'react-icons/io5';
 import { useConfirmationModalStore } from '@/stores';
 
 const SecurityPage = () => {
+    const currentPath = usePathname();
+    const router = useRouter();
+
     const [securityData, setSecurityData] = useState<ISaveSecurityRequest | null>(null);
-    const {openConfirm} = useConfirmationModalStore();
+
+    const { openConfirm } = useConfirmationModalStore();
+
+    const { mutate, isPending, isError, isSuccess, error, data } = useSaveSecurity();
+    const { mutate: logout, isSuccess: isLogoutSuccess } = useLogout();
 
     const { 
         register, 
@@ -28,12 +35,7 @@ const SecurityPage = () => {
     } = useForm<ISaveSecurityRequest>({
         resolver: zodResolver(SaveSecuritySchema),
     });
-    
-    const { mutate, isPending, isError, isSuccess, error, data } = useSaveSecurity();
-    const { mutate: logout, isSuccess: isLogoutSuccess } = useLogout();
-    const currentPath = usePathname();
-    const router = useRouter();
-    
+
     const confirmationModal = () => {
         openConfirm({
             type: "info",
@@ -59,6 +61,9 @@ const SecurityPage = () => {
         }
     }
 
+    useErrorToast(isError, error);
+    useSuccessToast(isSuccess, data);
+
     useEffect(() => {
         if (isSuccess && data) {
             logout();
@@ -73,9 +78,6 @@ const SecurityPage = () => {
             }, 1000)
         }
     }, [isLogoutSuccess, router]);
-
-    useErrorToast(isError, error);
-    useSuccessToast(isSuccess, data);
 
     return (
         <div className="space-y-8">

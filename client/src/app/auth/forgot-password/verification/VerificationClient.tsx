@@ -15,18 +15,11 @@ import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 
 const VerificationClient = () => {
     const searchParams = useSearchParams();
+    const router = useRouter();
+
     const code = searchParams.get('code');
     const email = searchParams.get('email');
-    const router = useRouter();
-    
-    const { 
-        register, 
-        handleSubmit, 
-        formState: { errors } 
-    } = useForm<IForgotPasswordResetPasswordRequest>({
-        resolver: zodResolver(ForgotPasswordResetPasswordSchema)
-    });
-    
+
     const { mutate: resetPassword, isPending, isError, isSuccess, error, data } = useResetPassword();
     const { 
         mutate: verifyLink, 
@@ -35,6 +28,21 @@ const VerificationClient = () => {
         isSuccess: isSuccessVerify, 
         error: errorVerify, 
     } = useLinkVerification();
+
+    const { 
+        register, 
+        handleSubmit, 
+        formState: { errors } 
+    } = useForm<IForgotPasswordResetPasswordRequest>({
+        resolver: zodResolver(ForgotPasswordResetPasswordSchema)
+    });
+
+    const onSubmit = (formData: IForgotPasswordResetPasswordRequest) => {
+        resetPassword({ 
+            ...formData,
+            email: email || '',
+        });
+    };
 
     useErrorToast(isError, error);
     useErrorToast(isErrorVerify, errorVerify);
@@ -109,13 +117,6 @@ const VerificationClient = () => {
             </div>
         );
     }
-
-    const onSubmit = (formData: IForgotPasswordResetPasswordRequest) => {
-        resetPassword({ 
-            ...formData,
-            email: email
-        });
-    };
 
     return (
         <div className="space-y-8">

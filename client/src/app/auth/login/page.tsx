@@ -16,6 +16,10 @@ import { useRouter } from "next/navigation";
 import { useErrorToast, useSuccessToast } from "@/hooks/toast";
 
 const LoginPage = () => {
+    const router = useRouter();
+
+    const { mutate, isPending, isError, isSuccess, error, data } = useLogin();
+
     const { 
         register, 
         handleSubmit, 
@@ -23,12 +27,14 @@ const LoginPage = () => {
     } = useForm<ILoginRequest>({
         resolver: zodResolver(LoginSchema)
     });
-    const { mutate, isPending, isError, isSuccess, error, data } = useLogin();
-    const router = useRouter();
+
+    const onSubmit = (data: ILoginRequest) => {
+        mutate({ ...data });
+    };
 
     useErrorToast(isError, error);
     useSuccessToast(isSuccess, data);
-    
+
     useEffect(() => {
         if (isSuccess && data) {
             const token = data.data?.token || '';
@@ -43,9 +49,6 @@ const LoginPage = () => {
         }
     }, [isSuccess, data, router]);
 
-    const onSubmit = (data: ILoginRequest) => {
-        mutate({ ...data });
-    };
     return (
         <div className="space-y-8">
             <div className="text-center space-y-2">

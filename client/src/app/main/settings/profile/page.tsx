@@ -16,12 +16,17 @@ import { getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessag
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 
 const ProfilePage = () => {
-    const user = useUserProfileStore(state => state.userProfile);
+    const currentPath = usePathname();
+
     const [profilePicture, setProfilePicture] = useState<File | null>(null);
-    const [birthdayDate, setBirthdayDate] = useState<string>(user?.birthday || '');
+    const [birthdayDate, setBirthdayDate] = useState<string>('');
     const [removedProfilePicture, setRemovedProfilePicture] = useState(false);
-    const {openConfirm} = useConfirmationModalStore();
-    
+
+    const user = useUserProfileStore(state => state.userProfile);
+    const { openConfirm } = useConfirmationModalStore();
+
+    const { mutate, isPending, isError, isSuccess, error, data } = useSaveProfile();
+
     const defaultValues = {
         fullName: user?.fullName || '',
         username: user?.username || '',
@@ -42,25 +47,12 @@ const ProfilePage = () => {
         defaultValues: defaultValues
     });
 
-    const { mutate, isPending, isError, isSuccess, error, data } = useSaveProfile();
-    const currentPath = usePathname();
+    const genderValue = watch('gender');
     
-    const onSubmit = (formData: ISaveProfileRequest) => {
-        const preparedData = prepareFormData(formData);
-        
-        openConfirm({
-            type: "info",
-            title: "Konfirmasi Perubahan Profil",
-            message: "Apakah Anda yakin ingin ubah?",
-            isPending: isPending,
-            explanation: "Informasi profil anda akan diubah.",
-            confirmTitle: "Ubah",
-            cancelTitle: "Batal",
-            icon: <IoPersonSharp />,
-            onConfirm: () => mutate(preparedData),  
-        });
-    };
-
+    const genderOptions = [
+        { value: 'male', label: 'Laki-laki' },
+        { value: 'female', label: 'Perempuan' },
+    ];
     const prepareFormData = (formData: ISaveProfileRequest): FormData => {
         const data = new FormData();
 
@@ -97,12 +89,24 @@ const ProfilePage = () => {
         return data;
     }
 
-    const genderOptions = [
-        { value: 'male', label: 'Laki-laki' },
-        { value: 'female', label: 'Perempuan' },
-    ];
-    
-    const genderValue = watch('gender');
+    const onSubmit = (formData: ISaveProfileRequest) => {
+        const preparedData = prepareFormData(formData);
+        
+        openConfirm({
+            type: "info",
+            title: "Konfirmasi Perubahan Profil",
+            message: "Apakah Anda yakin ingin ubah?",
+            isPending: isPending,
+            explanation: "Informasi profil anda akan diubah.",
+            confirmTitle: "Ubah",
+            cancelTitle: "Batal",
+            icon: <IoPersonSharp />,
+            onConfirm: () => mutate(preparedData),  
+        });
+    };
+
+    useErrorToast(isError, error);
+    useSuccessToast(isSuccess, data);
 
     useEffect(() => {
         if (user) {
@@ -111,6 +115,7 @@ const ProfilePage = () => {
             setValue('gender', user.gender as "male" | "female" | null | undefined);
             setValue('bio', user.bio || '');
             setValue('birthday', user.birthday || undefined);
+            setBirthdayDate(user.birthday || '');
         }
     }, [user, setValue]);
 
@@ -121,9 +126,6 @@ const ProfilePage = () => {
             }, 500)
         }
     }, [isSuccess, data]);
-
-    useErrorToast(isError, error);
-    useSuccessToast(isSuccess, data);
 
     return (
         <div className="space-y-8">
