@@ -30,10 +30,16 @@ const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
 
 const ReportsPage = () => {
     const currentPath = usePathname();
+    const router = useRouter();
+
     const [reportImages, setReportImages] = useState<File[]>([]);
     const [markerPosition, setMarkerPosition] = useState<{ lat: number, lng: number } | null>(null);
     const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
     const [currentStep, setCurrentStep] = useState(0);
+
+    const { openConfirm } = useConfirmationModalStore();
+    const { openImagePreview } = useImagePreviewModalStore();
+
     const { mutate, isPending, isError, isSuccess, error, data } = useCreateReport();
     const { 
         mutate: reverseLocation, 
@@ -41,42 +47,7 @@ const ReportsPage = () => {
         isPending: reverseLoading,
         isSuccess: reverseSuccess, 
     } = useReverseCurrentLocation();
-    const { openConfirm } = useConfirmationModalStore();
-    const { openImagePreview } = useImagePreviewModalStore();
-    const router = useRouter();
 
-    const handleImageClick = (imageUrl: string) => {
-        openImagePreview(imageUrl);
-    };
-    
-    const issueTypes = [
-        { value: 'infrastructure', label: 'Infrastruktur' },
-        { value: 'environment', label: 'Lingkungan' },
-        { value: 'safety', label: 'Keamanan' },
-        { value: 'other', label: 'Lainnya' }
-    ];
-
-    const steps = [
-        { label: 'Lokasi', description: 'Pilih lokasi masalah' },
-        { label: 'Detail', description: 'Isi informasi laporan' },
-        { label: 'Lampiran', description: 'Isi lampiran terkait laporan' },
-        { label: 'Konfirmasi', description: 'Tinjau & kirim' }
-    ];
-
-    const validateStep = (stepIndex: number): boolean => {
-        if (stepIndex === 0) {
-            return !!markerPosition?.lat && !!markerPosition?.lng;
-        }
-        if (stepIndex === 1) {
-            const title = watch('reportTitle');
-            const description = watch('reportDescription');
-            const type = watch('reportType');
-            const location = watch('location');
-            return !!(title && description && type && location);
-        }
-        return true;
-    };
-    
     const {
         register,
         handleSubmit,
@@ -93,6 +64,74 @@ const ReportsPage = () => {
 
     const reportTypeValue = watch('reportType');
     const hasProgressValue = watch('hasProgress');
+    
+    const issueTypes = [
+        { value: 'infrastructure', label: 'Infrastruktur' },
+        { value: 'environment', label: 'Lingkungan' },
+        { value: 'safety', label: 'Keamanan' },
+        { value: 'other', label: 'Lainnya' }
+    ];
+
+    const steps = [
+        { label: 'Lokasi', description: 'Pilih lokasi masalah' },
+        { label: 'Detail', description: 'Isi informasi laporan' },
+        { label: 'Lampiran', description: 'Isi lampiran terkait laporan' },
+        { label: 'Konfirmasi', description: 'Tinjau & kirim' }
+    ];
+
+    const handleImageClick = (imageUrl: string) => {
+        openImagePreview(imageUrl);
+    };
+
+    const validateStep = (stepIndex: number): boolean => {
+        if (stepIndex === 0) {
+            return !!markerPosition?.lat && !!markerPosition?.lng;
+        }
+        if (stepIndex === 1) {
+            const title = watch('reportTitle');
+            const description = watch('reportDescription');
+            const type = watch('reportType');
+            const location = watch('location');
+            return !!(title && description && type && location);
+        }
+        return true;
+    };
+
+    const prepareFormData = (formData: ICreateReportRequest): FormData => {
+        const data = new FormData();
+        data.append('reportTitle', formData.reportTitle);
+        data.append('reportDescription', formData.reportDescription);
+        data.append('reportType', formData.reportType.toUpperCase());
+        data.append('detailLocation', formData.location);
+        data.append('latitude', formData.latitude);
+        data.append('longitude', formData.longitude);
+        data.append('hasProgress', formData.hasProgress ? 'true' : 'false');
+        if (reportImages && reportImages.length > 0 ) {
+            reportImages.forEach((file) => {
+                data.append('reportImages', file);
+            });
+        }
+        return data;
+    }
+
+    const onSubmit = (formData: ICreateReportRequest) => {
+        const preparedData = prepareFormData(formData);
+        handleConfirmationModal(preparedData);
+    };
+
+    const handleConfirmationModal = (preparedData: FormData) => {
+        openConfirm({
+            type: "info",
+            title: "Konfirmasi Pembuatan Laporan",
+            message: "Apakah Anda yakin ingin membuat laporan ?",
+            isPending: isPending || reverseLoading,
+            explanation: "Anda akan membuat laporan baru. Pastikan semua informasi sudah benar sebelum melanjutkan.",
+            confirmTitle: "Buat",
+            cancelTitle: "Batal",
+            icon: <LuNotebookText />,
+            onConfirm: () => confirmSubmit(preparedData),
+        });
+    }
 
     const confirmSubmit = (dataToSubmit: FormData) => {
         if (dataToSubmit && markerPosition) {
@@ -103,6 +142,9 @@ const ReportsPage = () => {
             });
         }
     }
+
+    useErrorToast(isError, error);
+    useSuccessToast(isSuccess, data);
 
     useEffect(() => {
         if (markerPosition) {
@@ -150,46 +192,7 @@ const ReportsPage = () => {
                 router.push("/main/reports");
             }, 1000);
         }
-    }, [isSuccess, data, reset]);
-
-    const prepareFormData = (formData: ICreateReportRequest): FormData => {
-        const data = new FormData();
-        data.append('reportTitle', formData.reportTitle);
-        data.append('reportDescription', formData.reportDescription);
-        data.append('reportType', formData.reportType.toUpperCase());
-        data.append('detailLocation', formData.location);
-        data.append('latitude', formData.latitude);
-        data.append('longitude', formData.longitude);
-        data.append('hasProgress', formData.hasProgress ? 'true' : 'false');
-        if (reportImages && reportImages.length > 0 ) {
-            reportImages.forEach((file) => {
-                data.append('reportImages', file);
-            });
-        }
-        return data;
-    }
-
-    const onSubmit = (formData: ICreateReportRequest) => {
-        const preparedData = prepareFormData(formData);
-        handleConfirmationModal(preparedData);
-    };
-
-    const handleConfirmationModal = (preparedData: FormData) => {
-        openConfirm({
-            type: "info",
-            title: "Konfirmasi Pembuatan Laporan",
-            message: "Apakah Anda yakin ingin membuat laporan ?",
-            isPending: isPending || reverseLoading,
-            explanation: "Anda akan membuat laporan baru. Pastikan semua informasi sudah benar sebelum melanjutkan.",
-            confirmTitle: "Buat",
-            cancelTitle: "Batal",
-            icon: <LuNotebookText />,
-            onConfirm: () => confirmSubmit(preparedData),
-        });
-    }
-
-    useErrorToast(isError, error);
-    useSuccessToast(isSuccess, data);
+    }, [isSuccess, data, reset, router]);
 
     return (
         <div className="space-y-8">

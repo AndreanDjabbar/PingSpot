@@ -278,7 +278,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
 
                             <StatusVoting
                                 reportID={report?.id}
-                                currentStatus={report?.status || 'PENDING'}
+                                currentStatus={report?.reportStatus || 'PENDING'}
                                 onVote={(voteType: string) => onStatusVote(voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
                                 onImageClick={() => {}}
                             />
