@@ -2,31 +2,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
-import dynamic from 'next/dynamic';
-import { FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaImage, FaMap, FaTimes, FaCheck } from 'react-icons/fa';
-import { BsThreeDots } from 'react-icons/bs';
-import { IoDocumentText } from "react-icons/io5";
-import { BiEdit, BiSend, BiX } from 'react-icons/bi';
-import { MdDone } from "react-icons/md";
-import 'leaflet/dist/leaflet.css';
-import { getImageURL, getFormattedDate as formattedDate, getErrorResponseMessage } from '@/utils';
+import { getErrorResponseMessage, getImageURL } from '@/utils';
 import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
 import { ReportInteractionBar } from '../components/ReportInteractionBar';
-import CommentItem from '../components/CommentItem';
 import { useUserProfileStore, useReportsStore } from '@/stores';
 import { Breadcrumb } from '@/components/layouts';
 import { useGetReportByID, useReactReport, useVoteReport } from '@/hooks/main';
-import { Accordion } from '@/components/UI';
-import { motion } from 'framer-motion';
-import { RiProgress3Fill } from "react-icons/ri";
 import { useImagePreviewModalStore } from '@/stores';
 import { useErrorToast } from '@/hooks/toast';
-
-const StaticMap = dynamic(() => import('../../components/StaticMap'), {
-    ssr: false,
-    loading: () => <div className="w-full h-[380px] bg-gray-200 animate-pulse rounded-xl"></div>
-});
+import { 
+    ReportHeader, 
+    ReportMediaViewer, 
+    ReportCommentsSection, 
+    ReportInfoSidebar, 
+    ReportProgressTimeline, 
+    ReportVotingSection 
+} from './components';
 
 const getReportTypeLabel = (type: ReportType): string => {
     const types: Record<ReportType, string> = {
@@ -127,15 +118,13 @@ const ReportDetailPage = () => {
     const params = useParams();
     const router = useRouter();
     const reportId = Number(params.id);
-    
-    const [viewMode, setViewMode] = useState<'attachment' | 'map'>('map');
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [animateButton, setAnimateButton] = useState<string | null>(null);
 
     const { openImagePreview } = useImagePreviewModalStore();
-    const { reports, setReports, selectedReport, setSelectedReport } = useReportsStore();
+    const { selectedReport, setSelectedReport } = useReportsStore();
     const { userProfile } = useUserProfileStore();
 
     const { 
@@ -200,18 +189,6 @@ const ReportDetailPage = () => {
                 ? 'ON_PROGRESS'
                 : null;
 
-    const nextImage = () => {
-        if (images.length > 1) {
-            setCurrentImageIndex((prev) => (prev + 1) % images.length);
-        }
-    };
-
-    const prevImage = () => {
-        if (images.length > 1) {
-            setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-        }
-    };
-
     const onImageClick = (imageURL: string) => {
         const url = getImageURL(`/report/progress/${imageURL}`, "main");
         openImagePreview(url);
@@ -231,13 +208,6 @@ const ReportDetailPage = () => {
         
         setReport(updatedReport);
         
-        const existingReportIndex = reports.findIndex(r => r.id === reportId);
-        if (existingReportIndex !== -1) {
-            const updatedReports = [...reports];
-            updatedReports[existingReportIndex] = updatedReport;
-            setReports(updatedReports);
-        }
-        
         if (selectedReport?.id === reportId) {
             setSelectedReport(updatedReport);
         }
@@ -252,11 +222,6 @@ const ReportDetailPage = () => {
         } catch (error) {
             console.error('Error liking report:', error);
             setReport(report);
-            if (existingReportIndex !== -1) {
-                const revertedReports = [...reports];
-                revertedReports[existingReportIndex] = report;
-                setReports(revertedReports);
-            }
             if (selectedReport?.id === reportId) {
                 setSelectedReport(report);
             }
@@ -520,162 +485,13 @@ const ReportDetailPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-gray-200">
-                                            <Image
-                                                src={getImageURL(report.profilePicture || '', "user")}
-                                                alt={report.fullName}
-                                                width={48}
-                                                height={48}
-                                                className="object-cover h-full w-full"
-                                            />
-                                        </div>
-                                        <div>
-                                            <div className="font-semibold text-base text-gray-900">{report.userName}</div>
-                                            <div className="text-sm text-gray-500">
-                                                {formattedDate(report.reportCreatedAt, {
-                                                    formatStr: 'dd MMMM yyyy - HH:mm',
-                                                })}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="inline-flex items-center px-3 py-1.5 bg-blue-50 text-sm font-semibold text-blue-700 rounded-full">
-                                            {getReportTypeLabel(report.reportType)}
-                                        </span>
-                                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                            <BsThreeDots size={20} className="text-gray-600" />
-                                        </button>
-                                    </div>
-                                </div>
+                            <ReportHeader report={report} />
 
-                                <h1 className="text-2xl font-bold text-gray-900 mb-3">{report.reportTitle}</h1>
-                                <p className="text-base text-gray-700 leading-relaxed mb-4">{report.reportDescription}</p>
-
-                                <div className="flex items-start gap-2 text-gray-600 bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                    <FaMapMarkerAlt className="mt-1 text-red-500 flex-shrink-0" size={16} />
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium text-gray-900">{report?.location?.detailLocation}</p>
-                                        {report?.location?.displayName && (
-                                            <p className="text-xs text-gray-600 mt-1">{report?.location?.displayName}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {images.length > 0 && (
-                                <div className="px-6 pb-3">
-                                    <div className="flex items-center justify-center">
-                                        <div className="inline-flex items-center w-full max-w-md rounded-lg overflow-hidden shadow-sm">
-                                            <button
-                                                onClick={() => setViewMode('map')}
-                                                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium transition-all duration-200 ${
-                                                    viewMode === 'map'
-                                                        ? 'bg-gray-400 text-white'
-                                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                }`}
-                                            >
-                                                <FaMap className="w-4 h-4" />
-                                                <span>Peta</span>
-                                            </button>
-                                            <button
-                                                onClick={() => setViewMode('attachment')}
-                                                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium transition-all duration-200 ${
-                                                    viewMode === 'attachment'
-                                                        ? 'bg-gray-400 text-white'
-                                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                }`}
-                                            >
-                                                <FaImage className="w-4 h-4" />
-                                                <span>Lampiran</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="w-full px-6 pb-6">
-                                {viewMode === 'attachment' && images.length > 0 && (
-                                    <div className="relative">
-                                        <div className="relative h-[480px] rounded-xl overflow-hidden bg-gray-100 shadow-md">
-                                            <Image
-                                                src={getImageURL(`/report/${images[currentImageIndex]}`, "main")}
-                                                alt={`Foto ${currentImageIndex + 1} untuk laporan ${report.reportTitle}`}
-                                                fill
-                                                className="object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                                                onClick={() => onImageClick(`/report/${images[currentImageIndex]}`)}
-                                            />
-
-                                            {images.length > 1 && (
-                                                <>
-                                                    <button
-                                                        onClick={prevImage}
-                                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-90 text-gray-800 p-2.5 rounded-full hover:bg-opacity-100 hover:scale-110 transition-all shadow-lg"
-                                                        aria-label="Previous image"
-                                                    >
-                                                        <FaChevronLeft className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={nextImage}
-                                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-90 text-gray-800 p-2.5 rounded-full hover:bg-opacity-100 hover:scale-110 transition-all shadow-lg"
-                                                        aria-label="Next image"
-                                                    >
-                                                        <FaChevronRight className="w-4 h-4" />
-                                                    </button>
-
-                                                    <div className="absolute bottom-3 right-3 bg-black bg-opacity-70 text-white px-3 py-1.5 rounded-full text-xs font-medium">
-                                                        {currentImageIndex + 1} / {images.length}
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-
-                                        {images.length > 1 && (
-                                            <div className="flex justify-center gap-1.5 mt-3">
-                                                {images.map((_, index) => (
-                                                    <button
-                                                        key={index}
-                                                        onClick={() => setCurrentImageIndex(index)}
-                                                        className={`h-2 rounded-full transition-all duration-200 ${
-                                                            index === currentImageIndex
-                                                                ? 'w-6 bg-blue-600'
-                                                                : 'w-2 bg-gray-300 hover:bg-gray-400'
-                                                        }`}
-                                                        aria-label={`Go to image ${index + 1}`}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {viewMode === 'map' && (
-                                    <div className="relative">
-                                        <div className="relative w-full overflow-hidden bg-gray-100 rounded-xl shadow-md">
-                                            <StaticMap
-                                                latitude={report.location.latitude}
-                                                longitude={report.location.longitude}
-                                                height={480}
-                                                markerColor='red'
-                                                popupText={report.reportTitle}
-                                            />
-                                        </div>
-                                        <div className="mt-4 bg-gray-100 rounded-lg p-4">
-                                            <div className="flex items-start gap-2">
-                                                <FaMapMarkerAlt className="text-red-500 mt-0.5 flex-shrink-0" size={16} />
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-medium text-gray-900">{report.location.detailLocation}</p>
-                                                    <p className="text-xs text-gray-600 mt-1">
-                                                        {report.location.displayName}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            <ReportMediaViewer 
+                                report={report}
+                                images={images}
+                                onImageClick={onImageClick}
+                            />
 
                             <div className="border-t border-gray-200">
                                 <ReportInteractionBar
@@ -694,562 +510,46 @@ const ReportDetailPage = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="p-6 border-b border-gray-200">
-                                <h2 className="text-lg font-bold text-gray-900">
-                                    Komentar ({displayComments.length})
-                                </h2>
-                            </div>
-
-                            <div className="p-6 border-b border-gray-200 bg-gray-50">
-                                <div className="flex items-start gap-3">
-                                    <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0">
-                                        <Image
-                                            src={getImageURL('', "user")}
-                                            alt="Your profile"
-                                            width={40}
-                                            height={40}
-                                            className="object-cover h-full w-full"
-                                        />
-                                    </div>
-                                    <div className="flex-1 flex gap-2">
-                                        <textarea
-                                            id="comment-input"
-                                            value={newComment}
-                                            onChange={(e) => setNewComment(e.target.value)}
-                                            placeholder="Tulis komentar Anda..."
-                                            className="flex-1 p-3 text-sm border border-gray-200 rounded-xl resize-none shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                                            rows={3}
-                                            disabled={isSubmitting}
-                                        />
-                                        <button
-                                            onClick={handleSubmitComment}
-                                            disabled={!newComment.trim() || isSubmitting}
-                                            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all h-fit shadow-sm hover:shadow-md"
-                                        >
-                                            {isSubmitting ? (
-                                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                            ) : (
-                                                <BiSend size={20} />
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="divide-y divide-gray-200">
-                                {displayComments.map((comment) => (
-                                    <div key={comment.id} className="p-6">
-                                        <CommentItem
-                                            comment={comment}
-                                            variant="full"
-                                            showLikes={true}
-                                            onReply={handleReply}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <ReportCommentsSection
+                            comments={displayComments}
+                            onSubmitComment={handleSubmitComment}
+                            onReply={handleReply}
+                        />
                     </div>
 
                     <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                            <h3 className="font-bold text-lg text-gray-900 mb-4">Informasi Laporan</h3>
-                            <div className="space-y-3">
-                                <div>
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</p>
-                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                                        report.reportStatus === 'RESOLVED' ? 'bg-green-100 text-green-800' :
-                                        report.reportStatus === 'NOT_RESOLVED' ? 'bg-red-100 text-red-800' :
-                                        report.reportStatus === 'ON_PROGRESS' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-gray-100 text-gray-800'
-                                    }`}>
-                                        {report.reportStatus === 'RESOLVED' ? 'Terselesaikan' :
-                                        report.reportStatus === 'NOT_RESOLVED' ? 'Belum Terselesaikan' :
-                                        report.reportStatus === 'ON_PROGRESS' ? 'Dalam Proses' : 'Menunggu'}
-                                    </span>
-                                </div>
-                                <div className="h-px bg-gray-200"></div>
-                                <div>
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Dilaporkan</p>
-                                    <p className="text-sm text-gray-900">
-                                        {formattedDate(report.reportCreatedAt, {
-                                            formatStr: 'dd MMMM yyyy',
-                                        })}
-                                    </p>
-                                </div>
-                                <div className="h-px bg-gray-200"></div>
-                                <div>
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Kategori</p>
-                                    <p className="text-sm text-gray-900">{getReportTypeLabel(report.reportType)}</p>
-                                </div>
-                            </div>
-                        </div>
+                        <ReportInfoSidebar 
+                            report={report}
+                            getReportTypeLabel={getReportTypeLabel}
+                        />
 
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-bold text-lg text-gray-900">Perkembangan Laporan</h3>
-                                {isReportOwner && (
-                                    <button
-                                        onClick={() => router.push(`/main/reports/${report.id}/update-progress`)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-pingspot-hoverable text-white text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow-md"
-                                    >
-                                        <BiEdit size={16} />
-                                        <span>Perbarui</span>
-                                    </button>
-                                )}
-                            </div>
-                            
-                            {report.reportProgress && report.reportProgress.length > 0 ? (
-                                <div className="space-y-4">
-                                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-                                        {(() => {
-                                            const latestProgress = report.reportProgress[0];
-                                            const latestImages = [
-                                                latestProgress.attachment1,
-                                                latestProgress.attachment2
-                                            ].filter((url): url is string => typeof url === 'string' && url.length > 0);
-                                            
-                                            return (
-                                                <>
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <p className="text-xs font-bold text-sky-700 uppercase tracking-wide">Perkembangan Terakhir</p>
-                                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
-                                                            latestProgress.status === 'RESOLVED' 
-                                                                ? 'bg-green-100 text-green-800' 
-                                                                : latestProgress.status === 'ON_PROGRESS'
-                                                                ? 'bg-yellow-100 text-yellow-800'
-                                                                : 'bg-red-100 text-red-800'
-                                                        }`}>
-                                                            {latestProgress.status === 'RESOLVED' 
-                                                                ? 'Terselesaikan' 
-                                                                : latestProgress.status === 'ON_PROGRESS'
-                                                                ? 'Dalam Proses'
-                                                                : 'Tidak Ada Proses'}
-                                                        </span>
-                                                    </div>
-                                                    
-                                                    <p className="text-xs text-gray-500 mb-2">
-                                                        {formattedDate(latestProgress.createdAt, {
-                                                            formatStr: 'dd MMMM yyyy - HH:mm',
-                                                        })}
-                                                    </p>
-                                                    
-                                                    {latestProgress.notes && (
-                                                        <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                                                            {latestProgress.notes}
-                                                        </p>
-                                                    )}
-                                                    
-                                                    {latestImages.length > 0 && (
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {latestImages.map((imageUrl, imgIndex) => (
-                                                                <div 
-                                                                    key={imgIndex}
-                                                                    className="relative aspect-video rounded-lg overflow-hidden bg-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-                                                                    onClick={() => onImageClick(imageUrl)}
-                                                                >
-                                                                    <Image
-                                                                        src={getImageURL(`/report/progress/${imageUrl}`, "main")}
-                                                                        alt={`Latest progress - Image ${imgIndex + 1}`}
-                                                                        fill
-                                                                        className="object-cover"
-                                                                    />
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </>
-                                            );
-                                        })()}
-                                    </div>
+                        <ReportProgressTimeline
+                        report={report}
+                        isReportOwner={isReportOwner || false}
+                        onImageClick={onImageClick}
+                        />
 
-                                    {report.reportProgress.length > 1 && (
-                                        <Accordion type="single" defaultValue={[]}>
-                                            <Accordion.Item id="timeline" title={`Semua Perkembangan (${report.reportProgress.length})`}>
-                                                <div className="max-h-[500px] overflow-y-auto  mt-2">
-                                                    <div className="space-y-4">
-                                                        <div className="relative">
-                                                            {report.reportProgress.map((progress, index) => {
-                                                                const isLast = index === report.reportProgress.length - 1;
-                                                                const progressImages = [
-                                                                    progress.attachment1,
-                                                                    progress.attachment2
-                                                                ].filter((url): url is string => typeof url === 'string' && url.length > 0);
-                                                                
-                                                                return (
-                                                                    <div key={`${progress.id}-${index}`} className="relative pb-6">
-                                                                        {!isLast && (
-                                                                            <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 to-gray-200"></div>
-                                                                        )}
-                                                                        
-                                                                        <div className="flex items-start gap-3">
-                                                                            <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-md ${
-                                                                                progress.status === 'RESOLVED' 
-                                                                                    ? 'bg-gradient-to-br from-green-400 to-green-600' 
-                                                                                    : progress.status === 'ON_PROGRESS'
-                                                                                    ? 'bg-gradient-to-br from-yellow-400 to-yellow-600'
-                                                                                    : 'bg-gradient-to-br from-red-400 to-red-600'
-                                                                            }`}>
-                                                                                {progress.status === 'RESOLVED' ? (
-                                                                                    <MdDone className='text-white' size={20}/>
-                                                                                ) : progress.status === 'ON_PROGRESS' ? (
-                                                                                    <RiProgress3Fill className='text-white' size={20}/>
-                                                                                ) : (
-                                                                                    <BiX className='text-white' size={20}/>
-                                                                                )}
-                                                                            </div>
-                                                                            
-                                                                            <div className="flex-1 min-w-0">
-                                                                                <div className={`rounded-lg p-3 border ${
-                                                                                    progress.status === 'RESOLVED' 
-                                                                                        ? 'bg-green-50 border-green-200' 
-                                                                                        : progress.status === 'ON_PROGRESS'
-                                                                                        ? 'bg-yellow-50 border-yellow-200'
-                                                                                        : 'bg-red-50 border-red-200'
-                                                                                }`}>
-                                                                                    <div className="flex items-center justify-between mb-2 lg:flex-col lg:items-start 2xl:flex-row">
-                                                                                        <span className={`text-xs font-bold uppercase tracking-wide ${
-                                                                                            progress.status === 'RESOLVED' 
-                                                                                                ? 'text-green-700' 
-                                                                                                : progress.status === 'ON_PROGRESS'
-                                                                                                ? 'text-yellow-700'
-                                                                                                : 'text-red-700'
-                                                                                        }`}>
-                                                                                            {progress.status === 'RESOLVED' 
-                                                                                                ? 'Terselesaikan' 
-                                                                                                : progress.status === 'ON_PROGRESS'
-                                                                                                ? 'Dalam Proses'
-                                                                                                : 'Tidak Ada Proses'}
-                                                                                        </span>
-                                                                                        <span className="text-xs text-gray-500">
-                                                                                            {formattedDate(progress.createdAt, {
-                                                                                                formatStr: 'dd MMM yyyy - HH:mm',
-                                                                                            })}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                    
-                                                                                    {progress.notes && (
-                                                                                        <p className="text-sm text-gray-700 leading-relaxed">
-                                                                                            {progress.notes}
-                                                                                        </p>
-                                                                                    )}
-                                                                                    
-                                                                                    {progressImages.length > 0 && (
-                                                                                        <div className="mt-3 grid grid-cols-2 gap-2">
-                                                                                            {progressImages.map((imageUrl, imgIndex) => (
-                                                                                                <div 
-                                                                                                    key={`${imgIndex}-${index}`}
-                                                                                                    className="relative aspect-video rounded-lg overflow-hidden bg-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-                                                                                                    onClick={() => onImageClick(imageUrl)}
-                                                                                                >
-                                                                                                    <Image
-                                                                                                        src={getImageURL(`/report/progress/${imageUrl}`, "main")}
-                                                                                                        alt={`Progress ${index + 1} - Image ${imgIndex + 1}`}
-                                                                                                        fill
-                                                                                                        className="object-cover"
-                                                                                                    />
-                                                                                                </div>
-                                                                                            ))}
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </Accordion.Item>
-                                        </Accordion>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="text-center py-8">
-                                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-                                        <IoDocumentText size={32}/>
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-900 mb-1">Belum Ada Perkembangan</p>
-                                    <p className="text-xs text-gray-500">
-                                        Perkembangan laporan akan ditampilkan di sini
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                            <h3 className="font-bold text-lg text-gray-900 mb-4">Hasil Voting Pengguna</h3>
-                            <div className="space-y-4">
-                                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
-                                    <p className="text-xs font-semibold text-sky-700 uppercase tracking-wide mb-1">Total Voting</p>
-                                    <p className="text-3xl font-bold text-sky-800">{report.totalVotes}</p>
-                                    <p className="text-xs text-sky-700 mt-1">Pengguna telah memberikan voting</p>
-                                </div>
-
-                                <div className="h-px bg-gray-200"></div>
-                                <div className="space-y-3">
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Distribusi Vote</p>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <div className='flex gap-2 font-medium text-green-700 items-center'>
-                                                                                                                <FaCheck/>
-                                                                                                                <span className="">Terselesaikan</span>
-                                                                                                            </div>
-                                            <span className="text-gray-600 font-semibold">{report.totalResolvedVotes} ({resolvedPercentage.toFixed(0)}%)</span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                                            <div 
-                                                className="bg-gradient-to-r from-green-500 to-green-600 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
-                                                style={{ width: `${resolvedPercentage}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <div className='flex gap-2 font-medium text-yellow-700 items-center'>
-                                                                                                                <RiProgress3Fill/>
-                                                                                                                <span className="">Dalam Proses</span>
-                                                                                                            </div>
-                                            <span className="text-gray-600 font-semibold">{report.totalOnProgressVotes} ({onProgressPercentage.toFixed(0)}%)</span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                                            <div 
-                                                className="bg-gradient-to-r from-yellow-500 to-yellow-600 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
-                                                style={{ width: `${onProgressPercentage}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <div className='flex items-center gap-2 font-medium text-red-700'>
-                                                                                                                <FaTimes/>
-                                                                                                                <span className="">Tidak Ada Proses</span>
-                                                                                                            </div>
-                                            <span className="text-gray-600 font-semibold">{report.totalNotResolvedVotes} ({notResolvedPercentage.toFixed(0)}%)</span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                                            <div 
-                                                className="bg-gradient-to-r from-red-400 to-red-500 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
-                                                style={{ width: `${notResolvedPercentage}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="h-px bg-gray-200"></div>
-
-                                <div className={`rounded-lg p-3 border transition-all duration-500 ${
-                                    majorityVote === 'RESOLVED' 
-                                        ? 'bg-green-50 border-green-100' 
-                                        : majorityVote === 'ON_PROGRESS'
-                                        ? 'bg-yellow-50 border-yellow-100'
-                                        : 'bg-red-50 border-red-100'
-                                }`}>
-                                    <p className={`text-xs font-semibold uppercase tracking-wide mb-1 transition-colors duration-500 ${
-                                        majorityVote === 'RESOLVED'
-                                            ? 'text-green-700'
-                                            : majorityVote === 'ON_PROGRESS'
-                                            ? 'text-yellow-700'
-                                            : 'text-red-700'
-                                    }`}>Vote Mayoritas</p>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold transition-colors duration-500 ${
-                                            majorityVote === 'RESOLVED'
-                                                ? 'bg-green-100 text-green-700'
-                                                : majorityVote === 'ON_PROGRESS'
-                                                ? 'bg-yellow-100 text-yellow-700'
-                                                : 'bg-red-100 text-red-700'
-                                        }`}>
-                                            {majorityVote === 'RESOLVED' 
-                                                ? 'Terselesaikan' 
-                                                : majorityVote === 'ON_PROGRESS'
-                                                ? 'Dalam Proses'
-                                                : 'Tidak Ada Proses'}   
-                                        </span>
-                                        <span className={`text-sm font-medium transition-colors duration-500 ${
-                                            majorityVote === 'RESOLVED'
-                                                ? 'text-green-700'
-                                                : majorityVote === 'ON_PROGRESS'
-                                                ? 'text-yellow-700'
-                                                : 'text-red-700'
-                                        }`}>{majorityPercentage.toFixed(0)}% pengguna</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className='mt-4'>
-                                {isReportResolved ? (
-                                        <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-300 shadow-sm">
-                                            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-md">
-                                                <FaCheck className="w-5 h-5 text-white" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm text-green-800 font-semibold">
-                                                    Laporan Terselesaikan
-                                                </p>
-                                                <p className="text-xs text-green-700 mt-0.5">
-                                                    Voting ditutup
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {!isReportOwner && (
-                                                <>
-                                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
-                                                        <p className="text-sm text-blue-800 font-bold text-center">
-                                                            Bagaimana pendapat Anda tentang laporan ini?
-                                                        </p>
-                                                        <p className="text-xs text-blue-600 text-center mt-1">
-                                                            Pilih salah satu untuk memberikan pendapat
-                                                        </p>
-                                                    </div>
-                                                    
-                                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                                        <motion.button
-                                                            className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
-                                                                userCurrentVote === 'RESOLVED'
-                                                                    ? 'bg-green-600 text-white border-green-700 shadow-lg scale-105'
-                                                                    : 'bg-white text-green-700 border-gray-200 hover:border-green-300 hover:bg-green-50 shadow-sm'
-                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                            onClick={() => handleVote('RESOLVED')}
-                                                            disabled={isLoading}
-                                                            animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
-                                                            transition={{ duration: 0.3 }}
-                                                            whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                                                        >
-                                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                                                                userCurrentVote === 'RESOLVED'
-                                                                    ? 'bg-white/20'
-                                                                    : 'bg-green-100'
-                                                            }`}>
-                                                                <FaCheck className={`w-6 h-6 ${
-                                                                    userCurrentVote === 'RESOLVED' ? 'text-white' : 'text-green-600'
-                                                                }`} />
-                                                            </div>
-                                                            <span className="text-xs sm:text-sm font-bold text-center leading-tight">
-                                                                Terselesaikan
-                                                            </span>
-                                                            <span className={`text-xs mt-1 text-center ${
-                                                                userCurrentVote === 'RESOLVED' ? 'text-green-100' : 'text-gray-500'
-                                                            }`}>
-                                                                Masalah selesai
-                                                            </span>
-                                                        </motion.button>
-
-                                                        <motion.button
-                                                            className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
-                                                                userCurrentVote === 'ON_PROGRESS'
-                                                                    ? 'bg-yellow-600 text-white border-yellow-700 shadow-lg scale-105'
-                                                                    : 'bg-white text-yellow-700 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 shadow-sm'
-                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                            onClick={() => handleVote('ON_PROGRESS')}
-                                                            disabled={isLoading}
-                                                            animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.05, 1] } : {}}
-                                                            transition={{ duration: 0.3 }}
-                                                            whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                                                        >
-                                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                                                                userCurrentVote === 'ON_PROGRESS'
-                                                                    ? 'bg-white/20'
-                                                                    : 'bg-yellow-100'
-                                                            }`}>
-                                                                <RiProgress3Fill className={`w-6 h-6 ${
-                                                                    userCurrentVote === 'ON_PROGRESS' ? 'text-white' : 'text-yellow-600'
-                                                                }`} />
-                                                            </div>
-                                                            <span className="text-xs sm:text-sm font-bold text-center leading-tight">
-                                                                Dalam Proses
-                                                            </span>
-                                                            <span className={`text-xs mt-1 text-center ${
-                                                                userCurrentVote === 'ON_PROGRESS' ? 'text-yellow-100' : 'text-gray-500'
-                                                            }`}>
-                                                                Sedang ditangani
-                                                            </span>
-                                                        </motion.button>
-
-                                                        <motion.button
-                                                            className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
-                                                                userCurrentVote === 'NOT_RESOLVED'
-                                                                    ? 'bg-red-600 text-white border-red-700 shadow-lg scale-105'
-                                                                    : 'bg-white text-red-700 border-gray-200 hover:border-red-300 hover:bg-red-50 shadow-sm'
-                                                            } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                            onClick={() => handleVote('NOT_RESOLVED')}
-                                                            disabled={isLoading}
-                                                            animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
-                                                            transition={{ duration: 0.3 }}
-                                                            whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                                                        >
-                                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                                                                userCurrentVote === 'NOT_RESOLVED'
-                                                                    ? 'bg-white/20'
-                                                                    : 'bg-red-100'
-                                                            }`}>
-                                                                <FaTimes className={`w-6 h-6 ${
-                                                                    userCurrentVote === 'NOT_RESOLVED' ? 'text-white' : 'text-red-600'
-                                                                }`} />
-                                                            </div>
-                                                            <span className="text-xs sm:text-sm font-bold text-center leading-tight">
-                                                                Tidak Ada Proses
-                                                            </span>
-                                                            <span className={`text-xs mt-1 text-center ${
-                                                                userCurrentVote === 'NOT_RESOLVED' ? 'text-red-100' : 'text-gray-500'
-                                                            }`}>
-                                                                Belum ditangani
-                                                            </span>
-                                                        </motion.button>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </>
-                                    )}
-
-                                    {userCurrentVote && !isReportResolved && (
-                                        <div className="mt-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 shadow-sm">
-                                            <div className="flex items-center justify-center space-x-2">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                                    userCurrentVote === 'RESOLVED' 
-                                                        ? 'bg-green-100' 
-                                                        : userCurrentVote === 'ON_PROGRESS'
-                                                        ? 'bg-yellow-100'
-                                                        : 'bg-red-100'
-                                                }`}>
-                                                    {userCurrentVote === 'RESOLVED' && <FaCheck className="w-4 h-4 text-green-600" />}
-                                                    {userCurrentVote === 'ON_PROGRESS' && <RiProgress3Fill className="w-4 h-4 text-yellow-600" />}
-                                                    {userCurrentVote === 'NOT_RESOLVED' && <FaTimes className="w-4 h-4 text-red-600" />}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-sm text-gray-700">
-                                                        Pendapat Anda: <span className={`font-bold ${
-                                                            userCurrentVote === 'RESOLVED' 
-                                                                ? 'text-green-700' 
-                                                                : userCurrentVote === 'ON_PROGRESS'
-                                                                ? 'text-yellow-700'
-                                                                : 'text-red-700'
-                                                        }`}>
-                                                            {userCurrentVote === 'RESOLVED' && 'Terselesaikan'}
-                                                            {userCurrentVote === 'ON_PROGRESS' && 'Dalam Proses'}
-                                                            {userCurrentVote === 'NOT_RESOLVED' && 'Tidak Ada Proses'}
-                                                        </span>
-                                                    </p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">
-                                                        Klik lagi untuk mengubah pendapat
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                            </div>
-                            
-                        </div>
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <ReportVotingSection
+                            report={report}
+                            isReportOwner={isReportOwner || false}
+                            isReportResolved={isReportResolved}
+                            userCurrentVote={userCurrentVote}
+                            isLoading={isLoading}
+                            animateButton={animateButton}
+                            resolvedPercentage={resolvedPercentage}
+                            onProgressPercentage={onProgressPercentage}
+                            notResolvedPercentage={notResolvedPercentage}
+                            majorityVote={majorityVote}
+                            majorityPercentage={majorityPercentage}
+                            handleVote={handleVote}
+                        />
+                        
+                        {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                             <h3 className="font-bold text-lg text-gray-900 mb-4">Laporan Terkait</h3>
                             <div className="space-y-3">
                                 <p className="text-sm text-gray-500">Belum ada laporan terkait</p>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>
