@@ -5,6 +5,7 @@ import ReportSkeleton from "./ReportSkeleton";
 import ReportSearchAndFilter from "./ReportSearchAndFilter";
 import ReportList from "./ReportList";
 import CommentSection from "./CommentSection";
+import { ReportSidebar } from "./ReportSidebar";
 
 export {
     ReportCard,
@@ -13,5 +14,6 @@ export {
     ReportSkeleton,
     ReportSearchAndFilter,
     ReportList,
-    CommentSection
+    CommentSection,
+    ReportSidebar
 }
