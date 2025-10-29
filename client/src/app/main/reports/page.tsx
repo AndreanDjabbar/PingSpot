@@ -1,5 +1,5 @@
     "use client";
-    import React, { useState, useEffect } from 'react';
+    import React, { useState, useEffect, useMemo } from 'react';
     import { usePathname } from 'next/navigation';
     import { Breadcrumb } from '@/components/layouts';
     import { BiPlus } from 'react-icons/bi';
@@ -10,7 +10,7 @@
     import { RxCrossCircled } from "react-icons/rx";
     import { useErrorToast } from '@/hooks/toast';
     import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
-    import { IReport, ReportType } from '@/types/model/report';
+    import { ReportType } from '@/types/model/report';
     import { EmptyState } from '@/components/UI';
     import { 
         ReportSkeleton, 
@@ -24,7 +24,6 @@
 
     const ReportsPage = () => {
         const currentPath = usePathname();
-        const [filteredReports, setFilteredReports] = useState<IReport[]>([]);
         const [searchTerm, setSearchTerm] = useState("");
         const [activeFilter, setActiveFilter] = useState<ReportType | "all">("all");
         const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -70,7 +69,7 @@
             setSelectedReport(null);
         };
 
-        const handleLike = async (reportId: number) => {
+        const handleLike = (reportId: number) => {
             const updatedReports = reports.map(report => {
                 if (report.id === reportId) {
                     const currentlyLiked = report.isLikedByCurrentUser || false;
@@ -101,19 +100,15 @@
                 }
             }
             
-            try {
-                reactReport({
-                    reportID: reportId,
-                    data: {
-                        reactionType: 'LIKE'
-                    }
-                });
-            } catch (error) {
-                console.error('Error liking report:', error);
-            }
+            reactReport({
+                reportID: reportId,
+                data: {
+                    reactionType: 'LIKE'
+                }
+            });
         };
 
-        const handleDislike = async (reportId: number) => {
+        const handleDislike = (reportId: number) => {
             const updatedReports = reports.map(report => {
                 if (report.id === reportId) {
                     const currentlyLiked = report.isLikedByCurrentUser || false;
@@ -144,19 +139,15 @@
                 }
             }
             
-            try {
-                reactReport({
-                    reportID: reportId,
-                    data: {
-                        reactionType: 'DISLIKE'
-                    }
-                });
-            } catch (error) {
-                console.error('Error disliking report:', error);
-            }
+            reactReport({
+                reportID: reportId,
+                data: {
+                    reactionType: 'DISLIKE'
+                }
+            });
         };
 
-        const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' | 'NEUTRAL') => {
+        const handleStatusVote = (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' | 'NEUTRAL') => {
             const updatedReports = reports.map(report => {
                 if (report.id !== reportId) return report;
 
@@ -348,15 +339,11 @@
                 if (updatedSelected) setSelectedReport(updatedSelected);
             }
 
-            try {
-                if (voteType !== 'NEUTRAL') {
-                    voteReport({
-                        reportID: reportId,
-                        data: { voteType: voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' },
-                    });
-                }
-            } catch (error) {
-                console.error('Error voting on status:', error);
+            if (voteType !== 'NEUTRAL') {
+                voteReport({
+                    reportID: reportId,
+                    data: { voteType: voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' },
+                });
             }
         };
 
@@ -422,23 +409,23 @@
         }
     }, [isGetReportSuccess, getReportData, setReports]);
 
-        useEffect(() => {
-            let filtered = reports;
-            
-            if (searchTerm) {
-                filtered = filtered.filter(report => 
-                    report.reportTitle.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                    report.reportDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    report.location.detailLocation.toLowerCase().includes(searchTerm.toLowerCase())
-                );
-            }
-            
-            if (activeFilter !== "all") {
-                filtered = filtered.filter(report => report.reportType === activeFilter);
-            }
-            
-            setFilteredReports(filtered);
-        }, [searchTerm, activeFilter, reports]);
+    const filteredReports = useMemo(() => {
+        let filtered = reports;
+        
+        if (searchTerm) {
+            filtered = filtered.filter(report => 
+                report.reportTitle.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                report.reportDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                report.location.detailLocation.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+        
+        if (activeFilter !== "all") {
+            filtered = filtered.filter(report => report.reportType === activeFilter);
+        }
+        
+        return filtered;
+    }, [searchTerm, activeFilter, reports]);
 
         useEffect(() => {
             if (isReactReportError) {
@@ -513,9 +500,6 @@
                                                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
                                                     </div>
                                                 )}
-                                                {/* {!hasNextPage && reports.length > 0 && (
-                                                    <p className="text-gray-400 text-sm">Tidak ada laporan lagi</p>
-                                                )} */}
                                             </div>
                                         </>
                                     ) : reports.length === 0 && !isGetReportError ? (

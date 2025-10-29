@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getErrorResponseMessage, getImageURL } from '@/utils';
 import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
@@ -151,51 +151,72 @@ const ReportDetailPage = () => {
     
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
-    const totalVotes = report?.totalVotes || 0;
-    const resolvedPercentage = totalVotes > 0 ? ((report?.totalResolvedVotes || 0) / totalVotes) * 100 : 0;
-    const onProgressPercentage = totalVotes > 0 ? ((report?.totalOnProgressVotes || 0) / totalVotes) * 100 : 0;
-    const notResolvedPercentage = totalVotes > 0 ? ((report?.totalNotResolvedVotes || 0) / totalVotes) * 100 : 0;
     const isReportResolved = report?.reportStatus === 'RESOLVED';
     const customCurrentPath = `/main/reports/${report?.id}`;
-    const images = getReportImages(report?.images ?? { id: 0, reportID: 0 });
-    const displayComments = report?.comments && report.comments.length > 0 ? report.comments : dummyComments;
     
-    const calculateMajorityVote = () => {
+    const images = useMemo(() => 
+        getReportImages(report?.images ?? { id: 0, reportID: 0 }),
+        [report?.images]
+    );
+    
+    const displayComments = useMemo(() => 
+        report?.comments && report.comments.length > 0 ? report.comments : dummyComments,
+        [report?.comments]
+    );
+    
+    const percentages = useMemo(() => {
+        const totalVotes = report?.totalVotes || 0;
+        return {
+            resolved: totalVotes > 0 ? ((report?.totalResolvedVotes || 0) / totalVotes) * 100 : 0,
+            onProgress: totalVotes > 0 ? ((report?.totalOnProgressVotes || 0) / totalVotes) * 100 : 0,
+            notResolved: totalVotes > 0 ? ((report?.totalNotResolvedVotes || 0) / totalVotes) * 100 : 0,
+        };
+    }, [report?.totalVotes, report?.totalResolvedVotes, report?.totalOnProgressVotes, report?.totalNotResolvedVotes]);
+    
+    const majorityVote = useMemo(() => {
         const resolvedVotes = report?.totalResolvedVotes || 0;
         const onProgressVotes = report?.totalOnProgressVotes || 0;
         const notResolvedVotes = report?.totalNotResolvedVotes || 0;
         
         const maxVotes = Math.max(resolvedVotes, onProgressVotes, notResolvedVotes);
-        
         if (maxVotes === 0) return null;
         
         if (resolvedVotes === maxVotes) return 'RESOLVED';
         if (onProgressVotes === maxVotes) return 'ON_PROGRESS';
         return 'NOT_RESOLVED';
-    };
+    }, [report?.totalResolvedVotes, report?.totalOnProgressVotes, report?.totalNotResolvedVotes]);
     
-    const majorityVote = calculateMajorityVote();
-    const majorityPercentage = 
+    const majorityPercentage = useMemo(() => 
         majorityVote === 'RESOLVED'
-            ? resolvedPercentage
+            ? percentages.resolved
             : majorityVote === 'ON_PROGRESS'
-                ? onProgressPercentage
-                : notResolvedPercentage;
+                ? percentages.onProgress
+                : percentages.notResolved,
+        [majorityVote, percentages]
+    );
 
-    const userCurrentVote = report?.isResolvedByCurrentUser 
-        ? 'RESOLVED'
-        : report?.isNotResolvedByCurrentUser
-            ? 'NOT_RESOLVED'
-            : report?.isOnProgressByCurrentUser
-                ? 'ON_PROGRESS'
-                : null;
+    const userCurrentVote = useMemo(() => 
+        report?.isResolvedByCurrentUser 
+            ? 'RESOLVED'
+            : report?.isNotResolvedByCurrentUser
+                ? 'NOT_RESOLVED'
+                : report?.isOnProgressByCurrentUser
+                    ? 'ON_PROGRESS'
+                    : null,
+        [report?.isResolvedByCurrentUser, report?.isNotResolvedByCurrentUser, report?.isOnProgressByCurrentUser]
+    );
 
-    const onImageClick = (imageURL: string) => {
+    const onAttachmentImageClick = (imageURL: string) => {
+        const url = getImageURL(`/report/${imageURL}`, "main");
+        openImagePreview(url);
+    };
+
+    const onProgressImageClick = (imageURL: string) => {
         const url = getImageURL(`/report/progress/${imageURL}`, "main");
         openImagePreview(url);
     };
 
-    const handleLike = async() => {
+    const handleLike = () => {
         if (!report) return;
 
         const currentlyLiked = report.isLikedByCurrentUser || false;
@@ -213,20 +234,12 @@ const ReportDetailPage = () => {
             setSelectedReport(updatedReport);
         }
 
-        try {
-            reactReport({
-                reportID: reportId,
-                data: {
-                    reactionType: 'LIKE'
-                }
-            });
-        } catch (error) {
-            console.error('Error liking report:', error);
-            setReport(report);
-            if (selectedReport?.id === reportId) {
-                setSelectedReport(report);
+        reactReport({
+            reportID: reportId,
+            data: {
+                reactionType: 'LIKE'
             }
-        }
+        });
     }
 
     const handleVote = async (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS') => {
@@ -236,7 +249,7 @@ const ReportDetailPage = () => {
         setTimeout(() => setAnimateButton(null), 300);
     };
 
-    const handleStatusVote = async (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' | 'NEUTRAL') => {
+    const handleStatusVote = (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' | 'NEUTRAL') => {
         if (!report) return;
 
         let totalResolvedVotes = report.totalResolvedVotes || 0;
@@ -378,15 +391,11 @@ const ReportDetailPage = () => {
             report.isNotResolvedByCurrentUser = false;
         }
 
-        try {
-            if (voteType !== 'NEUTRAL') {
-                voteReport({
-                    reportID: reportId,
-                    data: { voteType: voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' },
-                });
-            }
-        } catch (error) {
-            console.error('Error voting on status:', error);
+        if (voteType !== 'NEUTRAL') {
+            voteReport({
+                reportID: reportId,
+                data: { voteType: voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS' },
+            });
         }
     };
 
@@ -487,7 +496,7 @@ const ReportDetailPage = () => {
                             <ReportMediaViewer 
                                 report={report}
                                 images={images}
-                                onImageClick={onImageClick}
+                                onImageClick={onAttachmentImageClick}
                             />
 
                             <div className="border-t border-gray-200">
@@ -523,7 +532,7 @@ const ReportDetailPage = () => {
                         <ReportProgressTimeline
                         report={report}
                         isReportOwner={isReportOwner || false}
-                        onImageClick={onImageClick}
+                        onImageClick={onProgressImageClick}
                         />
 
                         <ReportVotingSection
@@ -533,9 +542,9 @@ const ReportDetailPage = () => {
                             userCurrentVote={userCurrentVote}
                             isLoading={isLoading}
                             animateButton={animateButton}
-                            resolvedPercentage={resolvedPercentage}
-                            onProgressPercentage={onProgressPercentage}
-                            notResolvedPercentage={notResolvedPercentage}
+                            resolvedPercentage={percentages.resolved}
+                            onProgressPercentage={percentages.onProgress}
+                            notResolvedPercentage={percentages.notResolved}
                             majorityVote={majorityVote}
                             majorityPercentage={majorityPercentage}
                             handleVote={handleVote}
