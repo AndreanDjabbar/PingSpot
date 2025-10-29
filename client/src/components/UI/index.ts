@@ -4,6 +4,7 @@ import EmptyState from "./EmptyState";
 import Accordion from "./Accordion";
 import Stepper from "./Stepper";
 import Guide from "./Guide";
+import Loading from "./Loading";
 
 export {
     PingspotLogo,
@@ -11,5 +12,6 @@ export {
     EmptyState,
     Accordion,
     Stepper,
-    Guide
+    Guide,
+    Loading
 }

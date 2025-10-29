@@ -1,0 +1,12 @@
+import React from 'react';
+import { Loading } from '@/components/UI';
+
+const SecurityLoading = () => {
+    return (
+        <div className="">
+            <Loading size='xl' className='fixed inset-0 left-60'/>
+        </div>
+    );
+}
+
+export default SecurityLoading;

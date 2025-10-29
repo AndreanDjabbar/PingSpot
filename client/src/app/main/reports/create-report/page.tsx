@@ -28,7 +28,7 @@ const DynamicMap = dynamic(() => import('../../components/DynamicMap'), {
     ssr: false,
 });
 
-const ReportsPage = () => {
+const CreateReportPage = () => {
     const currentPath = usePathname();
     const router = useRouter();
 
@@ -497,4 +497,4 @@ const ReportsPage = () => {
     );
 };
 
-export default ReportsPage;
+export default CreateReportPage;

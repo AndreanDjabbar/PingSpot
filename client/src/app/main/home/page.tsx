@@ -15,6 +15,7 @@ const Map = dynamic(() => import("../components/Map"), {
 
 const Homepage = () => {
     const currentPath = usePathname();
+
     return (
         <div className="space-y-8">
             <HeaderSection 
