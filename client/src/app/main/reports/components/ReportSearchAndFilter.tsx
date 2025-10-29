@@ -1,41 +1,48 @@
 import React from 'react';
-import { FaSearch, FaFilter } from 'react-icons/fa';
-import { ReportType } from '@/types/model/report';
+import { FaSearch } from 'react-icons/fa';
+import { IoFunnelOutline } from 'react-icons/io5';
+import { InputField } from '@/components/form';
 
 interface ReportSearchAndFilterProps {
     searchTerm: string;
-    activeFilter: ReportType | "all";
     onSearchChange: (value: string) => void;
-    onFilterChange: (filter: ReportType | "all") => void;
+    onFilterClick: () => void;
+    activeFiltersCount?: number;
+    filterButtonRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
 const ReportSearchAndFilter: React.FC<ReportSearchAndFilterProps> = ({
     searchTerm,
-    activeFilter,
     onSearchChange,
-    onFilterChange
+    onFilterClick,
+    activeFiltersCount = 0,
+    filterButtonRef
 }) => {
     return (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FaSearch className="text-gray-400" />
-                    </div>
-                    <input
-                        type="text"
-                        placeholder="Cari laporan berdasarkan judul, deskripsi atau lokasi"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200"
-                        value={searchTerm}
-                        onChange={(e) => onSearchChange(e.target.value)}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex-1">
+                    <InputField
+                    id="search"
+                    placeHolder='Cari laporan berdasarkan judul, deskripsi atau lokasi'
+                    icon={<FaSearch size={15} />}
+                    withLabel={false}
                     />
                 </div>
                     
-                <div className="flex space-x-2 items-center overflow-x-auto pb-2 md:pb-0">
-                    <div className="flex items-center text-sky-900 mr-2">
-                        <FaFilter className="mr-1" /> Filter:
-                    </div>
-                </div>
+                <button
+                    ref={filterButtonRef}
+                    onClick={onFilterClick}
+                    className="relative flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 hover:text-gray-700 font-medium whitespace-nowrap active:bg-gray-200"
+                >
+                    <IoFunnelOutline className="w-5 h-5" />
+                    <span>Filter</span>
+                    {activeFiltersCount > 0 && (
+                        <span className="absolute -top-2 -right-2 flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-sky-600 rounded-full border-2 border-white">
+                            {activeFiltersCount}
+                        </span>
+                    )}
+                </button>
             </div>
         </div>
     );

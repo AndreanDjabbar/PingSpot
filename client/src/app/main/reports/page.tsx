@@ -1,5 +1,5 @@
     "use client";
-    import React, { useState, useEffect, useMemo } from 'react';
+    import React, { useState, useEffect, useMemo, useRef } from 'react';
     import { usePathname } from 'next/navigation';
     import { Breadcrumb } from '@/components/layouts';
     import { BiPlus } from 'react-icons/bi';
@@ -10,23 +10,31 @@
     import { RxCrossCircled } from "react-icons/rx";
     import { useErrorToast } from '@/hooks/toast';
     import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
-    import { ReportType } from '@/types/model/report';
     import { EmptyState } from '@/components/UI';
     import { 
         ReportSkeleton, 
         ReportSearchAndFilter,
         ReportModal,
         ReportList,
-        ReportSidebar
+        ReportSidebar,
+        ReportFilterModal
     } from './components';
     import { useReportsStore } from '@/stores';
     import { useInView } from 'react-intersection-observer';
+    import type { FilterOptions } from './components/ReportFilterModal';
 
     const ReportsPage = () => {
         const currentPath = usePathname();
         const [searchTerm, setSearchTerm] = useState("");
-        const [activeFilter, setActiveFilter] = useState<ReportType | "all">("all");
         const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+        const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+        const filterButtonRef = useRef<HTMLButtonElement>(null);
+        const [filters, setFilters] = useState<FilterOptions>({
+            sortBy: 'latest',
+            reportType: 'all',
+            status: 'all',
+            distance: 'all'
+        });
 
         const { ref, inView } = useInView({
             threshold: 0,
@@ -411,7 +419,7 @@
 
     const filteredReports = useMemo(() => {
         let filtered = reports;
-        
+        console.log("FILTERS: ", filters);  
         if (searchTerm) {
             filtered = filtered.filter(report => 
                 report.reportTitle.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -420,12 +428,31 @@
             );
         }
         
-        if (activeFilter !== "all") {
-            filtered = filtered.filter(report => report.reportType === activeFilter);
+        if (filters.reportType !== "all") {
+            filtered = filtered.filter(report => report.reportType === filters.reportType);
         }
         
+        if (filters.status !== "all") {
+            filtered = filtered.filter(report => report.reportStatus === filters.status);
+        }
+        
+        filtered = [...filtered].sort((a, b) => {
+            switch (filters.sortBy) {
+                case 'latest':
+                    return new Date(b.reportCreatedAt).getTime() - new Date(a.reportCreatedAt).getTime();
+                case 'oldest':
+                    return new Date(a.reportCreatedAt).getTime() - new Date(b.reportCreatedAt).getTime();
+                case 'most_liked':
+                    return (b.totalLikeReactions || 0) - (a.totalLikeReactions || 0);
+                case 'least_liked':
+                    return (a.totalLikeReactions || 0) - (b.totalLikeReactions || 0);
+                default:
+                    return 0;
+            }
+        });
+        
         return filtered;
-    }, [searchTerm, activeFilter, reports]);
+    }, [searchTerm, filters, reports]);
 
         useEffect(() => {
             if (isReactReportError) {
@@ -474,9 +501,15 @@
                         {!getReportLoading && reports.length > 0 && (
                             <ReportSearchAndFilter
                                 searchTerm={searchTerm}
-                                activeFilter={activeFilter}
                                 onSearchChange={setSearchTerm}
-                                onFilterChange={setActiveFilter}
+                                onFilterClick={() => setIsFilterModalOpen(true)}
+                                filterButtonRef={filterButtonRef}
+                                activeFiltersCount={
+                                    (filters.reportType !== 'all' ? 1 : 0) +
+                                    (filters.status !== 'all' ? 1 : 0) +
+                                    (filters.distance !== 'all' ? 1 : 0) +
+                                    (filters.sortBy !== 'latest' ? 1 : 0)
+                                }
                             />
                         )}
                         
@@ -540,6 +573,14 @@
                                 onStatusVote={(voteType) => handleStatusVote(selectedReport.id, voteType)}
                             />
                         )}
+
+                        <ReportFilterModal
+                            isOpen={isFilterModalOpen}
+                            onClose={() => setIsFilterModalOpen(false)}
+                            onApply={(newFilters) => setFilters(newFilters)}
+                            currentFilters={filters}
+                            buttonRef={filterButtonRef}
+                        />
                     </div>
                 </div>
             </div>
