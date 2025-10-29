@@ -22,7 +22,6 @@ const Loading: React.FC<LoadingProps> = ({
     fullScreen = false,
     className = ''
 }) => {
-    // Size mappings
     const iconSizeClasses = {
         sm: 'text-base',
         md: 'text-3xl',
@@ -51,7 +50,6 @@ const Loading: React.FC<LoadingProps> = ({
         xl: 'h-10 w-2.5'
     };
 
-    // Color mappings based on your project theme
     const colorClasses = {
         primary: 'text-sky-700',
         secondary: 'text-gray-600',
@@ -64,7 +62,6 @@ const Loading: React.FC<LoadingProps> = ({
         white: 'bg-white'
     };
 
-    // Spinner component with React Icons
     const SpinnerLoader = () => (
         <AiOutlineLoading3Quarters
             className={`${iconSizeClasses[size]} ${colorClasses[variant]} animate-spin`}
@@ -73,7 +70,6 @@ const Loading: React.FC<LoadingProps> = ({
         />
     );
 
-    // Dots component
     const DotsLoader = () => (
         <div className="flex items-center space-x-2" role="status" aria-label="Loading">
             {[0, 1, 2].map((index) => (
@@ -89,7 +85,6 @@ const Loading: React.FC<LoadingProps> = ({
         </div>
     );
 
-    // Pulse component
     const PulseLoader = () => (
         <div
             className={`${dotSizeClasses[size]} ${dotColorClasses[variant]} rounded-full animate-pulse`}
@@ -98,7 +93,6 @@ const Loading: React.FC<LoadingProps> = ({
         />
     );
 
-    // Bars component
     const BarsLoader = () => (
         <div className="flex items-end space-x-1.5" role="status" aria-label="Loading">
             {[0, 1, 2, 3].map((index) => (
@@ -114,7 +108,6 @@ const Loading: React.FC<LoadingProps> = ({
         </div>
     );
 
-    // Select loader type
     const renderLoader = () => {
         switch (type) {
             case 'dots':
@@ -129,7 +122,6 @@ const Loading: React.FC<LoadingProps> = ({
         }
     };
 
-    // Content wrapper
     const content = (
         <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
             {renderLoader()}
@@ -141,7 +133,6 @@ const Loading: React.FC<LoadingProps> = ({
         </div>
     );
 
-    // Full screen wrapper
     if (fullScreen) {
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
