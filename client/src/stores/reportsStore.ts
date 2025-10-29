@@ -3,13 +3,11 @@ import { IReport, ReportStatus } from "@/types/model/report";
 
 interface ReportsStore {
     reports: IReport[];
-    nextCursor?: number | null;
     filteredReports: IReport[];
     searchTerm: string;
     activeFilter: IReport | "all";
     selectedReport: IReport | null;
     setReports: (reports: IReport[]) => void;
-    setNextCursor: (nextCursor: number | null | undefined) => void;
     setSelectedReport: (report: IReport | null) => void;
     setFilteredReports: (filteredReports: IReport[]) => void;
     setSearchTerm: (searchTerm: string) => void;
@@ -24,8 +22,6 @@ export const useReportsStore = create<ReportsStore>((set, get) => ({
     filteredReports: [],
     searchTerm: "",
     activeFilter: "all",
-    nextCursor: null,
-    setNextCursor: (nextCursor) => set({ nextCursor }),
     setReports: (reports) => set({ reports }),
     setFilteredReports: (filteredReports) => set({ filteredReports }),
     setSearchTerm: (searchTerm) => set({ searchTerm }),
@@ -54,7 +50,6 @@ export const useReportsStore = create<ReportsStore>((set, get) => ({
     },
     clearReportsData: () => set({ 
         reports: [],
-        nextCursor: null,
         filteredReports: [],
         searchTerm: "",
         activeFilter: "all"

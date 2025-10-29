@@ -38,7 +38,6 @@
             setReports,
             selectedReport,
             setSelectedReport,
-            setNextCursor
         } = useReportsStore();
 
         const router = useRouter();
@@ -410,21 +409,18 @@
             getErrorResponseMessage(voteReportError) || 'Terjadi kesalahan saat melakukan vote status'
         );
 
-        useEffect(() => {
-            if (inView && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
-        }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-        useEffect(() => {
-            if (isGetReportSuccess && getReportData) {
-                const allReports = getReportData.pages.flatMap(page => page.data?.reports ?? []);
-                setReports(allReports);
-                
-                const lastPage = getReportData.pages[getReportData.pages.length - 1];
-                setNextCursor(lastPage.data?.nextCursor ?? null);
-            }
-        }, [isGetReportSuccess, getReportData, setReports, setNextCursor]);
+    useEffect(() => {
+        if (inView && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    }, [inView, hasNextPage, fetchNextPage]);
+    
+    useEffect(() => {
+        if (isGetReportSuccess && getReportData) {
+            const allReports = getReportData.pages.flatMap(page => page.data?.reports ?? []);
+            setReports(allReports);
+        }
+    }, [isGetReportSuccess, getReportData, setReports]);
 
         useEffect(() => {
             let filtered = reports;
