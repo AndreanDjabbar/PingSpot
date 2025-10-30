@@ -60,6 +60,7 @@ const DateTimeField: React.FC<DateTimeFieldProps> = ({
             {withLabel && (
                 <label htmlFor={id} className="block text-sm font-semibold text-gray-900">
                     {labelTitle}
+                    {required && <span className="text-red-500 ml-1">*</span>}
                 </label>
             )}
             <div className='relative'>

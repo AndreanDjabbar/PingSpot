@@ -67,6 +67,7 @@ const RadioField: React.FC<RadioFieldProps> = ({
             {icon && <span className="text-gray-700">{icon}</span>}
                 <label htmlFor={id} className="block text-sm font-semibold text-gray-900">
                     {labelTitle}
+                    {required && <span className="text-red-500 ml-1">*</span>}
                 </label>
                 {informationTitle && (
                 <div className="flex items-center text-sky-700 hover:text-sky-800 hover:scale-110 transition-all duration-300 cursor-pointer" title={informationTitle} onClick={handleShowInfo}>

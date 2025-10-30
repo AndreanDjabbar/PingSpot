@@ -76,6 +76,7 @@ const CheckboxField: React.FC<CheckboxFieldProps> = ({
                     {icon && <span className="text-gray-700">{icon}</span>}
                     <label htmlFor={id} className="block text-sm font-semibold text-gray-900">
                         {labelTitle}
+                        {required && <span className="text-red-500 ml-1">*</span>}
                     </label>
                     {informationTitle && informationDescription && (
                         <div 
