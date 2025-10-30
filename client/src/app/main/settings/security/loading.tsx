@@ -4,7 +4,7 @@ import { Loading } from '@/components/UI';
 const SecurityLoading = () => {
     return (
         <div className="">
-            <Loading size='xl' className='fixed inset-0 left-60'/>
+            <Loading size='xl' className='fixed inset-0 left-0 xl:left-60'/>
         </div>
     );
 }
