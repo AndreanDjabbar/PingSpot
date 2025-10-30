@@ -37,12 +37,26 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
     useEffect(() => {
         if (isOpen && buttonRef?.current) {
             const buttonRect = buttonRef.current.getBoundingClientRect();
+            // returns the size and position of an element relative to the viewport (visible area of the browser window). ex:
+            // {
+            //     x: 100,
+            //     y: 200,
+            //     width: 150,
+            //     height: 40,
+            //     top: 200,
+            //     right: 250,
+            //     bottom: 240,
+            //     left: 100
+            // }
+            
             const scrollY = window.scrollY;
+            // returns the number of pixels the document has been scrolled vertically from the very top. (how far the page has been scrolled vertically).
             
             setPosition({
-                top: buttonRect.bottom + scrollY + 8, // 8px gap below button
+                top: buttonRect.bottom + scrollY + 8,
                 right: window.innerWidth - buttonRect.right,
             });
+            // window.innerWidth: returns the number of pixels between the left and right edges of the visible part of the browser window (excluding scrollbars, toolbars, etc.).
         }
     }, [isOpen, buttonRef]);
 
@@ -90,11 +104,20 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
     ];
 
     const reportTypeOptions = [
-        { value: 'all', label: 'Semua Tipe' },
-        { value: 'INFRASTRUCTURE', label: 'Infrastruktur' },
-        { value: 'ENVIRONMENT', label: 'Lingkungan' },
-        { value: 'SAFETY', label: 'Keamanan' },
-        { value: 'OTHER', label: 'Lainnya' },
+        { value: 'infrastructure', label: 'Infrastruktur' },
+        { value: 'environment', label: 'Lingkungan' },
+        { value: 'safety', label: 'Keamanan' },
+        { value: 'traffic', label: 'Lalu Lintas' },
+        { value: 'public_facility', label: 'Fasilitas Umum' },
+        { value: 'waste', label: 'Sampah' },
+        { value: 'water', label: 'Air' },
+        { value: 'electricity', label: 'Listrik' },
+        { value: 'health', label: 'Kesehatan' },
+        { value: 'social', label: 'Sosial' },
+        { value: 'education', label: 'Pendidikan' },
+        { value: 'administrative', label: 'Administrasi' },
+        { value: 'disaster', label: 'Bencana Alam' },
+        { value: 'other', label: 'Lainnya' },
     ];
 
     const statusOptions = [
@@ -118,10 +141,20 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                 <>
                     <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-40"
                     />
+                    {/* 
+                    opacity: 0	Fully transparent	invisible
+                    opacity: 0.5	50% transparent	semi-visible
+                    opacity: 1	Fully opaque	fully visible
+
+                    y: -10 → move up 10px
+                    y: 0 → no offset, element is exactly where it should be 
+                    y: 10 → move down 10px
+                    
+                    */}
 
                     <motion.div
                         ref={modalRef}
@@ -140,7 +173,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                             className="absolute -top-2 right-6 w-4 h-4 bg-white transform rotate-45 border-l border-t border-gray-200"
                         />
                         
-                        <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-75 sm:h-80 md:h-95 lg:h-105 xl:h-120">
+                        <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-75 sm:h-78 md:h-95 lg:h-105 xl:h-120">
                             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
                                 <div>
                                     <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">
