@@ -6,8 +6,17 @@ type ReportStatus string
 const (
 	Infrastructure ReportType = "INFRASTRUCTURE"
 	Environment    ReportType = "ENVIRONMENT"
-	SocialIssue    ReportType = "SOCIAL_ISSUE"
 	Safety         ReportType = "SAFETY"
+	Traffic		   ReportType = "TRAFFIC"
+	PublicFacility ReportType = "PUBLIC_FACILITY"
+	Waste 		   ReportType = "WASTE"
+	Water 	   	   ReportType = "WATER"
+	Electricity    ReportType = "ELECTRICITY"
+	Health		   ReportType = "HEALTH"
+	Social	   	   ReportType = "SOCIAL"
+	Education	   ReportType = "EDUCATION"	
+	Administrative ReportType = "ADMINISTRATIVE"
+	Disaster       ReportType = "DISASTER"	
 	Other          ReportType = "OTHER"
 
 	RESOLVED     ReportStatus = "RESOLVED"

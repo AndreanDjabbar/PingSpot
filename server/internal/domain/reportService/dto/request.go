@@ -2,7 +2,7 @@ package dto
 
 type CreateReportRequest struct {
 	ReportTitle       string  `json:"reportTitle" validate:"required";max=200"`
-	ReportType        string  `json:"reportType" validate:"required,oneof=INFRASTRUCTURE ENVIRONMENT SOCIAL_ISSUE SAFETY OTHER"`
+	ReportType        string  `json:"reportType" validate:"required,oneof=INFRASTRUCTURE ENVIRONMENT SAFETY TRAFFIC PUBLIC_FACILITY WASTE WATER ELECTRICITY HEALTH SOCIAL EDUCATION ADMINISTRATIVE DISASTER OTHER"`
 	ReportDescription string  `json:"reportDescription" validate:"required"`
 	DetailLocation    string  `json:"detailLocation" validate:"required"`
 	HasProgress       *bool   `json:"hasProgress" validate:"omitempty"`
