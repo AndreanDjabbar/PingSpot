@@ -40,7 +40,22 @@ export const SaveSecuritySchema = z.object({
 export const CreateReportSchema = z.object({
     reportTitle: z.string().min(5, "Judul minimal 5 karakter").max(100, "Judul maksimal 100 karakter"),
     reportDescription: z.string().min(10, "Deskripsi minimal 10 karakter").max(500, "Deskripsi maksimal 500 karakter"),
-    reportType: z.enum(['infrastructure', 'environment', 'safety', 'other'], {
+    reportType: z.enum([
+        'infrastructure', 
+        'environment', 
+        'safety',
+        'traffic',
+        'public_facility',
+        'waste',
+        'water',
+        'electricity',
+        'health',
+        'social',
+        'education',
+        'administrative',
+        'disaster',
+        'other'
+    ], {
         message: "Pilih salah satu jenis laporan"
     }),
     location: z.string().min(3, "Lokasi minimal 3 karakter"),

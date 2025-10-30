@@ -31,6 +31,16 @@ const getReportTypeLabel = (type: ReportType): string => {
         INFRASTRUCTURE: 'Infrastruktur',
         ENVIRONMENT: 'Lingkungan',
         SAFETY: 'Keamanan',
+        TRAFFIC: 'Lalu Lintas',
+        PUBLIC_FACILITY: 'Fasilitas Umum',
+	    WASTE: 'Sampah',
+	    WATER: 'Air',
+	    ELECTRICITY: 'Listrik',
+	    HEALTH: 'Kesehatan',
+	    SOCIAL: 'Sosial',
+	    EDUCATION: 'Pendidikan',	
+        ADMINISTRATIVE: 'Administratif',
+	    DISASTER: 'Bencana Alam',
         OTHER: 'Lainnya'
     };
     return types[type] || 'Lainnya';
