@@ -155,8 +155,12 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	logger.Info("GET REPORT HANDLER")
 	reportID := c.Query("reportID")
-	limit := 5
 	cursorID := c.Query("cursorID")
+	reportType := c.Query("reportType")
+	status := c.Query("status")
+	sortBy := c.Query("sortBy")
+	limit := 5
+
 	cursorIDUint, err := mainutils.StringToUint(cursorID)
 	if err != nil && cursorID != "" {
 		logger.Error("Invalid afterID format", zap.String("afterID", cursorID), zap.Error(err))
@@ -171,7 +175,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	userID := uint(claims["user_id"].(float64))
 
 	if reportID == "" {
-		reports, err := h.reportService.GetAllReport(userID, uint(limit), cursorIDUint)
+		reports, err := h.reportService.GetAllReport(userID, uint(limit), cursorIDUint, reportType, status, sortBy)
 		if err != nil {
 			logger.Error("Failed to get all reports", zap.Error(err))
 		}
@@ -181,7 +185,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 			nextCursor = &lastReport.ID
 		}
 		mappedData := fiber.Map{
-			"reports": reports,
+			"reports":    reports,
 			"nextCursor": nextCursor,
 		}
 		return response.ResponseSuccess(c, 200, "Get all reports success", "data", mappedData)
@@ -253,7 +257,7 @@ func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
 		logger.Error("Failed to parse request body", zap.Error(err))
 		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
 	}
-	
+
 	if err := validation.Validate.Struct(req); err != nil {
 		errors := validation.FormatVoteReportValidationErrors(err)
 		logger.Error("Validation failed", zap.Error(err))

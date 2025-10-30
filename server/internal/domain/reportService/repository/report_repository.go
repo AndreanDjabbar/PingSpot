@@ -11,7 +11,7 @@ type ReportRepository interface {
 	UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error)
 	GetByID(reportID uint) (*model.Report, error)
 	Get() (*[]model.Report, error)
-	GetPaginated(limit, cursorID uint) (*[]model.Report, error)
+	GetPaginated(limit, cursorID uint, reportType, status, sortBy string) (*[]model.Report, error)
 }
 
 type reportRepository struct {
@@ -47,7 +47,7 @@ func (r *reportRepository) Get() (*[]model.Report, error) {
 	return &reports, nil
 }
 
-func (r *reportRepository) GetPaginated(limit, cursorID uint) (*[]model.Report, error) {
+func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status, sortBy string) (*[]model.Report, error) {
 	var reports []model.Report
 
 	query := r.db.
@@ -58,9 +58,36 @@ func (r *reportRepository) GetPaginated(limit, cursorID uint) (*[]model.Report, 
 		Preload("ReportVotes").
 		Preload("ReportProgress", func(db *gorm.DB) *gorm.DB {
 			return db.Order("created_at DESC")
-		}).
-		Order("reports.id DESC").
-		Limit(int(limit))
+		})
+
+	if reportType != "" && reportType != "all" {
+		query = query.Where("reports.report_type = ?", reportType)
+	}
+
+	if status != "" && status != "all" {
+		query = query.Where("reports.report_status = ?", status)
+	}
+
+	switch sortBy {
+	case "latest":
+		query = query.Order("reports.id DESC")
+	case "oldest":
+		query = query.Order("reports.id ASC")
+	case "most_liked":
+		query = query.
+			Joins("LEFT JOIN report_reactions ON reports.id = report_reactions.report_id AND report_reactions.type = 'LIKE'").
+			Group("reports.id").
+			Order("COUNT(report_reactions.id) DESC")
+	case "least_liked":
+		query = query.
+			Joins("LEFT JOIN report_reactions ON reports.id = report_reactions.report_id AND report_reactions.type = 'LIKE'").
+			Group("reports.id").
+			Order("COUNT(report_reactions.id) ASC")
+	default:
+		query = query.Order("reports.id DESC")
+	}
+
+	query = query.Limit(int(limit))
 
 	if cursorID != 0 {
 		query = query.Where("reports.id < ?", cursorID)
@@ -84,7 +111,7 @@ func (r *reportRepository) GetByID(reportID uint) (*model.Report, error) {
 	var report model.Report
 
 	if err := r.db.
-		Preload("User.Profile"). 
+		Preload("User.Profile").
 		Preload("ReportLocation").
 		Preload("ReportImages").
 		Preload("ReportReactions").

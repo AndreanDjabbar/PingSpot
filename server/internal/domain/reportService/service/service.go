@@ -114,8 +114,8 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 	return reportResult, nil
 }
 
-func (s *ReportService) GetAllReport(userID, limit, cursorID uint) ([]dto.GetReportResponse, error) {
-	reports, err := s.reportRepo.GetPaginated(limit, cursorID)
+func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, status, sortBy string) ([]dto.GetReportResponse, error) {
+	reports, err := s.reportRepo.GetPaginated(limit, cursorID, reportType, status, sortBy)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("Laporan tidak ditemukan")
@@ -135,7 +135,7 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint) ([]dto.GetRep
 			return nil, fmt.Errorf("Gagal mendapatkan reaksi tidak suka: %w", err)
 		}
 
-		var isLikedByCurrentUser, isDislikedByCurrentUser, isResolvedByCurrentUser, isOnProgressByCurrentUser,  isNotResolvedByCurrentUser bool
+		var isLikedByCurrentUser, isDislikedByCurrentUser, isResolvedByCurrentUser, isOnProgressByCurrentUser, isNotResolvedByCurrentUser bool
 
 		resolvedVoteCount, err := s.reportVoteRepo.GetResolvedVoteCount(report.ID)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -262,7 +262,7 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint) ([]dto.GetRep
 			IsResolvedByCurrentUser:    isResolvedByCurrentUser,
 			IsNotResolvedByCurrentUser: isNotResolvedByCurrentUser,
 			IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
-			MajorityVote: util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
+			MajorityVote:               util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
 		})
 	}
 	return fullReports, nil
@@ -276,7 +276,7 @@ func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResp
 		}
 		return nil, err
 	}
-	var isLikedByCurrentUser, isDislikedByCurrentUser, isResolvedByCurrentUser, isOnProgressByCurrentUser,  isNotResolvedByCurrentUser bool
+	var isLikedByCurrentUser, isDislikedByCurrentUser, isResolvedByCurrentUser, isOnProgressByCurrentUser, isNotResolvedByCurrentUser bool
 	likeReactionCount, err := s.reportReactionRepo.GetLikeReactionCount(report.ID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("Gagal mendapatkan reaksi suka: %w", err)
@@ -402,12 +402,12 @@ func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResp
 			}
 			return votes
 		}(),
-		IsLikedByCurrentUser:    isLikedByCurrentUser,
-		IsDislikedByCurrentUser: isDislikedByCurrentUser,
+		IsLikedByCurrentUser:       isLikedByCurrentUser,
+		IsDislikedByCurrentUser:    isDislikedByCurrentUser,
 		IsResolvedByCurrentUser:    isResolvedByCurrentUser,
 		IsNotResolvedByCurrentUser: isNotResolvedByCurrentUser,
 		IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
-		MajorityVote: util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
+		MajorityVote:               util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
 	}
 	return &fullReport, nil
 }
