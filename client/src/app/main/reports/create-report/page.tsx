@@ -4,12 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { InputField, ButtonSubmit, TextAreaField, RadioField, MultipleImageField, CheckboxField } from '@/components/form';
+import { InputField, ButtonSubmit, TextAreaField, SelectField, MultipleImageField, CheckboxField } from '@/components/form';
 import { FaMapMarkerAlt, FaCheckCircle } from 'react-icons/fa';
 import { MdOutlineNoteAlt } from 'react-icons/md';
 import { IoLocationOutline } from 'react-icons/io5';
 import { IoMdImages } from "react-icons/io";
 import { LuNotebookText } from "react-icons/lu";
+import { BiCategory } from 'react-icons/bi';
 import { SuccessSection, ErrorSection } from '@/components/feedback';
 import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseMessage } from '@/utils';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
@@ -69,8 +70,19 @@ const CreateReportPage = () => {
         { value: 'infrastructure', label: 'Infrastruktur' },
         { value: 'environment', label: 'Lingkungan' },
         { value: 'safety', label: 'Keamanan' },
-        { value: 'other', label: 'Lainnya' }
+        { value: 'traffic', label: 'Lalu Lintas' },
+        { value: 'public_facility', label: 'Fasilitas Umum' },
+        { value: 'waste', label: 'Sampah' },
+        { value: 'water', label: 'Air' },
+        { value: 'electricity', label: 'Listrik' },
+        { value: 'health', label: 'Kesehatan' },
+        { value: 'social', label: 'Sosial' },
+        { value: 'education', label: 'Pendidikan' },
+        { value: 'administrative', label: 'Administrasi' },
+        { value: 'disaster', label: 'Bencana Alam' },
+        { value: 'other', label: 'Lainnya' },
     ];
+
 
     const steps = [
         { label: 'Lokasi', description: 'Pilih lokasi masalah' },
@@ -254,6 +266,7 @@ const CreateReportPage = () => {
                                             type="text"
                                             className="w-full"
                                             withLabel={true}
+                                            required
                                             labelTitle="Judul Laporan"
                                             icon={<LuNotebookText size={20} />}
                                             placeHolder="Masukkan judul laporan"
@@ -267,6 +280,7 @@ const CreateReportPage = () => {
                                             register={register("location")}
                                             type="text"
                                             className="w-full"
+                                            required
                                             withLabel={true}
                                             labelTitle="Alamat/Detail Lokasi"
                                             icon={<IoLocationOutline size={20} />}
@@ -281,6 +295,7 @@ const CreateReportPage = () => {
                                         id="description"
                                         register={register("reportDescription")}
                                         rows={4}
+                                        required
                                         className="w-full"
                                         withLabel={true}
                                         labelTitle="Deskripsi Permasalahan"
@@ -289,23 +304,25 @@ const CreateReportPage = () => {
                                     <div className="text-red-500 text-sm font-semibold">{errors.reportDescription?.message as string}</div>
                                 </div>
 
-
-                                <div className='w-full flex justify-between items-center'>
-                                    <div className="">
-                                        <RadioField
+                                <div className='w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-6'>
+                                    <div className="w-full md:w-1/2">
+                                        <SelectField
                                             id="reportType"
                                             name="reportType"
                                             value={reportTypeValue || ''}
                                             register={register("reportType")}
+                                            onChange={(value) => setValue('reportType', value as 'infrastructure' | 'environment' | 'safety' | 'other')}
                                             withLabel={true}
                                             labelTitle="Jenis Laporan"
                                             options={issueTypes}
-                                            layout="horizontal"
+                                            placeholder="Pilih jenis laporan"
+                                            required={true}
+                                            icon={<BiCategory size={20} />}
+                                            error={errors.reportType?.message as string}
                                         />
-                                        <div className="text-red-500 text-sm font-semibold">{errors.reportType?.message as string}</div>
                                     </div>
 
-                                    <div className="">
+                                    <div className="w-full md:w-1/2">
                                         <CheckboxField
                                             id="hasProgress"
                                             name="hasProgress"

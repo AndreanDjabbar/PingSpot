@@ -18,22 +18,23 @@ const ReportList: React.FC<ReportListProps> = ({
     onComment,
     onShare,
     onStatusVote,
-}) => {
-    const { reports } = useReportsStore();
+}) => { 
+    const { filteredReports } = useReportsStore();
+
     return (
         <div className="space-y-4">
-        {reports.map(report => (
-            <ReportCard
-            key={report.id}
-            reportID={report.id}
-            onLike={onLike}
-            onDislike={onDislike}
-            onSave={onSave}
-            onComment={onComment}
-            onShare={onShare}
-            onStatusVote={onStatusVote}
-            />
-        ))}
+            {filteredReports.map(report => (
+                <ReportCard
+                    key={report.id}
+                    reportID={report.id}
+                    onLike={onLike}
+                    onDislike={onDislike}
+                    onSave={onSave}
+                    onComment={onComment}
+                    onShare={onShare}
+                    onStatusVote={onStatusVote}
+                />
+            ))}
         </div>
     );
 };
