@@ -62,10 +62,23 @@ export const getReportByIDService = async (reportID: number): Promise<IGetReport
     return response.data;
 }
 
-export const getReportService = async (cursorID ? : number): Promise<IGetReportResponse> => {
+export const getReportService = async (
+    cursorID?: number,
+    reportType?: string,
+    status?: string,
+    sortBy?: string
+): Promise<IGetReportResponse> => {
     const authToken = getAuthToken();
-    const params = cursorID ? `?cursorID=${cursorID}` : '';
-    const response = await axios.get<IGetReportResponse>(`${MAIN_API_URL}/report${params}`, {
+    const params = new URLSearchParams();
+    
+    if (cursorID) params.append('cursorID', cursorID.toString());
+    if (reportType && reportType !== 'all') params.append('reportType', reportType);
+    if (status && status !== 'all') params.append('status', status);
+    if (sortBy) params.append('sortBy', sortBy);
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    
+    const response = await axios.get<IGetReportResponse>(`${MAIN_API_URL}/report${queryString}`, {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

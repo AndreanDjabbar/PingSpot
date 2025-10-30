@@ -2,10 +2,15 @@ import { getReportByIDService, getReportService } from "@/services/mainService"
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import { IGetReportByIDResponse, IGetReportResponse } from "@/types/api/report"
 
-export const useGetReport = () => {
+export const useGetReport = (reportType?: string, status?: string, sortBy?: string) => {
     return useInfiniteQuery<IGetReportResponse, Error>({
-        queryKey: ['report'],
-        queryFn: ({ pageParam }) => getReportService(pageParam as number | undefined),
+        queryKey: ['report', reportType, status, sortBy],
+        queryFn: ({ pageParam }) => getReportService(
+            pageParam as number | undefined,
+            reportType,
+            status,
+            sortBy
+        ),
         getNextPageParam: (lastPage) => lastPage.data?.nextCursor ?? undefined,
         initialPageParam: undefined,
     });
