@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BiLike, BiCategory, BiMap } from 'react-icons/bi';
+import { RiProgress3Fill } from "react-icons/ri";
 import { MdCheckCircle, MdAccessTime, MdCancel } from 'react-icons/md';
 import { ReportType } from '@/types/model/report';
 
 type SortOption = 'latest' | 'oldest' | 'most_liked' | 'least_liked';
 type StatusFilter = 'all' | 'PENDING' | 'ON_PROGRESS' | 'RESOLVED' | 'NOT_RESOLVED';
 type DistanceFilter = 'all' | '1km' | '5km' | '10km';
+type ProgressFilter = 'all' | 'true' | 'false';
 
 interface FilterModalProps {
     isOpen: boolean;
@@ -21,6 +23,7 @@ export interface FilterOptions {
     reportType: ReportType | 'all';
     status: StatusFilter;
     distance: DistanceFilter;
+    hasProgress: ProgressFilter;
 }
 
 const ReportFilterModal: React.FC<FilterModalProps> = ({
@@ -31,6 +34,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
     buttonRef
 }) => {
     const [filters, setFilters] = useState<FilterOptions>(currentFilters);
+    const [disableStatus, setDisableStatus] = useState(false);
     const [position, setPosition] = useState({ top: 0, right: 0 });
     const modalRef = useRef<HTMLDivElement>(null);
 
@@ -91,7 +95,8 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
             sortBy: 'latest',
             reportType: 'all',
             status: 'all',
-            distance: 'all'
+            distance: 'all',
+            hasProgress: 'all'
         };
         setFilters(defaultFilters);
     };
@@ -121,9 +126,16 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
 
     const statusOptions = [
         { value: 'all', label: 'Semua Status', icon: <BiCategory />, color: 'gray' },
-        { value: 'ON_PROGRESS', label: 'Dalam Proses', icon: <MdAccessTime />, color: 'yellow' },
         { value: 'RESOLVED', label: 'Terselesaikan', icon: <MdCheckCircle />, color: 'green' },
-        { value: 'NOT_RESOLVED', label: 'Belum Terselesaikan', icon: <MdCancel />, color: 'red' },
+        { value: 'ON_PROGRESS', label: 'Dalam Proses', icon: <RiProgress3Fill />, color: 'yellow' },
+        { value: 'NOT_RESOLVED', label: 'Belum Ada Proses', icon: <MdCancel />, color: 'red' },
+        { value: 'WAITING', label: 'Menunggu', icon: <MdAccessTime />, color: 'gray' },
+    ];
+
+    const progressOptions = [
+        { value: 'all', label: 'Semua Laporan', icon: <BiCategory /> },
+        { value: 'true', label: 'Dengan Progress', icon: <RiProgress3Fill /> },
+        { value: 'false', label: 'Tanpa Progress', icon: <MdCancel /> },
     ];
 
     const distanceOptions = [
@@ -201,7 +213,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                                 <div>
                                     <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">
                                         <BiCategory className="w-4 h-4 sm:w-5 sm:h-5" />
-                                        Tipe Laporan
+                                        Kategori Laporan
                                     </label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                                         {reportTypeOptions.map((option) => (
@@ -229,15 +241,20 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                                         {statusOptions.map((option) => (
                                             <button
                                                 key={option.value}
+                                                disabled={disableStatus}
                                                 onClick={() => setFilters({ ...filters, status: option.value as StatusFilter })}
                                                 className={`w-full flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all ${
-                                                    filters.status === option.value
+                                                    disableStatus
+                                                        ? 'opacity-50 cursor-not-allowed border-gray-200 bg-gray-100'
+                                                        : filters.status === option.value
                                                         ? 'border-sky-600 bg-sky-50'
                                                         : 'border-gray-200 hover:border-gray-300'
                                                 }`}
                                             >
                                                 <span className={`text-base sm:text-lg ${
-                                                    filters.status === option.value
+                                                    disableStatus
+                                                        ? 'text-gray-300'
+                                                        : filters.status === option.value
                                                         ? 'text-sky-600'
                                                         : option.color === 'green'
                                                         ? 'text-green-500'
@@ -252,10 +269,45 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                                                     {option.icon}
                                                 </span>
                                                 <span className={`text-xs sm:text-sm font-medium ${
-                                                    filters.status === option.value ? 'text-sky-700' : 'text-gray-700'
+                                                    disableStatus
+                                                        ? 'text-gray-400'
+                                                        : filters.status === option.value ? 'text-sky-700' : 'text-gray-700'
                                                 }`}>
                                                     {option.label}
                                                 </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3">
+                                        <RiProgress3Fill className="w-4 h-4 sm:w-5 sm:h-5" />
+                                        Tipe Progress Laporan
+                                    </label>
+                                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                        {progressOptions.map((option) => (
+                                            <button
+                                                key={option.value}
+                                                onClick={() => {
+                                                    if (option.value as ProgressFilter === 'false') {
+                                                        setDisableStatus(true);
+                                                        setFilters({ ...filters, hasProgress: option.value as ProgressFilter, status: 'all' });
+                                                    } else {
+                                                        setDisableStatus(false);
+                                                        setFilters({ ...filters, hasProgress: option.value as ProgressFilter });
+                                                    }
+                                                }}
+                                                className={`flex items-center gap-2 p-3 sm:p-4 rounded-xl border-2 transition-all ${
+                                                    filters.hasProgress === option.value
+                                                        ? 'border-sky-600 bg-sky-50 text-sky-700'
+                                                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                                                }`}
+                                            >
+                                                <span className={filters.hasProgress === option.value ? 'text-sky-600' : 'text-gray-400'}>
+                                                    {option.icon}
+                                                </span>
+                                                <span className="text-xs sm:text-sm font-medium">{option.label}</span>
                                             </button>
                                         ))}
                                     </div>

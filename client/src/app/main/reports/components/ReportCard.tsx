@@ -46,6 +46,32 @@ const getReportTypeLabel = (type: ReportType): string => {
     return types[type] || 'Lainnya';
 };
 
+const getStatusLabel = (status: string) => {
+    switch (status) {
+        case 'RESOLVED':
+            return 'Terselesaikan';
+        case 'NOT_RESOLVED':
+            return 'Belum Terselesaikan';
+        case 'IN_PROGRESS':
+            return 'Sedang Dikerjakan';
+        default:
+            return 'Menunggu';
+    }
+};
+
+const getStatusColor = (status: string) => {
+    switch (status) {
+        case 'RESOLVED':
+            return 'bg-green-700 border-green-700 text-white';
+        case 'NOT_RESOLVED':
+            return 'bg-red-700 text-white';
+        case 'IN_PROGRESS':
+            return 'bg-yellow-500 text-white';
+        default:
+            return 'bg-gray-500 text-white';
+    }
+};
+
 const getReportImages = (images: IReportImage): string[] => {
     if (!images) return [];
     return [
@@ -112,10 +138,18 @@ const ReportCard: React.FC<ReportCardProps> = ({
                         </div>
                         <div>
                             <div className="font-semibold text-sm text-gray-900">{report?.userName}</div>
-                            <div className="text-xs text-gray-500 flex items-center">
-                                {formattedDate(report?.reportCreatedAt, {
-                                    formatStr: 'dd MMMM yyyy',
-                                })}
+                            <div className="text-xs text-gray-500 flex items-center gap-1">
+                                <div>
+                                    {formattedDate(report?.reportCreatedAt, {
+                                        formatStr: 'dd MMMM yyyy',
+                                    })}
+                                </div>
+                                -
+                                <div>
+                                    {formattedDate(report?.reportCreatedAt, {
+                                        formatStr: 'HH:mm',
+                                    })}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -123,6 +157,11 @@ const ReportCard: React.FC<ReportCardProps> = ({
                         <span className={`inline-flex items-center px-2.5 py-1 bg-blue-50 text-xs font-medium text-sky-800 rounded-full`}>
                             {getReportTypeLabel(report.reportType)}
                         </span>
+                        {report.hasProgress && (
+                            <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${getStatusColor(report.reportStatus || 'PENDING')}`}>
+                                {getStatusLabel(report.reportStatus || 'PENDING')}
+                            </span>
+                        )}
                         <button className='p-2 hover:bg-gray-100 rounded-full transition-colors'>
                             <BsThreeDots size={20} className="text-gray-600"/>
                         </button>

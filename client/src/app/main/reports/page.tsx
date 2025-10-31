@@ -33,7 +33,8 @@ const ReportsPage = () => {
         sortBy: 'latest',
         reportType: 'all',
         status: 'all',
-        distance: 'all'
+        distance: 'all',
+        hasProgress: 'all'
     });
 
     const { ref, inView } = useInView({
@@ -75,7 +76,8 @@ const ReportsPage = () => {
     } = useGetReport(
         filters.reportType !== 'all' ? filters.reportType : undefined,
         filters.status !== 'all' ? filters.status : undefined,
-        filters.sortBy
+        filters.sortBy,
+        filters.hasProgress !== 'all' ? filters.hasProgress : undefined
     );
 
     const handleCloseReportModal = () => {
@@ -477,7 +479,7 @@ const ReportsPage = () => {
                         />
                     )}
 
-                    {!getReportLoading && reports.length > 0 && (
+                    {!getReportLoading && (
                         <ReportSearchAndFilter
                             searchTerm={searchTerm}
                             onSearchChange={setSearchTerm}
@@ -487,7 +489,8 @@ const ReportsPage = () => {
                                 (filters.reportType !== 'all' ? 1 : 0) +
                                 (filters.status !== 'all' ? 1 : 0) +
                                 (filters.distance !== 'all' ? 1 : 0) +
-                                (filters.sortBy !== 'latest' ? 1 : 0)
+                                (filters.sortBy !== 'latest' ? 1 : 0) +
+                                (filters.hasProgress !== 'all' ? 1 : 0)
                             }
                         />
                     )}

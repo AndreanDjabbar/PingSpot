@@ -10,6 +10,7 @@ import { getFormattedDate as formattedDate, getImageURL } from '@/utils';
 import { Accordion } from '@/components/UI';
 import { RiProgress3Fill } from 'react-icons/ri';
 import { MdDone } from 'react-icons/md';
+import { LuLock } from 'react-icons/lu';
 
 interface ReportProgressTimelineProps {
     report: IReport;
@@ -206,14 +207,27 @@ export const ReportProgressTimeline: React.FC<ReportProgressTimelineProps> = ({
                     )}
                 </div>
             ) : (
-                <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-                        <IoDocumentText size={32}/>
+                <div>
+                    {report.hasProgress && (
+                        <div className="text-center py-8">
+                            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                                <IoDocumentText size={32}/>
+                            </div>
+                            <p className="text-sm font-medium text-gray-900 mb-1">Belum Ada Perkembangan</p>
+                            <p className="text-xs text-gray-500">
+                                Perkembangan laporan akan ditampilkan di sini
+                            </p>
+                        </div>
+                    )}
+                    <div className="text-center py-8">
+                        <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                            <LuLock size={32}/>
+                        </div>
+                        <p className="text-sm font-medium text-gray-900 mb-1">Tidak ada Progress</p>
+                        <p className="text-xs text-gray-500">
+                            Tipe laporan ini tidak akan menampilkan perkembangan laporan
+                        </p>
                     </div>
-                    <p className="text-sm font-medium text-gray-900 mb-1">Belum Ada Perkembangan</p>
-                    <p className="text-xs text-gray-500">
-                        Perkembangan laporan akan ditampilkan di sini
-                    </p>
                 </div>
             )}
         </div>
