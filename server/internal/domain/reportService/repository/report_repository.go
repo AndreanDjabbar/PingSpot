@@ -90,7 +90,11 @@ func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status
 	query = query.Limit(int(limit))
 
 	if cursorID != 0 {
-		query = query.Where("reports.id < ?", cursorID)
+		if sortBy == "oldest" || sortBy == "least_liked" {
+			query = query.Where("reports.id > ?", cursorID)
+		} else {
+			query = query.Where("reports.id < ?", cursorID)
+		}
 	}
 
 	if err := query.Find(&reports).Error; err != nil {
