@@ -22,6 +22,7 @@ const (
 	RESOLVED     ReportStatus = "RESOLVED"
 	NOT_RESOLVED ReportStatus = "NOT_RESOLVED"
 	ON_PROGRESS  ReportStatus = "ON_PROGRESS"
+	WAITING      ReportStatus = "WAITING"
 )
 
 type Report struct {
@@ -32,9 +33,8 @@ type Report struct {
 	ReportType        ReportType   `gorm:"type:varchar(30);not null"`
 	ReportDescription string       `gorm:"type:text;not null"`
 	CreatedAt         int64        `gorm:"autoCreateTime"`
-	ReportStatus      ReportStatus `gorm:"type:varchar(50);default:'NOT_RESOLVED'"`
+	ReportStatus      ReportStatus `gorm:"type:varchar(50);default:'WAITING'"`
 	HasProgress       *bool        `gorm:"default:true"`
-
 	ReportLocation  *ReportLocation   `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ReportImages    *ReportImage      `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ReportReactions *[]ReportReaction `gorm:"foreignKey:ReportID"`
