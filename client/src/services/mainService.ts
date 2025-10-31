@@ -66,7 +66,8 @@ export const getReportService = async (
     cursorID?: number,
     reportType?: string,
     status?: string,
-    sortBy?: string
+    sortBy?: string,
+    hasProgress?: string
 ): Promise<IGetReportResponse> => {
     const authToken = getAuthToken();
     const params = new URLSearchParams();
@@ -75,6 +76,7 @@ export const getReportService = async (
     if (reportType && reportType !== 'all') params.append('reportType', reportType);
     if (status && status !== 'all') params.append('status', status);
     if (sortBy) params.append('sortBy', sortBy);
+    if (hasProgress && hasProgress !== 'all') params.append('hasProgress', hasProgress);
     
     const queryString = params.toString() ? `?${params.toString()}` : '';
     
