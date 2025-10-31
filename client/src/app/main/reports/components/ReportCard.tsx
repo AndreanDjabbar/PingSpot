@@ -224,6 +224,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                     <div className="relative">
                         <div className="relative w-full overflow-hidden bg-gray-100 rounded-xl shadow-md">
                             <StaticMap
+                                key={`map-${report.id}-${Date.now()}`}
                                 latitude={report.location.latitude}
                                 longitude={report.location.longitude}
                                 height={380}
