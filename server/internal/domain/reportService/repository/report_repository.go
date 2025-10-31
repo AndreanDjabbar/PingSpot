@@ -11,7 +11,7 @@ type ReportRepository interface {
 	UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error)
 	GetByID(reportID uint) (*model.Report, error)
 	Get() (*[]model.Report, error)
-	GetPaginated(limit, cursorID uint, reportType, status, sortBy string) (*[]model.Report, error)
+	GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string) (*[]model.Report, error)
 }
 
 type reportRepository struct {
@@ -47,7 +47,7 @@ func (r *reportRepository) Get() (*[]model.Report, error) {
 	return &reports, nil
 }
 
-func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status, sortBy string) (*[]model.Report, error) {
+func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string) (*[]model.Report, error) {
 	var reports []model.Report
 
 	query := r.db.
@@ -66,6 +66,14 @@ func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status
 
 	if status != "" && status != "all" {
 		query = query.Where("reports.report_status = ?", status)
+	}
+
+	if hasProgress != "" && hasProgress != "all" {
+		if hasProgress == "true" {
+			query = query.Where("reports.has_progress = ?", true)
+		} else if hasProgress == "false" {
+			query = query.Where("reports.has_progress = ?", false)
+		}
 	}
 
 	switch sortBy {

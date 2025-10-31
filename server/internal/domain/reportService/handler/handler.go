@@ -159,6 +159,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	reportType := c.Query("reportType")
 	status := c.Query("status")
 	sortBy := c.Query("sortBy")
+	hasProgress := c.Query("hasProgress")
 	limit := 5
 
 	cursorIDUint, err := mainutils.StringToUint(cursorID)
@@ -175,7 +176,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	userID := uint(claims["user_id"].(float64))
 
 	if reportID == "" {
-		reports, err := h.reportService.GetAllReport(userID, uint(limit), cursorIDUint, reportType, status, sortBy)
+		reports, err := h.reportService.GetAllReport(userID, uint(limit), cursorIDUint, reportType, status, sortBy, hasProgress)
 		if err != nil {
 			logger.Error("Failed to get all reports", zap.Error(err))
 		}
