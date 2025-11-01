@@ -2,6 +2,7 @@ package repository
 
 import (
 	"server/internal/domain/model"
+	"server/internal/domain/reportService/dto"
 
 	"gorm.io/gorm"
 )
@@ -12,6 +13,7 @@ type ReportRepository interface {
 	GetByID(reportID uint) (*model.Report, error)
 	Get() (*[]model.Report, error)
 	GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string) (*[]model.Report, error)
+	GetReportsCount() (*dto.TotalReportCount, error)
 }
 
 type reportRepository struct {
@@ -20,6 +22,57 @@ type reportRepository struct {
 
 func NewReportRepository(db *gorm.DB) ReportRepository {
 	return &reportRepository{db: db}
+}
+
+func (r *reportRepository) GetReportsCount() (*dto.TotalReportCount, error) {
+	var grouped []struct {
+		ReportType string
+		Total      int64
+	}
+
+	if err := r.db.Model(&model.Report{}).
+		Select("report_type, COUNT(*) as total").
+		Group("report_type").
+		Scan(&grouped).Error; err != nil {
+		return nil, err
+	}
+
+	var result dto.TotalReportCount
+	for _, g := range grouped {
+		switch g.ReportType {
+		case "INFRASTRUCTURE":
+			result.TotalInfrastructureReports = g.Total
+		case "ENVIRONMENT":
+			result.TotalEnvironmentReports = g.Total
+		case "SAFETY":
+			result.TotalSafetyReports = g.Total
+		case "TRAFFIC":
+			result.TotalTrafficReports = g.Total
+		case "PUBLIC_FACILITY":
+			result.TotalPublicFacilityReports = g.Total
+		case "WASTE":
+			result.TotalWasteReports = g.Total
+		case "WATER":
+			result.TotalWaterReports = g.Total
+		case "ELECTRICITY":
+			result.TotalElectricityReports = g.Total
+		case "HEALTH":
+			result.TotalHealthReports = g.Total
+		case "SOCIAL":
+			result.TotalSocialReports = g.Total
+		case "EDUCATION":
+			result.TotalEducationReports = g.Total
+		case "ADMINISTRATIVE":
+			result.TotalAdministrativeReports = g.Total
+		case "DISASTER":
+			result.TotalDisasterReports = g.Total
+		case "OTHER":
+			result.TotalOtherReports = g.Total
+		}
+		result.TotalReports += g.Total
+	}
+
+	return &result, nil
 }
 
 func (r *reportRepository) Create(report *model.Report, tx *gorm.DB) error {

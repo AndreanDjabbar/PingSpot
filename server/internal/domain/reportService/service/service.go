@@ -114,7 +114,7 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 	return reportResult, nil
 }
 
-func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, status, sortBy, hasProgress string) ([]dto.GetReportResponse, error) {
+func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, status, sortBy, hasProgress string) (*dto.GetReportsResponse, error) {
 	reports, err := s.reportRepo.GetPaginated(limit, cursorID, reportType, status, sortBy, hasProgress)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -123,7 +123,12 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, s
 		return nil, err
 	}
 
-	var fullReports []dto.GetReportResponse
+	reportsCount, err := s.reportRepo.GetReportsCount()
+	if err != nil {
+		return nil, fmt.Errorf("Gagal mendapatkan total laporan: %w", err)
+	}
+
+	var fullReports []dto.Report
 
 	for _, report := range *reports {
 		likeReactionCount, err := s.reportReactionRepo.GetLikeReactionCount(report.ID)
@@ -152,7 +157,7 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, s
 			return nil, fmt.Errorf("Gagal mendapatkan suara 'NOT_RESOLVED': %w", err)
 		}
 
-		fullReports = append(fullReports, dto.GetReportResponse{
+		fullReports = append(fullReports, dto.Report{
 			ID:                report.ID,
 			ReportTitle:       report.ReportTitle,
 			ReportType:        string(report.ReportType),
@@ -162,7 +167,7 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, s
 			UserName:          report.User.Username,
 			FullName:          report.User.FullName,
 			ProfilePicture:    report.User.Profile.ProfilePicture,
-			Location: dto.ReportLocationResponse{
+			Location: dto.ReportLocation{
 				DetailLocation: report.ReportLocation.DetailLocation,
 				Latitude:       report.ReportLocation.Latitude,
 				Longitude:      report.ReportLocation.Longitude,
@@ -181,7 +186,7 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, s
 			},
 			ReportStatus: string(report.ReportStatus),
 			HasProgress:  report.HasProgress,
-			Images: dto.ReportImageResponse{
+			Images: dto.ReportImage{
 				Image1URL: report.ReportImages.Image1URL,
 				Image2URL: report.ReportImages.Image2URL,
 				Image3URL: report.ReportImages.Image3URL,
@@ -265,7 +270,11 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, s
 			MajorityVote:               util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
 		})
 	}
-	return fullReports, nil
+	reportsData := dto.GetReportsResponse{
+		Reports:     fullReports,
+		TotalCounts: reportsCount,
+	}
+	return &reportsData, nil
 }
 
 func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResponse, error) {
@@ -297,7 +306,7 @@ func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResp
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("Gagal mendapatkan suara 'ON_PROGRESS': %w", err)
 	}
-	fullReport := dto.GetReportResponse{
+	fullReport := dto.Report{
 		ID:                report.ID,
 		ReportTitle:       report.ReportTitle,
 		ReportType:        string(report.ReportType),
@@ -307,7 +316,7 @@ func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResp
 		UserName:          report.User.Username,
 		FullName:          report.User.FullName,
 		ProfilePicture:    report.User.Profile.ProfilePicture,
-		Location: dto.ReportLocationResponse{
+		Location: dto.ReportLocation{
 			DetailLocation: report.ReportLocation.DetailLocation,
 			Latitude:       report.ReportLocation.Latitude,
 			Longitude:      report.ReportLocation.Longitude,
@@ -326,7 +335,7 @@ func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResp
 		},
 		ReportStatus: string(report.ReportStatus),
 		HasProgress:  report.HasProgress,
-		Images: dto.ReportImageResponse{
+		Images: dto.ReportImage{
 			Image1URL: report.ReportImages.Image1URL,
 			Image2URL: report.ReportImages.Image2URL,
 			Image3URL: report.ReportImages.Image3URL,
@@ -409,7 +418,10 @@ func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResp
 		IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
 		MajorityVote:               util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
 	}
-	return &fullReport, nil
+	result := dto.GetReportResponse{
+		Report: fullReport,
+	}
+	return &result, nil
 }
 
 func (s *ReportService) ReactToReport(db *gorm.DB, userID uint, reportID uint, reactionType string) (*dto.ReactReportResponse, error) {
