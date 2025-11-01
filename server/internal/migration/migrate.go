@@ -233,6 +233,33 @@ func Migrate(db *gorm.DB) error {
 				return tx.Migrator().DropTable(&model.ReportVote{})
 			},
 		},
+		{
+			ID: "31102025_add_cascade_delete_report_reactions",
+			Migrate: func(tx *gorm.DB) error {
+				if err := tx.Exec("ALTER TABLE report_reactions DROP CONSTRAINT IF EXISTS fk_report_reactions_report").Error; err != nil {
+					return err
+				}
+				return tx.Exec(`
+					ALTER TABLE report_reactions 
+					ADD CONSTRAINT fk_report_reactions_report 
+					FOREIGN KEY (report_id) 
+					REFERENCES reports(id) 
+					ON UPDATE CASCADE 
+					ON DELETE CASCADE
+				`).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if err := tx.Exec("ALTER TABLE report_reactions DROP CONSTRAINT IF EXISTS fk_report_reactions_report").Error; err != nil {
+					return err
+				}
+				return tx.Exec(`
+					ALTER TABLE report_reactions 
+					ADD CONSTRAINT fk_report_reactions_report 
+					FOREIGN KEY (report_id) 
+					REFERENCES reports(id)
+				`).Error
+			},
+		},
 	})
 
 	err := m.Migrate()
