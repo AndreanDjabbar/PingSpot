@@ -1,10 +1,12 @@
 import { create } from "zustand";
-import { IReport, ReportStatus } from "@/types/model/report";
+import { IReport, ITotalReportCount, ReportStatus } from "@/types/model/report";
 
 interface ReportsStore {
     reports: IReport[];
     filteredReports: IReport[];
     searchTerm: string;
+    reportCount: ITotalReportCount;
+    setReportCount: (reportCount: ITotalReportCount) => void;
     activeFilter: IReport | "all";
     selectedReport: IReport | null;
     setReports: (reports: IReport[]) => void;
@@ -20,6 +22,26 @@ export const useReportsStore = create<ReportsStore>((set, get) => ({
     reports: [],
     selectedReport: null,
     filteredReports: [],
+    reportCount: {
+        totalReports: 0,
+        totalInfrastructureReports: 0,
+        totalEnvironmentReports: 0,
+        totalSafetyReports: 0,
+        totalTrafficReports: 0,
+        totalPublicFacilityReports: 0,
+        totalWasteReports: 0,   
+        totalWaterReports: 0,
+        totalElectricityReports: 0,
+        totalHealthReports: 0,
+        totalSocialReports: 0,
+        totalEducationReports: 0,
+        totalAdministrativeReports: 0,
+        totalDisasterReports: 0,
+        totalOtherReports: 0,
+    },
+    setReportCount: (reportCount) => {
+        set({ reportCount });
+    },
     searchTerm: "",
     activeFilter: "all",
     setReports: (reports) => set({ reports }),
