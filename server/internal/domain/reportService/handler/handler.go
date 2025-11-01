@@ -181,8 +181,8 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 			logger.Error("Failed to get all reports", zap.Error(err))
 		}
 		var nextCursor *uint = nil
-		if len(reports) > 0 {
-			lastReport := reports[len(reports)-1]
+		if len(reports.Reports) > 0 {
+			lastReport := reports.Reports[len(reports.Reports)-1]
 			nextCursor = &lastReport.ID
 		}
 		mappedData := fiber.Map{
