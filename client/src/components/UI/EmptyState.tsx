@@ -29,7 +29,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 
         {showCommandButton && onCommandButton && (
             <button
-            className="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-all flex items-center space-x-2 mx-auto"
+            className="bg-pingspot-hoverable text-white px-6 py-3 rounded-lg font-semibold transition-all flex items-center space-x-2 mx-auto"
             onClick={onCommandButton}
             >
             <BiPlus className="w-4 h-4" />
