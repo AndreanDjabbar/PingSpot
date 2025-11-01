@@ -1,8 +1,41 @@
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useReportsStore } from '@/stores';
+
+const reportTypeConfig: Record<string, { label: string; color: string }> = {
+    totalInfrastructureReports: { label: 'Infrastruktur', color: 'text-blue-600' },
+    totalEnvironmentReports: { label: 'Lingkungan', color: 'text-green-600' },
+    totalSafetyReports: { label: 'Keamanan', color: 'text-red-600' },
+    totalTrafficReports: { label: 'Lalu Lintas', color: 'text-orange-600' },
+    totalPublicFacilityReports: { label: 'Fasilitas Umum', color: 'text-purple-600' },
+    totalWasteReports: { label: 'Sampah', color: 'text-yellow-600' },
+    totalWaterReports: { label: 'Air', color: 'text-cyan-600' },
+    totalElectricityReports: { label: 'Listrik', color: 'text-amber-600' },
+    totalHealthReports: { label: 'Kesehatan', color: 'text-pink-600' },
+    totalSocialReports: { label: 'Sosial', color: 'text-indigo-600' },
+    totalEducationReports: { label: 'Pendidikan', color: 'text-teal-600' },
+    totalAdministrativeReports: { label: 'Administrasi', color: 'text-slate-600' },
+    totalDisasterReports: { label: 'Bencana Alam', color: 'text-rose-600' },
+    totalOtherReports: { label: 'Lainnya', color: 'text-gray-600' },
+};
 
 export const ReportSidebar = () => {
+    const { reportCount } = useReportsStore();
+
+    const reportStats = useMemo(() => {
+        if (!reportCount) return [];
+        
+        return Object.entries(reportCount)
+            .filter(([key, value]) => key !== 'totalReports' && value > 0)
+            .map(([key, value]) => ({
+                key,
+                label: reportTypeConfig[key]?.label || key,
+                color: reportTypeConfig[key]?.color || 'text-gray-600',
+                count: value,
+            }));
+    }, [reportCount]);
+
     return (
         <div className='hidden lg:block w-1/3 lg:w-75 2xl:w-90 overflow-y-auto space-y-4'>
             <div className='bg-white rounded-lg border border-gray-200 shadow-sm p-5'>
@@ -35,27 +68,21 @@ export const ReportSidebar = () => {
                 <div className='space-y-3'>
                     <div className='flex justify-between items-center'>
                         <span className='text-gray-600 text-sm'>Total Laporan</span>
-                        <span className='font-semibold text-gray-900'>{12}</span>
+                        <span className='font-semibold text-gray-900'>{reportCount?.totalReports || 0}</span>
                     </div>
-                    <div className='h-px bg-gray-200'></div>
-                    <div className='flex justify-between items-center'>
-                        <span className='text-gray-600 text-sm'>Infrastruktur</span>
-                        <span className='font-semibold text-blue-600'>
-                            {12}
-                        </span>
-                    </div>
-                    <div className='flex justify-between items-center'>
-                        <span className='text-gray-600 text-sm'>Lingkungan</span>
-                        <span className='font-semibold text-green-600'>
-                            {12}
-                        </span>
-                    </div>
-                    <div className='flex justify-between items-center'>
-                        <span className='text-gray-600 text-sm'>Keamanan</span>
-                        <span className='font-semibold text-red-600'>
-                            {12}
-                        </span>
-                    </div>
+                    {reportStats.length > 0 && (
+                        <>
+                            <div className='h-px bg-gray-200'></div>
+                            {reportStats.map((stat) => (
+                                <div key={stat.key} className='flex justify-between items-center'>
+                                    <span className='text-gray-600 text-sm'>{stat.label}</span>
+                                    <span className={`font-semibold ${stat.color}`}>
+                                        {stat.count}
+                                    </span>
+                                </div>
+                            ))}
+                        </>
+                    )}
                 </div>
             </div>
 
