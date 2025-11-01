@@ -1,4 +1,19 @@
-export type ReportType = 'INFRASTRUCTURE' | 'ENVIRONMENT' | 'SAFETY' | 'OTHER';
+export type ReportType = 
+    | 'INFRASTRUCTURE' 
+    | 'ENVIRONMENT' 
+    | 'SAFETY' 
+    | 'TRAFFIC' 
+    | 'PUBLIC_FACILITY' 
+    | 'WASTE' 
+    | 'WATER' 
+    | 'ELECTRICITY' 
+    | 'HEALTH' 
+    | 'SOCIAL' 
+    | 'EDUCATION' 
+    | 'ADMINISTRATIVE' 
+    | 'DISASTER' 
+    | 'OTHER';
+
 export type ReportStatus = 'PENDING' | 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS';
 
 export interface IReportImage {
@@ -75,6 +90,24 @@ export interface IUserInteraction {
     hasDisliked: boolean;
     hasSaved: boolean;
     currentVote?: string;
+}
+
+export interface ITotalReportCount {
+    totalReports: number;
+    totalInfrastructureReports: number;
+    totalEnvironmentReports: number;
+    totalSafetyReports: number;
+    totalTrafficReports: number;
+    totalPublicFacilityReports: number;
+    totalWasteReports: number;
+    totalWaterReports: number;
+    totalElectricityReports: number;
+    totalHealthReports: number;
+    totalSocialReports: number;
+    totalEducationReports: number;
+    totalAdministrativeReports: number;
+    totalDisasterReports: number;
+    totalOtherReports: number;
 }
 
 export interface IReport {
