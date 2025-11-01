@@ -36,7 +36,7 @@ const UpdateProgressPage = () => {
     
     const report = reports.find(r => r.id === reportId);
     const { data: freshReportData } = useGetReportByID(reportId);
-    const freshReport = freshReportData?.data?.report;
+    const freshReport = freshReportData?.data?.report?.report;
     const currentReport = freshReport || report;
     const customCurrentPath = `/main/reports/${reportId}/Perbarui Perkembangan`;
     const currentUserId = userProfile ? Number(userProfile.userID) : null;

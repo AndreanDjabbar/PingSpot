@@ -25,7 +25,17 @@ const getReportTypeLabel = (type: ReportType): string => {
         INFRASTRUCTURE: 'Infrastruktur',
         ENVIRONMENT: 'Lingkungan',
         SAFETY: 'Keamanan',
-        OTHER: 'Lainnya'
+        OTHER: 'Lainnya',
+        TRAFFIC: 'Lalu Lintas',
+        PUBLIC_FACILITY: 'Fasilitas Umum',
+        WASTE: 'Sampah',
+        WATER: 'Air',
+        ELECTRICITY: 'Listrik',
+        HEALTH: 'Kesehatan',
+        SOCIAL: 'Sosial',
+        EDUCATION: 'Pendidikan',
+        ADMINISTRATIVE: 'Administratif',
+        DISASTER: 'Bencana Alam',
     };
     return types[type] || 'Lainnya';
 };
@@ -147,7 +157,7 @@ const ReportDetailPage = () => {
         error: voteReportError,
     } = useVoteReport();
 
-    const [report, setReport] = useState(freshReportData?.data?.report);
+    const [report, setReport] = useState(freshReportData?.data?.report?.report || null);
     
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
@@ -422,7 +432,7 @@ const ReportDetailPage = () => {
 
     useEffect(() => {
         if (freshReportData?.data?.report) {
-            setReport(freshReportData.data.report);
+            setReport(freshReportData.data.report.report);
         }
     }, [freshReportData]);
 

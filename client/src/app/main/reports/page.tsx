@@ -48,6 +48,7 @@ const ReportsPage = () => {
         setReports,
         selectedReport,
         setSelectedReport,
+        setReportCount
     } = useReportsStore();
 
     const router = useRouter();
@@ -420,9 +421,12 @@ const ReportsPage = () => {
 
     useEffect(() => {
         if (isGetReportSuccess && getReportData) {
-            const allReports = getReportData.pages.flatMap(page => page.data?.reports ?? []);
+            const allReports = getReportData.pages.flatMap(page => page.data?.reports.reports ?? []);
             setReports(allReports);
-            
+            const totalCounts = getReportData.pages[0].data?.reports?.totalCounts;
+            if (totalCounts) {
+                setReportCount(totalCounts);
+            }
             let filtered = allReports;
             if (searchTerm) {
                 filtered = filtered.filter(report => 
