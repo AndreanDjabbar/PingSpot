@@ -7,6 +7,7 @@ export const FormInformationModalProvider = () => {
     const {
         isOpen,
         title,
+        type,
         description,
         additionalInfo,
         closeFormInfo,
@@ -17,6 +18,7 @@ export const FormInformationModalProvider = () => {
     return (
         <FormInformationModal
             isOpen={isOpen}
+            type={type || "info"}
             onClose={closeFormInfo}
             title={title || ""}
             description={description || ""}

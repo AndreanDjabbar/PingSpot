@@ -2,23 +2,49 @@
 import React from 'react';
 import { BiX } from 'react-icons/bi';
 import { BsFillInfoCircleFill } from 'react-icons/bs';
+import { MdWarning } from 'react-icons/md';
 
 interface FormInformationModalProps {
     isOpen: boolean;
     onClose: () => void;
     title: string;
+    type: 'info' | 'warning';
     description: string;
     additionalInfo?: string;
 }
 
 const FormInformationModal: React.FC<FormInformationModalProps> = ({
     title, 
+    type,
     description, 
     isOpen, 
     onClose,
     additionalInfo
 }) => {
     if (!isOpen) return null;
+
+    const typeConfig = {
+        info: {
+            icon: <BsFillInfoCircleFill size={24} />,
+            iconBg: 'bg-blue-100',
+            iconColor: 'text-blue-700',
+            headerText: 'Informasi',
+            additionalBg: 'bg-sky-50 border-sky-200',
+            additionalText: 'text-sky-700',
+            buttonBg: 'bg-sky-700 hover:bg-sky-800 active:bg-sky-950'
+        },
+        warning: {
+            icon: <MdWarning size={24} />,
+            iconBg: 'bg-amber-100',
+            iconColor: 'text-amber-700',
+            headerText: 'Peringatan',
+            additionalBg: 'bg-amber-50 border-amber-200',
+            additionalText: 'text-amber-700',
+            buttonBg: 'bg-amber-600 hover:bg-amber-700 active:bg-amber-800'
+        }
+    };
+
+    const config = typeConfig[type];
 
     return (
         <div 
@@ -31,11 +57,13 @@ const FormInformationModal: React.FC<FormInformationModalProps> = ({
             >
                 <div className="flex items-center justify-between p-5 border-b border-gray-200">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-gray-100">
-                            <BsFillInfoCircleFill className="text-gray-700" size={24} />
+                        <div className={`p-2 rounded-full ${config.iconBg}`}>
+                            <span className={config.iconColor}>
+                                {config.icon}
+                            </span>
                         </div>
                         <h3 className="text-xl font-semibold text-gray-900">
-                            Informasi
+                            {config.headerText}
                         </h3>
                     </div>
                     <button 
@@ -58,8 +86,8 @@ const FormInformationModal: React.FC<FormInformationModalProps> = ({
                     </div>
 
                     {additionalInfo && (
-                        <div className="p-4 bg-sky-50 border border-sky-200 rounded-lg">
-                            <p className="text-sm text-sky-700">
+                        <div className={`p-4 border rounded-lg ${config.additionalBg}`}>
+                            <p className={`text-sm ${config.additionalText}`}>
                                 {additionalInfo}
                             </p>
                         </div>
@@ -70,7 +98,7 @@ const FormInformationModal: React.FC<FormInformationModalProps> = ({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-5 py-2 bg-sky-700 hover:bg-sky-800 active:bg-sky-950 text-white rounded-lg font-medium transition-colors"
+                        className={`px-5 py-2 text-white rounded-lg font-medium transition-colors ${config.buttonBg}`}
                     >
                         Mengerti
                     </button>
