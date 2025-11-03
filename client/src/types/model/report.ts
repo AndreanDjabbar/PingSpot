@@ -14,7 +14,7 @@ export type ReportType =
     | 'DISASTER' 
     | 'OTHER';
 
-export type ReportStatus = 'PENDING' | 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS';
+export type ReportStatus = 'WAITING' | 'RESOLVED' | 'POTENTIALLY_RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS';
 
 export interface IReportImage {
     id: number;

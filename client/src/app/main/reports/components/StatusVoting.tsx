@@ -24,7 +24,6 @@ import { MdDone } from 'react-icons/md';
 
 interface StatusVotingProps {
     reportID?: number;
-    currentStatus: string;
     onVote: (voteType: string) => void;
     onImageClick: (imageUrl: string) => void;
     isLoading?: boolean;
@@ -32,7 +31,6 @@ interface StatusVotingProps {
 
 const StatusVoting: React.FC<StatusVotingProps> = ({
     reportID,
-    currentStatus,
     onVote,
     onImageClick,
     isLoading = false,
@@ -59,6 +57,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const { userProfile } = useUserProfileStore();
     
     const report = reports.find(r => r.id === reportID);
+    const currentStatus = report?.reportStatus || '';
+    console.log('Current Status:', currentStatus);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
     const isReportResolved = (report?.reportStatus ?? currentStatus) === 'RESOLVED';
@@ -80,6 +80,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
         switch (status) {
             case 'RESOLVED':
                 return 'bg-green-700 border-green-700 text-white';
+            case 'POTENTIALLY_RESOLVED':
+                return 'bg-blue-700 border-blue-700 text-white';
             case 'NOT_RESOLVED':
                 return 'bg-red-700 text-white';
             case 'IN_PROGRESS':
@@ -109,6 +111,20 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
         });
     }
 
+    const handleVoteConfirmationModal = (voteType: string) => {
+        openConfirm({
+            type: "info",
+            title: "Konfirmasi Pemilihan Status Laporan",
+            message: `Apakah Anda yakin memilih status "${getStatusLabel(voteType)}" untuk laporan ini?`,
+            isPending: isLoading,
+            explanation: "Status laporan akan diperbarui sesuai pilihan Anda.",
+            confirmTitle: "Ya, Pilih Status",
+            cancelTitle: "Batal",
+            icon: <FaUsers />,
+            onConfirm: () => handleVote(voteType),
+        })
+    }
+
     const onSubmit = (formData: IUploadProgressReportRequest) => {
         if (reportID) {
             const preparedFormData = prepareFormData(formData);
@@ -123,6 +139,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
         switch (status) {
             case 'RESOLVED':
                 return 'Terselesaikan';
+            case 'POTENTIALLY_RESOLVED':
+                return 'Dalam Peninjauan';
             case 'NOT_RESOLVED':
                 return 'Belum Terselesaikan';
             case 'IN_PROGRESS':
@@ -212,13 +230,9 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                             <span className="text-xs font-semibold">Laporan Anda</span>
                         </div>  
                     ) : undefined}
-                    rightContent={report?.reportProgress ? (
+                    rightContent={(
                         <div className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(currentStatus)}`}>
                             {getStatusLabel(currentStatus)}
-                        </div>
-                    ) : (
-                        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor('')}`}>
-                            {getStatusLabel('')}
                         </div>
                     )}
                     className="bg-transparent border-0 shadow-none"
@@ -625,6 +639,73 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                         </form>
                                     )}
                                 </Accordion.Item>
+                                <Accordion.Item
+                                    id="report-votes"
+                                    title="Pendapat Tentang Laporan Ini"
+                                    icon={<FaUsers className="w-4 h-4 text-gray-700" />}
+                                    headerClassName="text-gray-900 font-semibold"
+                                >
+                                    {totalVotes > 0 && (
+                                    <div className="mb-6 bg-white rounded-xl p-5 border border-gray-200 shadow-md">
+                                        <div className='mb-4'>
+                                            <div className="flex items-center justify-between text-sm font-semibold text-gray-900">
+                                                <span>Pendapat Komunitas</span>
+                                                <span className="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">
+                                                    {totalVotes} vote
+                                                </span>
+                                            </div>
+                                            <span className='text-sm text-gray-600'>Pendapat komunitas mengenai proses perkembangan laporan:</span>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <div className='flex gap-2 font-medium text-green-700 items-center'>
+                                                        <FaCheck/>
+                                                        <span className="">Terselesaikan</span>
+                                                    </div>
+                                                    <span className="text-gray-600 font-semibold">{report?.totalResolvedVotes} ({resolvedPercentage.toFixed(0)}%)</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                                    <div 
+                                                        className="bg-gradient-to-r from-green-500 to-green-600 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
+                                                        style={{ width: `${resolvedPercentage}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <div className='flex gap-2 font-medium text-yellow-700 items-center'>
+                                                        <RiProgress3Fill/>
+                                                        <span className="">Dalam Proses</span>
+                                                    </div>
+                                                    <span className="text-gray-600 font-semibold">{report?.totalOnProgressVotes} ({onProgressPercentage.toFixed(0)}%)</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                                    <div 
+                                                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
+                                                        style={{ width: `${onProgressPercentage}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <div className='flex items-center gap-2 font-medium text-red-700'>
+                                                        <FaTimes/>
+                                                        <span className="">Tidak Ada Proses</span>
+                                                    </div>
+                                                    <span className="text-gray-600 font-semibold">{report?.totalNotResolvedVotes} ({notResolvedPercentage.toFixed(0)}%)</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                                    <div 
+                                                        className="bg-gradient-to-r from-red-400 to-red-500 h-2.5 rounded-full shadow-sm transition-all duration-500 ease-out" 
+                                                        style={{ width: `${notResolvedPercentage}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                </Accordion.Item>
                             </Accordion>
                         )}
 
@@ -723,7 +804,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                         ? 'bg-green-600 text-white border-green-700 shadow-lg scale-105'
                                                         : 'bg-white text-green-700 border-gray-200 hover:border-green-300 hover:bg-green-50 shadow-sm'
                                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                onClick={() => handleVote('RESOLVED')}
+                                                onClick={() => handleVoteConfirmationModal('RESOLVED')}
                                                 disabled={isLoading}
                                                 animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
                                                 transition={{ duration: 0.3 }}
@@ -754,7 +835,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                         ? 'bg-yellow-600 text-white border-yellow-700 shadow-lg scale-105'
                                                         : 'bg-white text-yellow-700 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 shadow-sm'
                                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                onClick={() => handleVote('ON_PROGRESS')}
+                                                onClick={() => handleVoteConfirmationModal('ON_PROGRESS')}
                                                 disabled={isLoading}
                                                 animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.05, 1] } : {}}
                                                 transition={{ duration: 0.3 }}
@@ -785,7 +866,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                         ? 'bg-red-600 text-white border-red-700 shadow-lg scale-105'
                                                         : 'bg-white text-red-700 border-gray-200 hover:border-red-300 hover:bg-red-50 shadow-sm'
                                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                onClick={() => handleVote('NOT_RESOLVED')}
+                                                onClick={() => handleVoteConfirmationModal('NOT_RESOLVED')}
                                                 disabled={isLoading}
                                                 animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
                                                 transition={{ duration: 0.3 }}

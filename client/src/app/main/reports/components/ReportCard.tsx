@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { FaChevronLeft, FaChevronRight, FaMapMarkerAlt, FaImage, FaMap } from 'react-icons/fa';
 import { BsThreeDots } from "react-icons/bs";
+import { MdWarning } from "react-icons/md";
 import dynamic from 'next/dynamic';
 import { IReportImage, ReportType } from '@/types/model/report';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { ReportInteractionBar } from '@/app/main/reports/components/ReportInteractionBar';
 import StatusVoting from './StatusVoting';
-import { useReportsStore, useImagePreviewModalStore } from '@/stores';
+import { useReportsStore, useImagePreviewModalStore, useUserProfileStore, useFormInformationModalStore } from '@/stores';
 import { useRouter } from 'next/navigation';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
@@ -50,9 +51,11 @@ const getStatusLabel = (status: string) => {
     switch (status) {
         case 'RESOLVED':
             return 'Terselesaikan';
+        case 'POTENTIALLY_RESOLVED':
+            return 'Dalam Peninjauan';
         case 'NOT_RESOLVED':
             return 'Belum Terselesaikan';
-        case 'IN_PROGRESS':
+        case 'ON_PROGRESS':
             return 'Sedang Dikerjakan';
         default:
             return 'Menunggu';
@@ -63,9 +66,11 @@ const getStatusColor = (status: string) => {
     switch (status) {
         case 'RESOLVED':
             return 'bg-green-700 border-green-700 text-white';
+        case 'POTENTIALLY_RESOLVED':
+            return 'bg-blue-700 text-white';
         case 'NOT_RESOLVED':
             return 'bg-red-700 text-white';
-        case 'IN_PROGRESS':
+        case 'ON_PROGRESS':
             return 'bg-yellow-500 text-white';
         default:
             return 'bg-gray-500 text-white';
@@ -93,9 +98,12 @@ const ReportCard: React.FC<ReportCardProps> = ({
     onStatusVote,
 }) => {
     const { reports } = useReportsStore();
+    const { userProfile } = useUserProfileStore();
+    const userID = Number(userProfile?.userID);
     const [viewMode, setViewMode] = useState<'attachment' | 'map'>('map');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const { openImagePreview } = useImagePreviewModalStore();
+    const { openFormInfo } = useFormInformationModalStore();
     const router = useRouter();
     const report = reports.find(r => r.id === reportID);
 
@@ -104,6 +112,9 @@ const ReportCard: React.FC<ReportCardProps> = ({
     );
 
     if (!report) return null;
+    const isReportOwner = userID === report?.userID;
+    const isPotentiallyResolved = report.reportStatus === 'POTENTIALLY_RESOLVED';
+    const showWarning = isReportOwner && isPotentiallyResolved;
 
     const onImageClick = (imageURL: string) => {
         const url = getImageURL(imageURL, "main");
@@ -125,9 +136,9 @@ const ReportCard: React.FC<ReportCardProps> = ({
     return (
         <div className="bg-white backdrop-blur-sm rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
             <div className="p-4">
-                <div className="flex items-center justify-between">
-                    <div className='flex items-center gap-3'>
-                        <div className="h-10 w-10 rounded-full overflow-hidden border border-gray-200">
+                <div className="flex items-start justify-between gap-2">
+                    <div className='flex items-center gap-3 flex-1 min-w-0'>
+                        <div className="h-10 w-10 rounded-full overflow-hidden border border-gray-200 flex-shrink-0">
                             <Image 
                                 src={getImageURL(report?.profilePicture || '', "user")} 
                                 alt={report?.fullName}
@@ -136,15 +147,15 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                 className="object-cover h-full w-full"
                             />
                         </div>
-                        <div>
-                            <div className="font-semibold text-sm text-gray-900">{report?.userName}</div>
-                            <div className="text-xs text-gray-500 flex items-center gap-1">
-                                <div>
+                        <div className="min-w-0 flex-1">
+                            <div className="font-semibold text-sm text-gray-900 truncate">{report?.userName}</div>
+                            <div className="text-xs text-gray-500 flex items-center gap-1 flex-wrap">
+                                <div className="whitespace-nowrap">
                                     {formattedDate(report?.reportCreatedAt, {
-                                        formatStr: 'dd MMMM yyyy',
+                                        formatStr: 'dd MMM yyyy',
                                     })}
                                 </div>
-                                -
+                                <span>-</span>
                                 <div>
                                     {formattedDate(report?.reportCreatedAt, {
                                         formatStr: 'HH:mm',
@@ -153,19 +164,38 @@ const ReportCard: React.FC<ReportCardProps> = ({
                             </div>
                         </div>
                     </div>
-                    <div className='flex gap-4'>
-                        <span className={`inline-flex items-center px-2.5 py-1 bg-blue-50 text-xs font-medium text-sky-800 rounded-full`}>
-                            {getReportTypeLabel(report.reportType)}
-                        </span>
-                        {report.hasProgress && (
-                            <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${getStatusColor(report.reportStatus || 'PENDING')}`}>
-                                {getStatusLabel(report.reportStatus || 'PENDING')}
-                            </span>
+                    <div className='flex items-center gap-1 sm:gap-2 flex-shrink-0'>
+                        <div className=''>
+                            {report.hasProgress && (
+                                <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${getStatusColor(report.reportStatus || 'PENDING')}`}>
+                                    {getStatusLabel(report.reportStatus || 'PENDING')}
+                                </span>
+                            )}
+                        </div>
+                        {showWarning && (
+                            <button 
+                                onClick={() => openFormInfo({
+                                    title: 'Konfirmasi Penyelesaian Laporan',
+                                    type: 'warning',
+                                    description: 'Status laporan Anda berpotensi terselesaikan berdasarkan voting komunitas. Mohon konfirmasi dengan mengunggah progres terbaru dalam waktu 1 minggu untuk memvalidasi penyelesaian masalah ini.',
+                                    additionalInfo: 'Jika tidak ada konfirmasi dalam 1 minggu, status akan otomatis berubah menjadi "Terselesaikan".'
+                                })}
+                                className='inline-flex items-center p-1.5 sm:p-2 hover:bg-blue-50 rounded-full transition-colors group'
+                                aria-label="Informasi status laporan"
+                            >
+                                <MdWarning size={20} className="text-blue-600 group-hover:text-blue-700 transition-colors sm:w-6 sm:h-6"/>
+                            </button>
                         )}
-                        <button className='p-2 hover:bg-gray-100 rounded-full transition-colors'>
-                            <BsThreeDots size={20} className="text-gray-600"/>
+                        <button className='p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors'>
+                            <BsThreeDots size={18} className="text-gray-600 sm:w-5 sm:h-5"/>
                         </button>
                     </div>
+                </div>
+                
+                <div className='flex gap-2 mt-3'>
+                    <span className={`inline-flex items-center px-2.5 py-1 bg-blue-50 text-xs font-medium text-sky-800 rounded-full`}>
+                        {getReportTypeLabel(report.reportType)}
+                    </span>
                 </div>
             </div>
 
@@ -303,7 +333,6 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 <div className="border-t border-gray-200">
                     <StatusVoting
                         reportID={report.id}
-                        currentStatus={report.reportStatus || 'PENDING'}
                         onVote={(voteType: string) => onStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
                         onImageClick={onImageClick}
                     />
