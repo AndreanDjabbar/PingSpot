@@ -20,6 +20,7 @@ const (
 	Other          ReportType = "OTHER"
 
 	RESOLVED     ReportStatus = "RESOLVED"
+	POTENTIALLY_RESOLVED ReportStatus = "POTENTIALLY_RESOLVED"
 	NOT_RESOLVED ReportStatus = "NOT_RESOLVED"
 	ON_PROGRESS  ReportStatus = "ON_PROGRESS"
 	WAITING      ReportStatus = "WAITING"
