@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, memo } from 'react';
 import { useReportsStore } from '@/stores';
 
 const reportTypeConfig: Record<string, { label: string; color: string }> = {
@@ -20,8 +20,8 @@ const reportTypeConfig: Record<string, { label: string; color: string }> = {
     totalOtherReports: { label: 'Lainnya', color: 'text-gray-600' },
 };
 
-export const ReportSidebar = () => {
-    const { reportCount } = useReportsStore();
+export const ReportSidebar = memo(() => {
+    const reportCount = useReportsStore((state) => state.reportCount);
 
     const reportStats = useMemo(() => {
         if (!reportCount) return [];
@@ -185,4 +185,6 @@ export const ReportSidebar = () => {
             </div>
         </div>
     );
-};
+});
+
+ReportSidebar.displayName = 'ReportSidebar';
