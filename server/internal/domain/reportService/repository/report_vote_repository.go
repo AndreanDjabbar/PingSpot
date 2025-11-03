@@ -12,9 +12,13 @@ type ReportVoteRepository interface {
 	CreateTX(tx *gorm.DB, vote *model.ReportVote) (*model.ReportVote, error)
 	UpdateTX(tx *gorm.DB, vote *model.ReportVote) (*model.ReportVote, error)
 	DeleteTX(tx *gorm.DB, vote *model.ReportVote) error
+	GetReportVoteCount(voteType model.ReportStatus, reportID uint) (int64, error)
+	GetReportVoteCountsTX(tx *gorm.DB, reportID uint) (map[model.ReportStatus]int64, error)
+	GetHighestVoteTypeTX(tx *gorm.DB, reportID uint) (model.ReportStatus, error)
 	GetResolvedVoteCount(reportID uint) (int64, error)
 	GetOnProgressVoteCount(reportID uint) (int64, error)
 	GetNotResolvedVoteCount(reportID uint) (int64, error)
+	GetTotalVoteCountTX(tx *gorm.DB, reportID uint) (int64, error)
 }
 
 type reportVoteRepository struct {
@@ -33,12 +37,67 @@ func (r *reportVoteRepository) GetByUserReportID(userID, reportID uint) (*model.
 	return &vote, nil
 }
 
+func (r *reportVoteRepository) GetTotalVoteCountTX(tx *gorm.DB, reportID uint) (int64, error) {
+	var count int64
+	if err := tx.Model(&model.ReportVote{}).
+		Where("report_id = ?", reportID).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *reportVoteRepository) GetReportVoteCountsTX(tx *gorm.DB, reportID uint) (map[model.ReportStatus]int64, error) {
+	rows, err := tx.Model(&model.ReportVote{}).
+		Select("vote_type, COUNT(*) as count").
+		Where("report_id = ?", reportID).
+		Group("vote_type").
+		Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	counts := map[model.ReportStatus]int64{
+		model.RESOLVED:     0,
+		model.ON_PROGRESS:  0,
+		model.NOT_RESOLVED: 0,
+	}
+	for rows.Next() {
+		var voteType model.ReportStatus
+		var count int64
+		if err := rows.Scan(&voteType, &count); err != nil {
+			return nil, err
+		}
+		counts[voteType] = count
+	}
+	return counts, nil
+}
+
+
 func (r *reportVoteRepository) GetByUserReportIDTX(tx *gorm.DB, userID, reportID uint) (*model.ReportVote, error) {
 	var vote model.ReportVote
 	if err := tx.Where("user_id = ? AND report_id = ?", userID, reportID).First(&vote).Error; err != nil {
 		return nil, err
 	}
 	return &vote, nil
+}
+
+func (r *reportVoteRepository) GetHighestVoteTypeTX(tx *gorm.DB, reportID uint) (model.ReportStatus, error) {
+	var result struct {
+		VoteType model.ReportStatus
+		Count    int64
+	}
+	if err := tx.Model(&model.ReportVote{}).
+		Select("vote_type, COUNT(*) as count").
+		Where("report_id = ?", reportID).
+		Group("vote_type").
+		Order("count DESC").
+		Limit(1).
+		Scan(&result).Error; err != nil {
+		return "", err
+	}
+	return result.VoteType, nil
 }
 
 func (r *reportVoteRepository) CreateTX(tx *gorm.DB, vote *model.ReportVote) (*model.ReportVote, error) {
@@ -66,6 +125,16 @@ func (r *reportVoteRepository) GetResolvedVoteCount(reportID uint) (int64, error
 	var count int64
 	if err := r.db.Model(&model.ReportVote{}).
 		Where("report_id = ? AND vote_type = ?", reportID, model.RESOLVED).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *reportVoteRepository) GetReportVoteCount(voteType model.ReportStatus, reportID uint) (int64, error) {
+	var count int64
+	if err := r.db.Model(&model.ReportVote{}).
+		Where("report_id = ? AND vote_type = ?", reportID, voteType).
 		Count(&count).Error; err != nil {
 		return 0, err
 	}
