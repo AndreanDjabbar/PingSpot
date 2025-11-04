@@ -9,6 +9,7 @@ import (
 	"server/internal/domain/reportService/util"
 	userRepository "server/internal/domain/userService/repository"
 	"server/pkg/utils/env"
+	mainutils "server/pkg/utils/mainUtils"
 	"time"
 
 	"gorm.io/gorm"
@@ -579,6 +580,15 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 	if marginVote >= 20.0 && topVote.Count >= limitTopVote{
 		if topVote.Type == model.RESOLVED && report.ReportStatus != model.POTENTIALLY_RESOLVED {
 			report.ReportStatus = model.POTENTIALLY_RESOLVED
+			report.PotentiallyResolvedAt = mainutils.Int64PtrOrNil(time.Now().Unix())
+			reportLink := fmt.Sprintf("%s/main/reports/%d", env.ClientURL(), report.ID)
+			go util.SendPotentiallyResolvedReportEmail(
+				report.User.Email,
+				report.User.Username,
+				report.ReportTitle,
+				reportLink,
+				7,
+			)
 		} else if topVote.Type == model.ON_PROGRESS && report.ReportStatus != model.ON_PROGRESS {
 			report.ReportStatus = model.ON_PROGRESS
 		} else if topVote.Type == model.NOT_RESOLVED && report.ReportStatus != model.NOT_RESOLVED {
@@ -594,17 +604,6 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		return nil, fmt.Errorf("Gagal menyimpan perubahan: %w", err)
-	}
-
-	if report.ReportStatus == model.POTENTIALLY_RESOLVED {
-		reportLink := fmt.Sprintf("%s/main/reports/%d", env.ClientURL(), report.ID)
-		go util.SendPotentiallyResolvedReportEmail(
-			report.User.Email,
-			report.User.Username,
-			report.ReportTitle,
-			reportLink,
-			7,
-		)
 	}
 
 	return &dto.GetVoteReportResponse{
