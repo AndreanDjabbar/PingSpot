@@ -260,6 +260,21 @@ func Migrate(db *gorm.DB) error {
 				`).Error
 			},
 		},
+		{
+			ID: "04112025_add_updaterd_at_field_report",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&model.Report{}, "") {
+					return tx.Migrator().AddColumn(&model.Report{}, "updated_at")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&model.Report{}, "updated_at") {
+					return tx.Migrator().DropColumn(&model.Report{}, "updated_at")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()

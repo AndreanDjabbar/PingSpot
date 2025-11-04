@@ -34,6 +34,7 @@ type Report struct {
 	ReportType        ReportType        `gorm:"type:varchar(30);not null"`
 	ReportDescription string            `gorm:"type:text;not null"`
 	CreatedAt         int64             `gorm:"autoCreateTime"`
+	UpdatedAt		 int64             `gorm:"autoUpdateTime"`
 	ReportStatus      ReportStatus      `gorm:"type:varchar(50);default:'WAITING'"`
 	HasProgress       *bool             `gorm:"default:true"`
 	ReportLocation    *ReportLocation   `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
