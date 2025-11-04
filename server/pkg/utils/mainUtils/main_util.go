@@ -99,9 +99,26 @@ func ParseJWT(tokenString string, JWTSecret []byte) (jwt.MapClaims, error) {
 	return nil, fmt.Errorf("invalid token")
 }
 
-func SendEmail(to, username, context, verificationLink string) error {
-	if to == "" || username == "" || verificationLink == "" {
-		return fmt.Errorf("required fields cannot be empty")
+type EmailType string
+
+const (
+	EmailTypeVerification     EmailType = "verification"
+	EmailTypePasswordReset    EmailType = "password_reset"
+	EmailTypeProgressReminder EmailType = "progress_reminder"
+)
+
+type EmailData struct {
+	To            string
+	Subject       string
+	RecipientName string
+	EmailType     EmailType
+	BodyTempate   string
+	TemplateData  map[string]any
+}
+
+func SendEmail(data EmailData) error {
+	if data.To == "" || data.RecipientName == "" {
+		return fmt.Errorf("recipient email and name cannot be empty")
 	}
 
 	email := env.EmailEmail()
@@ -113,10 +130,10 @@ func SendEmail(to, username, context, verificationLink string) error {
 
 	m := gomail.NewMessage()
 	m.SetHeader("From", email)
-	m.SetHeader("To", to)
-	m.SetHeader("Subject", "Verifikasi Akun PingSpot")
+	m.SetHeader("To", data.To)
+	m.SetHeader("Subject", data.Subject)
 
-	body, err := RenderAuthValidationEmail(verificationLink, username, context)
+	body, err := RenderEmailTemplate(data)
 	if err != nil {
 		return fmt.Errorf("failed to render email template: %w", err)
 	}
@@ -129,127 +146,76 @@ func SendEmail(to, username, context, verificationLink string) error {
 	return nil
 }
 
-func authValidationTemplate(title string) string {
-	return `<!DOCTYPE html>
-<html lang="id">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>{{.Title}}</title>
-	<!--[if mso]>
-	<noscript>
-		<xml>
-			<o:OfficeDocumentSettings>
-				<o:PixelsPerInch>96</o:PixelsPerInch>
-			</o:OfficeDocumentSettings>
-		</xml>
-	</noscript>
-	<![endif]-->
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #f8fafc; line-height: 1.6;">
-	<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
-		<tr>
-			<td align="center" style="padding: 40px 20px;">
-				<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); overflow: hidden;">
-					<tr>
-						<td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 40px 30px; text-align: center;">
-							<h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
-								PingSpot
-							</h1>
-							<p style="margin: 8px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 16px; font-weight: 400;">
-								Selamat datang di dunia terhubung Anda
-							</p>
-						</td>
-					</tr>
-					<tr>
-						<td style="padding: 50px 40px;">
-							<h2 style="margin: 0 0 20px; color: #1e293b; font-size: 24px; font-weight: 600; text-align: center;">
-								Halo {{.UserName}}! 👋
-							</h2>
-							<p style="margin: 0 0 25px; color: #475569; font-size: 16px; text-align: center; line-height: 1.7;">
-								Terima kasih telah bergabung dengan PingSpot! Untuk mulai menggunakan dan mengamankan akun Anda, silakan verifikasi alamat email Anda.
-							</p>
-							<div style="text-align: center; margin: 35px 0;">
-								<a href="{{.VerificationLink}}" 
-								   style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s ease; text-align: center; min-width: 200px;">
-									Verifikasi Akun Saya
-								</a>
-							</div>
-							<div style="margin: 30px 0; padding: 20px; background-color: #f1f5f9; border-radius: 12px; border-left: 4px solid #667eea;">
-								<p style="margin: 0 0 10px; color: #475569; font-size: 14px; font-weight: 600;">
-									Tombol tidak berfungsi?
-								</p>
-								<p style="margin: 0; color: #64748b; font-size: 14px; line-height: 1.5;">
-									Salin dan tempel link ini ke browser Anda:
-								</p>
-								<p style="margin: 8px 0 0; word-break: break-all;">
-									<a href="{{.VerificationLink}}" style="color: #667eea; text-decoration: none; font-size: 14px;">
-										{{.VerificationLink}}
-									</a>
-								</p>
-							</div>
-							<div style="margin: 30px 0; text-align: center;">
-								<p style="margin: 0; color: #64748b; font-size: 14px; line-height: 1.6;">
-									🔒 Link ini akan kedaluwarsa dalam 5 menit demi keamanan Anda.<br>
-									Jika Anda tidak membuat akun, abaikan email ini.
-								</p>
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<td style="background-color: #f8fafc; padding: 30px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
-							<div style="margin-bottom: 20px;">
-								<a href="#" style="display: inline-block; margin: 0 10px; width: 36px; height: 36px; background-color: #667eea; border-radius: 50%; line-height: 36px; text-decoration: none;">
-									<span style="color: #ffffff; font-size: 16px;">f</span>
-								</a>
-								<a href="#" style="display: inline-block; margin: 0 10px; width: 36px; height: 36px; background-color: #667eea; border-radius: 50%; line-height: 36px; text-decoration: none;">
-									<span style="color: #ffffff; font-size: 16px;">t</span>
-								</a>
-								<a href="#" style="display: inline-block; margin: 0 10px; width: 36px; height: 36px; background-color: #667eea; border-radius: 50%; line-height: 36px; text-decoration: none;">
-									<span style="color: #ffffff; font-size: 16px;">in</span>
-								</a>
-							</div>
-							<p style="margin: 0 0 10px; color: #64748b; font-size: 14px;">
-								© 2025 PingSpot. Hak cipta dilindungi undang-undang.
-							</p>
-							<p style="margin: 0; color: #94a3b8; font-size: 12px;">
-								Pertanyaan? Hubungi kami di
-								<a href="mailto:support@pingspot.com" style="color: #667eea; text-decoration: none;">
-									support@pingspot.com
-								</a>
-							</p>
-						</td>
-					</tr>
-				</table>
-			</td>
-		</tr>
-	</table>
-</body>
-</html>`
-}
+func RenderEmailTemplate(data EmailData) (string, error) {
+	var templateHTML string
+	var templateData any
 
-func RenderAuthValidationEmail(verificationLink, userName, validationName string) (string, error) {
-	if verificationLink == "" || userName == "" {
-		return "", fmt.Errorf("verificationLink and userName cannot be empty")
+	switch data.EmailType {
+	case EmailTypeVerification:
+		verificationLink, ok := data.TemplateData["VerificationLink"].(string)
+		if !ok || verificationLink == "" {
+			return "", fmt.Errorf("verification link is required for verification email")
+		}
+		templateHTML = data.BodyTempate
+		templateData = struct {
+			UserName         string
+			VerificationLink string
+		}{
+			UserName:         data.RecipientName,
+			VerificationLink: verificationLink,
+		}
+
+	case EmailTypePasswordReset:
+		resetLink, ok := data.TemplateData["ResetLink"].(string)
+		if !ok || resetLink == "" {
+			return "", fmt.Errorf("reset link is required for password reset email")
+		}
+		templateHTML = data.BodyTempate
+		templateData = struct {
+			UserName  string
+			ResetLink string
+		}{
+			UserName:  data.RecipientName,
+			ResetLink: resetLink,
+		}
+
+	case EmailTypeProgressReminder:
+		reportTitle, ok := data.TemplateData["ReportTitle"].(string)
+		if !ok || reportTitle == "" {
+			return "", fmt.Errorf("report title is required for progress reminder email")
+		}
+		reportLink, ok := data.TemplateData["ReportLink"].(string)
+		if !ok || reportLink == "" {
+			return "", fmt.Errorf("report link is required for progress reminder email")
+		}
+		daysRemaining, ok := data.TemplateData["DaysRemaining"].(int)
+		if !ok {
+			return "", fmt.Errorf("days remaining is required for progress reminder email")
+		}
+		templateHTML = data.BodyTempate
+		templateData = struct {
+			UserName      string
+			ReportTitle   string
+			ReportLink    string
+			DaysRemaining int
+		}{
+			UserName:      data.RecipientName,
+			ReportTitle:   reportTitle,
+			ReportLink:    reportLink,
+			DaysRemaining: daysRemaining,
+		}
+
+	default:
+		return "", fmt.Errorf("unsupported email type: %s", data.EmailType)
 	}
 
-	tmpl, err := template.New(validationName).Parse(authValidationTemplate(validationName))
+	tmpl, err := template.New(string(data.EmailType)).Parse(templateHTML)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
 	}
 
-	data := struct {
-		VerificationLink string
-		UserName         string
-		Title            string
-	}{
-		VerificationLink: verificationLink,
-		UserName:         userName,
-		Title:            validationName,
-	}
-
 	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, data); err != nil {
+	if err := tmpl.Execute(&buf, templateData); err != nil {
 		return "", fmt.Errorf("failed to execute template: %w", err)
 	}
 
@@ -276,15 +242,15 @@ func StringToTimePtr(s string) (*time.Time, error) {
 }
 
 func StringToFloat64(s string) (float64, error) {
-    if s == "" {
-        return 0.0, nil
-    }
-    value, err := strconv.ParseFloat(s, 64)
-    if err != nil {
-        return 0.0, fmt.Errorf("failed to convert string to float64: %w", err)
-    }
-    
-    return value, nil
+	if s == "" {
+		return 0.0, nil
+	}
+	value, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return 0.0, fmt.Errorf("failed to convert string to float64: %w", err)
+	}
+
+	return value, nil
 }
 
 func StringToBool(s string) (*bool, error) {
