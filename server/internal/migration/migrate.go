@@ -275,6 +275,21 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "04112025_add_potentially_resolved_at_field_report",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&model.Report{}, "") {
+					return tx.Migrator().AddColumn(&model.Report{}, "potentially_resolved_at")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&model.Report{}, "potentially_resolved_at") {
+					return tx.Migrator().DropColumn(&model.Report{}, "potentially_resolved_at")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()
