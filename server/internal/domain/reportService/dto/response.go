@@ -37,6 +37,7 @@ type UploadProgressReportResponse struct {
 type GetVoteReportResponse struct {
 	ID        uint               `json:"id"`
 	ReportID  uint               `json:"reportID"`
+	ReportStatus model.ReportStatus `json:"reportStatus"`
 	UserID    uint               `json:"userID"`
 	VoteType  model.ReportStatus `json:"voteType"`
 	CreatedAt int64              `json:"createdAt"`
