@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"server/internal/domain/authService/dto"
+	"server/internal/domain/authService/util"
 	"server/internal/domain/model"
 	"server/internal/domain/userService/repository"
 	"server/internal/infrastructure/cache"
@@ -129,11 +130,7 @@ func (s *AuthService) Login(req dto.LoginRequest) (*model.User, string, error) {
 			logger.Error("Failed to save verification link to Redis", zap.Error(err))
 			return nil, "", errors.New("Gagal menyimpan kode verifikasi ke Redis")
 		}
-		go func(email, username, link string) {
-			if err := mainutils.SendEmail(email, username, "Pingspot - Verifikasi Akun", link); err != nil {
-				logger.Error("Failed to send verification email (background)", zap.Error(err))
-			}
-		}(user.Email, user.Username, verificationLink)
+		go util.SendVerificationEmail(user.Email, user.Username, verificationLink)
 		return nil, "", errors.New("Akun belum diverifikasi, silakan cek email untuk verifikasi")
 	}
 

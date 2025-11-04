@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"server/internal/domain/authService/dto"
 	"server/internal/domain/authService/service"
+	"server/internal/domain/authService/util"
 	"server/internal/domain/authService/validation"
 	"server/internal/infrastructure/cache"
 	"server/internal/infrastructure/database"
@@ -90,11 +91,7 @@ func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 500, "Gagal menyimpan kode verifikasi ke Redis", "", err.Error())
 	}
 
-	go func(email, username, link string) {
-		if err := mainutils.SendEmail(email, username, "Pingspot - Verifikasi Registrasi", link); err != nil {
-			logger.Error("Failed to send verification email (background)", zap.Error(err))
-		}
-	}(newUser["email"].(string), newUser["username"].(string), verificationLink)
+	go util.SendVerificationEmail(newUser["email"].(string), newUser["username"].(string), verificationLink)
 
 	logger.Info("User registered successfully", zap.String("user_id", fmt.Sprintf("%d", user.ID)))
 
@@ -212,7 +209,6 @@ func (h *AuthHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	if existingUser == nil {
-
 		newUser := dto.RegisterRequest{
 			Username:   nickName,
 			Email:      email,
@@ -273,11 +269,7 @@ func (h *AuthHandler) ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error
 			return response.ResponseError(c, 500, "Gagal menyimpan kode verifikasi ke Redis", "", err.Error())
 		}
 
-		go func(email, username, link string) {
-			if err := mainutils.SendEmail(email, username, "Pingspot - Verifikasi Email untuk mengatur ulang kata sandi", link); err != nil {
-				logger.Error("Failed to send verification email (background)", zap.Error(err))
-			}
-		}(req.Email, req.Email, verificationLink)
+		go util.SendPasswordResetEmail(req.Email, req.Email, verificationLink)
 	}
 	return response.ResponseSuccess(c, 200, "Silahkan cek email anda untuk verifikasi pengaturan ulang kata sandi", "data", nil)
 }
