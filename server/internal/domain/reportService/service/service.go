@@ -555,6 +555,41 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 		}
 		resultVote = updatedReportVote
 	}
+	
+	reportVoteCounts, err := s.reportVoteRepo.GetReportVoteCountsTX(tx, reportID)
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("Gagal mendapatkan jumlah suara laporan: %w", err)
+	}
+
+	voteTypeCountsOrder := util.GetVoteTypeOrder(reportVoteCounts)
+
+	totalVote, err := s.reportVoteRepo.GetTotalVoteCountTX(tx, reportID)
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("Gagal mendapatkan total suara laporan: %w", err)
+	}
+	topVote := voteTypeCountsOrder[0]
+	secondVote := voteTypeCountsOrder[1]
+
+	marginVote := float64(topVote.Count - secondVote.Count) / float64(totalVote) * 100
+
+	limitTopVote := 2
+	if marginVote >= 20.0 && topVote.Count >= limitTopVote{
+		if topVote.Type == model.RESOLVED && report.ReportStatus != model.POTENTIALLY_RESOLVED {
+			report.ReportStatus = model.POTENTIALLY_RESOLVED
+		} else if topVote.Type == model.ON_PROGRESS && report.ReportStatus != model.ON_PROGRESS {
+			report.ReportStatus = model.ON_PROGRESS
+		} else if topVote.Type == model.NOT_RESOLVED && report.ReportStatus != model.NOT_RESOLVED {
+			report.ReportStatus = model.NOT_RESOLVED
+		}
+	}
+
+	if _, err := s.reportRepo.UpdateTX(tx, report); err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("Gagal memperbarui status laporan: %w", err)
+	}
+
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		return nil, fmt.Errorf("Gagal menyimpan perubahan: %w", err)
@@ -562,6 +597,7 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 	return &dto.GetVoteReportResponse{
 		ID:        resultVote.ID,
 		ReportID:  reportID,
+		ReportStatus: report.ReportStatus,
 		UserID:    userID,
 		VoteType:  resultVote.VoteType,
 		CreatedAt: resultVote.CreatedAt,
