@@ -58,7 +58,6 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     
     const report = reports.find(r => r.id === reportID);
     const currentStatus = report?.reportStatus || '';
-    console.log('Current Status:', currentStatus);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
     const isReportResolved = (report?.reportStatus ?? currentStatus) === 'RESOLVED';
@@ -84,7 +83,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                 return 'bg-blue-700 border-blue-700 text-white';
             case 'NOT_RESOLVED':
                 return 'bg-red-700 text-white';
-            case 'IN_PROGRESS':
+            case 'ON_PROGRESS':
                 return 'bg-yellow-500 text-white';
             default:
                 return 'bg-gray-500 text-white';
@@ -143,7 +142,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                 return 'Dalam Peninjauan';
             case 'NOT_RESOLVED':
                 return 'Belum Terselesaikan';
-            case 'IN_PROGRESS':
+            case 'ON_PROGRESS':
                 return 'Sedang Dikerjakan';
             default:
                 return 'Menunggu';

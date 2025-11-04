@@ -60,7 +60,9 @@ const ReportsPage = () => {
 
     const {
         mutate: voteReport,
+        data: voteReportData,
         isError: isVoteReportError,
+        isSuccess: voteReportSuccess,
         error: voteReportError,
     } = useVoteReport();
 
@@ -438,6 +440,31 @@ const ReportsPage = () => {
             setFilteredReports(filtered);
         }
     }, [isGetReportSuccess, getReportData, setReports, searchTerm]);
+
+    useEffect(() => {
+        if (voteReportData?.data) {
+            const { reportID, reportStatus } = voteReportData.data;
+            
+            const updatedReports = reports.map(report => {
+                if (report.id === reportID) {
+                    return {
+                        ...report,
+                        reportStatus: reportStatus,
+                    };
+                }
+                return report;
+            });
+            
+            setReports(updatedReports);
+            
+            if (selectedReport && selectedReport.id === reportID) {
+                const updatedSelectedReport = updatedReports.find(r => r.id === reportID);
+                if (updatedSelectedReport) {
+                    setSelectedReport(updatedSelectedReport);
+                }
+            }
+        }
+    }, [voteReportData, voteReportSuccess]);
 
     useEffect(() => {
         if (isReactReportError) {
