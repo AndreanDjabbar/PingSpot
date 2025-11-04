@@ -229,6 +229,13 @@ func StrPtrOrNil(s string) *string {
 	return &s
 }
 
+func Int64PtrOrNil(i int64) *int64 {
+	if i == 0 {
+		return nil
+	}
+	return &i
+}
+
 func StringToTimePtr(s string) (*time.Time, error) {
 	if s == "" {
 		return nil, nil
