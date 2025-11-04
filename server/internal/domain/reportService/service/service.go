@@ -8,6 +8,7 @@ import (
 	reportRepository "server/internal/domain/reportService/repository"
 	"server/internal/domain/reportService/util"
 	userRepository "server/internal/domain/userService/repository"
+	"server/pkg/utils/env"
 	"time"
 
 	"gorm.io/gorm"
@@ -594,6 +595,18 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 		tx.Rollback()
 		return nil, fmt.Errorf("Gagal menyimpan perubahan: %w", err)
 	}
+
+	if report.ReportStatus == model.POTENTIALLY_RESOLVED {
+		reportLink := fmt.Sprintf("%s/main/reports/%d", env.ClientURL(), report.ID)
+		go util.SendPotentiallyResolvedReportEmail(
+			report.User.Email,
+			report.User.Username,
+			report.ReportTitle,
+			reportLink,
+			7,
+		)
+	}
+
 	return &dto.GetVoteReportResponse{
 		ID:        resultVote.ID,
 		ReportID:  reportID,
