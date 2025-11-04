@@ -127,7 +127,7 @@ export const ReportMediaViewer: React.FC<ReportMediaViewerProps> = ({
                 )}
 
                 {viewMode === 'map' && (
-                    <div className="relative">
+                    <div className="relative z-0">
                         <div className="relative w-full overflow-hidden bg-gray-100 rounded-xl shadow-md">
                             <StaticMap
                                 latitude={report.location.latitude}
