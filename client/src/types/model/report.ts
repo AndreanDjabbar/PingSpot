@@ -152,6 +152,7 @@ export interface IReportVote {
     userID: number;
     reportID: number;
     voteType: ReportStatus;
+    reportStatus: ReportStatus;
     createdAt: number;
     updatedAt: number;
 }
