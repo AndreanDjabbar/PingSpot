@@ -86,7 +86,7 @@ func getProgressReminderEmailTemplate() string {
 								Halo {{.UserName}}! 👋
 							</h2>
 							<p style="margin: 0 0 25px; color: #475569; font-size: 16px; text-align: center; line-height: 1.7;">
-								Laporan Anda berstatus <strong style="color: #f59e0b;">Potensial Terselesaikan</strong> dan perlu diperbarui!
+								Laporan Anda berstatus <strong style="color: #f59e0b;">Dalam Peninjauan</strong> dan perlu diperbarui!
 							</p>
 							<div style="margin: 30px 0; padding: 25px; background-color: #fef3c7; border-radius: 12px; border-left: 4px solid #f59e0b;">
 								<p style="margin: 0 0 15px; color: #92400e; font-size: 16px; font-weight: 600;">
