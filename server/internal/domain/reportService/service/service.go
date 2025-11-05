@@ -7,6 +7,7 @@ import (
 	"server/internal/domain/reportService/dto"
 	reportRepository "server/internal/domain/reportService/repository"
 	"server/internal/domain/reportService/util"
+	tasksService"server/internal/domain/taskService/service"
 	userRepository "server/internal/domain/userService/repository"
 	"server/pkg/utils/env"
 	mainutils "server/pkg/utils/mainUtils"
@@ -22,11 +23,12 @@ type ReportService struct {
 	reportReactionRepo reportRepository.ReportReactionRepository
 	reportVoteRepo     reportRepository.ReportVoteRepository
 	reportProgressRepo reportRepository.ReportProgressRepository
+	tasksService      tasksService.TaskService
 	userRepo           userRepository.UserRepository
 	userProfileRepo    userRepository.UserProfileRepository
 }
 
-func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo reportRepository.ReportLocationRepository, reportReaction reportRepository.ReportReactionRepository, imageRepo reportRepository.ReportImageRepository, userRepo userRepository.UserRepository, userProfileRepo userRepository.UserProfileRepository, reportProgressRepo reportRepository.ReportProgressRepository, reportVoteRepo reportRepository.ReportVoteRepository) *ReportService {
+func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo reportRepository.ReportLocationRepository, reportReaction reportRepository.ReportReactionRepository, imageRepo reportRepository.ReportImageRepository, userRepo userRepository.UserRepository, userProfileRepo userRepository.UserProfileRepository, reportProgressRepo reportRepository.ReportProgressRepository, reportVoteRepo reportRepository.ReportVoteRepository, tasksService tasksService.TaskService) *ReportService {
 	return &ReportService{
 		reportRepo:         reportRepo,
 		reportLocationRepo: locationRepo,
@@ -36,6 +38,7 @@ func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo
 		reportProgressRepo: reportProgressRepo,
 		userProfileRepo:    userProfileRepo,
 		reportVoteRepo:     reportVoteRepo,
+		tasksService:      tasksService,
 	}
 }
 
@@ -589,6 +592,10 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 				reportLink,
 				7,
 			)
+			if err := s.tasksService.AutoResolveReportTask(reportID); err != nil {
+				tx.Rollback()
+				return nil, fmt.Errorf("Gagal membuat tugas penyelesaian otomatis: %w", err)
+			}
 		} else if topVote.Type == model.ON_PROGRESS && report.ReportStatus != model.ON_PROGRESS {
 			report.ReportStatus = model.ON_PROGRESS
 		} else if topVote.Type == model.NOT_RESOLVED && report.ReportStatus != model.NOT_RESOLVED {

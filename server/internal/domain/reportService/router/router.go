@@ -1,14 +1,18 @@
 package router
 
 import (
+	"fmt"
 	"server/internal/domain/reportService/handler"
 	reportRepository "server/internal/domain/reportService/repository"
-	"server/internal/domain/reportService/service"
+	reportService "server/internal/domain/reportService/service"
+	"server/internal/domain/taskService/service"
 	userRepository "server/internal/domain/userService/repository"
 	"server/internal/infrastructure/database"
 	"server/internal/middleware"
+	"server/pkg/utils/env"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/hibiken/asynq"
 )
 
 func RegisterReportRoutes(app *fiber.App) {
@@ -22,7 +26,11 @@ func RegisterReportRoutes(app *fiber.App) {
 	userProfileRepo := userRepository.NewUserProfileRepository(database)
 	userRepo := userRepository.NewUserRepository(database)
 
-	reportService := service.NewreportService(reportRepo, reportLocationRepo, reportReactionRepo, reportImageRepo, userRepo, userProfileRepo, reportProgressRepo, reportVoteRepo)
+	redisAddress := fmt.Sprintf("%s:%s", env.RedisHost(), env.RedisPort())
+	client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddress})
+	tasksService := service.NewTaskService(client, reportRepo)
+
+	reportService := reportService.NewreportService(reportRepo, reportLocationRepo, reportReactionRepo, reportImageRepo, userRepo, userProfileRepo, reportProgressRepo, reportVoteRepo, *tasksService)
 
 	reportHandler := handler.NewReportHandler(reportService)
 
