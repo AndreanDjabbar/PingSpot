@@ -11,6 +11,7 @@ type ReportRepository interface {
 	Create(report *model.Report, tx *gorm.DB) error
 	UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error)
 	GetByID(reportID uint) (*model.Report, error)
+	GetByIDTX(tx *gorm.DB, reportID uint) (*model.Report, error)
 	Get() (*[]model.Report, error)
 	GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string) (*[]model.Report, error)
 	GetReportsCount() (*dto.TotalReportCount, error)
@@ -188,5 +189,22 @@ func (r *reportRepository) GetByID(reportID uint) (*model.Report, error) {
 		return nil, err
 	}
 
+	return &report, nil
+}
+
+func (r *reportRepository) GetByIDTX(tx *gorm.DB, reportID uint) (*model.Report, error) {
+	var report model.Report
+	if err := tx.
+		Preload("User.Profile").
+		Preload("ReportLocation").
+		Preload("ReportImages").
+		Preload("ReportReactions").
+		Preload("ReportVotes").
+		Preload("ReportProgress", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at DESC")
+		}).
+		First(&report, "reports.id = ?", reportID).Error; err != nil {
+		return nil, err
+	}
 	return &report, nil
 }
