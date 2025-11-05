@@ -8,12 +8,14 @@ import (
 	"server/internal/infrastructure/database"
 	"server/internal/migration"
 	"server/internal/server"
+	"server/internal/worker"
 	"server/pkg/logger"
 	"server/pkg/utils/env"
 	"strconv"
 
 	"go.uber.org/zap"
 
+	"github.com/hibiken/asynq"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -64,6 +66,22 @@ func main() {
 			logger.Error("Failed to create uploads/main/report/progress directory", zap.Error(err))
 		}
 	}
+
+	redisAddr := fmt.Sprintf("%s:%s", redisConfig.Host, redisConfig.Port)
+	// reportRepo := repository.NewReportRepository(db)
+	
+	client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
+	defer client.Close()
+	
+	// go worker.StartCronJobs(client, reportRepo)
+	
+	workerServer := worker.NewWorkerServer(redisAddr)
+	go func() {
+		logger.Info("Starting Asynq worker server", zap.String("redis", redisAddr))
+		if err := workerServer.Run(); err != nil {
+			logger.Error("Asynq worker server error", zap.Error(err))
+		}
+	}()
 
 	server := server.New()
 
