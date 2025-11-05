@@ -290,6 +290,20 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "05112025_fix_null_potentially_resolved_at",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Exec(`
+					UPDATE reports 
+					SET potentially_resolved_at = updated_at 
+					WHERE report_status = 'POTENTIALLY_RESOLVED' 
+					AND potentially_resolved_at IS NULL
+				`).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()
