@@ -133,13 +133,13 @@ func SendEmail(data EmailData) error {
 	m.SetHeader("From", email)
 	m.SetHeader("To", data.To)
 	m.SetHeader("Subject", data.Subject)
-
+	
 	body, err := RenderEmailTemplate(data)
+
 	if err != nil {
 		return fmt.Errorf("failed to render email template: %w", err)
 	}
 	m.SetBody("text/html", body)
-
 	d := gomail.NewDialer("smtp.gmail.com", 587, email, password)
 	if err := d.DialAndSend(m); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
