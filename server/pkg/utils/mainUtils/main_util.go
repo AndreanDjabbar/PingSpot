@@ -3,6 +3,7 @@ package mainutils
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"math/big"
@@ -280,4 +281,10 @@ func StringToUint(s string) (uint, error) {
 		return 0, fmt.Errorf("failed to convert string to uint: %w", err)
 	}
 	return uint(value), nil
+}
+
+
+func MustJSON(v any) []byte {
+	b, _ := json.Marshal(v)
+	return b
 }
