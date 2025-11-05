@@ -1,7 +1,7 @@
-package worker
+package asynqWorker
 
 import (
-	"server/internal/worker/handler"
+	"server/internal/worker/asynqWorker/handler"
 	"server/pkg/logger"
 
 	"github.com/hibiken/asynq"

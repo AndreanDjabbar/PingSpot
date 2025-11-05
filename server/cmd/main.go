@@ -8,7 +8,8 @@ import (
 	"server/internal/infrastructure/database"
 	"server/internal/migration"
 	"server/internal/server"
-	"server/internal/worker"
+	"server/internal/worker/asynqWorker"
+	"server/internal/worker/cronWorker"
 	"server/pkg/logger"
 	"server/pkg/utils/env"
 	"strconv"
@@ -68,14 +69,16 @@ func main() {
 	}
 
 	redisAddr := fmt.Sprintf("%s:%s", redisConfig.Host, redisConfig.Port)
-	// reportRepo := repository.NewReportRepository(db)
 	
 	client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
 	defer client.Close()
 	
-	// go worker.StartCronJobs(client, reportRepo)
-	
-	workerServer := worker.NewWorkerServer(redisAddr)
+	go func() {
+		logger.Info("Starting cron jobs", zap.String("redis", redisAddr))
+		cronWorker.StartCron(client)
+	}()
+
+	workerServer := asynqWorker.NewWorkerServer(redisAddr)
 	go func() {
 		logger.Info("Starting Asynq worker server", zap.String("redis", redisAddr))
 		if err := workerServer.Run(); err != nil {

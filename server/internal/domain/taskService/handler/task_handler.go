@@ -40,6 +40,11 @@ func (h *TaskHandler) AutoResolveReportHandler(ctx context.Context, t *asynq.Tas
 	}
 
 	if report.ReportStatus == "POTENTIALLY_RESOLVED" {
+		if report.PotentiallyResolvedAt == nil {
+			tx.Rollback()
+			return fmt.Errorf("report %d has POTENTIALLY_RESOLVED status but PotentiallyResolvedAt is nil", report.ID)
+		}
+
 		lastUpdate := time.Unix(*report.PotentiallyResolvedAt, 0)
 		if time.Since(lastUpdate) >= 20*time.Minute {
 			report.ReportStatus = "RESOLVED"
@@ -49,7 +54,11 @@ func (h *TaskHandler) AutoResolveReportHandler(ctx context.Context, t *asynq.Tas
 			}
 			tx.Commit()
 			logger.Info("Auto resolve report handler success for", zap.Int("report_id", int(report.ID)))
+		} else {
+			tx.Rollback()
 		}
+	} else {
+		tx.Rollback()
 	}
 
 	return nil
