@@ -1,0 +1,37 @@
+package service
+
+import (
+	"encoding/json"
+	"fmt"
+	"server/internal/domain/reportService/repository"
+	"server/internal/domain/taskService/payload"
+	"server/internal/domain/taskService/tasks"
+	"server/pkg/logger"
+	"time"
+
+	"github.com/hibiken/asynq"
+	"go.uber.org/zap"
+)
+
+type TaskService struct {
+	client     *asynq.Client
+	ReportRepo repository.ReportRepository
+}
+
+func NewTaskService(client *asynq.Client, reportRepo repository.ReportRepository) *TaskService {
+	return &TaskService{
+		client:     client,
+		ReportRepo: reportRepo,
+	}
+}
+
+func (s *TaskService) AutoResolveReportTask(reportID uint) error {
+	payload, _ := json.Marshal(payload.UpdateProgressPayload{ReportID: reportID})
+	task := asynq.NewTask(tasks.TaskAutoResolveReport, payload)
+	_, err := s.client.Enqueue(task, asynq.ProcessIn(20*time.Minute))
+	if err != nil {
+		return fmt.Errorf("failed to enqueue auto resolve report task: %w", err)
+	}
+	logger.Info("Auto resolve report task enqueued for", zap.Int("report_id", int(reportID)))
+	return nil
+}
