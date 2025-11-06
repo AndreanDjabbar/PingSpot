@@ -230,6 +230,13 @@ func StrPtrOrNil(s string) *string {
 	return &s
 }
 
+func BoolPtrOrNil(b bool) *bool {
+	if !b {
+		return nil
+	}
+	return &b
+}
+
 func Int64PtrOrNil(i int64) *int64 {
 	if i == 0 {
 		return nil
