@@ -42,9 +42,9 @@ func (h *CronHandler) CheckPotentiallyResolvedReport() error {
 			logger.Error(fmt.Sprintf("user data not properly loaded for report ID %d, skipping email", report.ID))
 			continue
 		}
-
+		remainingDay := util.GetAutoResolvedRemainingDay(report)
 		reportLink := fmt.Sprintf("%s/main/report/%d", env.ClientURL(), report.ID)
-		go util.SendAutoResolvedRemainingDayEmail(report.User.Email, report.User.Username, report.ReportTitle, reportLink, 3) 
+		go util.SendAutoResolvedRemainingDayEmail(report.User.Email, report.User.Username, report.ReportTitle, reportLink, remainingDay) 
 	}
 	return nil
 }

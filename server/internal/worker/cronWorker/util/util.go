@@ -1,8 +1,23 @@
 package util
 
 import (
+	"server/internal/domain/model"
 	mainutils "server/pkg/utils/mainUtils"
+	"time"
 )
+
+func GetAutoResolvedRemainingDay(report model.Report) int {
+    potentiallyResolvedAt := time.Unix(*report.PotentiallyResolvedAt, 0)
+    autoResolveTime := potentiallyResolvedAt.Add(7 * 24 * time.Hour)
+    now := time.Now()
+    remaining := autoResolveTime.Sub(now)
+    if remaining <= 0 {
+        return 0
+    }
+
+    daysLeft := int(remaining.Hours() / 24)
+    return daysLeft
+}
 
 func SendAutoResolvedRemainingDayEmail(to, username, reportTitle, reportLink string, daysRemaining int) error {
 	return mainutils.SendEmail(mainutils.EmailData{
