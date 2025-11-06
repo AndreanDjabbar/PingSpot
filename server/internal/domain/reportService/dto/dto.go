@@ -48,6 +48,8 @@ type Report struct {
 	IsOnProgressByCurrentUser  bool                        `json:"isOnProgressByCurrentUser"`
 	IsNotResolvedByCurrentUser bool                        `json:"isNotResolvedByCurrentUser"`
 	MajorityVote               *string                     `json:"majorityVote,omitempty"`
+	LastUpdatedBy			  *string                     `json:"lastUpdatedBy,omitempty"`
+	ReportUpdatedAt            int64                       `json:"reportUpdatedAt"`
 }
 
 type ReportLocation struct {

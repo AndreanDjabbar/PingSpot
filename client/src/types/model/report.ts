@@ -145,6 +145,7 @@ export interface IReport {
     isNotResolvedByCurrentUser?: boolean;
     reportVotes?: IReportVote[];
     majorityVote?: ReportStatus;
+    lastUpdatedBy?: string;
 }
 
 export interface IReportVote {

@@ -273,6 +273,8 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, s
 			IsNotResolvedByCurrentUser: isNotResolvedByCurrentUser,
 			IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
 			MajorityVote:               util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
+			LastUpdatedBy: (*string)(&report.LastUpdatedBy),
+			ReportUpdatedAt: report.UpdatedAt,
 		})
 	}
 	reportsData := dto.GetReportsResponse{
@@ -422,6 +424,8 @@ func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResp
 		IsNotResolvedByCurrentUser: isNotResolvedByCurrentUser,
 		IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
 		MajorityVote:               util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
+		LastUpdatedBy: (*string)(&report.LastUpdatedBy),
+		ReportUpdatedAt: report.UpdatedAt,
 	}
 	result := dto.GetReportResponse{
 		Report: fullReport,
