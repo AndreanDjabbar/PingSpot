@@ -690,6 +690,8 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 	}
 
 	report.ReportStatus = model.ON_PROGRESS
+	report.AdminOverride = mainutils.BoolPtrOrNil(true)
+	report.LastUpdatedBy = model.Owner
 	if _, err := s.reportRepo.UpdateTX(tx, report); err != nil {
 		tx.Rollback()
 		return nil, fmt.Errorf("gagal memperbarui status laporan: %w", err)

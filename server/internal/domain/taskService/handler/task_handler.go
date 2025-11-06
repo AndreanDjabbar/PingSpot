@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"server/internal/domain/model"
 	"server/internal/domain/reportService/repository"
 	"server/internal/domain/taskService/payload"
 	"server/pkg/logger"
@@ -48,6 +49,7 @@ func (h *TaskHandler) AutoResolveReportHandler(ctx context.Context, t *asynq.Tas
 		lastUpdate := time.Unix(*report.PotentiallyResolvedAt, 0)
 		if time.Since(lastUpdate) >= 20*time.Minute {
 			report.ReportStatus = "RESOLVED"
+			report.LastUpdatedBy = model.System
 			if _, err := h.ReportRepo.UpdateTX(tx, report); err != nil {
 				tx.Rollback()
 				return fmt.Errorf("failed to update report: %w", err)
