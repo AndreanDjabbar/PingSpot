@@ -46,7 +46,7 @@ export const ReportMediaViewer: React.FC<ReportMediaViewerProps> = ({
                         <div className="inline-flex items-center w-full max-w-md rounded-lg overflow-hidden shadow-sm">
                             <button
                                 onClick={() => setViewMode('map')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium transition-all duration-200 ${
+                                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium transition-all cursor-pointer duration-200 ${
                                     viewMode === 'map'
                                         ? 'bg-gray-400 text-white'
                                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -57,7 +57,7 @@ export const ReportMediaViewer: React.FC<ReportMediaViewerProps> = ({
                             </button>
                             <button
                                 onClick={() => setViewMode('attachment')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium transition-all duration-200 ${
+                                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium cursor-pointer transition-all duration-200 ${
                                     viewMode === 'attachment'
                                         ? 'bg-gray-400 text-white'
                                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'

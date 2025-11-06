@@ -100,9 +100,7 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                     <>
                         <div>
                             <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Status</p>
-                            <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
-                                <span className="text-xs text-gray-600 font-medium">Tipe Laporan Tidak Menggunakan Status</span>
-                            </div>
+                            <span className="text-xs text-gray-600 font-medium">Tipe Laporan Tidak Menggunakan Status</span>
                         </div>
                         <div className="h-px bg-gray-200"></div>
                     </>
@@ -123,11 +121,12 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                 <div className="h-px bg-gray-200"></div>
                 <div>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Terakhir diperbarui oleh</p>
-                    <div className="flex items-center gap-3">
-                        <div className="flex flex-col leading-tight">
-                            <span className="text-sm font-bold text-gray-700">{getReportLastUpdatedBy(report.lastUpdatedBy) ?? '-'}</span>
-                            <span className="text-[11px] text-gray-500">pada: <span className="font-medium text-gray-700">{formattedDate(report.reportUpdatedAt, { formatStr: 'dd MMM yyyy, HH:mm' })}</span></span>
-                        </div>
+                    {report.hasProgress ? (
+                        <div className="flex items-center gap-3">
+                            <div className="flex flex-col leading-tight">
+                                <span className="text-sm font-bold text-gray-700">{getReportLastUpdatedBy(report.lastUpdatedBy) ?? '-'}</span>
+                                <span className="text-[11px] text-gray-500">pada: <span className="font-medium text-gray-700">{formattedDate(report.reportUpdatedAt, { formatStr: 'dd MMM yyyy, HH:mm' })}</span></span>
+                            </div>
                             <button 
                                 onClick={() => openFormInfo({
                                     title: 'Laporan Diperbarui Oleh Pemilik Laporan',
@@ -135,12 +134,20 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                                     description: 'Status laporan ini diperbarui oleh pemilik laporan. Kebenaran informasi sepenuhnya bergantung pada validasi dari pemilik laporan.',
                                     additionalInfo: 'Pastikan anda memastikan ulang informasi dari laporan ini.'
                                 })}
-                                className='ml-auto inline-flex items-center p-1.5 sm:p-2 hover:bg-yellow-50 rounded-full transition-colors group'
+                                className='ml-auto inline-flex items-center p-1.5 sm:p-2 hover:bg-yellow-50 rounded-full transition-colors group cursor-pointer'
                                 aria-label="Informasi status laporan"
                             >
                                 <ImInfo size={16} className="text-yellow-600 group-hover:text-yellow-700 transition-colors sm:w-6 sm:h-6"/>
                             </button>
-                    </div>
+                        </div>
+                    ) : (
+                        <>
+                            <div>
+                                <span className="text-xs text-gray-600 font-medium">Tipe Laporan Tidak Menggunakan pembaruan status</span>
+                            </div>
+                            <div className="h-px bg-gray-200"></div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

@@ -32,7 +32,7 @@ export const ReportProgressTimeline: React.FC<ReportProgressTimelineProps> = ({
                 {isReportOwner && report.hasProgress && (
                     <button
                         onClick={() => router.push(`/main/reports/${report.id}/update-progress`)}
-                        className="flex items-center gap-2 px-4 py-2 bg-pingspot-hoverable text-white text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow-md"
+                        className="flex items-center gap-2 px-4 py-2 bg-pingspot-hoverable text-white text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow-md cursor-pointer"
                     >
                         <BiEdit size={16} />
                         <span>Perbarui</span>

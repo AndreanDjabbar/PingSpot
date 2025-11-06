@@ -167,12 +167,12 @@ const ReportCard: React.FC<ReportCardProps> = ({
             </div>
 
             {images.length > 0 && (
-                <div className="px-4 pb-3">
+                <div className="px-4 pb-3 cursor-pointer">
                     <div className="flex items-center justify-center">
                         <div className="inline-flex items-center w-full max-w-md rounded-lg overflow-hidden shadow-sm">
                             <button
                                 onClick={() => setViewMode('map')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-1 py-2 text-sm font-medium transition-all duration-200 ${
+                                className={`flex-1 flex items-center justify-center gap-2 px-1 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${
                                     viewMode === 'map'
                                         ? 'bg-gray-400 text-white'
                                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -183,7 +183,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                             </button>
                             <button
                                 onClick={() => setViewMode('attachment')}
-                                className={`flex-1 flex items-center justify-center gap-2 px-1 py-2 text-sm font-medium transition-all duration-200 ${
+                                className={`flex-1 flex items-center justify-center gap-2 px-1 py-2 text-sm font-medium transition-all cursor-pointer duration-200 ${
                                     viewMode === 'attachment'
                                         ? 'bg-gray-400 text-white'
                                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'

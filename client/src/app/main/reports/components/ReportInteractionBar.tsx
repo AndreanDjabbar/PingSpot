@@ -82,7 +82,7 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
     return (
         <div className="p-3 ">
             {(reactionStats.totalLikes > 0 || reactionStats.totalDislikes > 0 || commentCount > 0) && (
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-2 px-1 ">
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-2 px-1">
                     <div className="flex items-center gap-2">
                         {reactionStats.totalLikes > 0 && (
                             <div className="flex items-center gap-1">
@@ -112,7 +112,7 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
             <div className="flex items-center justify-between border-t border-b border-gray-200 py-1">
                 <div className="flex items-center flex-1">
                     <motion.button
-                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors flex-1 ${
+                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors flex-1 ${
                             isLikedByCurrentUser
                                 ? 'text-red-500'
                                 : 'text-gray-600 hover:bg-gray-100'
@@ -131,7 +131,7 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
                     </motion.button>
 
                     <button
-                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-1"
+                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-1 cursor-pointer"
                         onClick={onComment}
                     >
                         <FaComment className="w-[18px] h-[18px]" />
@@ -139,7 +139,7 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
                     </button>
 
                     <button
-                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-1"
+                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-1 cursor-pointer"
                         onClick={onShare}
                     >
                         <FaShare className="w-[18px] h-[18px]" />
