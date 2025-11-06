@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { FaCheck, FaTimes, FaUsers, FaCrown, FaCamera } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaUsers, FaCamera } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { useReportsStore, useUserProfileStore, useConfirmationModalStore } from '@/stores';
+import { useReportsStore, useUserProfileStore, useConfirmationModalStore, useFormInformationModalStore } from '@/stores';
 import { ButtonSubmit, MultipleImageField, TextAreaField } from '@/components/form';
 import { BiMessageDetail, BiX } from 'react-icons/bi';
 import { useUploadProgressReport } from '@/hooks/main';
@@ -20,7 +20,7 @@ import { LuNotebookText } from 'react-icons/lu';
 import { FiEdit } from 'react-icons/fi';
 import { Accordion } from '@/components/UI';
 import { RiProgress3Fill } from "react-icons/ri";
-import { MdDone } from 'react-icons/md';
+import { MdDone, MdWarning } from 'react-icons/md';
 
 interface StatusVotingProps {
     reportID?: number;
@@ -39,6 +39,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
     const [progressImages, setProgressImages] = useState<File[]>([]);
     const { openConfirm } = useConfirmationModalStore();
+    const { openFormInfo } = useFormInformationModalStore();
 
     const handleVote = (voteType: string) => {
         if (isLoading || currentStatus === 'RESOLVED') return;
@@ -61,7 +62,9 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
     const isReportResolved = (report?.reportStatus ?? currentStatus) === 'RESOLVED';
+    const isPotentiallyResolved = report?.reportStatus === 'POTENTIALLY_RESOLVED';
     const progressData = report?.reportProgress || [];
+    const showWarning = isReportOwner && isPotentiallyResolved;
 
     const totalVotes = report?.totalVotes || 0;
     const resolvedPercentage = totalVotes > 0 ? ((report?.totalResolvedVotes || 0) / totalVotes) * 100 : 0;
@@ -223,15 +226,25 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                     id="status-laporan"
                     title="Status Laporan"
                     icon={<FaUsers className="w-5 h-5" />}
-                    badge={isReportOwner ? (
-                        <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-100 to-yellow-50 text-yellow-700 px-3 py-1.5 rounded-full border border-yellow-300 shadow-sm">
-                            <FaCrown size={14}/>
-                            <span className="text-xs font-semibold">Laporan Anda</span>
-                        </div>  
-                    ) : undefined}
                     rightContent={(
-                        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(currentStatus)}`}>
-                            {getStatusLabel(currentStatus)}
+                        <div className='flex items-center gap-2'>
+                            <div className={`px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${getStatusColor(currentStatus)}`}>
+                                {getStatusLabel(currentStatus)}
+                            </div>
+                            {showWarning && (
+                                <button 
+                                    onClick={() => openFormInfo({
+                                        title: 'Konfirmasi Penyelesaian Laporan',
+                                        type: 'warning',
+                                        description: 'Status laporan Anda berpotensi terselesaikan berdasarkan voting komunitas. Mohon konfirmasi dengan mengunggah progres terbaru dalam waktu 1 minggu untuk memvalidasi penyelesaian masalah ini.',
+                                        additionalInfo: 'Jika tidak ada konfirmasi dalam 1 minggu, status akan otomatis berubah menjadi "Terselesaikan".'
+                                    })}
+                                    className='inline-flex items-center p-1.5 sm:p-2 hover:bg-blue-50 rounded-full transition-colors group'
+                                    aria-label="Informasi status laporan"
+                                >
+                                    <MdWarning size={25} className="text-blue-600 group-hover:text-blue-700 transition-colors sm:w-6 sm:h-6"/>
+                                </button>
+                            )}
                         </div>
                     )}
                     className="bg-transparent border-0 shadow-none"

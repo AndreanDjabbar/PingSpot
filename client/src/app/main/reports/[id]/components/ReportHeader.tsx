@@ -3,9 +3,10 @@
 import React from 'react';
 import Image from 'next/image';
 import { BsThreeDots } from 'react-icons/bs';
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { FaCrown, FaMapMarkerAlt } from 'react-icons/fa';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { IReport, ReportType } from '@/types/model/report';
+import { useUserProfileStore } from '@/stores';
 
 interface ReportHeaderProps {
     report: IReport;
@@ -32,6 +33,8 @@ const getReportTypeLabel = (type: ReportType): string => {
 };
 
 export const ReportHeader: React.FC<ReportHeaderProps> = ({ report }) => {
+    const { userProfile } = useUserProfileStore();
+    const isReportOwner = userProfile ? Number(userProfile.userID) === report.userID : false;
     return (
         <div className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -46,7 +49,14 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({ report }) => {
                         />
                     </div>
                     <div>
-                        <div className="font-semibold text-base text-gray-900">{report.userName}</div>
+                        <div className='flex items-center gap-2'>
+                            <div className="font-semibold text-base text-gray-900">{report.userName}</div>
+                            <div>
+                                {isReportOwner && (  
+                                    <FaCrown size={14} className='text-amber-500'/>
+                                )}
+                            </div>
+                        </div>
                         <div className="text-sm text-gray-500">
                             {formattedDate(report.reportCreatedAt, {
                                 formatStr: 'dd MMMM yyyy - HH:mm',
