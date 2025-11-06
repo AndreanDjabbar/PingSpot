@@ -128,7 +128,6 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                             <span className="text-sm font-bold text-gray-700">{getReportLastUpdatedBy(report.lastUpdatedBy) ?? '-'}</span>
                             <span className="text-[11px] text-gray-500">pada: <span className="font-medium text-gray-700">{formattedDate(report.reportUpdatedAt, { formatStr: 'dd MMM yyyy, HH:mm' })}</span></span>
                         </div>
-                        {showWarning && (
                             <button 
                                 onClick={() => openFormInfo({
                                     title: 'Laporan Diperbarui Oleh Pemilik Laporan',
@@ -141,7 +140,6 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                             >
                                 <ImInfo size={16} className="text-yellow-600 group-hover:text-yellow-700 transition-colors sm:w-6 sm:h-6"/>
                             </button>
-                        )}
                     </div>
                 </div>
             </div>
