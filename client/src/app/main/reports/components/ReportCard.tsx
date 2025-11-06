@@ -84,6 +84,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
 
     const onImageClick = (imageURL: string) => {
         const url = getImageURL(imageURL, "main");
+        console.log("Opening image preview for URL:", url);
         openImagePreview(url);
     }
 

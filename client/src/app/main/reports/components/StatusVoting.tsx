@@ -299,7 +299,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                                 <div 
                                                                     key={imgIndex}
                                                                     className="relative aspect-video rounded-lg overflow-hidden bg-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-                                                                    onClick={() => onImageClick(imageUrl)}
+                                                                    onClick={() => onImageClick(`report/progress/${imageUrl}`)}
                                                                 >
                                                                     <Image
                                                                         src={getImageURL(`/report/progress/${imageUrl}`, "main")}
@@ -394,7 +394,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                                                             <div 
                                                                                                 key={`${imgIndex}-${index}`}
                                                                                                 className="relative aspect-video rounded-lg overflow-hidden bg-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-                                                                                                onClick={() => onImageClick(imageUrl)}
+                                                                                                onClick={() => onImageClick(`report/progress/${imageUrl}`)}
                                                                                             >
                                                                                                 <Image
                                                                                                     src={getImageURL(`/report/progress/${imageUrl}`, "main")}
