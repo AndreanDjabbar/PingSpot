@@ -2,6 +2,7 @@ package model
 
 type ReportType string
 type ReportStatus string
+type LastUpdatedBy string
 
 const (
 	Infrastructure ReportType = "INFRASTRUCTURE"
@@ -24,6 +25,9 @@ const (
 	NOT_RESOLVED ReportStatus = "NOT_RESOLVED"
 	ON_PROGRESS  ReportStatus = "ON_PROGRESS"
 	WAITING      ReportStatus = "WAITING"
+
+	System      LastUpdatedBy = "SYSTEM"
+	Owner	   	LastUpdatedBy = "OWNER"
 )
 
 type Report struct {
@@ -38,6 +42,8 @@ type Report struct {
 	PotentiallyResolvedAt *int64            `gorm:"default:null"`
 	ReportStatus      ReportStatus      `gorm:"type:varchar(50);default:'WAITING'"`
 	HasProgress       *bool             `gorm:"default:true"`
+	LastUpdatedBy 	LastUpdatedBy `gorm:"type:varchar(50);default:NULL"`
+	AdminOverride   *bool             `gorm:"default:false"`
 	ReportLocation    *ReportLocation   `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ReportImages      *ReportImage      `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ReportReactions   *[]ReportReaction `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
