@@ -689,6 +689,12 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 		return nil, fmt.Errorf("gagal mengunggah progres laporan: %w", err)
 	}
 
+	report.ReportStatus = model.ON_PROGRESS
+	if _, err := s.reportRepo.UpdateTX(tx, report); err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("gagal memperbarui status laporan: %w", err)
+	}
+
 	response := &dto.UploadProgressReportResponse{
 		ReportID:    newProgress.ReportID,
 		Status:      string(newProgress.Status),
