@@ -29,7 +29,7 @@ export const ReportProgressTimeline: React.FC<ReportProgressTimelineProps> = ({
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-lg text-gray-900">Perkembangan Laporan</h3>
-                {isReportOwner && (
+                {isReportOwner && report.hasProgress && (
                     <button
                         onClick={() => router.push(`/main/reports/${report.id}/update-progress`)}
                         className="flex items-center gap-2 px-4 py-2 bg-pingspot-hoverable text-white text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow-md"
@@ -208,7 +208,7 @@ export const ReportProgressTimeline: React.FC<ReportProgressTimelineProps> = ({
                 </div>
             ) : (
                 <div>
-                    {report.hasProgress && (
+                    {report.hasProgress ? (
                         <div className="text-center py-8">
                             <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
                                 <IoDocumentText size={32}/>
@@ -218,16 +218,17 @@ export const ReportProgressTimeline: React.FC<ReportProgressTimelineProps> = ({
                                 Perkembangan laporan akan ditampilkan di sini
                             </p>
                         </div>
-                    )}
-                    <div className="text-center py-8">
-                        <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-                            <LuLock size={32}/>
+                    ) : (
+                        <div className="text-center py-8">
+                            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                                <LuLock size={32}/>
+                            </div>
+                            <p className="text-sm font-medium text-gray-900 mb-1">Tidak ada Progress</p>
+                            <p className="text-xs text-gray-500">
+                                Tipe laporan ini tidak akan menampilkan perkembangan laporan
+                            </p>
                         </div>
-                        <p className="text-sm font-medium text-gray-900 mb-1">Tidak ada Progress</p>
-                        <p className="text-xs text-gray-500">
-                            Tipe laporan ini tidak akan menampilkan perkembangan laporan
-                        </p>
-                    </div>
+                    )}
                 </div>
             )}
         </div>

@@ -39,7 +39,7 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
             <h3 className="font-bold text-lg text-gray-900 mb-4">Hasil Voting Pengguna</h3>
-            {report.hasProgress && (
+            {report.reportVotes ? (
                 <div>
                     <div className="space-y-4">
                         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
@@ -267,16 +267,17 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
                         )}
                     </div>
                 </div>
-            )}
-            <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-                    <LuLock size={32}/>
+            ) : (
+                <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                        <LuLock size={32}/>
+                    </div>
+                    <p className="text-sm font-medium text-gray-900 mb-1">Tidak ada Voting</p>
+                    <p className="text-xs text-gray-500">
+                        Tipe laporan ini tidak akan menyediakan fitur voting pengguna
+                    </p>
                 </div>
-                <p className="text-sm font-medium text-gray-900 mb-1">Tidak ada Voting</p>
-                <p className="text-xs text-gray-500">
-                    Tipe laporan ini tidak akan menyediakan fitur voting pengguna
-                </p>
-            </div>
+            )}
         </div>
     );
 };

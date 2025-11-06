@@ -79,7 +79,7 @@ export const ReportMediaViewer: React.FC<ReportMediaViewerProps> = ({
                                 src={getImageURL(`/report/${images[currentImageIndex]}`, "main")}
                                 alt={`Foto ${currentImageIndex + 1} untuk laporan ${report.reportTitle}`}
                                 fill
-                                className="object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                                className="object-cover cursor-pointer transition-transform duration-300"
                                 onClick={() => onImageClick(images[currentImageIndex])}
                             />
 
