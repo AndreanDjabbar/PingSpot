@@ -584,9 +584,10 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 	marginVote := float64(topVote.Count - secondVote.Count) / float64(totalVote) * 100
 
 	limitTopVote := 2
-	if marginVote >= 20.0 && topVote.Count >= limitTopVote{
+	if marginVote >= 20.0 && topVote.Count >= limitTopVote {
 		if topVote.Type == model.RESOLVED && report.ReportStatus != model.POTENTIALLY_RESOLVED {
 			report.ReportStatus = model.POTENTIALLY_RESOLVED
+			report.LastUpdatedBy = model.System
 			report.PotentiallyResolvedAt = mainutils.Int64PtrOrNil(time.Now().Unix())
 			reportLink := fmt.Sprintf("%s/main/reports/%d", env.ClientURL(), report.ID)
 			go util.SendPotentiallyResolvedReportEmail(
@@ -602,8 +603,10 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 			}
 		} else if topVote.Type == model.ON_PROGRESS && report.ReportStatus != model.ON_PROGRESS {
 			report.ReportStatus = model.ON_PROGRESS
+			report.LastUpdatedBy = model.System
 		} else if topVote.Type == model.NOT_RESOLVED && report.ReportStatus != model.NOT_RESOLVED {
 			report.ReportStatus = model.NOT_RESOLVED
+			report.LastUpdatedBy = model.System
 		}
 	}
 

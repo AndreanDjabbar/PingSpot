@@ -25,6 +25,7 @@ const (
 	NOT_RESOLVED ReportStatus = "NOT_RESOLVED"
 	ON_PROGRESS  ReportStatus = "ON_PROGRESS"
 	WAITING      ReportStatus = "WAITING"
+	EXPIRED	 	 ReportStatus = "EXPIRED"
 
 	System      LastUpdatedBy = "SYSTEM"
 	Owner	   	LastUpdatedBy = "OWNER"
