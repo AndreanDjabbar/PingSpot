@@ -57,6 +57,7 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 		UserID:            userID,
 		ReportTitle:       req.ReportTitle,
 		HasProgress:       req.HasProgress,
+		ReportStatus: 		model.WAITING,
 		ReportType:        model.ReportType(req.ReportType),
 		ReportDescription: req.ReportDescription,
 		CreatedAt:         time.Now().Unix(),
