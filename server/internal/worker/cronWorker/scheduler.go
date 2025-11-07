@@ -26,9 +26,18 @@ func StartCron(client *asynq.Client) {
 			logger.Error("Error executing CheckPotentiallyResolvedReport", zap.Error(err))
 		}
 	})
-
 	if err != nil {
 		logger.Error("Failed to schedule auto-resolve reports task", zap.Error(err))
+	}
+
+	_, err = c.AddFunc("0 0 12 * * *", func() {
+		err := cronHandler.ExpireOldReports()
+		if err != nil {
+			logger.Error("Error executing ExpireOldReports", zap.Error(err))
+		}
+	})
+	if err != nil {
+		logger.Error("Failed to schedule expire old reports task", zap.Error(err))
 	}
 
 	c.Start()
