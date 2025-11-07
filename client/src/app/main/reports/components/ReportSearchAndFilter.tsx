@@ -12,8 +12,8 @@ interface ReportSearchAndFilterProps {
 }
 
 const ReportSearchAndFilter: React.FC<ReportSearchAndFilterProps> = ({
-    searchTerm,
-    onSearchChange,
+    // searchTerm,
+    // onSearchChange,
     onFilterClick,
     activeFiltersCount = 0,
     filterButtonRef

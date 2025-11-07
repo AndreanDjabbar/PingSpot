@@ -999,7 +999,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                     </>
                                 )}
 
-                                {userCurrentVote && !isReportResolved && (
+                                {userCurrentVote && !isReportResolved && !isReportExpired && (
                                     <div className="mt-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 shadow-sm">
                                         <div className="flex items-center justify-center space-x-2">
                                             <div className="flex-1">

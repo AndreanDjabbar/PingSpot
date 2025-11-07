@@ -38,7 +38,17 @@ const getReportTypeLabel = (type: ReportType): string => {
         INFRASTRUCTURE: 'Infrastruktur',
         ENVIRONMENT: 'Lingkungan',
         SAFETY: 'Keamanan',
-        OTHER: 'Lainnya'
+        OTHER: 'Lainnya',
+        TRAFFIC: 'Lalu Lintas',
+        PUBLIC_FACILITY: 'Fasilitas Umum',
+        WASTE: 'Sampah',
+        WATER: 'Air',
+        ELECTRICITY: 'Listrik',
+        HEALTH: 'Kesehatan',
+        SOCIAL: 'Sosial',
+        EDUCATION: 'Pendidikan',
+        ADMINISTRATIVE: 'Administratif',
+        DISASTER: 'Bencana Alam'
     };
     return types[type] || 'Lainnya';
 };
@@ -278,7 +288,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
 
                             <StatusVoting
                                 reportID={report?.id}
-                                currentStatus={report?.reportStatus || 'PENDING'}
                                 onVote={(voteType: string) => onStatusVote(voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
                                 onImageClick={() => {}}
                             />
