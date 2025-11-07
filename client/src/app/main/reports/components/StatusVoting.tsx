@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { FaCheck, FaTimes, FaUsers, FaCamera } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaUsers, FaCamera, FaHourglassEnd } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReportsStore, useUserProfileStore, useConfirmationModalStore, useFormInformationModalStore } from '@/stores';
 import { ButtonSubmit, MultipleImageField, TextAreaField } from '@/components/form';
@@ -62,6 +62,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
     const isReportResolved = (report?.reportStatus ?? currentStatus) === 'RESOLVED';
+    const isReportExpired = (report?.reportStatus ?? currentStatus) === 'EXPIRED';
     const isPotentiallyResolved = report?.reportStatus === 'POTENTIALLY_RESOLVED';
     const progressData = report?.reportProgress || [];
     const showWarning = isReportOwner && isPotentiallyResolved;
@@ -872,109 +873,129 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
-                                            <p className="text-sm text-blue-800 font-bold text-center">
-                                                Bagaimana pendapat Anda tentang laporan ini?
-                                            </p>
-                                            <p className="text-xs text-blue-600 text-center mt-1">
-                                                Pilih salah satu untuk memberikan pendapat
-                                            </p>
-                                        </div>
-                                        
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                            <motion.button
-                                                className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
-                                                    userCurrentVote === 'RESOLVED'
-                                                        ? 'bg-green-600 text-white border-green-700 shadow-lg scale-105'
-                                                        : 'bg-white text-green-700 border-gray-200 hover:border-green-300 hover:bg-green-50 shadow-sm'
-                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                onClick={() => handleVoteConfirmationModal('RESOLVED')}
-                                                disabled={isLoading}
-                                                animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
-                                                transition={{ duration: 0.3 }}
-                                                whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                                            >
-                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                                                    userCurrentVote === 'RESOLVED'
-                                                        ? 'bg-white/20'
-                                                        : 'bg-green-100'
-                                                }`}>
-                                                    <FaCheck className={`w-6 h-6 ${
-                                                        userCurrentVote === 'RESOLVED' ? 'text-white' : 'text-green-600'
-                                                    }`} />
+                                        {isReportExpired ? (
+                                            <>
+                                                <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-300 shadow-sm">
+                                                    <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                                                        <FaHourglassEnd className="w-5 h-5 text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-indigo-800 font-semibold">
+                                                            Laporan Kadaluarsa
+                                                        </p>
+                                                        <p className="text-xs text-indigo-700 mt-0.5">
+                                                            Voting ditutup hingga laporan diperbarui oleh pembuat laporan
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <span className="text-xs sm:text-sm font-bold text-center leading-tight">
-                                                    Terselesaikan
-                                                </span>
-                                                <span className={`text-xs mt-1 text-center ${
-                                                    userCurrentVote === 'RESOLVED' ? 'text-green-100' : 'text-gray-500'
-                                                }`}>
-                                                    Masalah selesai
-                                                </span>
-                                            </motion.button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
+                                                    <p className="text-sm text-blue-800 font-bold text-center">
+                                                        Bagaimana pendapat Anda tentang laporan ini?
+                                                    </p>
+                                                    <p className="text-xs text-blue-600 text-center mt-1">
+                                                        Pilih salah satu untuk memberikan pendapat
+                                                    </p>
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                    <motion.button
+                                                        className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
+                                                            userCurrentVote === 'RESOLVED'
+                                                                ? 'bg-green-600 text-white border-green-700 shadow-lg scale-105'
+                                                                : 'bg-white text-green-700 border-gray-200 hover:border-green-300 hover:bg-green-50 shadow-sm'
+                                                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                        onClick={() => handleVoteConfirmationModal('RESOLVED')}
+                                                        disabled={isLoading}
+                                                        animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
+                                                        transition={{ duration: 0.3 }}
+                                                        whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                                                    >
+                                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                            userCurrentVote === 'RESOLVED'
+                                                                ? 'bg-white/20'
+                                                                : 'bg-green-100'
+                                                        }`}>
+                                                            <FaCheck className={`w-6 h-6 ${
+                                                                userCurrentVote === 'RESOLVED' ? 'text-white' : 'text-green-600'
+                                                            }`} />
+                                                        </div>
+                                                        <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                            Terselesaikan
+                                                        </span>
+                                                        <span className={`text-xs mt-1 text-center ${
+                                                            userCurrentVote === 'RESOLVED' ? 'text-green-100' : 'text-gray-500'
+                                                        }`}>
+                                                            Masalah selesai
+                                                        </span>
+                                                    </motion.button>
 
-                                            <motion.button
-                                                className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
-                                                    userCurrentVote === 'ON_PROGRESS'
-                                                        ? 'bg-yellow-600 text-white border-yellow-700 shadow-lg scale-105'
-                                                        : 'bg-white text-yellow-700 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 shadow-sm'
-                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                onClick={() => handleVoteConfirmationModal('ON_PROGRESS')}
-                                                disabled={isLoading}
-                                                animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.05, 1] } : {}}
-                                                transition={{ duration: 0.3 }}
-                                                whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                                            >
-                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                                                    userCurrentVote === 'ON_PROGRESS'
-                                                        ? 'bg-white/20'
-                                                        : 'bg-yellow-100'
-                                                }`}>
-                                                    <RiProgress3Fill className={`w-6 h-6 ${
-                                                        userCurrentVote === 'ON_PROGRESS' ? 'text-white' : 'text-yellow-600'
-                                                    }`} />
-                                                </div>
-                                                <span className="text-xs sm:text-sm font-bold text-center leading-tight">
-                                                    Dalam Proses
-                                                </span>
-                                                <span className={`text-xs mt-1 text-center ${
-                                                    userCurrentVote === 'ON_PROGRESS' ? 'text-yellow-100' : 'text-gray-500'
-                                                }`}>
-                                                    Sedang ditangani
-                                                </span>
-                                            </motion.button>
+                                                    <motion.button
+                                                        className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
+                                                            userCurrentVote === 'ON_PROGRESS'
+                                                                ? 'bg-yellow-600 text-white border-yellow-700 shadow-lg scale-105'
+                                                                : 'bg-white text-yellow-700 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 shadow-sm'
+                                                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                        onClick={() => handleVoteConfirmationModal('ON_PROGRESS')}
+                                                        disabled={isLoading}
+                                                        animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.05, 1] } : {}}
+                                                        transition={{ duration: 0.3 }}
+                                                        whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                                                    >
+                                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                            userCurrentVote === 'ON_PROGRESS'
+                                                                ? 'bg-white/20'
+                                                                : 'bg-yellow-100'
+                                                        }`}>
+                                                            <RiProgress3Fill className={`w-6 h-6 ${
+                                                                userCurrentVote === 'ON_PROGRESS' ? 'text-white' : 'text-yellow-600'
+                                                            }`} />
+                                                        </div>
+                                                        <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                            Dalam Proses
+                                                        </span>
+                                                        <span className={`text-xs mt-1 text-center ${
+                                                            userCurrentVote === 'ON_PROGRESS' ? 'text-yellow-100' : 'text-gray-500'
+                                                        }`}>
+                                                            Sedang ditangani
+                                                        </span>
+                                                    </motion.button>
 
-                                            <motion.button
-                                                className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
-                                                    userCurrentVote === 'NOT_RESOLVED'
-                                                        ? 'bg-red-600 text-white border-red-700 shadow-lg scale-105'
-                                                        : 'bg-white text-red-700 border-gray-200 hover:border-red-300 hover:bg-red-50 shadow-sm'
-                                                } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                onClick={() => handleVoteConfirmationModal('NOT_RESOLVED')}
-                                                disabled={isLoading}
-                                                animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
-                                                transition={{ duration: 0.3 }}
-                                                whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                                            >
-                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                                                    userCurrentVote === 'NOT_RESOLVED'
-                                                        ? 'bg-white/20'
-                                                        : 'bg-red-100'
-                                                }`}>
-                                                    <FaTimes className={`w-6 h-6 ${
-                                                        userCurrentVote === 'NOT_RESOLVED' ? 'text-white' : 'text-red-600'
-                                                    }`} />
+                                                    <motion.button
+                                                        className={`relative flex flex-col items-center justify-center p-4 rounded-xl font-semibold transition-all duration-300 border-2 ${
+                                                            userCurrentVote === 'NOT_RESOLVED'
+                                                                ? 'bg-red-600 text-white border-red-700 shadow-lg scale-105'
+                                                                : 'bg-white text-red-700 border-gray-200 hover:border-red-300 hover:bg-red-50 shadow-sm'
+                                                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                        onClick={() => handleVoteConfirmationModal('NOT_RESOLVED')}
+                                                        disabled={isLoading}
+                                                        animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
+                                                        transition={{ duration: 0.3 }}
+                                                        whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                                                    >
+                                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                                                            userCurrentVote === 'NOT_RESOLVED'
+                                                                ? 'bg-white/20'
+                                                                : 'bg-red-100'
+                                                        }`}>
+                                                            <FaTimes className={`w-6 h-6 ${
+                                                                userCurrentVote === 'NOT_RESOLVED' ? 'text-white' : 'text-red-600'
+                                                            }`} />
+                                                        </div>
+                                                        <span className="text-xs sm:text-sm font-bold text-center leading-tight">
+                                                            Tidak Ada Proses
+                                                        </span>
+                                                        <span className={`text-xs mt-1 text-center ${
+                                                            userCurrentVote === 'NOT_RESOLVED' ? 'text-red-100' : 'text-gray-500'
+                                                        }`}>
+                                                            Belum ditangani
+                                                        </span>
+                                                    </motion.button>
                                                 </div>
-                                                <span className="text-xs sm:text-sm font-bold text-center leading-tight">
-                                                    Tidak Ada Proses
-                                                </span>
-                                                <span className={`text-xs mt-1 text-center ${
-                                                    userCurrentVote === 'NOT_RESOLVED' ? 'text-red-100' : 'text-gray-500'
-                                                }`}>
-                                                    Belum ditangani
-                                                </span>
-                                            </motion.button>
-                                        </div>
+                                            </>
+                                        )}
                                     </>
                                 )}
 

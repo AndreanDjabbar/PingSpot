@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FaCheck, FaHourglassEnd, FaTimes } from 'react-icons/fa';
 import { RiProgress3Fill } from 'react-icons/ri';
 import { IReport } from '@/types/model/report';
 import { LuLock } from 'react-icons/lu';
@@ -36,6 +36,7 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
     majorityPercentage,
     handleVote,
 }) => {
+    const isReportExpired = report.reportStatus === 'EXPIRED';
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
             <h3 className="font-bold text-lg text-gray-900 mb-4">Hasil Voting Pengguna</h3>
@@ -156,7 +157,22 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
                             </div>
                         ) : (
                             <>
-                                {!isReportOwner && (
+                                {!isReportOwner && report.hasProgress && isReportExpired && (
+                                    <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-300 shadow-sm">
+                                        <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                                            <FaHourglassEnd className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-indigo-800 font-semibold">
+                                                Laporan Kadaluarsa
+                                            </p>
+                                            <p className="text-xs text-indigo-700 mt-0.5">
+                                                Voting ditutup hingga laporan diperbarui oleh pembuat laporan
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                {!isReportOwner && report.hasProgress && !isReportExpired && (
                                     <>
                                         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
                                             <p className="text-sm text-blue-800 font-bold text-center">
