@@ -101,7 +101,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
     };
 
     return (
-        <div className="bg-white backdrop-blur-sm rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
+        <div id={`report-${report.id}`} className="bg-white backdrop-blur-sm rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
             <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
                     <div className='flex items-center gap-3 flex-1 min-w-0'>

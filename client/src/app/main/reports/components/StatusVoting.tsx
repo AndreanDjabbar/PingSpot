@@ -578,7 +578,59 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                     </motion.button>
                                                 </div>
                                             </div>
-                                            <AnimatePresence mode='wait' initial={false} onExitComplete={() => setProgressImages([])}>
+                                            <AnimatePresence
+                                                mode='wait'
+                                                initial={false}
+                                                onExitComplete={() => {
+                                                    setProgressImages([]);
+
+                                                    try {
+                                                        const reportCardElement = document.getElementById(`report-${reportID}`);
+                                                        if (!reportCardElement) return;
+
+                                                        const getScrollable = (node: Element | null): Element | null => {
+                                                            while (node) {
+                                                                const style = getComputedStyle(node);
+                                                                const overflowY = style.overflowY;
+                                                                if (overflowY === 'auto' || overflowY === 'scroll') return node;
+                                                                node = node.parentElement as Element | null;
+                                                            }
+                                                            // Checking the parent node of report-id (from report card) element until found the scrollable container (overflow Y auto/scroll)
+                                                            return null;
+                                                        };
+
+                                                        const scrollable = getScrollable(reportCardElement.parentElement) || document.scrollingElement || document.documentElement;
+
+                                                        requestAnimationFrame(() => {
+                                                            requestAnimationFrame(() => {
+                                                                try {
+                                                                    reportCardElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+
+                                                                    const reportCardRect = reportCardElement.getBoundingClientRect();
+                                                                    const containerRect = (scrollable instanceof Element)
+                                                                        ? (scrollable as Element).getBoundingClientRect()
+                                                                        : { top: 0, bottom: window.innerHeight, height: window.innerHeight } as DOMRect;
+
+                                                                    if (reportCardRect.top < containerRect.top || reportCardRect.bottom > containerRect.bottom) {
+                                                                        // Is the card outside the visible area of the scroll container?
+                                                                        
+                                                                        const offset = reportCardRect.top - containerRect.top - (containerRect.height - reportCardRect.height) / 2;
+                                                                        if (scrollable instanceof Element) {
+                                                                            scrollable.scrollBy({ top: offset, behavior: 'smooth' });
+                                                                        } else {
+                                                                            window.scrollBy({ top: offset, behavior: 'smooth' });
+                                                                        }
+                                                                    }
+                                                                } catch(err) {
+                                                                    console.error("Error during scrollIntoView:", err);
+                                                                }
+                                                            });
+                                                        });
+                                                    } catch(err) {
+                                                        console.error("Error in onExitComplete:", err);
+                                                    }
+                                                }}
+                                            >
                                                 {selectedStatus && (
                                                     <motion.div
                                                         key="progress-form"
