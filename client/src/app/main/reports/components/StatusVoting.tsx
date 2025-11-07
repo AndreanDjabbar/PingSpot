@@ -196,6 +196,19 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     useEffect(() => {
         if (isUploadProgressSuccess && uploadProgressData) {
             resetProgress();
+            const dataResponse = uploadProgressData.data;
+            if (dataResponse) {
+                const newProgressEntry = {
+                    id: dataResponse.id,
+                    reportID: dataResponse.reportID,
+                    status: dataResponse.status,
+                    notes: dataResponse?.notes,
+                    attachment1: dataResponse?.attachment1,
+                    attachment2: dataResponse?.attachment2,
+                    createdAt: dataResponse.createdAt,
+                }
+                report?.reportProgress.unshift(newProgressEntry || []);
+            }
             setProgressImages([]);
             setSelectedStatus(null);
             resetUploadProgress();
