@@ -13,7 +13,7 @@ type ReportRepository interface {
 	GetByID(reportID uint) (*model.Report, error)
 	GetByIDTX(tx *gorm.DB, reportID uint) (*model.Report, error)
 	Get() (*[]model.Report, error)
-	GetByReportStatus(status string) (*[]model.Report, error)
+	GetByReportStatus(status ...string) (*[]model.Report, error)
 	GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string) (*[]model.Report, error)
 	GetReportsCount() (*dto.TotalReportCount, error)
 }
@@ -77,12 +77,12 @@ func (r *reportRepository) GetReportsCount() (*dto.TotalReportCount, error) {
 	return &result, nil
 }
 
-func (r *reportRepository) GetByReportStatus(status string) (*[]model.Report, error) {
+func (r *reportRepository) GetByReportStatus(status ...string) (*[]model.Report, error) {
 	var reports []model.Report
 	if err := r.db.
 		Preload("User").
 		Preload("User.Profile").
-		Where("report_status = ?", status).
+		Where("report_status IN ?", status).
 		Find(&reports).Error; err != nil {
 		return nil, err
 	}
