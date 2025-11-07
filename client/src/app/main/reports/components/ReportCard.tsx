@@ -147,19 +147,6 @@ const ReportCard: React.FC<ReportCardProps> = ({
                         </button>
                     </div>
                 </div>
-                
-                {/* <div className='flex justify-between gap-2 mt-5 items-center '>
-                    <div className='flex items-center'>
-                        <div className=''>
-                            {report.hasProgress && (
-                                <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${getStatusColor(report.reportStatus || 'PENDING')}`}>
-                                    {getStatusLabel(report.reportStatus || 'PENDING')}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                    
-                </div> */}
             </div>
 
             <div className="px-4 pb-3 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg" onClick={() => router.push(`/main/reports/${report.id}`)}>

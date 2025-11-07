@@ -25,6 +25,8 @@ const getStatusLabel = (status: string) => {
     switch (status) {
         case 'RESOLVED':
             return 'Terselesaikan';
+        case 'EXPIRED':
+            return 'Kadaluarsa';
         case 'POTENTIALLY_RESOLVED':
             return 'Dalam Peninjauan';
         case 'NOT_RESOLVED':
@@ -40,6 +42,8 @@ const getStatusColor = (status: string) => {
     switch (status) {
         case 'RESOLVED':
             return 'bg-green-700 border-green-700 text-white';
+        case 'EXPIRED':
+            return 'bg-indigo-700 text-white';
         case 'POTENTIALLY_RESOLVED':
             return 'bg-blue-700 text-white';
         case 'NOT_RESOLVED':

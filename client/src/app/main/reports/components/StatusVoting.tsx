@@ -84,6 +84,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                 return 'bg-green-700 border-green-700 text-white';
             case 'POTENTIALLY_RESOLVED':
                 return 'bg-blue-700 border-blue-700 text-white';
+            case 'EXPIRED':
+                return 'bg-indigo-700 text-white';
             case 'NOT_RESOLVED':
                 return 'bg-red-700 text-white';
             case 'ON_PROGRESS':
@@ -141,6 +143,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
         switch (status) {
             case 'RESOLVED':
                 return 'Terselesaikan';
+            case 'EXPIRED':
+                return 'Kadaluarsa';
             case 'POTENTIALLY_RESOLVED':
                 return 'Dalam Peninjauan';
             case 'NOT_RESOLVED':
@@ -613,7 +617,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
 
                                                                     if (reportCardRect.top < containerRect.top || reportCardRect.bottom > containerRect.bottom) {
                                                                         // Is the card outside the visible area of the scroll container?
-                                                                        
+
                                                                         const offset = reportCardRect.top - containerRect.top - (containerRect.height - reportCardRect.height) / 2;
                                                                         if (scrollable instanceof Element) {
                                                                             scrollable.scrollBy({ top: offset, behavior: 'smooth' });

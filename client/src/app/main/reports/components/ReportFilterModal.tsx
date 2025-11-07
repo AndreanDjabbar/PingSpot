@@ -6,7 +6,7 @@ import { MdCheckCircle, MdAccessTime, MdCancel } from 'react-icons/md';
 import { ReportType } from '@/types/model/report';
 
 type SortOption = 'latest' | 'oldest' | 'most_liked' | 'least_liked';
-type StatusFilter = 'all' | 'WAITING' | 'ON_PROGRESS' | 'RESOLVED' | 'POTENTIALLY_RESOLVED' | 'NOT_RESOLVED';
+type StatusFilter = 'all' | 'WAITING' | 'ON_PROGRESS' | 'RESOLVED' | 'POTENTIALLY_RESOLVED' | 'NOT_RESOLVED' | 'EXPIRED';
 type DistanceFilter = 'all' | '1km' | '5km' | '10km';
 type ProgressFilter = 'all' | 'true' | 'false';
 
@@ -128,6 +128,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
         { value: 'all', label: 'Semua Status', icon: <BiCategory />, color: 'gray' },
         { value: 'RESOLVED', label: 'Terselesaikan', icon: <MdCheckCircle />, color: 'green' },
         { value: 'POTENTIALLY_RESOLVED', label: 'Dalam Peninjauan', icon: <RiProgress3Fill />, color: 'blue' },
+        { value: 'EXPIRED', label: 'Kadaluarsa', icon: <MdAccessTime />, color: 'indigo' },
         { value: 'ON_PROGRESS', label: 'Dalam Proses', icon: <RiProgress3Fill />, color: 'yellow' },
         { value: 'NOT_RESOLVED', label: 'Belum Ada Proses', icon: <MdCancel />, color: 'red' },
         { value: 'WAITING', label: 'Menunggu', icon: <MdAccessTime />, color: 'gray' },
