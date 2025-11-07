@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { FaCheck, FaTimes, FaUsers, FaCamera } from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useReportsStore, useUserProfileStore, useConfirmationModalStore, useFormInformationModalStore } from '@/stores';
 import { ButtonSubmit, MultipleImageField, TextAreaField } from '@/components/form';
 import { BiMessageDetail, BiX } from 'react-icons/bi';
@@ -578,89 +578,92 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                     </motion.button>
                                                 </div>
                                             </div>
-
-                                            {selectedStatus && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -20 }}
-                                                    className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 border border-gray-200 shadow-md space-y-4"
-                                                >
-                                                    <div>
-                                                        <TextAreaField
-                                                            id="progressNotes"
-                                                            register={registerProgress("progressNotes")}
-                                                            rows={4}
-                                                            className="w-full"
-                                                            withLabel={true}
-                                                            labelTitle="Catatan Progress"
-                                                            labelIcon={<BiMessageDetail size={20} />}
-                                                            placeHolder="Jelaskan detail progress dari laporan ini. Misalnya: perbaikan sudah dimulai, material sudah disiapkan, dll."
-                                                        />
-                                                        {progressErrors.progressNotes && (
-                                                            <p className="text-red-500 text-sm font-semibold mt-2">
-                                                                {progressErrors.progressNotes.message as string}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                    
-                                                    <div className="space-y-3">
-                                                        <div className="flex items-center space-x-2">
-                                                            <FaCamera className="w-5 h-5 text-gray-700" />
-                                                            <label className="text-sm font-bold text-gray-900">
-                                                                Lampiran Foto (Opsional, Maksimal 2)
-                                                            </label>
+                                            <AnimatePresence mode='wait' initial={false} onExitComplete={() => setProgressImages([])}>
+                                                {selectedStatus && (
+                                                    <motion.div
+                                                        key="progress-form"
+                                                        initial={{ opacity: 0, y: 20 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                                        exit={{ opacity: 0, y: -20 }}
+                                                        className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 border border-gray-200 shadow-md space-y-4"
+                                                    >
+                                                        <div>
+                                                            <TextAreaField
+                                                                id="progressNotes"
+                                                                register={registerProgress("progressNotes")}
+                                                                rows={4}
+                                                                className="w-full"
+                                                                withLabel={true}
+                                                                labelTitle="Catatan Progress"
+                                                                labelIcon={<BiMessageDetail size={20} />}
+                                                                placeHolder="Jelaskan detail progress dari laporan ini. Misalnya: perbaikan sudah dimulai, material sudah disiapkan, dll."
+                                                            />
+                                                            {progressErrors.progressNotes && (
+                                                                <p className="text-red-500 text-sm font-semibold mt-2">
+                                                                    {progressErrors.progressNotes.message as string}
+                                                                </p>
+                                                            )}
                                                         </div>
-                                                        <MultipleImageField
-                                                            id="statusImages"
-                                                            withLabel={false}
-                                                            buttonTitle="Pilih Foto Progress"
-                                                            width={150}
-                                                            height={150}
-                                                            shape="square"
-                                                            maxImages={2}
-                                                            onChange={(files) => setProgressImages(files)}
-                                                            onImageClick={handleImageClick}
-                                                        />
-                                                        <p className="text-xs text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-100">
-                                                            💡 Tips: Tambahkan foto untuk memperjelas perkembangan laporan dan meningkatkan kepercayaan komunitas
+                                                        
+                                                        <div className="space-y-3">
+                                                            <div className="flex items-center space-x-2">
+                                                                <FaCamera className="w-5 h-5 text-gray-700" />
+                                                                <label className="text-sm font-bold text-gray-900">
+                                                                    Lampiran Foto (Opsional, Maksimal 2)
+                                                                </label>
+                                                            </div>
+                                                            <MultipleImageField
+                                                                id="statusImages"
+                                                                withLabel={false}
+                                                                buttonTitle="Pilih Foto Progress"
+                                                                width={150}
+                                                                height={150}
+                                                                shape="square"
+                                                                maxImages={2}
+                                                                onChange={(files) => setProgressImages(files)}
+                                                                onImageClick={handleImageClick}
+                                                            />
+                                                            <p className="text-xs text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                                                💡 Tips: Tambahkan foto untuk memperjelas perkembangan laporan dan meningkatkan kepercayaan komunitas
+                                                            </p>
+                                                        </div>
+                                                        
+                                                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                                            <ButtonSubmit
+                                                                className="group relative flex-1 flex items-center justify-center py-3.5 px-4 text-sm font-bold rounded-xl text-white bg-sky-700 hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
+                                                                progressTitle="Memproses..."
+                                                                isProgressing={isUploadProgressReportPending}
+                                                            />
+                                                            
+                                                            <motion.button
+                                                                type="button"
+                                                                className="px-4 flex-1 sm:flex-none sm:w-32 py-3.5 rounded-xl text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                                                                onClick={() => {
+                                                                    setSelectedStatus(null);
+                                                                    setProgressImages([]);
+                                                                }}
+                                                                whileTap={{ scale: 0.98 }}
+                                                                disabled={isUploadProgressReportPending}
+                                                            >
+                                                                Batal
+                                                            </motion.button>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+
+                                                {currentStatus === 'RESOLVED' && (
+                                                    <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-300 shadow-sm mt-4">
+                                                        <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                                                            <FaCheck className="w-4 h-4 text-white" />
+                                                        </div>
+                                                        <p className="text-sm text-green-800 font-semibold">
+                                                            Laporan ini telah ditandai sebagai terselesaikan
                                                         </p>
                                                     </div>
-                                                    
-                                                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                                        <ButtonSubmit
-                                                            className="group relative flex-1 flex items-center justify-center py-3.5 px-4 text-sm font-bold rounded-xl text-white bg-sky-700 hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
-                                                            progressTitle="Memproses..."
-                                                            isProgressing={isUploadProgressReportPending}
-                                                        />
-                                                        
-                                                        <motion.button
-                                                            type="button"
-                                                            className="px-4 flex-1 sm:flex-none sm:w-32 py-3.5 rounded-xl text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
-                                                            onClick={() => {
-                                                                setSelectedStatus(null);
-                                                                setProgressImages([]);
-                                                            }}
-                                                            whileTap={{ scale: 0.98 }}
-                                                            disabled={isUploadProgressReportPending}
-                                                        >
-                                                            Batal
-                                                        </motion.button>
-                                                    </div>
-                                                </motion.div>
-                                            )}
-
-                                            {currentStatus === 'RESOLVED' && (
-                                                <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-300 shadow-sm mt-4">
-                                                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                                                        <FaCheck className="w-4 h-4 text-white" />
-                                                    </div>
-                                                    <p className="text-sm text-green-800 font-semibold">
-                                                        Laporan ini telah ditandai sebagai terselesaikan
-                                                    </p>
-                                                </div>
-                                            )}
+                                                )}
+                                            </AnimatePresence>
                                         </form>
                                     )}
                                 </Accordion.Item>
