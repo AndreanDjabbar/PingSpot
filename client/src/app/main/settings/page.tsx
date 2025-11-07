@@ -1,18 +1,21 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
+
+export const dynamic = 'force-dynamic';
 import React, { useEffect, useState } from 'react';
 import { BiLock, BiEnvelope, BiUser, BiCog } from 'react-icons/bi';
 import { MdOutlineLanguage, MdOutlineMarkEmailUnread } from 'react-icons/md';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { getAuthToken } from '@/utils';
 import { useLogout } from '@/hooks/user';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { ImExit } from 'react-icons/im';
 import { IoIosNotifications } from "react-icons/io";
-import { useUserProfileStore, useConfirmationModalStore } from '@/stores';
+import { useUserProfileStore } from '@/stores/userProfileStore';
+import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 import { SettingCard, SettingItem } from './components';
-import { HeaderSection } from '../components';
-import { ToggleSwitch } from '@/components/UI';
+import HeaderSection from '../components/HeaderSection';
+import ToggleSwitch from '@/components/UI/ToggleSwitch';
 
 const SettingsPage = () => {
     const router = useRouter();
@@ -79,7 +82,7 @@ const SettingsPage = () => {
     return (
         <div className="space-y-8">
             <HeaderSection
-            currentPath={currentPath}
+            currentPath={currentPath || '/main/settings'}
             message='Sesuaikan PingSpot dengan preferensi Anda untuk pengalaman yang lebih baik.'/>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
