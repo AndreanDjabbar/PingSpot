@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { BiPlus } from 'react-icons/bi';
-import { HeaderSection } from '../components';
+import HeaderSection from '../components/HeaderSection';
 import { useRouter } from 'next/navigation';
 import { ErrorSection } from '@/components/feedback';
 import { useGetReport, useReactReport } from '@/hooks/main';
