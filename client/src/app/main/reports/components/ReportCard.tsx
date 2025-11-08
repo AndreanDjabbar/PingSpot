@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/purity */
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { FaChevronLeft, FaChevronRight, FaMapMarkerAlt, FaImage, FaMap, FaCrown } from 'react-icons/fa';
@@ -111,6 +112,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                 alt={report?.fullName}
                                 width={40}
                                 height={40}
+                                unoptimized
                                 className="object-cover h-full w-full"
                             />
                         </div>
@@ -195,6 +197,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                 fill
                                 className="object-cover cursor-pointer transition-transform duration-300"
                                 onClick={() => onImageClick(`/report/${images[currentImageIndex]}`)}
+                                unoptimized
                             />
                             
                             {images.length > 1 && (

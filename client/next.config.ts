@@ -1,15 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  reactCompiler: true,
   images: {
-    domains: [
-      'localhost',
-      'randomuser.me',
-      'images.unsplash.com',
-      'cdnjs.cloudflare.com'
+    remotePatterns: [
+      { protocol: 'http', hostname: 'localhost', pathname: '/**' },
+      { protocol: 'https', hostname: 'randomuser.me', pathname: '/**' },
+      { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'cdnjs.cloudflare.com', pathname: '/**' },
     ],
-  }
+  },
 };
 
 export default nextConfig;

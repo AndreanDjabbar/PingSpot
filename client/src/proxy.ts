@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export const middleware = (request: NextRequest) => {
+export const proxy = (request: NextRequest) => {
     const jwtToken = request.cookies.get('auth_token')?.value;
 
     if (request.nextUrl.pathname.startsWith('/main')) {

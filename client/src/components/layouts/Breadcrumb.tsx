@@ -36,7 +36,7 @@ const Breadcrumb = ({ path }: BreadcrumbProps) => {
 
     return (
         <nav
-        className="flex items-center text-xl md:text-2xl text-gray-600"
+        className="flex items-center text-xl lg:text-2xl text-gray-600"
         aria-label="Breadcrumb"
         >
         {items.map((item, idx) => (
