@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaCheck, FaHourglassEnd, FaTimes } from 'react-icons/fa';
+import { FaCheck, FaHourglassEnd, FaTimes, FaUsers } from 'react-icons/fa';
 import { RiProgress3Fill } from 'react-icons/ri';
 import { IReport } from '@/types/model/report';
 import { LuLock } from 'react-icons/lu';
+import { useConfirmationModalStore } from '@/stores';
 
 interface ReportVotingSectionProps {
     report: IReport;
@@ -22,6 +23,23 @@ interface ReportVotingSectionProps {
     handleVote: (voteType: 'RESOLVED' | 'ON_PROGRESS' | 'NOT_RESOLVED') => void;
 }
 
+const getStatusLabel = (status: string) => {
+    switch (status) {
+        case 'RESOLVED':
+            return 'Terselesaikan';
+        case 'EXPIRED':
+            return 'Kadaluarsa';
+        case 'POTENTIALLY_RESOLVED':
+            return 'Dalam Peninjauan';
+        case 'NOT_RESOLVED':
+            return 'Belum Terselesaikan';
+        case 'ON_PROGRESS':
+            return 'Sedang Dikerjakan';
+        default:
+            return 'Menunggu';
+    }
+};
+
 export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
     report,
     isReportOwner,
@@ -37,6 +55,21 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
     handleVote,
 }) => {
     const isReportExpired = report.reportStatus === 'EXPIRED';
+    const { openConfirm } = useConfirmationModalStore();
+
+    const handleVoteConfirmationModal = (voteType: "RESOLVED" | "ON_PROGRESS" | "NOT_RESOLVED") => {
+        openConfirm({
+            type: "info",
+            title: "Konfirmasi Pemilihan Status Laporan",
+            message: `Apakah Anda yakin memilih status "${getStatusLabel(voteType)}" untuk laporan ini?`,
+            isPending: isLoading,
+            explanation: "Status laporan akan diperbarui sesuai pilihan Anda.",
+            confirmTitle: "Ya, Pilih Status",
+            cancelTitle: "Batal",
+            icon: <FaUsers />,
+            onConfirm: () => handleVote(voteType),
+        })
+    }
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
             <h3 className="font-bold text-lg text-gray-900 mb-4">Hasil Voting Pengguna</h3>
@@ -190,7 +223,7 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
                                                         ? 'bg-green-600 text-white border-green-700 shadow-lg scale-105'
                                                         : 'bg-white text-green-700 border-gray-200 hover:border-green-300 hover:bg-green-50 shadow-sm'
                                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                onClick={() => handleVote('RESOLVED')}
+                                                onClick={() => handleVoteConfirmationModal('RESOLVED')}
                                                 disabled={isLoading}
                                                 animate={animateButton === 'RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
                                                 transition={{ duration: 0.3 }}
@@ -221,7 +254,7 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
                                                         ? 'bg-yellow-600 text-white border-yellow-700 shadow-lg scale-105'
                                                         : 'bg-white text-yellow-700 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 shadow-sm'
                                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                onClick={() => handleVote('ON_PROGRESS')}
+                                                onClick={() => handleVoteConfirmationModal('ON_PROGRESS')}
                                                 disabled={isLoading}
                                                 animate={animateButton === 'ON_PROGRESS' ? { scale: [1, 1.05, 1] } : {}}
                                                 transition={{ duration: 0.3 }}
@@ -252,7 +285,7 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
                                                         ? 'bg-red-600 text-white border-red-700 shadow-lg scale-105'
                                                         : 'bg-white text-red-700 border-gray-200 hover:border-red-300 hover:bg-red-50 shadow-sm'
                                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                                onClick={() => handleVote('NOT_RESOLVED')}
+                                                onClick={() => handleVoteConfirmationModal('NOT_RESOLVED')}
                                                 disabled={isLoading}
                                                 animate={animateButton === 'NOT_RESOLVED' ? { scale: [1, 1.05, 1] } : {}}
                                                 transition={{ duration: 0.3 }}
