@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { Breadcrumb } from '@/components/layouts';
 import { BiPlus } from 'react-icons/bi';
+import { HeaderSection } from '../components';
 import { useRouter } from 'next/navigation';
 import { ErrorSection } from '@/components/feedback';
 import { useGetReport, useReactReport } from '@/hooks/main';
@@ -486,22 +486,15 @@ const ReportsPage = () => {
         <div className=''>
             <div className='flex gap-6 lg:gap-8 '>
                 <div className="flex-1 space-y-4">
-                    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                            <div className='flex flex-col gap-3'>
-                                <Breadcrumb path={currentPath}/>
-                                <p className="text-gray-600 text-sm">
-                                    Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.
-                                </p>
-                            </div>
-                            <button 
-                                className="bg-sky-700 hover:bg-sky-800 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-all flex items-center justify-center space-x-2 whitespace-nowrap"
-                                onClick={() => router.push('/main/reports/create-report')}>
-                                <BiPlus className="w-5 h-5" />
-                                <span>Buat Laporan</span>
-                            </button>
-                        </div>
-                    </div>
+                    <HeaderSection currentPath={currentPath || '/main/reports'}
+                    message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.'>
+                        <button 
+                            className="bg-sky-700 hover:bg-sky-800 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-all flex items-center justify-center space-x-2 whitespace-nowrap"
+                            onClick={() => router.push('/main/reports/create-report')}>
+                            <BiPlus className="w-5 h-5" />
+                            <span>Buat Laporan</span>
+                        </button>
+                    </HeaderSection>
                     
                     {isGetReportError && (
                         <ErrorSection
