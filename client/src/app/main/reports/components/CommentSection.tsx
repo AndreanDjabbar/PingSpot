@@ -94,6 +94,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                             <Image 
                                 src={getImageURL('', "user")}
                                 alt="Current User"
+                                unoptimized
                                 width={isCompact ? 24 : 32}
                                 height={isCompact ? 24 : 32}
                                 className="object-cover h-full w-full"

@@ -46,6 +46,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({ report }) => {
                             width={48}
                             height={48}
                             className="object-cover h-full w-full"
+                            unoptimized
                         />
                     </div>
                     <div>

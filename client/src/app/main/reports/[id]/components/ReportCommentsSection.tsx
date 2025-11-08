@@ -51,6 +51,7 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
                             alt="Your profile"
                             width={40}
                             height={40}
+                            unoptimized
                             className="object-cover h-full w-full"
                         />
                     </div>

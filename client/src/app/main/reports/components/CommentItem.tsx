@@ -95,6 +95,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 src={getImageURL(comment.profilePicture || '', "user")}
                                 alt={comment.fullName}
                                 width={24}
+                                unoptimized
                                 height={24}
                                 className="object-cover h-full w-full"
                             />
