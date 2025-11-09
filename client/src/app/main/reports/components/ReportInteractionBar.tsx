@@ -49,7 +49,7 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
     isLoading = false,
 }) => {
     const [animateLike, setAnimateLike] = useState(false);
-    const {reports} = useReportsStore();
+    const reports = useReportsStore((s) => s.reports);
 
     const report = reports.find(r => r.id === reportID);
 

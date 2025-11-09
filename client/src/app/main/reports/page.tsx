@@ -41,15 +41,14 @@ const ReportsPage = () => {
         threshold: 0,
     });
 
-    const {
-        reports,
-        filteredReports,
-        setFilteredReports,
-        setReports,
-        selectedReport,
-        setSelectedReport,
-        setReportCount
-    } = useReportsStore();
+    const reports = useReportsStore((s) => s.reports);
+    const filteredReports = useReportsStore((s) => s.filteredReports);
+    const setFilteredReports = useReportsStore((s) => s.setFilteredReports);
+    const setReports = useReportsStore((s) => s.setReports);
+    const selectedReport = useReportsStore((s) => s.selectedReport);
+    const setSelectedReport = useReportsStore((s) => s.setSelectedReport);
+    const setReportCount = useReportsStore((s) => s.setReportCount);
+
 
     const router = useRouter();
     const { 

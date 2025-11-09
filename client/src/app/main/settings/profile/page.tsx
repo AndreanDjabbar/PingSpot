@@ -23,7 +23,7 @@ const ProfilePage = () => {
     const [removedProfilePicture, setRemovedProfilePicture] = useState(false);
 
     const user = useUserProfileStore(state => state.userProfile);
-    const { openConfirm } = useConfirmationModalStore();
+    const openConfirm = useConfirmationModalStore((state) => state.openConfirm);
 
     const { mutate, isPending, isError, isSuccess, error, data } = useSaveProfile();
 

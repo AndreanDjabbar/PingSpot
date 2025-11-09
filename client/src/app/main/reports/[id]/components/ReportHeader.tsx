@@ -33,7 +33,7 @@ const getReportTypeLabel = (type: ReportType): string => {
 };
 
 export const ReportHeader: React.FC<ReportHeaderProps> = ({ report }) => {
-    const { userProfile } = useUserProfileStore();
+    const userProfile = useUserProfileStore((s) => s.userProfile);
     const isReportOwner = userProfile ? Number(userProfile.userID) === report.userID : false;
     return (
         <div className="p-6">

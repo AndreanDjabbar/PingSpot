@@ -55,7 +55,7 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
     handleVote,
 }) => {
     const isReportExpired = report.reportStatus === 'EXPIRED';
-    const { openConfirm } = useConfirmationModalStore();
+    const openConfirm = useConfirmationModalStore((s) => s.openConfirm);
 
     const handleVoteConfirmationModal = (voteType: "RESOLVED" | "ON_PROGRESS" | "NOT_RESOLVED") => {
         openConfirm({

@@ -134,9 +134,10 @@ const ReportDetailPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [animateButton, setAnimateButton] = useState<string | null>(null);
 
-    const { openImagePreview } = useImagePreviewModalStore();
-    const { selectedReport, setSelectedReport } = useReportsStore();
-    const { userProfile } = useUserProfileStore();
+    const openImagePreview = useImagePreviewModalStore((s) => s.openImagePreview);
+    const selectedReport = useReportsStore((s) => s.selectedReport);
+    const setSelectedReport = useReportsStore((s) => s.setSelectedReport);
+    const userProfile = useUserProfileStore((s) => s.userProfile);
 
     const { 
         data: freshReportData,

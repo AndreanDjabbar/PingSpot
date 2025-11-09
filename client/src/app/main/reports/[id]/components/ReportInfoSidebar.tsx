@@ -59,8 +59,8 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
     report, 
     getReportTypeLabel 
 }) => {
-    const { userProfile } = useUserProfileStore();
-    const { openFormInfo } = useFormInformationModalStore();
+    const userProfile = useUserProfileStore((s) => s.userProfile);
+    const openFormInfo = useFormInformationModalStore((s) => s.openFormInfo);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
     const isPotentiallyResolved = report?.reportStatus === 'POTENTIALLY_RESOLVED';

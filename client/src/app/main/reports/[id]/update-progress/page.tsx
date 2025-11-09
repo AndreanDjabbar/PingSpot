@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -30,9 +31,9 @@ const UpdateProgressPage = () => {
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
     const [progressImages, setProgressImages] = useState<File[]>([]);
     
-    const { reports } = useReportsStore();
-    const { userProfile } = useUserProfileStore();
-    const { openConfirm } = useConfirmationModalStore();
+    const reports = useReportsStore((s) => s.reports);
+    const userProfile = useUserProfileStore((s) => s.userProfile);
+    const openConfirm = useConfirmationModalStore((s) => s.openConfirm);
     
     const report = reports.find(r => r.id === reportId);
     const { data: freshReportData } = useGetReportByID(reportId);
@@ -42,7 +43,7 @@ const UpdateProgressPage = () => {
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = currentReport && currentUserId === currentReport.userID;
     const isReportResolved = currentReport?.reportStatus === 'RESOLVED';
-    const { openImagePreview } = useImagePreviewModalStore();
+    const openImagePreview = useImagePreviewModalStore((s) => s.openImagePreview);
 
     const {
         register,

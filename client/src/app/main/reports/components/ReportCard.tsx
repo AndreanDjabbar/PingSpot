@@ -70,16 +70,16 @@ const ReportCard: React.FC<ReportCardProps> = ({
     onShare,
     onStatusVote,
 }) => {
-    const { reports } = useReportsStore();
-    const { userProfile } = useUserProfileStore();
-    const userID = Number(userProfile?.userID);
+    const router = useRouter();
     const [viewMode, setViewMode] = useState<'attachment' | 'map'>('map');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const { openImagePreview } = useImagePreviewModalStore();
-    const router = useRouter();
+    const reports = useReportsStore((s) => s.reports);
+    const userProfile = useUserProfileStore((s) => s.userProfile);
+    const openOptionsModal = useOptionsModalStore((s) => s.openOptionsModal);
+    const openConfirm = useConfirmationModalStore((s) => s.openConfirm);
+    const userID = Number(userProfile?.userID);
+    const openImagePreview = useImagePreviewModalStore((s) => s.openImagePreview);
     const report = reports.find(r => r.id === reportID);
-    const { openOptionsModal } = useOptionsModalStore();
-    const { openConfirm } = useConfirmationModalStore();
     const optionsButtonRef = React.useRef<HTMLButtonElement | null>(null);
     
     const opts: OptionItem[] = [
@@ -162,14 +162,15 @@ const ReportCard: React.FC<ReportCardProps> = ({
                             className='p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors'
                             onClick={() => {
                                 if (!report) return;
+                                const optionsToShow: OptionItem[] = [...opts];
                                 if (isReportOwner) {
-                                    opts.push({ label: 'Edit', icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/edit`) });
-                                    opts.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openConfirm({ title: 'Hapus laporan', message: 'Yakin ingin menghapus laporan ini?', type: 'warning', onConfirm: () => { console.log('delete report', report.id); } }) });
+                                    optionsToShow.push({ label: 'Edit', icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/edit`) });
+                                    optionsToShow.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openConfirm({ title: 'Hapus laporan', message: 'Yakin ingin menghapus laporan ini?', type: 'warning', onConfirm: () => { console.log('delete report', report.id); } }) });
                                 } else {
-                                    opts.push({ label: 'Laporkan', icon: <FaFlag size={14} />, onClick: () => router.push(`/main/reports/${report.id}/report`) });
+                                    optionsToShow.push({ label: 'Laporkan', icon: <FaFlag size={14} />, onClick: () => router.push(`/main/reports/${report.id}/report`) });
                                 }
 
-                                openOptionsModal({ optionsList: opts, anchorRef: optionsButtonRef });
+                                openOptionsModal({ optionsList: optionsToShow, anchorRef: optionsButtonRef });
                             }}
                         >
                             <BsThreeDots size={18} className="text-gray-600 sm:w-5 sm:h-5"/>
@@ -273,14 +274,14 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 {viewMode == 'map' && (
                     <div className="relative">
                         <div className="relative w-full overflow-hidden bg-gray-100 rounded-xl shadow-md">
-                            <StaticMap
-                                key={`map-${report.id}-${Date.now()}`}
-                                latitude={report.location.latitude}
-                                longitude={report.location.longitude}
-                                height={380}
-                                markerColor='red'
-                                popupText={report.reportTitle}
-                            />
+                                <StaticMap
+                                    key={`map-${report.id}-${Date.now()}`}
+                                    latitude={report.location.latitude}
+                                    longitude={report.location.longitude}
+                                    height={380}
+                                    markerColor='red'
+                                    popupText={report.reportTitle}
+                                />
                         </div>
                         <div className="mt-4 bg-gray-100 rounded-lg p-4">
                             <div className="flex items-start gap-2">

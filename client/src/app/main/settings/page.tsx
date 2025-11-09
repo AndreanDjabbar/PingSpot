@@ -26,7 +26,7 @@ const SettingsPage = () => {
     const [selectedLanguage, setSelectedLanguage] = useState('id');
 
     const user = useUserProfileStore(state => state.userProfile);
-    const { openConfirm } = useConfirmationModalStore();
+    const openConfirm = useConfirmationModalStore((state) => state.openConfirm);
 
     const { mutate: logout, isPending, isError, error, isSuccess, data } = useLogout();
 

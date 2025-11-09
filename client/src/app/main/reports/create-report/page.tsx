@@ -38,8 +38,8 @@ const CreateReportPage = () => {
     const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
     const [currentStep, setCurrentStep] = useState(0);
 
-    const { openConfirm } = useConfirmationModalStore();
-    const { openImagePreview } = useImagePreviewModalStore();
+    const openConfirm = useConfirmationModalStore((s) => s.openConfirm);
+    const openImagePreview = useImagePreviewModalStore((s) => s.openImagePreview);
 
     const { mutate, isPending, isError, isSuccess, error, data } = useCreateReport();
     const { 

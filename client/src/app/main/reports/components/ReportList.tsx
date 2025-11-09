@@ -19,7 +19,7 @@ const ReportList: React.FC<ReportListProps> = ({
     onShare,
     onStatusVote,
 }) => { 
-    const { filteredReports } = useReportsStore();
+    const filteredReports = useReportsStore((s) => s.filteredReports);
 
     return (
         <div className="space-y-4">

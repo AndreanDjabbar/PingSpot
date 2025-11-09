@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -38,8 +39,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     const [animateButton, setAnimateButton] = useState<string | null>(null);
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
     const [progressImages, setProgressImages] = useState<File[]>([]);
-    const { openConfirm } = useConfirmationModalStore();
-    const { openFormInfo } = useFormInformationModalStore();
+    const openConfirm = useConfirmationModalStore((s) => s.openConfirm);
+    const openFormInfo = useFormInformationModalStore((s) => s.openFormInfo);
 
     const handleVote = (voteType: string) => {
         if (isLoading || currentStatus === 'RESOLVED') return;
@@ -54,8 +55,8 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
         onImageClick(imageUrl);
     };
 
-    const { reports } = useReportsStore();
-    const { userProfile } = useUserProfileStore();
+    const reports = useReportsStore((s) => s.reports);
+    const userProfile = useUserProfileStore((s) => s.userProfile);
     
     const report = reports.find(r => r.id === reportID);
     const currentStatus = report?.reportStatus || '';

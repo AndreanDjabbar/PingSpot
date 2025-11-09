@@ -78,7 +78,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const commentInputRef = useRef<HTMLTextAreaElement>(null);
-    const {selectedReport: report} = useReportsStore();
+    const report = useReportsStore((s) => s.selectedReport);
 
     const images = getReportImages(
         report?.images ?? { id: 0, reportID: 0 }

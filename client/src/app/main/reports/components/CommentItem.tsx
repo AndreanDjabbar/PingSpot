@@ -48,7 +48,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
     const [liked, setLiked] = useState(false);
     const replyInputRef = useRef<HTMLTextAreaElement>(null);
     const editInputRef = useRef<HTMLTextAreaElement>(null);
-    const { userProfile } = useUserProfileStore();
+    const userProfile = useUserProfileStore((s) => s.userProfile);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
 
     useEffect(() => {

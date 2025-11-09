@@ -23,7 +23,7 @@ const SecurityPage = () => {
 
     const [securityData, setSecurityData] = useState<ISaveSecurityRequest | null>(null);
 
-    const { openConfirm } = useConfirmationModalStore();
+    const openConfirm = useConfirmationModalStore((state) => state.openConfirm);
 
     const { mutate, isPending, isError, isSuccess, error, data } = useSaveSecurity();
     const { mutate: logout, isSuccess: isLogoutSuccess } = useLogout();
