@@ -132,7 +132,7 @@ const OptionsModal: React.FC = () => {
                 <>
                     <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-40"
                         aria-hidden
@@ -140,19 +140,16 @@ const OptionsModal: React.FC = () => {
 
                     <motion.div
                         ref={modalRef}
-                        initial={{ opacity: 0, y: -6 }}
+                        initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.12 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
                         style={{
                             position: 'absolute',
                             top: `${position.top}px`,
                             right: `${position.right}px`,
-                            minWidth: 240,
                         }}
-                        className="z-50 w-full max-w-md sm:max-w-lg lg:max-w-xl"
-                        role="dialog"
-                        aria-modal="true"
+                        className="z-50 w-full max-w-md sm:max-w-lg lg:max-w-2xl "
                     >
                         {(triangleLeft !== null || triangleRight !== null) && (
                             placement === 'bottom' ? (
