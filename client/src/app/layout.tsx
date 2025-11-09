@@ -6,6 +6,7 @@ import {
   ReactQueryClientProvider,
   FormInformationModalProvider
 } from "@/provider";
+import { OptionsModalProvider } from "@/provider";
 import { ToastContainer } from "react-toastify";
 import ClientLayout from "./client-layout";
 
@@ -28,6 +29,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
               <ConfirmationModalProvider />
               <ImagePreviewModalProvider />
               <FormInformationModalProvider />
+              <OptionsModalProvider />
             </ClientLayout>
         </ReactQueryClientProvider>
       </body>
