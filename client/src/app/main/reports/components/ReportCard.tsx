@@ -1,8 +1,11 @@
 /* eslint-disable react-hooks/purity */
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { FaChevronLeft, FaChevronRight, FaMapMarkerAlt, FaImage, FaMap, FaCrown } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaMapMarkerAlt, FaImage, FaMap, FaCrown, FaShare, FaBookmark, FaFlag, FaEdit, FaTrash, FaComment } from 'react-icons/fa';
 import { BsThreeDots } from "react-icons/bs";
+import { useOptionsModalStore } from '@/stores';
+import type { OptionItem } from '@/stores/optionsModalStore';
+import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 import dynamic from 'next/dynamic';
 import { IReportImage, ReportType } from '@/types/model/report';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
@@ -75,6 +78,15 @@ const ReportCard: React.FC<ReportCardProps> = ({
     const { openImagePreview } = useImagePreviewModalStore();
     const router = useRouter();
     const report = reports.find(r => r.id === reportID);
+    const { openOptionsModal } = useOptionsModalStore();
+    const { openConfirm } = useConfirmationModalStore();
+    const optionsButtonRef = React.useRef<HTMLButtonElement | null>(null);
+    
+    const opts: OptionItem[] = [
+        { label: 'Komentar', description: "Lihat komentar dan berikan komentar anda mengenai laporan ini", icon: <FaComment size={14} />, onClick: () => onComment(report?.id || 0) },
+        { label: 'Simpan',  description: "Lihat komentar dan berikan komentar anda mengenai laporan iniasjdhajsdhjashdjkahsjkdhajksdhkjashdasd", icon: <FaBookmark size={14} />, onClick: () => onSave(report?.id || 0) },
+        { label: 'Bagikan',  description: "Lihat komentar dan berikan komentar anda mengenai laporan ini", icon: <FaShare size={14} />, onClick: () => onShare(report?.id || 0, report?.reportTitle || "") }
+    ];
 
     const images = getReportImages(
         report?.images ?? { id: 0, reportID: 0 }
@@ -143,9 +155,27 @@ const ReportCard: React.FC<ReportCardProps> = ({
                         <span className={`inline-flex items-center px-2.5 py-1 bg-blue-50 text-xs font-bold text-sky-800 rounded-full`}>
                             {getReportTypeLabel(report.reportType)}
                         </span>
-                        <button className='p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors'>
+
+
+                        <button
+                            ref={optionsButtonRef}
+                            className='p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors'
+                            onClick={() => {
+                                if (!report) return;
+                                if (isReportOwner) {
+                                    opts.push({ label: 'Edit', icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/edit`) });
+                                    opts.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openConfirm({ title: 'Hapus laporan', message: 'Yakin ingin menghapus laporan ini?', type: 'warning', onConfirm: () => { console.log('delete report', report.id); } }) });
+                                } else {
+                                    opts.push({ label: 'Laporkan', icon: <FaFlag size={14} />, onClick: () => router.push(`/main/reports/${report.id}/report`) });
+                                }
+
+                                openOptionsModal({ optionsList: opts, anchorRef: optionsButtonRef });
+                            }}
+                        >
                             <BsThreeDots size={18} className="text-gray-600 sm:w-5 sm:h-5"/>
                         </button>
+
+
                     </div>
                 </div>
             </div>
