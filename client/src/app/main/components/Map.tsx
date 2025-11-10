@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unescaped-entities */
 import { useCurrentLocation, useReverseCurrentLocation } from '@/hooks/main'
 import { useErrorToast } from '@/hooks/toast'

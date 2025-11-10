@@ -19,9 +19,11 @@ import {
     ReportSidebar,
     ReportFilterModal
 } from './components';
-import { useReportsStore } from '@/stores';
+import { useReportsStore, useLocationStore } from '@/stores';
 import { useInView } from 'react-intersection-observer';
 import type { FilterOptions } from './components/ReportFilterModal';
+import { useCurrentLocation } from '@/hooks/main';
+import { FaLocationDot } from 'react-icons/fa6';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
@@ -33,7 +35,11 @@ const ReportsPage = () => {
         sortBy: 'latest',
         reportType: 'all',
         status: 'all',
-        distance: 'all',
+        distance: {
+            distance: 'all',
+            lat: null,
+            lng: null,
+        },
         hasProgress: 'all'
     });
 
@@ -48,7 +54,9 @@ const ReportsPage = () => {
     const selectedReport = useReportsStore((s) => s.selectedReport);
     const setSelectedReport = useReportsStore((s) => s.setSelectedReport);
     const setReportCount = useReportsStore((s) => s.setReportCount);
-
+    const userLocation = useLocationStore((s) => s.location);
+    const hasCoords = userLocation && userLocation?.lat !== null && userLocation?.lng !== null;
+    const { requestLocation, loading: loadingRequestLocation, permissionDenied, isPermissionDenied, } = useCurrentLocation();
 
     const router = useRouter();
     const { 
@@ -79,7 +87,8 @@ const ReportsPage = () => {
         filters.reportType !== 'all' ? filters.reportType : undefined,
         filters.status !== 'all' ? filters.status : undefined,
         filters.sortBy,
-        filters.hasProgress !== 'all' ? filters.hasProgress : undefined
+        filters.hasProgress !== 'all' ? filters.hasProgress : undefined,
+        filters.distance,
     );
 
     const handleCloseReportModal = () => {
@@ -409,6 +418,8 @@ const ReportsPage = () => {
         getErrorResponseMessage(reactReportError) || 'Terjadi kesalahan saat bereaksi pada laporan'
     );
 
+    useErrorToast(isPermissionDenied, permissionDenied);
+
     useErrorToast(
         isVoteReportError,
         getErrorResponseMessage(voteReportError) || 'Terjadi kesalahan saat melakukan vote status'
@@ -502,6 +513,13 @@ const ReportsPage = () => {
                         />
                     )}
 
+                    {isPermissionDenied && (
+                        <ErrorSection 
+                            message={getErrorResponseMessage(permissionDenied)} 
+                            errors={getErrorResponseDetails(permissionDenied)}
+                        />
+                    )}
+
                     {!getReportLoading && (
                         <ReportSearchAndFilter
                             searchTerm={searchTerm}
@@ -511,7 +529,7 @@ const ReportsPage = () => {
                             activeFiltersCount={
                                 (filters.reportType !== 'all' ? 1 : 0) +
                                 (filters.status !== 'all' ? 1 : 0) +
-                                (filters.distance !== 'all' ? 1 : 0) +
+                                ((filters.distance.distance !== 'all' && filters.distance.lat != null && filters.distance.lng != null) ? 1 : 0) +
                                 (filters.sortBy !== 'latest' ? 1 : 0) +
                                 (filters.hasProgress !== 'all' ? 1 : 0)
                             }
@@ -521,7 +539,7 @@ const ReportsPage = () => {
                     {!getReportLoading && (
                         <div className='flex justify-between gap-10 lg:gap-5'>
                             <div className='w-full xl:w-2/3 lg:w-160'>
-                                {filteredReports.length > 0 ? (
+                                {filteredReports.length > 0 && hasCoords ? (
                                     <>
                                         <ReportList
                                             onLike={handleLike}
@@ -552,14 +570,33 @@ const ReportsPage = () => {
                                         />
                                     </div>
                                 ) : (
-                                    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12">
-                                        <EmptyState 
-                                            emptyTitle='Laporan tidak ditemukan'
-                                            emptyMessage='Coba sesuaikan kata kunci pencarian atau filter Anda'
-                                            emptyIcon={<RxCrossCircled />}
-                                            showCommandButton={false}
-                                        />
-                                    </div>
+                                    <>
+                                        {!hasCoords ? (
+                                            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+                                                <EmptyState
+                                                    emptyTitle='Lokasi tidak tersedia'
+                                                    emptyMessage='Untuk menampilkan laporan di sekitar Anda, izinkan aplikasi mengakses lokasi Anda.'
+                                                    emptyIcon={<RxCrossCircled />}
+                                                    showCommandButton={true}
+                                                    commandLabel='Deteksi Lokasi'
+                                                    commandLoading={loadingRequestLocation}
+                                                    commandIcon={<FaLocationDot/>}
+                                                    commandLoadingMessage='Mendeteksi...'
+                                                    onCommandButton={() => {requestLocation()}}
+                                                />
+                                            </div>
+                                        ) : (
+                                        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12">
+                                            <EmptyState 
+                                                emptyTitle='Laporan tidak ditemukan'
+                                                emptyMessage='Coba sesuaikan kata kunci pencarian atau filter Anda'
+                                                emptyIcon={<RxCrossCircled />}
+                                                showCommandButton={false}
+                                            />
+                                        </div>
+
+                                        )}
+                                    </>
                                 )} 
                             </div>
                             <ReportSidebar />

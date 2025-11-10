@@ -4,10 +4,11 @@ import { BiLike, BiCategory, BiMap } from 'react-icons/bi';
 import { RiProgress3Fill } from "react-icons/ri";
 import { MdCheckCircle, MdAccessTime, MdCancel } from 'react-icons/md';
 import { ReportType } from '@/types/model/report';
+import { useLocationStore } from '@/stores/userLocationStore';
 
 type SortOption = 'latest' | 'oldest' | 'most_liked' | 'least_liked';
 type StatusFilter = 'all' | 'WAITING' | 'ON_PROGRESS' | 'RESOLVED' | 'POTENTIALLY_RESOLVED' | 'NOT_RESOLVED' | 'EXPIRED';
-type DistanceFilter = 'all' | '1km' | '5km' | '10km';
+type DistanceFilter = 'all' | '1000' | '5000' | '10000';
 type ProgressFilter = 'all' | 'true' | 'false';
 
 interface FilterModalProps {
@@ -22,7 +23,11 @@ export interface FilterOptions {
     sortBy: SortOption;
     reportType: ReportType | 'all';
     status: StatusFilter;
-    distance: DistanceFilter;
+    distance: {
+        distance: DistanceFilter;
+        lat: string | null;
+        lng: string | null;
+    };
     hasProgress: ProgressFilter;
 }
 
@@ -34,6 +39,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
     buttonRef
 }) => {
     const [filters, setFilters] = useState<FilterOptions>(currentFilters);
+    const userLocation = useLocationStore((s) => s.location);
     const [disableStatus, setDisableStatus] = useState(false);
     const [position, setPosition] = useState({ top: 0, right: 0 });
     const modalRef = useRef<HTMLDivElement>(null);
@@ -95,7 +101,11 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
             sortBy: 'latest',
             reportType: 'all',
             status: 'all',
-            distance: 'all',
+            distance: {
+                distance: 'all',
+                lat: null,
+                lng: null,
+            },
             hasProgress: 'all'
         };
         setFilters(defaultFilters);
@@ -142,9 +152,9 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
 
     const distanceOptions = [
         { value: 'all', label: 'Semua Lokasi', icon: <BiMap /> },
-        { value: '1km', label: 'Dalam 1 km', icon: <BiMap /> },
-        { value: '5km', label: 'Dalam 5 km', icon: <BiMap /> },
-        { value: '10km', label: 'Dalam 10 km', icon: <BiMap /> },
+        { value: '1000', label: 'Dalam 1 km', icon: <BiMap /> },
+        { value: '5000', label: 'Dalam 5 km', icon: <BiMap /> },
+        { value: '10000', label: 'Dalam 10 km', icon: <BiMap /> },
     ];
 
     return (
@@ -324,14 +334,21 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                                         {distanceOptions.map((option) => (
                                             <button
                                                 key={option.value}
-                                                onClick={() => setFilters({ ...filters, distance: option.value as DistanceFilter })}
+                                                onClick={() => {
+                                                    const lat = option.value === 'all' ? null : userLocation?.lat || null;
+                                                    const lng = option.value === 'all' ? null : userLocation?.lng || null;
+                                                    setFilters({ 
+                                                        ...filters, 
+                                                        distance: { ...filters.distance, distance: option.value as DistanceFilter, lat: lat, lng: lng } 
+                                                    })
+                                                }}
                                                 className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all ${
-                                                    filters.distance === option.value
+                                                    filters.distance.distance === option.value
                                                         ? 'border-sky-600 bg-sky-50 text-sky-700'
                                                         : 'border-gray-200 hover:border-gray-300 text-gray-700'
                                                 }`}
                                             >
-                                                <span className={filters.distance === option.value ? 'text-sky-600' : 'text-gray-400'}>
+                                                <span className={filters.distance.distance === option.value ? 'text-sky-600' : 'text-gray-400'}>
                                                     {option.icon}
                                                 </span>
                                                 <span className="text-xs sm:text-sm font-medium">{option.label}</span>
