@@ -67,14 +67,24 @@ export const getReportService = async (
     reportType?: string,
     status?: string,
     sortBy?: string,
+    distance?: { distance: string; lat: string | null; lng: string | null },
     hasProgress?: string
 ): Promise<IGetReportResponse> => {
     const authToken = getAuthToken();
     const params = new URLSearchParams();
-    
+
     if (cursorID) params.append('cursorID', cursorID.toString());
     if (reportType && reportType !== 'all') params.append('reportType', reportType);
     if (status && status !== 'all') params.append('status', status);
+    if (distance && distance.distance !== 'all' && distance.lat !== null && distance.lng !== null) {
+        const distanceOBJ = {
+            distance: distance.distance,
+            lat: distance.lat,
+            lng: distance.lng
+        }
+        const distanceSTR = JSON.stringify(distanceOBJ)
+        params.append("distance", distanceSTR)
+    }
     if (sortBy) params.append('sortBy', sortBy);
     if (hasProgress && hasProgress !== 'all') params.append('hasProgress', hasProgress);
     
