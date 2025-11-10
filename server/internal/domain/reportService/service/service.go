@@ -535,6 +535,11 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 		return nil, errors.New("Anda tidak dapat memberikan suara pada laporan yang sudah kedaluwarsa")
 	}
 
+	if report.HasProgress == nil || !*report.HasProgress {
+		tx.Rollback()
+		return nil, errors.New("Anda tidak dapat memberikan suara pada laporan tanpa progres (informasi saja)")
+	}
+
 	modelVoteType := model.ReportStatus(voteType)
 	var resultVote *model.ReportVote
 
