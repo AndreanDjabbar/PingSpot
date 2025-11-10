@@ -14,7 +14,7 @@ type ReportRepository interface {
 	GetByIDTX(tx *gorm.DB, reportID uint) (*model.Report, error)
 	Get() (*[]model.Report, error)
 	GetByReportStatus(status ...string) (*[]model.Report, error)
-	GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string) (*[]model.Report, error)
+	GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error)
 	GetReportsCount() (*dto.TotalReportCount, error)
 }
 
@@ -114,8 +114,87 @@ func (r *reportRepository) Get() (*[]model.Report, error) {
 	return &reports, nil
 }
 
-func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string) (*[]model.Report, error) {
+func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error) {
+	var reportIDs []int64
 	var reports []model.Report
+
+	subQuery := r.db.Table("reports")
+
+	if reportType != "" && reportType != "all" {
+		subQuery = subQuery.Where("reports.report_type = ?", reportType)
+	}
+
+	if status != "" && status != "all" {
+		subQuery = subQuery.Where("reports.report_status = ?", status)
+	}
+
+	if distance.Distance != "" && distance.Distance != "all" {
+		straightDistance := 0
+		switch distance.Distance {
+			case "1000":
+				straightDistance = 1000
+			case "5000":
+				straightDistance = 5000
+			case "10000":
+				straightDistance = 10000
+		}
+		if straightDistance > 0 {
+			subQuery = subQuery.
+				Joins("JOIN report_locations ON report_locations.report_id = reports.id").
+				Where(`
+					ST_DWithin(
+						report_locations.geometry::geography,
+						ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography,
+						?
+					)
+				`, distance.Lng, distance.Lat, straightDistance)
+		}
+	}
+
+	if hasProgress != "" && hasProgress != "all" {
+		if hasProgress == "true" {
+			subQuery = subQuery.Where("reports.has_progress = ?", true)
+		} else if hasProgress == "false" {
+			subQuery = subQuery.Where("reports.has_progress = ?", false)
+		}
+	}
+
+	switch sortBy {
+	case "latest":
+		subQuery = subQuery.Order("reports.id DESC")
+	case "oldest":
+		subQuery = subQuery.Order("reports.id ASC")
+	case "most_liked":
+		subQuery = subQuery.
+			Joins("LEFT JOIN report_reactions ON reports.id = report_reactions.report_id AND report_reactions.type = 'LIKE'").
+			Group("reports.id").
+			Order("COUNT(report_reactions.id) DESC")
+	case "least_liked":
+		subQuery = subQuery.
+			Joins("LEFT JOIN report_reactions ON reports.id = report_reactions.report_id AND report_reactions.type = 'LIKE'").
+			Group("reports.id").
+			Order("COUNT(report_reactions.id) ASC")
+	default:
+		subQuery = subQuery.Order("reports.id DESC")
+	}
+
+	if cursorID != 0 {
+		if sortBy == "oldest" || sortBy == "least_liked" {
+			subQuery = subQuery.Where("reports.id > ?", cursorID)
+		} else {
+			subQuery = subQuery.Where("reports.id < ?", cursorID)
+		}
+	}
+
+	subQuery = subQuery.Limit(int(limit))
+
+	if err := subQuery.Select("reports.id").Pluck("id", &reportIDs).Error; err != nil {
+		return nil, err
+	}
+
+	if len(reportIDs) == 0 {
+		return &reports, nil
+	}
 
 	query := r.db.
 		Preload("User.Profile").
@@ -125,51 +204,14 @@ func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status
 		Preload("ReportVotes").
 		Preload("ReportProgress", func(db *gorm.DB) *gorm.DB {
 			return db.Order("created_at DESC")
-		})
-
-	if reportType != "" && reportType != "all" {
-		query = query.Where("reports.report_type = ?", reportType)
-	}
-
-	if status != "" && status != "all" {
-		query = query.Where("reports.report_status = ?", status)
-	}
-
-	if hasProgress != "" && hasProgress != "all" {
-		if hasProgress == "true" {
-			query = query.Where("reports.has_progress = ?", true)
-		} else if hasProgress == "false" {
-			query = query.Where("reports.has_progress = ?", false)
-		}
-	}
+		}).
+		Where("id IN ?", reportIDs)
 
 	switch sortBy {
-	case "latest":
-		query = query.Order("reports.id DESC")
-	case "oldest":
-		query = query.Order("reports.id ASC")
-	case "most_liked":
-		query = query.
-			Joins("LEFT JOIN report_reactions ON reports.id = report_reactions.report_id AND report_reactions.type = 'LIKE'").
-			Group("reports.id").
-			Order("COUNT(report_reactions.id) DESC")
-	case "least_liked":
-		query = query.
-			Joins("LEFT JOIN report_reactions ON reports.id = report_reactions.report_id AND report_reactions.type = 'LIKE'").
-			Group("reports.id").
-			Order("COUNT(report_reactions.id) ASC")
+	case "oldest", "least_liked":
+		query = query.Order("id ASC")
 	default:
-		query = query.Order("reports.id DESC")
-	}
-
-	query = query.Limit(int(limit))
-
-	if cursorID != 0 {
-		if sortBy == "oldest" || sortBy == "least_liked" {
-			query = query.Where("reports.id > ?", cursorID)
-		} else {
-			query = query.Where("reports.id < ?", cursorID)
-		}
+		query = query.Order("id DESC")
 	}
 
 	if err := query.Find(&reports).Error; err != nil {
