@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"server/internal/domain/reportService/dto"
@@ -156,11 +157,19 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	logger.Info("GET REPORT HANDLER")
 	reportID := c.Query("reportID")
 	cursorID := c.Query("cursorID")
+	distance := c.Query("distance")
 	reportType := c.Query("reportType")
 	status := c.Query("status")
 	sortBy := c.Query("sortBy")
 	hasProgress := c.Query("hasProgress")
 	limit := 5
+
+	var formattedDistance dto.Distance
+	
+	if err := json.Unmarshal([]byte(distance), &formattedDistance); err != nil && distance != "" {
+		logger.Error("Invalid distance format", zap.String("distance", distance), zap.Error(err))
+		return response.ResponseError(c, 400, "Format distance tidak valid", "", "Distance harus berupa JSON dengan field distance, lat, dan lng")
+	}
 
 	cursorIDUint, err := mainutils.StringToUint(cursorID)
 	if err != nil && cursorID != "" {
@@ -176,7 +185,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	userID := uint(claims["user_id"].(float64))
 
 	if reportID == "" {
-		reports, err := h.reportService.GetAllReport(userID, uint(limit), cursorIDUint, reportType, status, sortBy, hasProgress)
+		reports, err := h.reportService.GetAllReport(userID, uint(limit), cursorIDUint, reportType, status, sortBy, hasProgress, formattedDistance)
 		if err != nil {
 			logger.Error("Failed to get all reports", zap.Error(err))
 		}
