@@ -1,4 +1,5 @@
 import React from "react";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { BiPlus } from "react-icons/bi";
 
 interface EmptyStateProps {
@@ -7,6 +8,9 @@ interface EmptyStateProps {
     emptyIcon: React.ReactNode;
     showCommandButton?: boolean;
     commandLabel?: string;
+    commandIcon?: React.ReactNode;
+    commandLoading?: boolean;
+    commandLoadingMessage?: string;
     onCommandButton?: () => void;
 }
 
@@ -17,6 +21,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({
     showCommandButton = false,
     commandLabel = "Aksi",
     onCommandButton,
+    commandIcon,
+    commandLoadingMessage = "Memproses...",
+    commandLoading = false,
 }) => {
     return (
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-12 text-center">
@@ -31,9 +38,19 @@ const EmptyState: React.FC<EmptyStateProps> = ({
             <button
             className="bg-pingspot-hoverable text-white px-6 py-3 rounded-lg font-semibold transition-all flex items-center space-x-2 mx-auto"
             onClick={onCommandButton}
+            disabled={commandLoading}
             >
-            <BiPlus className="w-4 h-4" />
-            <span>{commandLabel}</span>
+            {commandLoading ? (
+                <>
+                    <AiOutlineLoading3Quarters className="animate-spin mr-2 text-lg" />
+                    <span>{commandLoadingMessage}</span>
+                </>
+            ) : (
+                <>
+                    {commandIcon ? commandIcon : <BiPlus className="w-4 h-4" />}
+                    <span>{commandLabel}</span>
+                </>
+            )}
             </button>
         )}
         </div>
