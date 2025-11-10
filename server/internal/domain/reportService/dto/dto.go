@@ -52,6 +52,12 @@ type Report struct {
 	ReportUpdatedAt            int64                       `json:"reportUpdatedAt"`
 }
 
+type Distance struct {
+	Distance string `json:"distance"`
+	Lat      string `json:"lat"`
+	Lng      string `json:"lng"`
+}
+
 type ReportLocation struct {
 	DetailLocation string  `json:"detailLocation"`
 	Latitude       float64 `json:"latitude"`
