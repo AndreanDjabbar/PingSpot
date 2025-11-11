@@ -118,6 +118,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
     ];
 
     const reportTypeOptions = [
+        { value: 'all', label: 'Semua Kategori' },
         { value: 'INFRASTRUCTURE', label: 'Infrastruktur' },
         { value: 'ENVIRONMENT', label: 'Lingkungan' },
         { value: 'SAFETY', label: 'Keamanan' },
