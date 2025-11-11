@@ -6,6 +6,7 @@ import { useUploadProgressReport } from "./useUploadProgressReport";
 import { useReverseCurrentLocation } from "./useReverseCurrentLocation";
 import { useReactReport } from "./useReactReport";
 import { useVoteReport } from "./useVoteReport";
+import { useUpdateReport } from "./useUpdateReport";
 
 export {
     useCreateReport,
@@ -17,4 +18,5 @@ export {
     useReverseCurrentLocation,
     useReactReport,
     useVoteReport,
+    useUpdateReport,
 }

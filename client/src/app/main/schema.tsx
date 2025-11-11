@@ -77,6 +77,46 @@ export const CreateReportSchema = z.object({
     ).optional(),
 });
 
+export const UpdateReportSchema = z.object({
+    reportTitle: z.string().min(5, "Judul minimal 5 karakter").max(100, "Judul maksimal 100 karakter"),
+    reportDescription: z.string().min(10, "Deskripsi minimal 10 karakter").max(500, "Deskripsi maksimal 500 karakter"),
+    reportType: z.enum([
+        'infrastructure', 
+        'environment', 
+        'safety',
+        'traffic',
+        'public_facility',
+        'waste',
+        'water',
+        'electricity',
+        'health',
+        'social',
+        'education',
+        'administrative',
+        'disaster',
+        'other'
+    ], {
+        message: "Pilih salah satu jenis laporan"
+    }),
+    location: z.string().min(3, "Lokasi minimal 3 karakter"),
+    latitude: z.string().min(1, "Pilih lokasi pada peta").refine(
+        (val) => !isNaN(parseFloat(val)) && isFinite(parseFloat(val)),
+        { message: "Koordinat latitude tidak valid" }
+    ),
+    longitude: z.string().min(1, "Pilih lokasi pada peta").refine(
+        (val) => !isNaN(parseFloat(val)) && isFinite(parseFloat(val)),
+        { message: "Koordinat longitude tidak valid" }
+    ),
+    hasProgress: z.boolean().optional(),
+    reportImages: z
+    .array(z.instanceof(File))
+    .max(5, "Maksimal 5 gambar")
+    .refine(
+    (files) => files.every((file) => file.size <= 5 * 1024 * 1024),
+    "Setiap gambar maksimal 5MB"
+    ).optional(),
+});
+
 export const ReactReportSchema = z.object({
     reactionType: z.enum(['LIKE', 'DISLIKE'], {
         message: "Tipe reaksi harus LIKE atau DISLIKE"

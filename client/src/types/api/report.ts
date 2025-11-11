@@ -1,6 +1,7 @@
 import { 
     CreateReportSchema, 
     ReactReportSchema,
+    UpdateReportSchema,
     UploadProgressReportSchema, 
     VoteReportSchema
 } from "@/app/main/schema";
@@ -28,6 +29,8 @@ export interface IGetReportByIDResponse {
 }
 
 export type ICreateReportRequest = z.infer<typeof CreateReportSchema>;
+
+export type IUpdateReportRequest = z.infer<typeof UpdateReportSchema>;
 
 export type IUploadProgressReportRequest = z.infer<typeof UploadProgressReportSchema>; 
 
