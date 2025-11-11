@@ -156,3 +156,9 @@ export const updateReportStatusService = async (reportID: number, status: string
     });
     return response.data;
 }
+
+export const updateReportService = async (reportID: number, payload: FormData): Promise<ICreateReportResponse> => {
+    const authToken = getAuthToken();
+    const response = await axios.put<ICreateReportResponse>(`${MAIN_API_URL}/report/${reportID}`, payload, MULTIPART_HEADERS(authToken || ''));
+    return response.data;
+}
