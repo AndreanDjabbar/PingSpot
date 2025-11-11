@@ -13,6 +13,8 @@ import { ReportInteractionBar } from '@/app/main/reports/components/ReportIntera
 import StatusVoting from './StatusVoting';
 import { useReportsStore, useImagePreviewModalStore, useUserProfileStore } from '@/stores';
 import { useRouter } from 'next/navigation';
+import { LuNotepadText } from 'react-icons/lu';
+import { cn } from '@/lib/utils';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,
@@ -84,7 +86,6 @@ const ReportCard: React.FC<ReportCardProps> = ({
     
     const opts: OptionItem[] = [
         { label: 'Komentar', description: "Lihat komentar dan berikan komentar anda mengenai laporan ini", icon: <FaComment size={14} />, onClick: () => onComment(report?.id || 0) },
-        { label: 'Simpan',  description: "Lihat komentar dan berikan komentar anda mengenai laporan iniasjdhajsdhjashdjkahsjkdhajksdhkjashdasd", icon: <FaBookmark size={14} />, onClick: () => onSave(report?.id || 0) },
         { label: 'Bagikan',  description: "Lihat komentar dan berikan komentar anda mengenai laporan ini", icon: <FaShare size={14} />, onClick: () => onShare(report?.id || 0, report?.reportTitle || "") }
     ];
 
@@ -156,7 +157,6 @@ const ReportCard: React.FC<ReportCardProps> = ({
                             {getReportTypeLabel(report.reportType)}
                         </span>
 
-
                         <button
                             ref={optionsButtonRef}
                             className='p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors'
@@ -165,8 +165,11 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                 const optionsToShow: OptionItem[] = [...opts];
                                 if (isReportOwner) {
                                     optionsToShow.push({ label: 'Edit', icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/edit`) });
+                                    optionsToShow.push({ label: 'Detail Laporan', description: "Lihat detail laporan yang telah anda buat", icon: <LuNotepadText size={14} />, onClick: () => router.push(`/main/reports/${report.id}`) });
+                                    optionsToShow.push({ label: 'Perbarui Perkembangan Laporan', description: "Perbarui perkembangan laporan ini", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/update-progress`) });
                                     optionsToShow.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openConfirm({ title: 'Hapus laporan', message: 'Yakin ingin menghapus laporan ini?', type: 'warning', onConfirm: () => { console.log('delete report', report.id); } }) });
                                 } else {
+                                    optionsToShow.push({ label: 'Simpan',  description: "Simpan laporan ini", icon: <FaBookmark size={14} />, onClick: () => onSave(report?.id || 0) },)
                                     optionsToShow.push({ label: 'Laporkan', icon: <FaFlag size={14} />, onClick: () => router.push(`/main/reports/${report.id}/report`) });
                                 }
 
@@ -175,8 +178,6 @@ const ReportCard: React.FC<ReportCardProps> = ({
                         >
                             <BsThreeDots size={18} className="text-gray-600 sm:w-5 sm:h-5"/>
                         </button>
-
-
                     </div>
                 </div>
             </div>
@@ -297,8 +298,8 @@ const ReportCard: React.FC<ReportCardProps> = ({
                     </div>
                 )}
             </div>
-
-            <div className="border-t border-gray-200">
+            
+            <div className={cn("border-gray-200", report.hasProgress && "")}>
                 <ReportInteractionBar
                     reportID={report.id}
                     userInteraction={report.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}

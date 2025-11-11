@@ -240,7 +240,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                 )}
             </div>
 
-            <Accordion type="single" className="space-y-0">
+            <Accordion type="single" className="">
                 <Accordion.Item
                     id="status-laporan"
                     title="Status Laporan"

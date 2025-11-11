@@ -80,9 +80,9 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
     };
 
     return (
-        <div className="p-3 ">
+        <div className="">
             {(reactionStats.totalLikes > 0 || reactionStats.totalDislikes > 0 || commentCount > 0) && (
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-2 px-1">
+                <div className="flex items-center justify-between text-xs text-gray-500 p-2">
                     <div className="flex items-center gap-2">
                         {reactionStats.totalLikes > 0 && (
                             <div className="flex items-center gap-1">
@@ -109,7 +109,7 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
                 </div>
             )}
     
-            <div className="flex items-center justify-between border-t border-b border-gray-200 py-1">
+            <div className="flex items-center justify-between py-1 mb-2">
                 <div className="flex items-center flex-1">
                     <motion.button
                         className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors flex-1 ${

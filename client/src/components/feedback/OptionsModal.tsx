@@ -181,10 +181,10 @@ const OptionsModal: React.FC = () => {
                                             <button
                                                 key={idx}
                                                 onClick={() => onOptionClick(opt)}
-                                                className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-start gap-3"
+                                                className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-4"
                                                 type="button"
                                             >
-                                                {opt.icon && <span className="mt-0.5 text-gray-600">{opt.icon}</span>}
+                                                {opt.icon && <span className=" text-gray-600">{opt.icon}</span>}
                                                 <div className="flex-1">
                                                     <div className="text-sm font-medium text-gray-900">{opt.label}</div>
                                                     {opt.description && (
