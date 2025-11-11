@@ -89,6 +89,7 @@ const ReportsPage = () => {
         filters.sortBy,
         filters.hasProgress !== 'all' ? filters.hasProgress : undefined,
         filters.distance,
+        hasCoords ? hasCoords : false
     );
 
     const handleCloseReportModal = () => {
@@ -558,7 +559,7 @@ const ReportsPage = () => {
                                             )}
                                         </div>
                                     </>
-                                ) : reports.length === 0 && !isGetReportError ? (
+                                ) : reports.length === 0 && !isGetReportError && hasCoords ? (
                                     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12">
                                         <EmptyState 
                                             emptyTitle='Belum ada laporan'

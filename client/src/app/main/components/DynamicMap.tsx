@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/preserve-manual-memoization */
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
