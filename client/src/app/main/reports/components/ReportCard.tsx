@@ -85,7 +85,6 @@ const ReportCard: React.FC<ReportCardProps> = ({
     const optionsButtonRef = React.useRef<HTMLButtonElement | null>(null);
     
     const opts: OptionItem[] = [
-        { label: 'Komentar', description: "Lihat komentar dan berikan komentar anda mengenai laporan ini", icon: <FaComment size={14} />, onClick: () => onComment(report?.id || 0) },
         { label: 'Bagikan',  description: "Lihat komentar dan berikan komentar anda mengenai laporan ini", icon: <FaShare size={14} />, onClick: () => onShare(report?.id || 0, report?.reportTitle || "") }
     ];
 
