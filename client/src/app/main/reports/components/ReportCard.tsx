@@ -163,7 +163,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                 if (!report) return;
                                 const optionsToShow: OptionItem[] = [...opts];
                                 if (isReportOwner) {
-                                    optionsToShow.push({ label: 'Edit', icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/edit`) });
+                                    optionsToShow.push({ label: 'Sunting Laporan', description: "Anda dapat menyunting laporan ini.", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/edit`) });
                                     optionsToShow.push({ label: 'Detail Laporan', description: "Lihat detail laporan yang telah anda buat", icon: <LuNotepadText size={14} />, onClick: () => router.push(`/main/reports/${report.id}`) });
                                     optionsToShow.push({ label: 'Perbarui Perkembangan Laporan', description: "Perbarui perkembangan laporan ini", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/update-progress`) });
                                     optionsToShow.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openConfirm({ title: 'Hapus laporan', message: 'Yakin ingin menghapus laporan ini?', type: 'warning', onConfirm: () => { console.log('delete report', report.id); } }) });
