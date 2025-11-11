@@ -17,6 +17,7 @@ interface MultipleImageFieldProps {
     maxImages?: number;
     onChange?: (files: File[]) => void;
     onImageClick?: (imageUrl: string) => void;
+    existingImages?: string[];
     height?: number;
     width?: number;
     shape: 'circle' | 'square';
@@ -38,11 +39,15 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
     maxImages = 5,
     onChange,
     onImageClick,
+    existingImages,
     height = 180,
     width = 180,
     shape
 }) => {
     const [images, setImages] = useState<ImageItem[]>([]);
+    const existing = existingImages || [];
+
+    const availableSlots = Math.max(0, maxImages - existing.length);
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     const handleImageClick = (imageUrl: string) => {
@@ -52,14 +57,14 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
     };
 
     const handleAddClick = () => {
-        if (images.length < maxImages) {
+        if (images.length < availableSlots) {
             fileInputRef.current?.click();
         }
     };
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file && images.length < maxImages) {
+            if (file && images.length < availableSlots) {
             const reader = new FileReader();
             reader.onload = (event) => {
                 const result = event.target?.result as string;
@@ -102,6 +107,27 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
             
             <div className="flex flex-col space-y-4">
                 <div className="flex flex-wrap gap-4 justify-center">
+                    {existing.map((url: string, idx: number) => (
+                        <div key={`existing-${idx}`} className="relative">
+                            <div
+                                style={{height: `${height}px`, width: `${width}px`}}
+                                className={cn("relative overflow-hidden bg-gray-200 border-4 border-white shadow-lg cursor-pointer group", 
+                                    shape === 'circle' ? 'rounded-full' : 'rounded-md')}
+                                onClick={() => handleImageClick(url)}
+                            >
+                                <Image
+                                    src={url}
+                                    alt={`Existing image ${idx + 1}`}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 33vw"
+                                    className="object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <FiMaximize2 size={24} className="text-white" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                     {images.map((image, index) => (
                         <div key={index} className="relative">
                             <div
@@ -134,7 +160,7 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                         </div>
                     ))}
                     
-                    {images.length < maxImages && (
+                    {images.length < availableSlots && (
                         <div
                             onClick={handleAddClick}
                             style={{height: `${height}px`, width: `${width}px`}}
@@ -143,13 +169,13 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                         >
                             <IoMdAddCircle size={40} className="text-gray-400 mb-2" />
                             <p className="text-xs text-gray-500 text-center px-2">
-                                Tambah Foto <br /> ({images.length}/{maxImages})
+                                Tambah Foto <br /> ({existing.length + images.length}/{maxImages})
                             </p>
                         </div>
                     )}
                 </div>
                 
-                {images.length === 0 && (
+                {existing.length + images.length === 0 && (
                     <div className="flex justify-center">
                         <button
                             type="button"
@@ -167,7 +193,7 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                     name={name}
                     type="file"
                     accept="image/*"
-                    required={required && images.length === 0}
+                    required={required && (existing.length + images.length) === 0}
                     className="hidden"
                     onChange={handleFileChange}
                 />
