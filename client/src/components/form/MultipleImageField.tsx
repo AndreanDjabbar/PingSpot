@@ -1,10 +1,17 @@
 "use client";
-import React, { useState, useRef, ChangeEvent } from 'react';
+import React, { useRef, ChangeEvent } from 'react';
 import Image from 'next/image';
 import { BiX } from 'react-icons/bi';
 import { IoMdAddCircle } from 'react-icons/io';
 import { FiMaximize2 } from 'react-icons/fi';
 import { cn } from '@/lib/utils';
+
+export type ImageItem = {
+    file: File;
+    preview: string;
+    isExisting?: boolean;
+    existingUrl?: string;
+};
 
 interface MultipleImageFieldProps {
     id: string;
@@ -15,7 +22,9 @@ interface MultipleImageFieldProps {
     buttonTitle?: string;
     required?: boolean;
     maxImages?: number;
+    images?: ImageItem[];
     onChange?: (files: File[]) => void;
+    onChangeDetailed?: (items: ImageItem[]) => void;
     onImageClick?: (imageUrl: string) => void;
     existingImages?: string[];
     height?: number;
@@ -23,10 +32,6 @@ interface MultipleImageFieldProps {
     shape: 'circle' | 'square';
 }
 
-export type ImageItem = {
-    file: File;
-    preview: string;
-};
 
 const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
     id,
@@ -38,16 +43,15 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
     required = false,
     maxImages = 5,
     onChange,
+    images = [],
+    onChangeDetailed,
     onImageClick,
     existingImages,
     height = 180,
     width = 180,
     shape
 }) => {
-    const [images, setImages] = useState<ImageItem[]>([]);
-    const existing = existingImages || [];
-
-    const availableSlots = Math.max(0, maxImages - existing.length);
+    const availableSlots = Math.max(0, maxImages);
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     const handleImageClick = (imageUrl: string) => {
@@ -57,14 +61,14 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
     };
 
     const handleAddClick = () => {
-        if (images.length < availableSlots) {
+        if ((images?.length || 0) < availableSlots) {
             fileInputRef.current?.click();
         }
     };
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-            if (file && images.length < availableSlots) {
+        if (file && (images?.length || 0) < availableSlots) {
             const reader = new FileReader();
             reader.onload = (event) => {
                 const result = event.target?.result as string;
@@ -73,11 +77,13 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                     preview: result
                 };
                 
-                const updatedImages = [...images, newImage];
-                setImages(updatedImages);
-                
+                const updatedImages = [...(images || []), newImage];
+                // notify parent only — component is controlled
                 if (onChange) {
-                    onChange(updatedImages.map(img => img.file));
+                    onChange(updatedImages.map(img => img.file).filter(Boolean) as File[]);
+                }
+                if (onChangeDetailed) {
+                    onChangeDetailed(updatedImages);
                 }
             };
             reader.readAsDataURL(file);
@@ -89,11 +95,12 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
     };
 
     const handleRemoveImage = (index: number) => {
-        const updatedImages = images.filter((_, i) => i !== index);
-        setImages(updatedImages);
-        
+        const updatedImages = (images || []).filter((_, i) => i !== index);
         if (onChange) {
-            onChange(updatedImages.map(img => img.file));
+            onChange(updatedImages.map(img => img.file).filter(Boolean) as File[]);
+        }
+        if (onChangeDetailed) {
+            onChangeDetailed(updatedImages);
         }
     };
 
@@ -107,27 +114,6 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
             
             <div className="flex flex-col space-y-4">
                 <div className="flex flex-wrap gap-4 justify-center">
-                    {existing.map((url: string, idx: number) => (
-                        <div key={`existing-${idx}`} className="relative">
-                            <div
-                                style={{height: `${height}px`, width: `${width}px`}}
-                                className={cn("relative overflow-hidden bg-gray-200 border-4 border-white shadow-lg cursor-pointer group", 
-                                    shape === 'circle' ? 'rounded-full' : 'rounded-md')}
-                                onClick={() => handleImageClick(url)}
-                            >
-                                <Image
-                                    src={url}
-                                    alt={`Existing image ${idx + 1}`}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, 33vw"
-                                    className="object-cover"
-                                />
-                                <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <FiMaximize2 size={24} className="text-white" />
-                                </div>
-                            </div>
-                        </div>
-                    ))}
                     {images.map((image, index) => (
                         <div key={index} className="relative">
                             <div
@@ -169,13 +155,13 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                         >
                             <IoMdAddCircle size={40} className="text-gray-400 mb-2" />
                             <p className="text-xs text-gray-500 text-center px-2">
-                                Tambah Foto <br /> ({existing.length + images.length}/{maxImages})
+                                Tambah Foto <br /> ({images.length}/{maxImages})
                             </p>
                         </div>
                     )}
                 </div>
                 
-                {existing.length + images.length === 0 && (
+                {images.length === 0 && (
                     <div className="flex justify-center">
                         <button
                             type="button"
@@ -193,7 +179,7 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                     name={name}
                     type="file"
                     accept="image/*"
-                    required={required && (existing.length + images.length) === 0}
+                    required={required && (images.length) === 0}
                     className="hidden"
                     onChange={handleFileChange}
                 />
