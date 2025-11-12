@@ -36,6 +36,7 @@ func RegisterReportRoutes(app *fiber.App) {
 
 	reportRoute := app.Group("/pingspot/api/report", middleware.JWTProtected())
 	reportRoute.Post("/", reportHandler.CreateReportHandler)
+	reportRoute.Put("/:reportID", reportHandler.EditReportHandler)
 	reportRoute.Get("/", reportHandler.GetReportHandler)
 	reportRoute.Post("/:reportID/reaction", reportHandler.ReactionReportHandler)
 	reportRoute.Post("/:reportID/vote", reportHandler.VoteReportHandler)
