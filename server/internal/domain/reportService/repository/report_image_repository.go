@@ -8,6 +8,7 @@ import (
 
 type ReportImageRepository interface {
 	Create(images *model.ReportImage, tx *gorm.DB) error
+	UpdateTX(tx *gorm.DB, images *model.ReportImage) (*model.ReportImage, error)
 	GetByReportID(reportID uint) (*model.ReportImage, error)
 }
 
@@ -24,6 +25,13 @@ func (r *reportImageRepository) Create(images *model.ReportImage, tx *gorm.DB) e
 		return tx.Create(images).Error
 	}
 	return r.db.Create(images).Error
+}
+
+func (r *reportImageRepository) UpdateTX(tx *gorm.DB, images *model.ReportImage) (*model.ReportImage, error) {
+	if err := tx.Save(images).Error; err != nil {
+		return nil, err
+	}
+	return images, nil
 }
 
 func (r *reportImageRepository) GetByReportID(reportID uint) (*model.ReportImage, error) {

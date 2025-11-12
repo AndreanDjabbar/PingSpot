@@ -8,6 +8,7 @@ import (
 
 type ReportLocationRepository interface {
 	Create(location *model.ReportLocation, tx *gorm.DB) error
+	UpdateTX(tx *gorm.DB, location *model.ReportLocation) (*model.ReportLocation, error)
 	GetByReportID(reportID uint) (*model.ReportLocation, error)
 }
 
@@ -24,6 +25,13 @@ func (r *reportLocationRepository) Create(location *model.ReportLocation, tx *go
 		return tx.Create(location).Error
 	}
 	return r.db.Create(location).Error
+}
+
+func (r *reportLocationRepository) UpdateTX(tx *gorm.DB, location *model.ReportLocation) (*model.ReportLocation, error) {
+	if err := tx.Save(location).Error; err != nil {
+		return nil, err
+	}
+	return location, nil
 }
 
 func (r *reportLocationRepository) GetByReportID(reportID uint) (*model.ReportLocation, error) {
