@@ -153,6 +153,173 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 	return response.ResponseSuccess(c, 200, "Laporan berhasil dibuat", "data", result)
 }
 
+func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
+	logger.Info("EDIT REPORT HANDLER")
+	reportIDParam := c.Params("reportID")
+	uintReportID, err := mainutils.StringToUint(reportIDParam)
+	if err != nil {
+		logger.Error("Invalid reportID format", zap.String("reportID", reportIDParam), zap.Error(err))
+		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		logger.Error("Failed to parse multipart form", zap.Error(err))
+		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+	}
+
+	reportTitle := c.FormValue("reportTitle")
+	reportDescription := c.FormValue("reportDescription")
+	reportType := c.FormValue("reportType")
+	detailLocation := c.FormValue("detailLocation")
+	hasProgressStr := c.FormValue("hasProgress")
+	latitude := c.FormValue("latitude")
+	longitude := c.FormValue("longitude")
+	displayName := c.FormValue("displayName")
+	addressType := c.FormValue("addressType")
+	road := c.FormValue("road")
+	state := c.FormValue("state")
+	country := c.FormValue("country")
+	postCode := c.FormValue("postCode")
+	region := c.FormValue("region")
+	countryCode := c.FormValue("countryCode")
+	county := c.FormValue("county")
+	village := c.FormValue("village")
+	suburb := c.FormValue("suburb")
+	existingImagesSTR := c.FormValue("existingImages")
+
+	var existingImages []string
+	if existingImagesSTR != "" {
+		if err := json.Unmarshal([]byte(existingImagesSTR), &existingImages); err != nil {
+			logger.Error("Failed to unmarshal existingImages", zap.String("existingImages", existingImagesSTR), zap.Error(err))
+			return response.ResponseError(c, 400, "Format existingImages tidak valid", "", "existingImages harus berupa array of string")
+		}
+	}
+
+	files := form.File["reportImages"]
+	totalImageLen := len(files) + len(existingImages)
+
+	var images map[int]string = make(map[int]string)
+
+	if totalImageLen > 5 {
+		logger.Error("Too many report images", zap.Int("count", totalImageLen))
+		return response.ResponseError(c, 400, "Terlalu banyak gambar", "", "Maksimal 5 gambar")
+	}
+
+	if len(existingImages) > 0 {
+		var existingIDX = 0
+		for i, imgURL := range existingImages {
+			images[i] = imgURL
+			existingIDX = i
+		}
+
+		for i, file := range files {
+			if file.Size > 5*1024*1024 {
+				logger.Error("Report image file size too large", zap.Int64("size", files[i].Size))
+				return response.ResponseError(c, 400, "Ukuran salah satu gambar terlalu besar", "", "Maksimal ukuran gambar 5MB per gambar")
+			}
+			
+			ext := filepath.Ext(file.Filename)
+			if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+				logger.Error("Unsupported profile picture file format", zap.String("extension", ext))
+				return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
+			}
+			fileName := fmt.Sprintf("%d%d%d%s", time.Now().UnixNano(), i, uintReportID, ext)
+			
+			savePath := filepath.Join("uploads/main/report", fileName)
+			if err := c.SaveFile(file, savePath); err != nil {
+				logger.Error("Failed to save profile picture", zap.Error(err))
+				return response.ResponseError(c, 500, "Gagal menyimpan gambar", "", err.Error())
+			}
+			images[existingIDX+1+i] = fileName
+		}
+	} else {
+		for i, file := range files {
+			if file.Size > 5*1024*1024 {
+				logger.Error("Report image file size too large", zap.Int64("size", files[i].Size))
+			}
+			ext := filepath.Ext(file.Filename)
+			if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+				logger.Error("Unsupported profile picture file format", zap.String("extension", ext))
+				return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
+			}
+			fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+			savePath := filepath.Join("uploads/main/report", fileName)
+			if err := c.SaveFile(file, savePath); err != nil {
+				logger.Error("Failed to save profile picture", zap.Error(err))
+				return response.ResponseError(c, 500, "Gagal menyimpan gambar", "", err.Error())
+			}
+			images[i] = fileName
+		}
+	}
+
+	floatLatitude, err := mainutils.StringToFloat64(latitude)
+	if err != nil {
+		logger.Error("Invalid latitude format", zap.String("latitude", latitude), zap.Error(err))
+		return response.ResponseError(c, 400, "Format latitude tidak valid", "", "Latitude harus berupa angka desimal")
+	}
+
+	floatLongitude, err := mainutils.StringToFloat64(longitude)
+	if err != nil {
+		logger.Error("Invalid longitude format", zap.String("longitude", longitude), zap.Error(err))
+		return response.ResponseError(c, 400, "Format longitude tidak valid", "", "Longitude harus berupa angka desimal")
+	}
+
+	hasProgress, err := mainutils.StringToBool(hasProgressStr)
+	if err != nil && hasProgressStr != "" {
+		logger.Error("Invalid hasProgress format", zap.String("hasProgress", hasProgressStr), zap.Error(err))
+	}
+
+	req := dto.EditReportRequest{
+		ReportTitle:       reportTitle,
+		ReportType:        reportType,
+		ReportDescription: reportDescription,
+		DetailLocation:    detailLocation,
+		HasProgress:       hasProgress,
+		Latitude:          floatLatitude,
+		Longitude:         floatLongitude,
+		DisplayName:       mainutils.StrPtrOrNil(displayName),
+		AddressType:       mainutils.StrPtrOrNil(addressType),
+		Country:           mainutils.StrPtrOrNil(country),
+		CountryCode:       mainutils.StrPtrOrNil(countryCode),
+		Region:            mainutils.StrPtrOrNil(region),
+		PostCode:          mainutils.StrPtrOrNil(postCode),
+		County:            mainutils.StrPtrOrNil(county),
+		State:             mainutils.StrPtrOrNil(state),
+		Road:              mainutils.StrPtrOrNil(road),
+		Village:           mainutils.StrPtrOrNil(village),
+		Suburb:            mainutils.StrPtrOrNil(suburb),
+		Image1URL:         mainutils.StrPtrOrNil(images[0]),
+		Image2URL:         mainutils.StrPtrOrNil(images[1]),
+		Image3URL:         mainutils.StrPtrOrNil(images[2]),
+		Image4URL:         mainutils.StrPtrOrNil(images[3]),
+		Image5URL:         mainutils.StrPtrOrNil(images[4]),
+	}
+
+	db := database.GetPostgresDB()
+	if err := validation.Validate.Struct(req); err != nil {
+		errors := validation.FormatEditReportValidationErrors(err)
+		logger.Error("Validation failed", zap.Error(err))
+		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+	}
+
+	claims, err := mainutils.GetJWTClaims(c)
+	if err != nil {
+		logger.Error("Failed to get JWT claims", zap.Error(err))
+		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+	}
+	userID := uint(claims["user_id"].(float64))
+
+	result, err := h.reportService.EditReport(db, userID, uintReportID, req)
+	if err != nil {
+		logger.Error("Failed to edit report", zap.Error(err))
+		return response.ResponseError(c, 500, "Gagal membuat laporan", "", err.Error())
+	}
+	logger.Info("Report editted successfully", zap.Uint("report_id", uintReportID))
+
+	return response.ResponseSuccess(c, 200, "Laporan berhasil disunting", "data", result)
+}
+
 func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	logger.Info("GET REPORT HANDLER")
 	reportID := c.Query("reportID")
