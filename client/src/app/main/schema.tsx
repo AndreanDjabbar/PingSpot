@@ -1,6 +1,13 @@
 
 import z from "zod";
 
+export type ImageItem = {
+    file: File;
+    preview: string;
+    isExisting?: boolean;
+    existingUrl?: string;
+};
+
 export const SaveProfileSchema = z.object({
     fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
     username: z.string().min(3, "Username minimal 3 karakter"),
@@ -77,7 +84,7 @@ export const CreateReportSchema = z.object({
     ).optional(),
 });
 
-export const UpdateReportSchema = z.object({
+export const EditReportSchema = z.object({
     reportTitle: z.string().min(5, "Judul minimal 5 karakter").max(100, "Judul maksimal 100 karakter"),
     reportDescription: z.string().min(10, "Deskripsi minimal 10 karakter").max(500, "Deskripsi maksimal 500 karakter"),
     reportType: z.enum([
@@ -108,13 +115,6 @@ export const UpdateReportSchema = z.object({
         { message: "Koordinat longitude tidak valid" }
     ),
     hasProgress: z.boolean().optional(),
-    reportImages: z
-    .array(z.instanceof(File))
-    .max(5, "Maksimal 5 gambar")
-    .refine(
-    (files) => files.every((file) => file.size <= 5 * 1024 * 1024),
-    "Setiap gambar maksimal 5MB"
-    ).optional(),
 });
 
 export const ReactReportSchema = z.object({
