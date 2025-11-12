@@ -8,6 +8,12 @@ type CreateReportResponse struct {
 	ReportImages   model.ReportImage    `json:"reportImages"`
 }
 
+type EditReportResponse struct {
+	Report         model.Report         `json:"report"`
+	ReportLocation model.ReportLocation `json:"reportLocation"`
+	ReportImages   model.ReportImage    `json:"reportImages"`
+}
+
 type GetReportsResponse struct {
 	Reports 				[]Report                `json:"reports"`
 	TotalCounts             *TotalReportCount           `json:"totalCounts,omitempty"`
