@@ -120,6 +120,102 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 	return reportResult, nil
 }
 
+func (s *ReportService) EditReport(db *gorm.DB, userID, reportID uint, req dto.EditReportRequest) (*dto.EditReportResponse, error) {
+	tx := db.Begin()
+	if tx.Error != nil {
+		return nil, errors.New("Gagal memulai transaksi")
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	existingReport, err := s.reportRepo.GetByIDTX(tx, reportID)
+	if err != nil {
+		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Laporan tidak ditemukan")
+		}
+		return nil, fmt.Errorf("Gagal mengambil laporan: %w", err)
+	}
+
+	if existingReport.UserID != userID {
+		tx.Rollback()
+		return nil, errors.New("anda tidak memiliki izin untuk mengunggah progres pada laporan ini")
+	}
+
+	existingReportLocation := existingReport.ReportLocation
+	existingReportImages := existingReport.ReportImages
+
+	switch existingReport.ReportStatus {
+	case model.WAITING:
+		existingReport.ReportTitle = req.ReportTitle
+		existingReport.HasProgress = req.HasProgress
+		existingReport.ReportType = model.ReportType(req.ReportType)
+		existingReport.ReportDescription = req.ReportDescription
+
+		existingReportLocation.Latitude = req.Latitude
+		existingReportLocation.Geometry = fmt.Sprintf("SRID=4326;POINT(%f %f)", req.Longitude, req.Latitude)
+		existingReportLocation.Longitude = req.Longitude
+		existingReportLocation.DetailLocation = req.DetailLocation
+		existingReportLocation.DisplayName = req.DisplayName
+		existingReportLocation.AddressType = req.AddressType
+		existingReportLocation.Country = req.Country
+		existingReportLocation.CountryCode = req.CountryCode
+		existingReportLocation.Region = req.Region
+		existingReportLocation.Road = req.Road
+		existingReportLocation.PostCode = req.PostCode
+		existingReportLocation.County = req.County
+		existingReportLocation.State = req.State
+		existingReportLocation.Village = req.Village
+		existingReportLocation.Suburb = req.Suburb
+
+		existingReportImages.Image1URL = req.Image1URL
+		existingReportImages.Image2URL = req.Image2URL
+		existingReportImages.Image3URL = req.Image3URL
+		existingReportImages.Image4URL = req.Image4URL
+		existingReportImages.Image5URL = req.Image5URL
+
+	case model.ON_PROGRESS, model.NOT_RESOLVED, model.POTENTIALLY_RESOLVED, model.EXPIRED:
+		existingReport.ReportTitle = req.ReportTitle
+		existingReport.ReportDescription = req.ReportDescription
+		
+		existingReportImages.Image1URL = req.Image1URL
+		existingReportImages.Image2URL = req.Image2URL
+		existingReportImages.Image3URL = req.Image3URL
+		existingReportImages.Image4URL = req.Image4URL
+		existingReportImages.Image5URL = req.Image5URL
+	}
+
+	if _, err := s.reportRepo.UpdateTX(tx, existingReport); err != nil {
+		tx.Rollback()
+		return nil, errors.New("Gagal memperbarui laporan")
+	}
+
+	if _,  err := s.reportLocationRepo.UpdateTX(tx, existingReportLocation); err != nil {
+		tx.Rollback()
+		return nil, errors.New("Gagal memperbarui lokasi laporan")
+	}
+
+	if _, err := s.reportImageRepo.UpdateTX(tx, existingReportImages); err != nil {
+		tx.Rollback()
+		return nil, errors.New("Gagal memperbarui gambar laporan")
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, errors.New("Gagal menyimpan perubahan")
+	}
+
+	reportResult := &dto.EditReportResponse{
+		Report:         *existingReport,
+		ReportLocation: *existingReportLocation,
+		ReportImages:   *existingReportImages,
+	}
+	return reportResult, nil
+}
+
 func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*dto.GetReportsResponse, error) {
 	reports, err := s.reportRepo.GetPaginated(limit, cursorID, reportType, status, sortBy, hasProgress, distance)
 	if err != nil {
