@@ -1,6 +1,7 @@
 import axios from "axios";
 import { 
     ICreateReportResponse,
+    IEditReportResponse,
     IGetProgressReportResponse,
     IGetReportByIDResponse,
     IGetReportResponse,
@@ -157,8 +158,8 @@ export const updateReportStatusService = async (reportID: number, status: string
     return response.data;
 }
 
-export const updateReportService = async (reportID: number, payload: FormData): Promise<ICreateReportResponse> => {
+export const EditReportService = async (reportID: number, payload: FormData): Promise<IEditReportResponse> => {
     const authToken = getAuthToken();
-    const response = await axios.put<ICreateReportResponse>(`${MAIN_API_URL}/report/${reportID}`, payload, MULTIPART_HEADERS(authToken || ''));
+    const response = await axios.put<IEditReportResponse>(`${MAIN_API_URL}/report/${reportID}`, payload, MULTIPART_HEADERS(authToken || ''));
     return response.data;
 }
