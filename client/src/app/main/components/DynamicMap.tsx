@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable react-hooks/preserve-manual-memoization */
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
@@ -20,6 +19,7 @@ interface DynamicMapProps {
     showLocationButton?: boolean;
     scrollWheelZoom?: boolean;
     className?: string;
+    disabled?: boolean;
 }
 
 const MapUpdater = ({ 
@@ -39,10 +39,14 @@ const MapUpdater = ({
     
     useEffect(() => {
         if (shouldUpdate) {
-            if (targetCenter) {
-                map.setView(targetCenter, map.getZoom());
-            } else {
-                map.setView(center, map.getZoom());
+            try {
+                if (targetCenter) {
+                    map.flyTo(targetCenter, map.getZoom(), { animate: true, duration: 0.6 });
+                } else {
+                    map.flyTo(center, map.getZoom(), { animate: true, duration: 0.6 });
+                }
+            } catch {
+                map.setView(targetCenter || center, map.getZoom());
             }
         }
         map.invalidateSize();
@@ -71,9 +75,10 @@ const MapUpdater = ({
     return null;
 };
 
-const MapEvents = ({ onClick }: { onClick: (position: { lat: number, lng: number }) => void }) => {
+const MapEvents = ({ onClick, disabled }: { onClick: (position: { lat: number, lng: number }) => void, disabled?: boolean }) => {
     useMapEvents({
         click: (e) => {
+            if (disabled) return;
             onClick({ lat: e.latlng.lat, lng: e.latlng.lng });
         },
     });
@@ -91,6 +96,8 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
     showLocationButton = true,
     scrollWheelZoom = true,
     className = ''
+    ,
+    disabled = false
 }) => {
     const mapRef = useRef<L.Map | null>(null);
     const { location, requestLocation, loading } = useCurrentLocation();
@@ -100,13 +107,25 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
     const [isAwayFromMarker, setIsAwayFromMarker] = useState(false);
     const [targetCenter, setTargetCenter] = useState<[number, number] | null>(null);
     
-    const initialCenter = location 
-        ? [Number(location.lat), Number(location.lng)]
-        : defaultPosition;
+    useEffect(() => {
+        if (initialMarker) {
+            setMarkerPosition(initialMarker);
+            setTargetCenter([initialMarker.lat, initialMarker.lng]);
+            setShouldUpdateView(true);
+        }
+    }, [initialMarker]);
+    
+    const initialCenter = initialMarker
+        ? [initialMarker.lat, initialMarker.lng]
+        : location
+            ? [Number(location.lat), Number(location.lng)]
+            : defaultPosition;
 
-    const mapCenter = location 
-        ? [Number(location.lat), Number(location.lng)]
-        : defaultPosition;
+    const mapCenter = initialMarker
+        ? [initialMarker.lat, initialMarker.lng]
+        : location
+            ? [Number(location.lat), Number(location.lng)]
+            : defaultPosition;
 
     const customIcon = useMemo(() => new L.Icon({
         iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -118,23 +137,29 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
         shadowSize: [41, 41]
     }), []);
 
+    // avoid forcing MapContainer remount when `initialMarker` changes
+    // remounting the MapContainer will recreate the Leaflet map and cause a visible blink
+    // So keep the MapContainer stable and animate view changes instead
     const mapKey = useMemo(() => {
-        if (location) return `map-${location.lat}-${location.lng}`;
-        return 'map-no-location';
-    }, [location?.lat, location?.lng]);
+        const locPart = location ? `loc-${location.lat}-${location.lng}` : 'no-loc';
+        return `map-${locPart}`;
+    }, [location]);
 
     const handleMapClick = useCallback((position: { lat: number, lng: number }) => {
+        if (disabled) return;
         setMarkerPosition(position);
         if (onMarkerPositionChange) {
             onMarkerPositionChange(position);
         }
-    }, [onMarkerPositionChange]);
+    }, [onMarkerPositionChange, disabled]);
 
     const handleDetectLocation = () => {
+        if (disabled) return;
         requestLocation(true);
     };
 
     const setToCurrentLocation = useCallback(() => {
+        if (disabled) return;
         if (location) {
             const position = { lat: Number(location.lat), lng: Number(location.lng) };
             setMarkerPosition(position);
@@ -143,7 +168,7 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
             }
             setShouldUpdateView(true);
         }
-    }, [location, onMarkerPositionChange]);
+    }, [location, onMarkerPositionChange, disabled]);
 
     const goToMarker = useCallback(() => {
         if (markerPosition) {
@@ -151,7 +176,7 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
             setShouldUpdateView(true);
             setIsAwayFromMarker(false);
         }
-    }, [markerPosition]);
+    }, [markerPosition, disabled]);
 
     useEffect(() => {
         if (!shouldUpdateView && targetCenter) {
@@ -225,7 +250,7 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
         width: typeof width === 'number' ? `${width}px` : width,
         minHeight: '400px'
     }), [height, width]);
-
+    console.log('DynamicMap rendered with markerPosition:', markerPosition);
     return (
         <div className={`relative ${className}`} style={containerStyle}>
             <MapContainer 
@@ -260,11 +285,11 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
                     </Marker>
                 )}
                 
-                <MapEvents onClick={handleMapClick} />
+                <MapEvents onClick={handleMapClick} disabled={disabled} />
             </MapContainer>
             
-            <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
-                {showLocationButton && (
+            <div className="absolute top-4 right-4 z-1000 flex flex-col gap-2">
+                {showLocationButton && !disabled && (
                     <>
                         {location && isLocationDifferentFromMarker() && (
                             <button 
