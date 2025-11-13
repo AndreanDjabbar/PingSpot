@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -85,9 +86,8 @@ const SelectField: React.FC<SelectFieldProps> = ({
             const buttonRect = buttonRef.current.getBoundingClientRect();
             const spaceBelow = window.innerHeight - buttonRect.bottom;
             const spaceAbove = buttonRect.top;
-            const dropdownHeight = 300; // approximate max height of dropdown
-
-            // Position dropdown above if not enough space below
+            const dropdownHeight = 300; 
+            
             if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
                 setDropdownPosition('top');
             } else {
@@ -136,7 +136,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
                     className={cn(
                         "w-full flex items-center justify-between px-3 py-3 border border-gray-300 rounded-lg shadow-sm bg-white text-left transition-all duration-200",
                         "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-                        disabled && "bg-gray-200 cursor-not-allowed opacity-60",
+                        disabled && "bg-gray-200 cursor-not-allowed",
                         error && "border-red-500 focus:ring-red-500 focus:border-red-500",
                         icon ? "pl-10" : "pl-3"
                     )}
