@@ -250,7 +250,7 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
         width: typeof width === 'number' ? `${width}px` : width,
         minHeight: '400px'
     }), [height, width]);
-    console.log('DynamicMap rendered with markerPosition:', markerPosition);
+    
     return (
         <div className={`relative ${className}`} style={containerStyle}>
             <MapContainer 
