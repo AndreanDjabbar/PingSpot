@@ -313,7 +313,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 	result, err := h.reportService.EditReport(db, userID, uintReportID, req)
 	if err != nil {
 		logger.Error("Failed to edit report", zap.Error(err))
-		return response.ResponseError(c, 500, "Gagal membuat laporan", "", err.Error())
+		return response.ResponseError(c, 500, "Gagal menyunting laporan", "", err.Error())
 	}
 	logger.Info("Report editted successfully", zap.Uint("report_id", uintReportID))
 

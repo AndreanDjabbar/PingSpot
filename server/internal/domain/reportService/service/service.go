@@ -145,6 +145,11 @@ func (s *ReportService) EditReport(db *gorm.DB, userID, reportID uint, req dto.E
 		return nil, errors.New("anda tidak memiliki izin untuk mengunggah progres pada laporan ini")
 	}
 
+	if existingReport.ReportStatus == model.RESOLVED {
+		tx.Rollback()
+		return nil, errors.New("laporan sudah selesai, tidak dapat menyunting laporan lagi")
+	}
+
 	existingReportLocation := existingReport.ReportLocation
 	existingReportImages := existingReport.ReportImages
 
