@@ -124,12 +124,12 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                 </div>
                 <div className="h-px bg-gray-200"></div>
                 <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Terakhir diperbarui oleh</p>
-                    {report.hasProgress ? (
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Perkembangan diperbarui</p>
+                    {report.hasProgress && report.reportProgress ? (
                         <div className="flex items-center gap-3">
                             <div className="flex flex-col leading-tight">
-                                <span className="text-sm font-bold text-gray-700">{getReportLastUpdatedBy(report.lastUpdatedBy) ?? '-'}</span>
-                                <span className="text-[11px] text-gray-500">pada: <span className="font-medium text-gray-700">{formattedDate(report.reportUpdatedAt, { formatStr: 'dd MMM yyyy, HH:mm' })}</span></span>
+                                <span className='text-gray-500 text-[11px]'>Oleh: <span className="text-sm font-bold text-gray-700"> {getReportLastUpdatedBy(report.lastUpdatedBy) ?? '-'}</span></span>
+                                <span className="text-[11px] text-gray-500">pada: <span className="font-medium text-gray-700">{formattedDate(report?.lastUpdatedProgressAt || "", { formatStr: 'dd MMM yyyy, HH:mm' })}</span></span>
                             </div>
                             <button 
                                 onClick={() => openFormInfo({
@@ -152,6 +152,15 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                             <div className="h-px bg-gray-200"></div>
                         </>
                     )}
+                </div>
+                <div className="h-px bg-gray-200"></div>
+                <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Terakhir diperbarui oleh Pembuat</p>
+                    <p className="text-sm text-gray-900">
+                        {formattedDate(report.reportUpdatedAt, {
+                            formatStr: 'dd MMMM yyyy, HH:mm',
+                        })}
+                    </p>
                 </div>
             </div>
         </div>

@@ -106,7 +106,7 @@ export const ReportProgressTimeline: React.FC<ReportProgressTimelineProps> = ({
 
                     {report.reportProgress.length > 1 && (
                         <Accordion type="single" defaultValue={[]}>
-                            <Accordion.Item id="progress-history" title={`Riwayat Perkembangan (${report.reportProgress.length - 1})`}>
+                            <Accordion.Item id="progress-history" title={`Riwayat Perkembangan (${report.reportProgress.length})`}>
                                 <div className="max-h-[500px] overflow-y-auto  mt-2">
                                     <div className="space-y-4">
                                         <div className="relative">
