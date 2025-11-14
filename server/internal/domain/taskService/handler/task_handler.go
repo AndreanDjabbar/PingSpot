@@ -8,6 +8,7 @@ import (
 	"server/internal/domain/reportService/repository"
 	"server/internal/domain/taskService/payload"
 	"server/pkg/logger"
+	mainutils "server/pkg/utils/mainUtils"
 	"time"
 
 	"github.com/hibiken/asynq"
@@ -49,6 +50,7 @@ func (h *TaskHandler) AutoResolveReportHandler(ctx context.Context, t *asynq.Tas
 		lastUpdate := time.Unix(*report.PotentiallyResolvedAt, 0)
 		if time.Since(lastUpdate) >= 20*time.Minute {
 			report.ReportStatus = "RESOLVED"
+			report.LastUpdatedProgressAt = mainutils.Int64PtrOrNil(time.Now().Unix())
 			report.LastUpdatedBy = model.System
 			if _, err := h.ReportRepo.UpdateTX(tx, report); err != nil {
 				tx.Rollback()

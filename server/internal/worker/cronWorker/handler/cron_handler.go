@@ -62,7 +62,7 @@ func (h *CronHandler) ExpireOldReports() error {
 	threshold := now - (30 * 24 * 60 * 60)
 
 	for _, report := range *reports {
-		if report.CreatedAt <= threshold && report.LastUpdatedBy == "SYSTEM" {
+		if *report.LastUpdatedProgressAt <= threshold && report.LastUpdatedBy == "SYSTEM" {
 			tx := h.db.Begin()
 
 			report.ReportStatus = "EXPIRED"
