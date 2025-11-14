@@ -38,6 +38,7 @@ type UploadProgressReportResponse struct {
 	Attachment1 *string `json:"attachment1"`
 	Attachment2 *string `json:"attachment2"`
 	CreatedAt   int64   `json:"createdAt"`
+	LastUpdatedProgressAt   *int64   `json:"lastUpdatedProgressAt,omitempty"`
 }
 
 type GetVoteReportResponse struct {
@@ -48,6 +49,8 @@ type GetVoteReportResponse struct {
 	VoteType  model.ReportStatus `json:"voteType"`
 	CreatedAt int64              `json:"createdAt"`
 	UpdatedAt int64              `json:"updatedAt"`
+	LastUpdatedBy   *string            `json:"lastUpdatedBy,omitempty"`
+	LastUpdatedProgressAt   *int64            `json:"lastUpdatedProgressAt,omitempty"`
 }
 
 type GetProgressReportResponse struct {

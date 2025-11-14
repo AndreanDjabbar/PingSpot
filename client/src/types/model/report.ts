@@ -146,6 +146,7 @@ export interface IReport {
     reportVotes?: IReportVote[];
     majorityVote?: ReportStatus;
     lastUpdatedBy?: string;
+    lastUpdatedProgressAt?: number;
 }
 
 export interface IReportVote {

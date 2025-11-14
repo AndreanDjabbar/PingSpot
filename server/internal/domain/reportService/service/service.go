@@ -61,6 +61,7 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 		ReportType:        model.ReportType(req.ReportType),
 		ReportDescription: req.ReportDescription,
 		CreatedAt:         time.Now().Unix(),
+		UpdatedAt: 			time.Now().Unix(),	
 	}
 	if err := s.reportRepo.Create(&reportStruct, tx); err != nil {
 		tx.Rollback()
@@ -192,6 +193,8 @@ func (s *ReportService) EditReport(db *gorm.DB, userID, reportID uint, req dto.E
 		existingReportImages.Image4URL = req.Image4URL
 		existingReportImages.Image5URL = req.Image5URL
 	}
+
+	existingReport.UpdatedAt = time.Now().Unix()
 
 	if _, err := s.reportRepo.UpdateTX(tx, existingReport); err != nil {
 		tx.Rollback()
@@ -376,6 +379,7 @@ func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, s
 			IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
 			MajorityVote:               util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
 			LastUpdatedBy: (*string)(&report.LastUpdatedBy),
+			LastUpdatedProgressAt: report.LastUpdatedProgressAt,
 			ReportUpdatedAt: report.UpdatedAt,
 		})
 	}
@@ -527,6 +531,7 @@ func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResp
 		IsOnProgressByCurrentUser:  isOnProgressByCurrentUser,
 		MajorityVote:               util.GetMajorityVote(resolvedVoteCount, onProgressVoteCount, notResolvedVoteCount),
 		LastUpdatedBy: (*string)(&report.LastUpdatedBy),
+		LastUpdatedProgressAt: report.LastUpdatedProgressAt,
 		ReportUpdatedAt: report.UpdatedAt,
 	}
 	result := dto.GetReportResponse{
@@ -705,6 +710,7 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 		if topVote.Type == model.RESOLVED && report.ReportStatus != model.POTENTIALLY_RESOLVED {
 			report.ReportStatus = model.POTENTIALLY_RESOLVED
 			report.LastUpdatedBy = model.System
+			report.LastUpdatedProgressAt = mainutils.Int64PtrOrNil(time.Now().Unix())
 			report.PotentiallyResolvedAt = mainutils.Int64PtrOrNil(time.Now().Unix())
 			reportLink := fmt.Sprintf("%s/main/reports/%d", env.ClientURL(), report.ID)
 			go util.SendPotentiallyResolvedReportEmail(
@@ -721,9 +727,11 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 		} else if topVote.Type == model.ON_PROGRESS && report.ReportStatus != model.ON_PROGRESS {
 			report.ReportStatus = model.ON_PROGRESS
 			report.LastUpdatedBy = model.System
+			report.LastUpdatedProgressAt = mainutils.Int64PtrOrNil(time.Now().Unix())
 		} else if topVote.Type == model.NOT_RESOLVED && report.ReportStatus != model.NOT_RESOLVED {
 			report.ReportStatus = model.NOT_RESOLVED
 			report.LastUpdatedBy = model.System
+			report.LastUpdatedProgressAt = mainutils.Int64PtrOrNil(time.Now().Unix())
 		}
 	}
 
@@ -745,6 +753,8 @@ func (s *ReportService) VoteToReport(db *gorm.DB, userID uint, reportID uint, vo
 		VoteType:  resultVote.VoteType,
 		CreatedAt: resultVote.CreatedAt,
 		UpdatedAt: resultVote.UpdatedAt,
+		LastUpdatedBy: (*string)(&report.LastUpdatedBy),
+		LastUpdatedProgressAt: report.LastUpdatedProgressAt,
 	}, nil
 }
 
@@ -816,6 +826,7 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 	report.ReportStatus = model.ON_PROGRESS
 	report.AdminOverride = mainutils.BoolPtrOrNil(true)
 	report.LastUpdatedBy = model.Owner
+	report.LastUpdatedProgressAt = mainutils.Int64PtrOrNil(time.Now().Unix())
 	if _, err := s.reportRepo.UpdateTX(tx, report); err != nil {
 		tx.Rollback()
 		return nil, fmt.Errorf("gagal memperbarui status laporan: %w", err)
@@ -828,6 +839,7 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 		Attachment1: newProgress.Attachment1,
 		Attachment2: newProgress.Attachment2,
 		CreatedAt:   newProgress.CreatedAt,
+		LastUpdatedProgressAt: report.LastUpdatedProgressAt,
 	}
 
 	if err := tx.Commit().Error; err != nil {
