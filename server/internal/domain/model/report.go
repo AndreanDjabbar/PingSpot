@@ -39,7 +39,7 @@ type Report struct {
 	ReportType        ReportType        `gorm:"type:varchar(30);not null"`
 	ReportDescription string            `gorm:"type:text;not null"`
 	CreatedAt         int64             `gorm:"autoCreateTime"`
-	UpdatedAt		 int64             `gorm:"autoUpdateTime"`
+	UpdatedAt int64 `gorm:"autoUpdateTime:false"`
 	PotentiallyResolvedAt *int64            `gorm:"default:null"`
 	ReportStatus      ReportStatus      `gorm:"type:varchar(50);default:'WAITING'"`
 	HasProgress       *bool             `gorm:"default:true"`
