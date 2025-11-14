@@ -6,6 +6,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 're
 import { useCurrentLocation } from '@/hooks/main';
 import { FaMapPin, FaSpinner, FaLocationArrow } from 'react-icons/fa';
 import L from 'leaflet';
+import { useErrorToast } from '@/hooks/toast';
 import 'leaflet/dist/leaflet.css';
 
 interface DynamicMapProps {
@@ -100,7 +101,7 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
     disabled = false
 }) => {
     const mapRef = useRef<L.Map | null>(null);
-    const { location, requestLocation, loading } = useCurrentLocation();
+    const { location, requestLocation, loading, isPermissionDenied } = useCurrentLocation();
     const [markerPosition, setMarkerPosition] = useState<{ lat: number, lng: number } | null>(initialMarker);
     const [isMapMounted, setIsMapMounted] = useState(false);
     const [shouldUpdateView, setShouldUpdateView] = useState(false);
@@ -251,6 +252,8 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
         minHeight: '400px'
     }), [height, width]);
     
+    useErrorToast(isPermissionDenied, 'Gagal mendeteksi lokasi Anda. Silahkan izinkan akses lokasi di pengaturan browser Anda.');
+
     return (
         <div className={`relative ${className}`} style={containerStyle}>
             <MapContainer 

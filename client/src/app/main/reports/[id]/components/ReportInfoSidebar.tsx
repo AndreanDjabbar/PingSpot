@@ -155,8 +155,8 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                 </div>
                 <div className="h-px bg-gray-200"></div>
                 <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Terakhir diperbarui oleh Pembuat</p>
-                    <p className="text-sm text-gray-900">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Laporan diperbarui oleh Pembuat</p>
+                    <p className="text-sm text-gray-900"><span className='text-[11px] text-gray-500'>Pada: </span>
                         {formattedDate(report.reportUpdatedAt, {
                             formatStr: 'dd MMMM yyyy, HH:mm',
                         })}
