@@ -44,6 +44,7 @@ type Report struct {
 	ReportStatus      ReportStatus      `gorm:"type:varchar(50);default:'WAITING'"`
 	HasProgress       *bool             `gorm:"default:true"`
 	LastUpdatedBy 	LastUpdatedBy `gorm:"type:varchar(50);default:NULL"`
+	LastUpdatedProgressAt *int64            `gorm:"default:null"`
 	AdminOverride   *bool             `gorm:"default:false"`
 	ReportLocation    *ReportLocation   `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ReportImages      *ReportImage      `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`

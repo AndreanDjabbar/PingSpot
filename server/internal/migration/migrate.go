@@ -334,6 +334,21 @@ func Migrate(db *gorm.DB) error {
 				return nil
 			},
 		},
+		{
+			ID: "14112025_add_last_updated_progress_at_field_report",
+			Migrate: func(tx *gorm.DB) error {
+				if !tx.Migrator().HasColumn(&model.Report{}, "") {
+					return tx.Migrator().AddColumn(&model.Report{}, "last_updated_progress_at")
+				}
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if tx.Migrator().HasColumn(&model.Report{}, "admin_override") {
+					return tx.Migrator().DropColumn(&model.Report{}, "admin_override")
+				}
+				return nil
+			},
+		},
 	})
 
 	err := m.Migrate()
