@@ -23,10 +23,9 @@ interface MultipleImageFieldProps {
     required?: boolean;
     maxImages?: number;
     images?: ImageItem[];
-    onChange?: (files: File[]) => void;
-    onChangeDetailed?: (items: ImageItem[]) => void;
+    // onChange2?: (files: File[]) => void;
+    onChange?: (items: ImageItem[]) => void;
     onImageClick?: (imageUrl: string) => void;
-    existingImages?: string[];
     height?: number;
     width?: number;
     shape: 'circle' | 'square';
@@ -42,11 +41,10 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
     buttonTitle = 'Pilih Foto',
     required = false,
     maxImages = 5,
-    onChange,
+    // onChange2,
     images = [],
-    onChangeDetailed,
+    onChange,
     onImageClick,
-    existingImages,
     height = 180,
     width = 180,
     shape
@@ -78,12 +76,12 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                 };
                 
                 const updatedImages = [...(images || []), newImage];
-                // notify parent only — component is controlled
+
+                // if (onChange) {
+                //     onChange(updatedImages.map(img => img.file).filter(Boolean) as File[]);
+                // }
                 if (onChange) {
-                    onChange(updatedImages.map(img => img.file).filter(Boolean) as File[]);
-                }
-                if (onChangeDetailed) {
-                    onChangeDetailed(updatedImages);
+                    onChange(updatedImages);
                 }
             };
             reader.readAsDataURL(file);
@@ -96,11 +94,11 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
 
     const handleRemoveImage = (index: number) => {
         const updatedImages = (images || []).filter((_, i) => i !== index);
+        // if (onChange) {
+        //     onChange(updatedImages.map(img => img.file).filter(Boolean) as File[]);
+        // }
         if (onChange) {
-            onChange(updatedImages.map(img => img.file).filter(Boolean) as File[]);
-        }
-        if (onChangeDetailed) {
-            onChangeDetailed(updatedImages);
+            onChange(updatedImages);
         }
     };
 
