@@ -823,7 +823,7 @@ func (s *ReportService) UploadProgressReport(db *gorm.DB, userID, reportID uint,
 		return nil, fmt.Errorf("gagal mengunggah progres laporan: %w", err)
 	}
 
-	report.ReportStatus = model.ON_PROGRESS
+	report.ReportStatus = model.ReportStatus(req.Status)
 	report.AdminOverride = mainutils.BoolPtrOrNil(true)
 	report.LastUpdatedBy = model.Owner
 	report.LastUpdatedProgressAt = mainutils.Int64PtrOrNil(time.Now().Unix())
