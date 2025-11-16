@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
@@ -57,6 +58,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
     };
 
     const reports = useReportsStore((s) => s.reports);
+    const addReportProgress = useReportsStore((s) => s.addReportProgress);
     const userProfile = useUserProfileStore((s) => s.userProfile);
     
     const report = reports.find(r => r.id === reportID);
@@ -204,7 +206,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
         if (isUploadProgressSuccess && uploadProgressData) {
             resetProgress();
             const dataResponse = uploadProgressData.data;
-            if (dataResponse) {
+            if (dataResponse && reportID) {
                 const newProgressEntry = {
                     id: dataResponse.id,
                     reportID: dataResponse.reportID,
@@ -213,15 +215,15 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                     attachment1: dataResponse?.attachment1,
                     attachment2: dataResponse?.attachment2,
                     createdAt: dataResponse.createdAt,
-                }
-                report?.reportProgress?.unshift(newProgressEntry || []);
+                };
+                addReportProgress(reportID, newProgressEntry);
             }
             setProgressImages([]);
             setSelectedStatus(null);
             resetUploadProgress();
             queryClient.invalidateQueries({ queryKey: ['report-progress', reportID] });
         }
-    }, [isUploadProgressSuccess, uploadProgressData, resetProgress, queryClient, reportID, resetUploadProgress]);
+    }, [isUploadProgressSuccess, uploadProgressData, resetProgress, queryClient, reportID, resetUploadProgress, addReportProgress]);
 
     useErrorToast(isUploadProgressError, uploadProgressError);
     useSuccessToast(isUploadProgressSuccess, uploadProgressData);
