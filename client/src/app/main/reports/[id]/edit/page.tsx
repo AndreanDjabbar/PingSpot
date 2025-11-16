@@ -517,14 +517,10 @@ const EditReportPage = () => {
                                                     buttonTitle="Pilih Foto"
                                                     width={200}
                                                     images={reportImages}
-                                                    existingImages={existingImageUrls}
                                                     height={200}
                                                     shape="square"
                                                     maxImages={5}
-                                                    // use detailed change callback so parent receives full ImageItem[]
-                                                    onChangeDetailed={(items) => {
-                                                        // items include both existing images (isExisting=true) and newly added files
-                                                        // update the parent state directly so deletions of existing images are reflected
+                                                    onChange={(items) => {
                                                         setReportImages(items.slice(0, 5));
                                                     }}
                                                     onImageClick={handleImageClick}
