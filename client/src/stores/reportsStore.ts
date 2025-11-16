@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { IReport, ITotalReportCount, ReportStatus } from "@/types/model/report";
+import { IReport, ITotalReportCount, ReportStatus, IReportProgress } from "@/types/model/report";
 
 interface ReportsStore {
     reports: IReport[];
@@ -14,7 +14,7 @@ interface ReportsStore {
     setFilteredReports: (filteredReports: IReport[]) => void;
     setSearchTerm: (searchTerm: string) => void;
     setActiveFilter: (activeFilter: IReport | "all") => void;
-    updateReportStatus: (reportId: number, newStatus: string) => void;
+    addReportProgress: (reportId: number, newProgress: IReportProgress) => void;
     clearReportsData: () => void;
 }
 
@@ -48,26 +48,24 @@ export const useReportsStore = create<ReportsStore>((set, get) => ({
     setFilteredReports: (filteredReports) => set({ filteredReports }),
     setSearchTerm: (searchTerm) => set({ searchTerm }),
     setActiveFilter: (activeFilter) => set({ activeFilter }),
-    updateReportStatus: (reportId, newStatus) => {
+    addReportProgress: (reportId, newProgress) => {
         const state = get();
-        const updatedReports = state.reports.map(report => 
-            report.id === reportId 
-                ? { ...report, status: newStatus as ReportStatus, reportUpdatedAt: Date.now() }
-                : report
-        );
-        const updatedFilteredReports = state.filteredReports.map(report => 
-            report.id === reportId 
-                ? { ...report, status: newStatus as ReportStatus, reportUpdatedAt: Date.now() }
-                : report
-        );
-        const updatedSelectedReport = state.selectedReport?.id === reportId 
-            ? { ...state.selectedReport, status: newStatus as ReportStatus, reportUpdatedAt: Date.now() }
-            : state.selectedReport;
+        const updateReport = (report: IReport) => {
+            if (report.id !== reportId) return report;
+            
+            const updatedProgress = report.reportProgress 
+                ? [newProgress, ...report.reportProgress]
+                : [newProgress];
+            
+            return { ...report, reportProgress: updatedProgress, reportStatus: newProgress.status };
+        };
         
         set({ 
-            reports: updatedReports, 
-            filteredReports: updatedFilteredReports,
-            selectedReport: updatedSelectedReport
+            reports: state.reports.map(updateReport),
+            filteredReports: state.filteredReports.map(updateReport),
+            selectedReport: state.selectedReport?.id === reportId 
+                ? updateReport(state.selectedReport)
+                : state.selectedReport
         });
     },
     clearReportsData: () => set({ 
