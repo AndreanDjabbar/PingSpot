@@ -138,9 +138,6 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
         shadowSize: [41, 41]
     }), []);
 
-    // avoid forcing MapContainer remount when `initialMarker` changes
-    // remounting the MapContainer will recreate the Leaflet map and cause a visible blink
-    // So keep the MapContainer stable and animate view changes instead
     const mapKey = useMemo(() => {
         const locPart = location ? `loc-${location.lat}-${location.lng}` : 'no-loc';
         return `map-${locPart}`;
@@ -154,10 +151,10 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
         }
     }, [onMarkerPositionChange, disabled]);
 
-    const handleDetectLocation = () => {
+    const handleDetectLocation = useCallback(() => {
         if (disabled) return;
         requestLocation(true);
-    };
+    }, [disabled, requestLocation]);
 
     const setToCurrentLocation = useCallback(() => {
         if (disabled) return;
