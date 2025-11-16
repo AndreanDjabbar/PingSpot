@@ -5,13 +5,7 @@ import { BiX } from 'react-icons/bi';
 import { IoMdAddCircle } from 'react-icons/io';
 import { FiMaximize2 } from 'react-icons/fi';
 import { cn } from '@/lib/utils';
-
-export type ImageItem = {
-    file: File;
-    preview: string;
-    isExisting?: boolean;
-    existingUrl?: string;
-};
+import { ImageItem } from '@/types/global/type';
 
 interface MultipleImageFieldProps {
     id: string;

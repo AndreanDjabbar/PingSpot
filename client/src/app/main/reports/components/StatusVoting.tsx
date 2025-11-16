@@ -22,6 +22,7 @@ import { FiEdit } from 'react-icons/fi';
 import { Accordion } from '@/components/UI';
 import { RiProgress3Fill } from "react-icons/ri";
 import { MdDone, MdWarning } from 'react-icons/md';
+import { ImageItem } from '@/types/global/type';
 
 interface StatusVotingProps {
     reportID?: number;
@@ -38,7 +39,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
 }) => {
     const [animateButton, setAnimateButton] = useState<string | null>(null);
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-    const [progressImages, setProgressImages] = useState<File[]>([]);
+    const [progressImages, setProgressImages] = useState<ImageItem[]>([]);
     const openConfirm = useConfirmationModalStore((s) => s.openConfirm);
     const openFormInfo = useFormInformationModalStore((s) => s.openFormInfo);
 
@@ -187,7 +188,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
         }
         if (progressImages && progressImages.length > 0 ) {
             progressImages.forEach((file) => {
-                data.append('progressAttachments', file);
+                data.append('progressAttachments', file.file);
             });
         }
         return data;
@@ -213,7 +214,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                     attachment2: dataResponse?.attachment2,
                     createdAt: dataResponse.createdAt,
                 }
-                report?.reportProgress.unshift(newProgressEntry || []);
+                report?.reportProgress?.unshift(newProgressEntry || []);
             }
             setProgressImages([]);
             setSelectedStatus(null);
@@ -679,6 +680,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                                 height={150}
                                                                 shape="square"
                                                                 maxImages={2}
+                                                                images={progressImages}
                                                                 onChange={(files) => setProgressImages(files)}
                                                                 onImageClick={handleImageClick}
                                                             />

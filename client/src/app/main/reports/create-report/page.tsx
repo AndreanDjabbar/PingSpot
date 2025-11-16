@@ -16,13 +16,7 @@ import { useConfirmationModalStore, useImagePreviewModalStore } from '@/stores';
 import { LuNotebookText } from "react-icons/lu";
 import { Stepper } from '@/components/UI';
 import { AttachmentStep, DetailStep, MapStep, SummaryStep } from './components';
-
-type ImageItem = {
-    file: File;
-    preview: string;
-    isExisting?: boolean;
-    existingUrl?: string;
-};
+import { ImageItem } from '@/types/global/type';
 
 const CreateReportPage = () => {
     const currentPath = usePathname();

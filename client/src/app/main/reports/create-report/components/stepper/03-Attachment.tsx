@@ -1,12 +1,6 @@
 import React from 'react';
 import { MultipleImageField } from '@/components/form';
-
-type ImageItem = {
-    file: File;
-    preview: string;
-    isExisting?: boolean;
-    existingUrl?: string;
-};
+import { ImageItem } from '@/types/global/type';
 
 interface AttachmentStepProps {
     onImageChange: (files: ImageItem[]) => void;

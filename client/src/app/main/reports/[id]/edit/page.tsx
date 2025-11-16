@@ -24,13 +24,7 @@ import { BsFillInfoCircleFill } from 'react-icons/bs';
 import { MdOutlineNoteAlt, MdTrackChanges } from 'react-icons/md';
 import { IoMdImages } from 'react-icons/io';
 import { HeaderSection } from '@/app/main/components';
-
-export type ImageItem = {
-    file: File;
-    preview: string;
-    isExisting?: boolean;
-    existingUrl?: string;
-};
+import { ImageItem } from '@/types/global/type';
 
 const DynamicMap = dynamic(() => import('../../../components/DynamicMap'), {
     ssr: false,
