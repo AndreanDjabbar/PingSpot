@@ -1,13 +1,6 @@
 
 import z from "zod";
 
-export type ImageItem = {
-    file: File;
-    preview: string;
-    isExisting?: boolean;
-    existingUrl?: string;
-};
-
 export const SaveProfileSchema = z.object({
     fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
     username: z.string().min(3, "Username minimal 3 karakter"),
