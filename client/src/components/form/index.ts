@@ -4,7 +4,7 @@ import DateTimeField from './DateTimeField';
 import InputField from './InputField';
 import RadioField from './RadioField';
 import TextAreaField from './TextaAreaField';
-import MultipleImageField, { type ImageItem } from './MultipleImageField';
+import MultipleImageField from './MultipleImageField';
 import CheckboxField from './CheckboxField';
 import SelectField from './SelectField';
 
@@ -19,8 +19,6 @@ export {
     CheckboxField,
     SelectField
 };
-
-export type { ImageItem };
 
 export type CheckboxOption = {
     value: string;

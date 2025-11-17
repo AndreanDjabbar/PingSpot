@@ -275,10 +275,8 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             )}
 
                             <ReportInteractionBar
-                                userInteraction={report?.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}
-                                commentCount={report?.commentCount || 0}
                                 onLike={onLike}
-                                reportID={report?.id || 0}
+                                report={report!}
                                 showSecondaryActions={false}
                                 onDislike={onDislike}
                                 onSave={onSave}
