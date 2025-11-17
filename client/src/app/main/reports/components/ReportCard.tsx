@@ -300,9 +300,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
             
             <div className={cn("border-gray-200", report.hasProgress && "")}>
                 <ReportInteractionBar
-                    reportID={report.id}
-                    userInteraction={report.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}
-                    commentCount={report.commentCount || 0}
+                    report={report}
                     onLike={() => onLike(report.id)}
                     onDislike={() => onDislike(report.id)}
                     onSave={() => onSave(report.id)}

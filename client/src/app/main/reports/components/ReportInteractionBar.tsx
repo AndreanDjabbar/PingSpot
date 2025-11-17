@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useReportsStore } from '@/stores';
+import { IReport } from '@/types/model/report';
 
 interface ReactionStatsType {
     totalLikes: number;
@@ -18,16 +19,7 @@ interface ReactionStatsType {
 }
 
 interface ReportInteractionBarProps {
-    reportID?: number;
-    userInteraction: {
-        hasLiked: boolean;
-        hasDisliked: boolean;
-        hasSaved: boolean;
-    };
-    commentCount: number;
-    isLikedByCurrentUser?: boolean;
-    totalLikeReactions?: number;
-    totalDislikeReactions?: number;
+    report: IReport;
     onLike: () => void;
     onDislike: () => void;
     onSave: () => void;
@@ -38,38 +30,19 @@ interface ReportInteractionBarProps {
 }
 
 export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
-    reportID,
-    commentCount,
-    isLikedByCurrentUser: propIsLikedByCurrentUser,
-    totalLikeReactions: propTotalLikeReactions,
-    totalDislikeReactions: propTotalDislikeReactions,
+    report,
     onLike,
     onComment,
     onShare,
     isLoading = false,
 }) => {
     const [animateLike, setAnimateLike] = useState(false);
-    const reports = useReportsStore((s) => s.reports);
-
-    const report = reports.find(r => r.id === reportID);
-
-    const isLikedByCurrentUser = propIsLikedByCurrentUser !== undefined 
-        ? propIsLikedByCurrentUser 
-        : report?.isLikedByCurrentUser || false;
+    const isLikedByCurrentUser = report?.isLikedByCurrentUser || false;
         
     const reactionStats: ReactionStatsType = {
-        totalLikes: propTotalLikeReactions !== undefined 
-            ? propTotalLikeReactions 
-            : report?.totalLikeReactions || 0,
-        totalDislikes: propTotalDislikeReactions !== undefined 
-            ? propTotalDislikeReactions 
-            : report?.totalDislikeReactions || 0,
-        totalReactions: ((propTotalLikeReactions !== undefined 
-            ? propTotalLikeReactions 
-            : report?.totalLikeReactions || 0) + 
-            (propTotalDislikeReactions !== undefined 
-            ? propTotalDislikeReactions 
-            : report?.totalDislikeReactions || 0))
+        totalLikes: report?.totalLikeReactions || 0,
+        totalDislikes: report?.totalDislikeReactions || 0,
+        totalReactions: (report?.totalLikeReactions || 0) + (report?.totalDislikeReactions || 0)
     };
 
     const handleLike = () => {
@@ -81,7 +54,7 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
 
     return (
         <div className="">
-            {(reactionStats.totalLikes > 0 || reactionStats.totalDislikes > 0 || commentCount > 0) && (
+            {(reactionStats.totalLikes > 0 || reactionStats.totalDislikes > 0 || report.commentCount > 0) && (
                 <div className="flex items-center justify-between text-xs text-gray-500 p-2">
                     <div className="flex items-center gap-2">
                         {reactionStats.totalLikes > 0 && (
@@ -101,9 +74,9 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
                             </div>
                         )}
                     </div>
-                    {commentCount > 0 && (
+                    {report.commentCount > 0 && (
                         <button onClick={onComment} className="hover:underline">
-                            {commentCount} komentar
+                            {report.commentCount} komentar
                         </button>
                     )}
                 </div>

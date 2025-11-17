@@ -512,12 +512,7 @@ const ReportDetailPage = () => {
 
                             <div className="border-t border-gray-200">
                                 <ReportInteractionBar
-                                    reportID={report.id}
-                                    userInteraction={report.userInteraction || { hasLiked: false, hasDisliked: false, hasSaved: false }}
-                                    commentCount={report.commentCount || 0}
-                                    isLikedByCurrentUser={report.isLikedByCurrentUser}
-                                    totalLikeReactions={report.totalLikeReactions}
-                                    totalDislikeReactions={report.totalDislikeReactions}
+                                    report={report}
                                     onLike={handleLike}
                                     onDislike={() => console.log('Dislike')}
                                     onSave={() => console.log('Save')}
