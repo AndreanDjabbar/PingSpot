@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { IReport, ITotalReportCount, ReportStatus, IReportProgress } from "@/types/model/report";
+import { IReport, ITotalReportCount, IReportProgress } from "@/types/model/report";
 
 interface ReportsStore {
     reports: IReport[];

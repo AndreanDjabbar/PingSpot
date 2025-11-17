@@ -621,7 +621,6 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                                         : { top: 0, bottom: window.innerHeight, height: window.innerHeight } as DOMRect;
 
                                                                     if (reportCardRect.top < containerRect.top || reportCardRect.bottom > containerRect.bottom) {
-                                                                        // Is the card outside the visible area of the scroll container?
 
                                                                         const offset = reportCardRect.top - containerRect.top - (containerRect.height - reportCardRect.height) / 2;
                                                                         if (scrollable instanceof Element) {
