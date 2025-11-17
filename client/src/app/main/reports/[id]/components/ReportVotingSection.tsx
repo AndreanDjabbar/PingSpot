@@ -73,7 +73,7 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
             <h3 className="font-bold text-lg text-gray-900 mb-4">Hasil Voting Pengguna</h3>
-            {report.reportVotes ? (
+            {report.reportProgress ? (
                 <div>
                     <div className="space-y-4">
                         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
@@ -138,15 +138,19 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
                             majorityVote === 'RESOLVED' 
                                 ? 'bg-green-50 border-green-100' 
                                 : majorityVote === 'ON_PROGRESS'
-                                ? 'bg-yellow-50 border-yellow-100'
-                                : 'bg-red-50 border-red-100'
+                                    ? 'bg-yellow-50 border-yellow-100'
+                                    : majorityVote === 'NOT_RESOLVED'
+                                        ? 'bg-red-50 border-red-100'
+                                        : 'bg-gray-300 border-gray-100'
                         }`}>
                             <p className={`text-xs font-semibold uppercase tracking-wide mb-1 transition-colors duration-500 ${
                                 majorityVote === 'RESOLVED'
                                     ? 'text-green-700'
                                     : majorityVote === 'ON_PROGRESS'
-                                    ? 'text-yellow-700'
-                                    : 'text-red-700'
+                                        ? 'text-yellow-700'
+                                        : majorityVote === 'NOT_RESOLVED'
+                                            ? 'text-red-700'
+                                            : 'text-gray-700'
                             }`}>Vote Mayoritas</p>
                             <div className="flex items-center gap-2">
                                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold transition-colors duration-500 ${
@@ -154,21 +158,30 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
                                         ? 'bg-green-100 text-green-700'
                                         : majorityVote === 'ON_PROGRESS'
                                         ? 'bg-yellow-100 text-yellow-700'
-                                        : 'bg-red-100 text-red-700'
+                                        : 'bg-gray-100 text-gray-700'
                                 }`}>
-                                    {majorityVote === 'RESOLVED' 
+                                    {
+                                    majorityVote === 'RESOLVED' 
                                         ? 'Terselesaikan' 
                                         : majorityVote === 'ON_PROGRESS'
-                                        ? 'Dalam Proses'
-                                        : 'Tidak Ada Proses'}   
+                                            ? 'Dalam Proses'
+                                            : majorityVote === 'NOT_RESOLVED'
+                                                ? 'Tidak Ada Proses'
+                                                : 'Belum Ada Vote'
+                                    }   
                                 </span>
-                                <span className={`text-sm font-medium transition-colors duration-500 ${
-                                    majorityVote === 'RESOLVED'
-                                        ? 'text-green-700'
-                                        : majorityVote === 'ON_PROGRESS'
-                                        ? 'text-yellow-700'
-                                        : 'text-red-700'
-                                }`}>{majorityPercentage.toFixed(0)}% pengguna</span>
+                                {majorityVote && (
+                                    <span className={`text-sm font-medium transition-colors duration-500 ${
+                                        majorityVote === 'RESOLVED'
+                                            ? 'text-green-700'
+                                            : majorityVote === 'ON_PROGRESS'
+                                                ? 'text-yellow-700'
+                                                : majorityVote === 'NOT_RESOLVED'
+                                                    ? 'text-red-700'
+                                                    : 'text-gray-700' 
+                                    }`}>{majorityPercentage.toFixed(0)}% pengguna</span>
+
+                                )}
                             </div>
                         </div>
                     </div>
@@ -317,15 +330,43 @@ export const ReportVotingSection: React.FC<ReportVotingSectionProps> = ({
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-                        <LuLock size={32}/>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900 mb-1">Tidak ada Voting</p>
-                    <p className="text-xs text-gray-500">
-                        Tipe laporan ini tidak akan menyediakan fitur voting pengguna
-                    </p>
-                </div>
+                <>
+                    {!report.hasProgress && (
+                        <div className="text-center py-8">
+                            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                                <LuLock size={32}/>
+                            </div>
+                            <p className="text-sm font-medium text-gray-900 mb-1">Tidak ada Voting</p>
+                            <p className="text-xs text-gray-500">
+                                Tipe laporan ini tidak akan menyediakan fitur voting pengguna
+                            </p>
+                        </div>
+                    )}
+
+                    {report.hasProgress && report.reportStatus === 'WAITING' && (
+                        <div className="text-center py-8">
+                            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                                <LuLock size={32}/>
+                            </div>
+                            <p className="text-sm font-medium text-gray-900 mb-1">Tidak ada Voting</p>
+                            <p className="text-xs text-gray-500">
+                                Voting akan tersedia setelah pembuat laporan mengunggah progress pertama
+                            </p>
+                        </div>
+                    )}
+
+                    {report.hasProgress && isReportOwner && !report.reportVotes && (
+                        <div className="text-center py-8">
+                            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                                <LuLock size={32}/>
+                            </div>
+                            <p className="text-sm font-medium text-gray-900 mb-1">Tidak ada Voting</p>
+                            <p className="text-xs text-gray-500">
+                                Belum ada pengguna yang memberikan voting pada laporan ini
+                            </p>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
