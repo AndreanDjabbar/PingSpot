@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ButtonSubmit } from '@/components/form';
 import { SuccessSection, ErrorSection } from '@/components/feedback';
-import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseMessage } from '@/utils';
+import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseMessage, compressImages } from '@/utils';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { useCreateReport, useReverseCurrentLocation } from '@/hooks/main';
 import { CreateReportSchema } from '../../schema';
@@ -80,7 +80,7 @@ const CreateReportPage = () => {
         return true;
     };
 
-    const prepareFormData = (formData: ICreateReportRequest): FormData => {
+    const prepareFormData = async (formData: ICreateReportRequest): Promise<FormData> => {
         const data = new FormData();
         data.append('reportTitle', formData.reportTitle);
         data.append('reportDescription', formData.reportDescription);
@@ -90,15 +90,17 @@ const CreateReportPage = () => {
         data.append('longitude', formData.longitude);
         data.append('hasProgress', formData.hasProgress ? 'true' : 'false');
         if (reportImages && reportImages.length > 0 ) {
-            reportImages.forEach((file) => {
-                data.append('reportImages', file.file);
+            reportImages.forEach(async (file) => {
+                const compressedFile = await compressImages(file.file);
+                console.log("COMPRESSED FILE: ", compressedFile);
+                data.append('reportImages', compressedFile);
             });
         }
         return data;
     }
 
-    const onSubmit = (formData: ICreateReportRequest) => {
-        const preparedData = prepareFormData(formData);
+    const onSubmit = async(formData: ICreateReportRequest) => {
+        const preparedData = await prepareFormData(formData);
         handleConfirmationModal(preparedData);
     };
 

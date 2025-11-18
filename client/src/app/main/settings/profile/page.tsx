@@ -12,7 +12,7 @@ import { useSaveProfile } from '@/hooks/user';
 import HeaderSection from '../../components/HeaderSection';
 import { SuccessSection, ErrorSection } from '@/components/feedback';
 import { useConfirmationModalStore, useUserProfileStore } from '@/stores';
-import { getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage, getImageURL } from '@/utils';
+import { compressImages, getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage, getImageURL } from '@/utils';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 
 const ProfilePage = () => {
@@ -21,6 +21,7 @@ const ProfilePage = () => {
     const [profilePicture, setProfilePicture] = useState<File | null>(null);
     const [birthdayDate, setBirthdayDate] = useState<string>('');
     const [removedProfilePicture, setRemovedProfilePicture] = useState(false);
+    const [isCompressing, setIsCompressing] = useState(false);
 
     const user = useUserProfileStore(state => state.userProfile);
     const openConfirm = useConfirmationModalStore((state) => state.openConfirm);
@@ -53,7 +54,7 @@ const ProfilePage = () => {
         { value: 'male', label: 'Laki-laki' },
         { value: 'female', label: 'Perempuan' },
     ];
-    const prepareFormData = (formData: ISaveProfileRequest): FormData => {
+    const prepareFormData = async(formData: ISaveProfileRequest): Promise<FormData> => {
         const data = new FormData();
 
         data.append('fullName', formData.fullName);
@@ -78,7 +79,9 @@ const ProfilePage = () => {
         }
         
         if (profilePicture) {
-            data.append('profilePicture', profilePicture);
+            setIsCompressing(true);
+            const compressedFile = await compressImages(profilePicture);
+            data.append('profilePicture', compressedFile);
         } else {
             if (removedProfilePicture) {
                 data.append('removeProfilePicture', 'true');
@@ -88,10 +91,14 @@ const ProfilePage = () => {
         }
         return data;
     }
+    
+    const submitData = async(formData: ISaveProfileRequest) => {
+        const preparedData = await prepareFormData(formData);
+        setIsCompressing(false);
+        mutate(preparedData);
+    }
 
-    const onSubmit = (formData: ISaveProfileRequest) => {
-        const preparedData = prepareFormData(formData);
-        
+    const onSubmit = async (formData: ISaveProfileRequest) => {
         openConfirm({
             type: "info",
             title: "Konfirmasi Perubahan Profil",
@@ -101,7 +108,7 @@ const ProfilePage = () => {
             confirmTitle: "Ubah",
             cancelTitle: "Batal",
             icon: <IoPersonSharp />,
-            onConfirm: () => mutate(preparedData),  
+            onConfirm: async() => await submitData(formData),  
         });
     };
 
@@ -259,7 +266,7 @@ const ProfilePage = () => {
                                         className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-hoverable "
                                         title="Perbarui Profil"
                                         progressTitle="Memperbarui..."
-                                        isProgressing={isPending}
+                                        isProgressing={isPending || isCompressing}
                                     />
                                 </div>
                             </div>

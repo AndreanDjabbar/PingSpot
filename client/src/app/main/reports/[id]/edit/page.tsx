@@ -15,7 +15,7 @@ import { useConfirmationModalStore, useFormInformationModalStore, useImagePrevie
 import { IEditReportRequest } from '@/types/api/report';
 import { IReportImage } from '@/types/model/report';
 import { EditReportSchema } from '../../../schema';
-import { getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage, getImageURL } from '@/utils';
+import { compressImages, getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage, getImageURL } from '@/utils';
 import { HeaderSection } from '@/app/main/components';
 import { ImageItem } from '@/types/global/type';
 import { MapStep, DetailStep, AttachmentStep, SummaryStep } from './components';
@@ -150,7 +150,7 @@ const EditReportPage = () => {
         return true;
     };
 
-    const prepareFormData = (formData: IEditReportRequest): FormData => {
+    const prepareFormData = async(formData: IEditReportRequest): Promise<FormData> => {
         const data = new FormData();
         data.append('reportTitle', formData.reportTitle);
         data.append('reportDescription', formData.reportDescription);
@@ -176,9 +176,10 @@ const EditReportPage = () => {
                 }
             });
 
-        newImages.forEach(img => {
-            data.append('reportImages', img.file);
-        });
+        for (const img of newImages) {
+            const compressedFile = await compressImages(img.file);
+            data.append('reportImages', compressedFile);
+        }
 
         if (existingImages.length > 0) {
             data.append('existingImages', JSON.stringify(existingImages));
@@ -187,8 +188,8 @@ const EditReportPage = () => {
         return data;
     };
 
-    const onSubmit = (formData: IEditReportRequest) => {
-        const preparedData = prepareFormData(formData);
+    const onSubmit = async(formData: IEditReportRequest) => {
+        const preparedData = await prepareFormData(formData);
         handleConfirmationModal(preparedData);
     };
 

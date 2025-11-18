@@ -9,7 +9,6 @@ import {
     FaShare
 } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { useReportsStore } from '@/stores';
 import { IReport } from '@/types/model/report';
 
 interface ReactionStatsType {
