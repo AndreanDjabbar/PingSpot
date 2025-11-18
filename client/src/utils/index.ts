@@ -4,6 +4,7 @@ import { getFormattedDate } from "./getFormattedDate";
 import { getImageURL } from "./getImageURL";
 import { getJWTExpired } from "./getJWTExpired";
 import { getAuthToken } from "./getAuthToken";
+import { compressImages } from "./compressImages";
 
 export {
     getErrorResponseDetails,
@@ -14,4 +15,5 @@ export {
     getImageURL,
     getJWTExpired,
     getAuthToken,
+    compressImages
 }
