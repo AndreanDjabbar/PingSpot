@@ -11,6 +11,7 @@ import (
 	"server/pkg/logger"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/response"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -59,30 +60,73 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 		logger.Error("Too many report images", zap.Int("count", len(files)))
 		return response.ResponseError(c, 400, "Terlalu banyak gambar", "", "Maksimal 5 gambar")
 	}
-	for i, file := range files {
-		if file.Size > 5*1024*1024 {
-			logger.Error("Report image file size too large", zap.Int64("size", files[i].Size))
-			return response.ResponseError(c, 400, "Ukuran salah satu gambar terlalu besar", "", "Maksimal ukuran gambar 5MB per gambar")
+	const maxFileSize = 2 * 1024 * 1024
+	const maxTotalSize = 10 * 1024 * 1024
+
+	for _, file := range files {
+		if file.Size > maxFileSize {
+			logger.Error("Report image file size too large",
+				zap.Int64("size", file.Size),
+			)
+			return response.ResponseError(
+				c,
+				400,
+				"Ukuran salah satu gambar terlalu besar",
+				"",
+				fmt.Sprintf("Maksimal ukuran gambar %dMB per gambar", maxFileSize/(1024*1024)),
+			)
 		}
 		totalImageSize += file.Size
 	}
-	if totalImageSize > 25*1024*1024 {
-		logger.Error("Total report images size too large", zap.Int64("total_size", totalImageSize))
-		return response.ResponseError(c, 400, "Ukuran total gambar terlalu besar", "", "Maksimal ukuran total gambar 25MB")
+
+	if totalImageSize > maxTotalSize {
+		logger.Error("Total report images size too large",
+			zap.Int64("total_size", totalImageSize),
+		)
+		return response.ResponseError(
+			c,
+			400,
+			"Total ukuran semua gambar terlalu besar",
+			"",
+			fmt.Sprintf("Maksimal total ukuran gambar %dMB", maxTotalSize/(1024*1024)),
+		)
+	}
+
+	validExtensions := map[string]bool{
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+		".webp": true,
+	}
+
+	validMimeTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/jpg":  true,
+		"image/png":  true,
+		"image/webp": true,
 	}
 
 	for i, file := range files {
-		ext := filepath.Ext(file.Filename)
-		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
-			logger.Error("Unsupported profile picture file format", zap.String("extension", ext))
+		ext := strings.ToLower(filepath.Ext(file.Filename))
+		if !validExtensions[ext] {
+			logger.Error("Unsupported image extension", zap.String("extension", ext))
 			return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
 		}
+
+		contentType := file.Header.Get("Content-Type")
+		if !validMimeTypes[contentType] {
+			logger.Error("Invalid content type", zap.String("mime", contentType))
+			return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
+		}
+
 		fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
 		savePath := filepath.Join("uploads/main/report", fileName)
+
 		if err := c.SaveFile(file, savePath); err != nil {
-			logger.Error("Failed to save profile picture", zap.Error(err))
+			logger.Error("Failed to save image", zap.Error(err))
 			return response.ResponseError(c, 500, "Gagal menyimpan gambar", "", err.Error())
 		}
+
 		images[i] = fileName
 	}
 
@@ -206,6 +250,22 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Terlalu banyak gambar", "", "Maksimal 5 gambar")
 	}
 
+	validExtensions := map[string]bool{
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+		".webp": true,
+	}
+
+	validMimeTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/jpg":  true,
+		"image/png":  true,
+		"image/webp": true,
+	}
+
+	const maxFileSize = 2 * 1024 * 1024
+
 	if len(existingImages) > 0 {
 		var existingIDX = 0
 		for i, imgURL := range existingImages {
@@ -214,16 +274,23 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 		}
 
 		for i, file := range files {
-			if file.Size > 5*1024*1024 {
+			if file.Size > maxFileSize {
 				logger.Error("Report image file size too large", zap.Int64("size", files[i].Size))
 				return response.ResponseError(c, 400, "Ukuran salah satu gambar terlalu besar", "", "Maksimal ukuran gambar 5MB per gambar")
 			}
 			
-			ext := filepath.Ext(file.Filename)
-			if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
-				logger.Error("Unsupported profile picture file format", zap.String("extension", ext))
+			ext := strings.ToLower(filepath.Ext(file.Filename))
+			if !validExtensions[ext] {
+				logger.Error("Unsupported image extension", zap.String("extension", ext))
 				return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
 			}
+
+			contentType := file.Header.Get("Content-Type")
+			if !validMimeTypes[contentType] {
+				logger.Error("Invalid content type", zap.String("mime", contentType))
+				return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
+			}
+
 			fileName := fmt.Sprintf("%d%d%d%s", time.Now().UnixNano(), i, uintReportID, ext)
 			
 			savePath := filepath.Join("uploads/main/report", fileName)
@@ -235,7 +302,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 		}
 	} else {
 		for i, file := range files {
-			if file.Size > 5*1024*1024 {
+			if file.Size > maxFileSize {
 				logger.Error("Report image file size too large", zap.Int64("size", files[i].Size))
 			}
 			ext := filepath.Ext(file.Filename)
