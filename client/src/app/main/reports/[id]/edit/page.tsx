@@ -188,12 +188,11 @@ const EditReportPage = () => {
         return data;
     };
 
-    const onSubmit = async(formData: IEditReportRequest) => {
-        const preparedData = await prepareFormData(formData);
-        handleConfirmationModal(preparedData);
+    const onSubmit = (formData: IEditReportRequest) => {
+        handleConfirmationModal(formData);
     };
 
-    const handleConfirmationModal = (preparedData: FormData) => {
+    const handleConfirmationModal = (formData: IEditReportRequest) => {
         openConfirm({
             type: "info",
             title: "Konfirmasi Perbarui Laporan",
@@ -203,7 +202,10 @@ const EditReportPage = () => {
             confirmTitle: "Perbarui",
             cancelTitle: "Batal",
             icon: <LuNotebookText />,
-            onConfirm: () => confirmSubmit(preparedData),
+            onConfirm: async() => {
+                const preparedData = await prepareFormData(formData);
+                confirmSubmit(preparedData);
+            },
         });
     }
 
