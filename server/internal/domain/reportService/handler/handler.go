@@ -3,6 +3,8 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"mime/multipart"
+	"os"
 	"path/filepath"
 	"server/internal/domain/reportService/dto"
 	"server/internal/domain/reportService/service"
@@ -120,14 +122,15 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 		}
 
 		fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+		images[i] = fileName
 		savePath := filepath.Join("uploads/main/report", fileName)
-
 		if err := c.SaveFile(file, savePath); err != nil {
+			for j := range i {
+				os.Remove(filepath.Join("uploads/main/report", images[j]))
+			}
 			logger.Error("Failed to save image", zap.Error(err))
 			return response.ResponseError(c, 500, "Gagal menyimpan gambar", "", err.Error())
 		}
-
-		images[i] = fileName
 	}
 
 	floatLatitude, err := mainutils.StringToFloat64(latitude)
@@ -189,11 +192,14 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 
 	result, err := h.reportService.CreateReport(db, userID, req)
 	if err != nil {
+		for i := range files {
+			os.Remove(filepath.Join("uploads/main/report", images[i]))
+		}
 		logger.Error("Failed to create report", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal membuat laporan", "", err.Error())
 	}
-	logger.Info("Report created successfully", zap.Uint("report_id", result.Report.ID))
 
+	logger.Info("Report created successfully", zap.Uint("report_id", result.Report.ID))
 	return response.ResponseSuccess(c, 200, "Laporan berhasil dibuat", "data", result)
 }
 
@@ -244,6 +250,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 	totalImageLen := len(files) + len(existingImages)
 
 	var images map[int]string = make(map[int]string)
+	newImages := make([]map[string]multipart.FileHeader, 0)
 
 	if totalImageLen > 5 {
 		logger.Error("Too many report images", zap.Int("count", totalImageLen))
@@ -278,7 +285,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 				logger.Error("Report image file size too large", zap.Int64("size", files[i].Size))
 				return response.ResponseError(c, 400, "Ukuran salah satu gambar terlalu besar", "", "Maksimal ukuran gambar 5MB per gambar")
 			}
-			
+
 			ext := strings.ToLower(filepath.Ext(file.Filename))
 			if !validExtensions[ext] {
 				logger.Error("Unsupported image extension", zap.String("extension", ext))
@@ -292,12 +299,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 			}
 
 			fileName := fmt.Sprintf("%d%d%d%s", time.Now().UnixNano(), i, uintReportID, ext)
-			
-			savePath := filepath.Join("uploads/main/report", fileName)
-			if err := c.SaveFile(file, savePath); err != nil {
-				logger.Error("Failed to save profile picture", zap.Error(err))
-				return response.ResponseError(c, 500, "Gagal menyimpan gambar", "", err.Error())
-			}
+			newImages = append(newImages, map[string]multipart.FileHeader{fileName: *file})
 			images[existingIDX+1+i] = fileName
 		}
 	} else {
@@ -311,11 +313,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 				return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
 			}
 			fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
-			savePath := filepath.Join("uploads/main/report", fileName)
-			if err := c.SaveFile(file, savePath); err != nil {
-				logger.Error("Failed to save profile picture", zap.Error(err))
-				return response.ResponseError(c, 500, "Gagal menyimpan gambar", "", err.Error())
-			}
+			newImages = append(newImages, map[string]multipart.FileHeader{fileName: *file})
 			images[i] = fileName
 		}
 	}
@@ -377,11 +375,27 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 	}
 	userID := uint(claims["user_id"].(float64))
 
+	for _, file := range newImages {
+		for k, v := range file {
+			savePath := filepath.Join("uploads/main/report", k)
+			if err := c.SaveFile(&v, savePath); err != nil {
+				logger.Error("Failed to save image", zap.Error(err))
+				return response.ResponseError(c, 500, "Gagal menyimpan gambar", "", err.Error())
+			}
+		}
+	}
+
 	result, err := h.reportService.EditReport(db, userID, uintReportID, req)
 	if err != nil {
+		for _, file := range newImages {
+			for k := range file {
+				os.Remove(filepath.Join("uploads/main/report", k))
+			}
+		}
 		logger.Error("Failed to edit report", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal menyunting laporan", "", err.Error())
 	}
+
 	logger.Info("Report editted successfully", zap.Uint("report_id", uintReportID))
 
 	return response.ResponseSuccess(c, 200, "Laporan berhasil disunting", "data", result)
@@ -399,7 +413,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	limit := 5
 
 	var formattedDistance dto.Distance
-	
+
 	if err := json.Unmarshal([]byte(distance), &formattedDistance); err != nil && distance != "" {
 		logger.Error("Invalid distance format", zap.String("distance", distance), zap.Error(err))
 		return response.ResponseError(c, 400, "Format distance tidak valid", "", "Distance harus berupa JSON dengan field distance, lat, dan lng")
