@@ -12,6 +12,7 @@ interface DetailStepProps {
     errors: FieldErrors<IEditReportRequest>;
     reportTypeValue?: string;
     hasProgressValue?: boolean;
+    isResolvedStatus: boolean;
     isDisabledStatus?: boolean;
 }
 
@@ -21,6 +22,7 @@ const DetailStep: React.FC<DetailStepProps> = ({
     errors, 
     reportTypeValue, 
     hasProgressValue,
+    isResolvedStatus,
     isDisabledStatus = false
 }) => {
     const issueTypes = [
@@ -51,6 +53,7 @@ const DetailStep: React.FC<DetailStepProps> = ({
                         className="w-full"
                         withLabel={true}
                         required
+                        disabled={isDisabledStatus || isResolvedStatus}
                         labelTitle="Judul Laporan"
                         icon={<LuNotebookText size={20} />}
                         placeHolder="Masukkan judul laporan"
@@ -67,7 +70,7 @@ const DetailStep: React.FC<DetailStepProps> = ({
                         type="text"
                         className="w-full"
                         required
-                        disabled={isDisabledStatus}
+                        disabled={isDisabledStatus || isResolvedStatus}
                         withLabel={true}
                         labelTitle="Alamat/Detail Lokasi"
                         icon={<IoLocationOutline size={20} />}
@@ -86,6 +89,7 @@ const DetailStep: React.FC<DetailStepProps> = ({
                     rows={4}
                     required
                     className="w-full"
+                    disabled={isResolvedStatus}
                     withLabel={true}
                     labelTitle="Deskripsi Permasalahan"
                     placeHolder="Jelaskan permasalahan dengan detail"
@@ -100,7 +104,7 @@ const DetailStep: React.FC<DetailStepProps> = ({
                     <SelectField
                         id="reportType"
                         name="reportType"
-                        disabled={isDisabledStatus}
+                        disabled={isDisabledStatus || isResolvedStatus}
                         value={reportTypeValue || ''}
                         register={register("reportType")}
                         onChange={(value) => setValue('reportType', value as 'infrastructure' | 'environment' | 'safety' | 'other')}
@@ -118,7 +122,7 @@ const DetailStep: React.FC<DetailStepProps> = ({
                     <CheckboxField
                         id="hasProgress"
                         name="hasProgress"
-                        disabled={isDisabledStatus}
+                        disabled={isDisabledStatus || isResolvedStatus}
                         values={hasProgressValue ? ['enable'] : []}
                         onChange={(values) => setValue('hasProgress', values.includes('enable'))}
                         withLabel={true}

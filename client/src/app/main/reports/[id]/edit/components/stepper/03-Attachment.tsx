@@ -4,6 +4,7 @@ import { ImageItem } from '@/types/global/type';
 
 interface AttachmentStepProps {
     images: ImageItem[];
+    isResolvedStatus: boolean;
     onImageChange: (items: ImageItem[]) => void;
     onImageClick: (imageUrl: string) => void;
 }
@@ -11,7 +12,8 @@ interface AttachmentStepProps {
 const AttachmentStep: React.FC<AttachmentStepProps> = ({ 
     images,
     onImageChange, 
-    onImageClick 
+    onImageClick,
+    isResolvedStatus
 }) => {
     return (
         <div>
@@ -29,6 +31,7 @@ const AttachmentStep: React.FC<AttachmentStepProps> = ({
                                 width={200}
                                 height={200}
                                 shape="square"
+                                disabled={isResolvedStatus}
                                 maxImages={5}
                                 images={images}
                                 onChange={(items) => onImageChange(items.slice(0, 5))}

@@ -341,6 +341,7 @@ const EditReportPage = () => {
                                 latitudeError={errors?.latitude?.message as string}
                                 longitudeError={errors?.longitude?.message as string}
                                 isDisabledStatus={isDisabledStatus}
+                                isResolvedStatus={reportStatus === 'RESOLVED'}
                                 onOpenInfo={handleOpenInfo}
                             />
                         )}
@@ -350,6 +351,7 @@ const EditReportPage = () => {
                                 register={register}
                                 setValue={setValue}
                                 errors={errors}
+                                isResolvedStatus={reportStatus === 'RESOLVED'}
                                 reportTypeValue={reportTypeValue}
                                 hasProgressValue={hasProgressValue}
                                 isDisabledStatus={isDisabledStatus}
@@ -359,6 +361,7 @@ const EditReportPage = () => {
                         {currentStep === 2 && (
                             <AttachmentStep
                                 images={reportImages}
+                                isResolvedStatus={reportStatus === 'RESOLVED'}
                                 onImageChange={setReportImages}
                                 onImageClick={handleImageClick}
                             />
@@ -394,7 +397,7 @@ const EditReportPage = () => {
                                 </Button>
                             ) : (
                                 <ButtonSubmit
-                                    className="px-6 py-2.5 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-900 transition-colors duration-300 flex justify-center items-center"
+                                    disabled={isEditing || reverseLoading || reportStatus === 'RESOLVED'}
                                     title="Kirim Laporan"
                                     progressTitle={"Menyunting Laporan..."}
                                     isProgressing={isEditing || reverseLoading}

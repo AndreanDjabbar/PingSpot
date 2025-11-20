@@ -14,6 +14,7 @@ interface MapStepProps {
     latitudeError?: string;
     longitudeError?: string;
     isDisabledStatus?: boolean;
+    isResolvedStatus: boolean;
     onOpenInfo?: () => void;
 }
 
@@ -23,13 +24,14 @@ const MapStep: React.FC<MapStepProps> = ({
     latitudeError, 
     longitudeError,
     isDisabledStatus = false,
+    isResolvedStatus,
     onOpenInfo
 }) => {
     return (
         <div>
             <div className="w-full bg-gray-100 rounded-lg p-4 border-2 border-dashed border-gray-200">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    {isDisabledStatus ? (
+                    {isDisabledStatus || isResolvedStatus ? (
                         <div className='flex items-center gap-2'>
                             Lokasi Laporan
                             <button
@@ -51,7 +53,7 @@ const MapStep: React.FC<MapStepProps> = ({
                     )}
                 </h2>
                 
-                {isDisabledStatus ? (
+                {isDisabledStatus || isResolvedStatus ? (
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
                         <p className="text-gray-600 text-sm leading-relaxed">
                             Peta di bawah adalah lokasi masalah (status laporan sudah tidak mendukung perubahan lokasi)
@@ -67,7 +69,7 @@ const MapStep: React.FC<MapStepProps> = ({
                     <DynamicMap 
                         onMarkerPositionChange={onMarkerPositionChange}
                         initialMarker={markerPosition}
-                        disabled={isDisabledStatus}
+                        disabled={isDisabledStatus || isResolvedStatus}
                     />
                 </div>
             </div>
