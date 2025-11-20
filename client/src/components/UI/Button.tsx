@@ -40,8 +40,8 @@ const Button: React.FC<ButtonProps> = ({
     };
 
     const sizeStyles: Record<ButtonSize, string> = {
-        sm: 'px-3 py-1.5 text-sm',
-        md: 'px-6 py-2.5 text-base',
+        sm: 'px-3 py-2 text-sm',
+        md: 'px-6 py-2 text-base',
         lg: 'px-8 py-3 text-lg',
     };
 
@@ -66,18 +66,18 @@ const Button: React.FC<ButtonProps> = ({
 
         if (iconPosition === 'right') {
             return (
-                <>
+                <div className="flex items-center gap-1.5">
                     <span>{text}</span>
                     <span className="ml-2">{iconElement}</span>
-                </>
+                </div>
             );
         }
 
         return (
-            <>
-                <span className="mr-2">{iconElement}</span>
+            <div className="flex items-center gap-1.5">
+                <span className="">{iconElement}</span>
                 <span>{text}</span>
-            </>
+            </div>
         );
     };
 
