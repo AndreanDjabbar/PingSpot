@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface TextAreaFieldProps {
     className?: string;
@@ -15,6 +16,7 @@ interface TextAreaFieldProps {
     onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
     register?: unknown;
     rows?: number;
+    disabled?: boolean;
 }
 
 const TextAreaField: React.FC<TextAreaFieldProps> = ({
@@ -32,6 +34,7 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
     onBlur,
     register,
     rows = 4,
+    disabled = false,
 }) => {
     return (
         <div className={`space-y-1 ${className}`}>
@@ -57,10 +60,13 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
                 name={name}
                 required={required}
                 rows={rows}
+                disabled={disabled}
                 style={{ minHeight: '50px' }}
-                className={`block w-full ${
-                    icon ? 'pl-10' : 'pl-3'
-                } pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200`}
+                className={cn("block w-full", 
+                    icon ? 'pl-10' : 'pl-3',
+                    "pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200",
+                    disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'
+                )}
                 placeholder={placeHolder || `Masukkan ${labelTitle.toLowerCase()}`}
                 value={value}
                 onChange={onChange}

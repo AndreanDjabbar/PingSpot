@@ -23,6 +23,7 @@ interface MultipleImageFieldProps {
     height?: number;
     width?: number;
     shape: 'circle' | 'square';
+    disabled?: boolean;
 }
 
 
@@ -41,7 +42,8 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
     onImageClick,
     height = 180,
     width = 180,
-    shape
+    shape,
+    disabled = false,
 }) => {
     const availableSlots = Math.max(0, maxImages);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,7 +55,7 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
     };
 
     const handleAddClick = () => {
-        if ((images?.length || 0) < availableSlots) {
+        if (!disabled && (images?.length || 0) < availableSlots) {
             fileInputRef.current?.click();
         }
     };
@@ -87,6 +89,7 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
     };
 
     const handleRemoveImage = (index: number) => {
+        if (disabled) return;
         const updatedImages = (images || []).filter((_, i) => i !== index);
         // if (onChange) {
         //     onChange(updatedImages.map(img => img.file).filter(Boolean) as File[]);
@@ -125,16 +128,18 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                                     <FiMaximize2 size={24} className="text-white" />
                                 </div>
                             </div>
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleRemoveImage(index);
-                                }}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
-                            >
-                                <BiX size={14} />
-                            </button>
+                            {!disabled && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveImage(index);
+                                    }}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
+                                >
+                                    <BiX size={14} />
+                                </button>
+                            )}
                         </div>
                     ))}
                     
@@ -142,11 +147,13 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                         <div
                             onClick={handleAddClick}
                             style={{height: `${height}px`, width: `${width}px`}}
-                            className={cn("relative flex flex-col items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-200 transition-colors", 
-                                shape === 'circle' ? 'rounded-full' : 'rounded-md')}
+                            className={cn("relative flex flex-col items-center justify-center border-2 border-dashed transition-colors", 
+                                shape === 'circle' ? 'rounded-full' : 'rounded-md',
+                                disabled ? 'bg-gray-200 border-gray-200 cursor-not-allowed' : 'bg-gray-100 border-gray-300 cursor-pointer hover:bg-gray-200'
+                            )}
                         >
-                            <IoMdAddCircle size={40} className="text-gray-400 mb-2" />
-                            <p className="text-xs text-gray-500 text-center px-2">
+                            <IoMdAddCircle size={40} className={disabled ? "text-gray-300 mb-2" : "text-gray-400 mb-2"} />
+                            <p className={cn("text-xs text-center px-2", disabled ? "text-gray-400" : "text-gray-500")}>
                                 Tambah Foto <br /> ({images.length}/{maxImages})
                             </p>
                         </div>
@@ -158,7 +165,10 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                         <button
                             type="button"
                             onClick={handleAddClick}
-                            className="px-4 py-2 bg-sky-700 text-white rounded-lg hover:bg-sky-800 transition-colors text-md"
+                            disabled={disabled}
+                            className={cn("px-4 py-2 rounded-lg transition-colors text-md",
+                                disabled ? "bg-gray-400 cursor-not-allowed" : "bg-sky-700 text-white hover:bg-sky-800"
+                            )}
                         >
                             {buttonTitle}
                         </button>
@@ -172,6 +182,7 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                     type="file"
                     accept="image/*"
                     required={required && (images.length) === 0}
+                    disabled={disabled}
                     className="hidden"
                     onChange={handleFileChange}
                 />
