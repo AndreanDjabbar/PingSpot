@@ -184,7 +184,6 @@ func (s *ReportService) EditReport(db *gorm.DB, userID, reportID uint, req dto.E
 		existingReportImages.Image5URL = req.Image5URL
 
 	case model.ON_PROGRESS, model.NOT_RESOLVED, model.POTENTIALLY_RESOLVED, model.EXPIRED:
-		existingReport.ReportTitle = req.ReportTitle
 		existingReport.ReportDescription = req.ReportDescription
 		
 		existingReportImages.Image1URL = req.Image1URL
