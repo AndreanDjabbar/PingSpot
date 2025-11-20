@@ -79,6 +79,7 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                         onClick={() => router.push(`/main/reports/${report.id}/update-progress`)}
                         icon={<BiEdit />}
                         size='sm'
+                        disabled={report.reportStatus === 'RESOLVED' || report.reportStatus === 'EXPIRED'}
                     >
                         Perbarui  
                     </Button>
@@ -146,18 +147,20 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                                 <span className='text-gray-500 text-[11px]'>Oleh: <span className="text-sm font-bold text-gray-700"> {getReportLastUpdatedBy(report.lastUpdatedBy) ?? '-'}</span></span>
                                 <span className="text-[11px] text-gray-500">pada: <span className="font-medium text-gray-700">{formattedDate(report?.lastUpdatedProgressAt || "", { formatStr: 'dd MMM yyyy, HH:mm' })}</span></span>
                             </div>
-                            <button 
-                                onClick={() => openFormInfo({
-                                    title: 'Laporan Diperbarui Oleh Pemilik Laporan',
-                                    type: 'warning',
-                                    description: 'Status laporan ini diperbarui oleh pemilik laporan. Kebenaran informasi sepenuhnya bergantung pada validasi dari pemilik laporan.',
-                                    additionalInfo: 'Pastikan anda memastikan ulang informasi dari laporan ini.'
-                                })}
-                                className='ml-auto inline-flex items-center p-1.5 sm:p-2 hover:bg-yellow-50 rounded-full transition-colors group cursor-pointer'
-                                aria-label="Informasi status laporan"
-                            >
-                                <ImInfo size={16} className="text-yellow-600 group-hover:text-yellow-700 transition-colors sm:w-6 sm:h-6"/>
-                            </button>
+                            {report.lastUpdatedBy === 'OWNER' && (
+                                <button 
+                                    onClick={() => openFormInfo({
+                                        title: 'Laporan Diperbarui Oleh Pemilik Laporan',
+                                        type: 'warning',
+                                        description: 'Status laporan ini diperbarui oleh pemilik laporan. Kebenaran informasi sepenuhnya bergantung pada validasi dari pemilik laporan.',
+                                        additionalInfo: 'Pastikan anda memastikan ulang informasi dari laporan ini.'
+                                    })}
+                                    className='ml-auto inline-flex items-center p-1.5 sm:p-2 hover:bg-yellow-50 rounded-full transition-colors group cursor-pointer'
+                                    aria-label="Informasi status laporan"
+                                >
+                                    <ImInfo size={16} className="text-yellow-600 group-hover:text-yellow-700 transition-colors sm:w-6 sm:h-6"/>
+                                </button>
+                            )}
                         </div>
                     ) : (
                         <>

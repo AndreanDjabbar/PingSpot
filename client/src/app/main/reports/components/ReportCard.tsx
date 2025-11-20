@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/purity */
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { FaChevronLeft, FaChevronRight, FaMapMarkerAlt, FaImage, FaMap, FaCrown, FaShare, FaBookmark, FaFlag, FaEdit, FaTrash, FaComment } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaMapMarkerAlt, FaImage, FaMap, FaCrown, FaShare, FaBookmark, FaFlag, FaEdit, FaTrash } from 'react-icons/fa';
 import { BsThreeDots } from "react-icons/bs";
 import { useOptionsModalStore } from '@/stores';
 import type { OptionItem } from '@/stores/optionsModalStore';
@@ -163,9 +163,13 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                 if (!report) return;
                                 const optionsToShow: OptionItem[] = [...opts];
                                 if (isReportOwner) {
-                                    optionsToShow.push({ label: 'Sunting Laporan', description: "Anda dapat menyunting laporan ini.", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/edit`) });
+                                    if (report.reportStatus !== 'RESOLVED' && report.reportStatus !== 'EXPIRED') {
+                                        optionsToShow.push({ label: 'Sunting Laporan', description: "Anda dapat menyunting laporan ini.", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/edit`) });
+                                    }
+                                    if (report.reportStatus !== 'RESOLVED' && report.hasProgress) {
+                                        optionsToShow.push({ label: 'Perbarui Perkembangan Laporan', description: "Perbarui perkembangan laporan ini", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/update-progress`) });
+                                    }
                                     optionsToShow.push({ label: 'Detail Laporan', description: "Lihat detail laporan yang telah anda buat", icon: <LuNotepadText size={14} />, onClick: () => router.push(`/main/reports/${report.id}`) });
-                                    optionsToShow.push({ label: 'Perbarui Perkembangan Laporan', description: "Perbarui perkembangan laporan ini", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/update-progress`) });
                                     optionsToShow.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openConfirm({ title: 'Hapus laporan', message: 'Yakin ingin menghapus laporan ini?', type: 'warning', onConfirm: () => { console.log('delete report', report.id); } }) });
                                 } else {
                                     optionsToShow.push({ label: 'Simpan',  description: "Simpan laporan ini", icon: <FaBookmark size={14} />, onClick: () => onSave(report?.id || 0) },)
