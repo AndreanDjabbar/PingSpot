@@ -7,7 +7,7 @@ import { BiEdit, BiX } from 'react-icons/bi';
 import { IoDocumentText } from 'react-icons/io5';
 import { IReport } from '@/types/model/report';
 import { getFormattedDate as formattedDate, getImageURL } from '@/utils';
-import { Accordion } from '@/components/UI';
+import { Accordion, Button } from '@/components/UI';
 import { RiProgress3Fill } from 'react-icons/ri';
 import { MdDone } from 'react-icons/md';
 import { LuLock } from 'react-icons/lu';
@@ -30,13 +30,13 @@ export const ReportProgressTimeline: React.FC<ReportProgressTimelineProps> = ({
             <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-lg text-gray-900">Perkembangan Laporan</h3>
                 {isReportOwner && report.hasProgress && (
-                    <button
+                    <Button
                         onClick={() => router.push(`/main/reports/${report.id}/update-progress`)}
-                        className="flex items-center gap-2 px-4 py-2 bg-pingspot-hoverable text-white text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow-md cursor-pointer"
+                        icon={<BiEdit />}
+                        size='sm'
                     >
-                        <BiEdit size={16} />
-                        <span>Perbarui</span>
-                    </button>
+                        Perbarui  
+                    </Button>
                 )}
             </div>
             

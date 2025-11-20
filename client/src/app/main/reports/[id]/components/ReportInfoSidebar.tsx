@@ -6,6 +6,9 @@ import { getFormattedDate as formattedDate } from '@/utils';
 import { useFormInformationModalStore, useUserProfileStore } from '@/stores';
 import { MdWarning } from 'react-icons/md';
 import { ImInfo } from 'react-icons/im';
+import { Button } from '@/components/UI';
+import { BiEdit } from 'react-icons/bi';
+import { useRouter } from 'next/navigation';
 
 interface ReportInfoSidebarProps {
     report: IReport;
@@ -59,6 +62,7 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
     report, 
     getReportTypeLabel 
 }) => {
+    const router = useRouter();
     const userProfile = useUserProfileStore((s) => s.userProfile);
     const openFormInfo = useFormInformationModalStore((s) => s.openFormInfo);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
@@ -68,7 +72,18 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
 
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-            <h3 className="font-bold text-lg text-gray-900 mb-4">Informasi Laporan</h3>
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg text-gray-900">Informasi Laporan</h3>
+                {isReportOwner && report.hasProgress && (
+                    <Button
+                        onClick={() => router.push(`/main/reports/${report.id}/update-progress`)}
+                        icon={<BiEdit />}
+                        size='sm'
+                    >
+                        Perbarui  
+                    </Button>
+                )}
+            </div>
             <div className="space-y-3">
                 {report.hasProgress ? (
                     <>
