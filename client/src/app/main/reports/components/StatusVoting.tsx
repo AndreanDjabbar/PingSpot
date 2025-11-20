@@ -654,6 +654,7 @@ const StatusVoting: React.FC<StatusVotingProps> = ({
                                                                 register={registerProgress("progressNotes")}
                                                                 rows={4}
                                                                 className="w-full"
+                                                                required
                                                                 withLabel={true}
                                                                 labelTitle="Catatan Progress"
                                                                 labelIcon={<BiMessageDetail size={20} />}
