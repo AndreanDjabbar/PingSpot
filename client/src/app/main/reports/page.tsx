@@ -5,12 +5,12 @@ import { BiPlus } from 'react-icons/bi';
 import HeaderSection from '../components/HeaderSection';
 import { useRouter } from 'next/navigation';
 import { ErrorSection } from '@/components/feedback';
-import { useGetReport, useReactReport } from '@/hooks/main';
+import { useDeleteReport, useGetReport, useReactReport } from '@/hooks/main';
 import { useVoteReport } from '@/hooks/main/useVoteReport';
 import { RxCrossCircled } from "react-icons/rx";
-import { useErrorToast } from '@/hooks/toast';
+import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
-import { EmptyState } from '@/components/UI';
+import { EmptyState, Loading } from '@/components/UI';
 import { 
     ReportSkeleton, 
     ReportSearchAndFilter,
@@ -24,6 +24,7 @@ import { useInView } from 'react-intersection-observer';
 import type { FilterOptions } from './components/ReportFilterModal';
 import { useCurrentLocation } from '@/hooks/main';
 import { FaLocationDot } from 'react-icons/fa6';
+import { is } from 'date-fns/locale';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
@@ -72,6 +73,15 @@ const ReportsPage = () => {
         isSuccess: voteReportSuccess,
         error: voteReportError,
     } = useVoteReport();
+
+    const {
+        mutate: deleteReport,
+        data: deleteReportData,
+        isError: isDeleteReportError,
+        isSuccess: isDeleteReportSuccess,
+        error: deleteReportError,
+        isPending: deleteReportPending,
+    } = useDeleteReport();
 
     const { 
         data: getReportData, 
@@ -375,6 +385,10 @@ const ReportsPage = () => {
         }
     };
 
+    const handleRemoveReport = (reportId: number) => {
+        deleteReport({ reportID: reportId });
+    }
+
     const handleSave = async (reportId: number) => {
         console.log('Saving report:', reportId);
     };
@@ -415,6 +429,11 @@ const ReportsPage = () => {
     );
 
     useErrorToast(
+        isDeleteReportError, 
+        getErrorResponseMessage(deleteReportError) || 'Terjadi kesalahan saat mengambil data laporan'
+    );
+
+    useErrorToast(
         isReactReportError, 
         getErrorResponseMessage(reactReportError) || 'Terjadi kesalahan saat bereaksi pada laporan'
     );
@@ -424,6 +443,11 @@ const ReportsPage = () => {
     useErrorToast(
         isVoteReportError,
         getErrorResponseMessage(voteReportError) || 'Terjadi kesalahan saat melakukan vote status'
+    );
+
+    useSuccessToast(
+        isDeleteReportSuccess,
+        deleteReportData || 'Laporan berhasil dihapus'
     );
 
     useEffect(() => {
@@ -451,6 +475,15 @@ const ReportsPage = () => {
             setFilteredReports(filtered);
         }
     }, [isGetReportSuccess, getReportData, setReports, searchTerm]);
+
+    useEffect(() => {
+        if (isDeleteReportSuccess) {
+            const updatedReports = reports.filter(report => report.id !== (deleteReportData?.data?.reportID|| 0));
+            setReports(updatedReports);
+            setFilteredReports(updatedReports);
+            setSelectedReport(null);
+        }
+    }, [isDeleteReportSuccess, deleteReportData]);
 
     useEffect(() => {
         if (voteReportData?.data) {
@@ -493,6 +526,10 @@ const ReportsPage = () => {
         return <ReportSkeleton currentPath={currentPath} />;
     }
 
+    if (deleteReportPending) {
+        return <Loading text='Menghapus Laporan...' size='lg' className='absolute inset-0 left-0 xl:left-60'/>
+    }
+
     return (
         <div className=''>
             <div className='flex gap-6 lg:gap-8 '>
@@ -511,6 +548,13 @@ const ReportsPage = () => {
                         <ErrorSection
                             message={getErrorResponseMessage(getReportError) || 'Terjadi kesalahan saat mengambil data laporan'}
                             errors={getErrorResponseDetails(getReportError) || []}
+                        />
+                    )}
+
+                    {isDeleteReportError && (
+                        <ErrorSection
+                        message={getErrorResponseMessage(deleteReportError)}
+                        errors={getErrorResponseDetails(deleteReportError)}
                         />
                     )}
 
@@ -546,6 +590,7 @@ const ReportsPage = () => {
                                             onLike={handleLike}
                                             onDislike={handleDislike}
                                             onSave={handleSave}
+                                            onRemove={handleRemoveReport}
                                             onComment={handleComment}
                                             onShare={handleShare}
                                             onStatusVote={handleStatusVote}

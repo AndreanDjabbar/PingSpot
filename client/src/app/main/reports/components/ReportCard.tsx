@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable react-hooks/purity */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { FaChevronLeft, FaChevronRight, FaMapMarkerAlt, FaImage, FaMap, FaCrown, FaShare, FaBookmark, FaFlag, FaEdit, FaTrash } from 'react-icons/fa';
 import { BsThreeDots } from "react-icons/bs";
@@ -15,6 +16,7 @@ import { useReportsStore, useImagePreviewModalStore, useUserProfileStore } from 
 import { useRouter } from 'next/navigation';
 import { LuNotepadText } from 'react-icons/lu';
 import { cn } from '@/lib/utils';
+import { useDeleteReport } from '@/hooks/main';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,
@@ -25,6 +27,7 @@ interface ReportCardProps {
     reportID: number;
     onLike: (reportId: number) => void;
     onDislike: (reportId: number) => void;
+    onRemove: (reportId: number) => void;
     onSave: (reportId: number) => void;
     onComment: (reportId: number) => void;
     onShare: (reportId: number, reportTitle: string) => void;
@@ -69,6 +72,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
     onDislike,
     onSave,
     onComment,
+    onRemove,
     onShare,
     onStatusVote,
 }) => {
@@ -84,6 +88,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
     const report = reports.find(r => r.id === reportID);
     const optionsButtonRef = React.useRef<HTMLButtonElement | null>(null);
     
+
     const opts: OptionItem[] = [
         { label: 'Bagikan',  description: "Lihat komentar dan berikan komentar anda mengenai laporan ini", icon: <FaShare size={14} />, onClick: () => onShare(report?.id || 0, report?.reportTitle || "") }
     ];
@@ -99,6 +104,22 @@ const ReportCard: React.FC<ReportCardProps> = ({
         const url = getImageURL(imageURL, "main");
         console.log("Opening image preview for URL:", url);
         openImagePreview(url);
+    }
+
+    const openDeleteConfirm = () => {
+        openConfirm({ 
+            title: 'Hapus laporan', 
+            message: 'Yakin ingin menghapus laporan ini?', 
+            type: 'warning', 
+                icon: <FaTrash className='text-white' />,
+            confirmTitle: 'Hapus', 
+            cancelTitle: 'Batal',
+            onConfirm: () => { onDeleteClick(report.id); } 
+        });
+    }
+
+    const onDeleteClick = (reportID: number) => {
+        onRemove(reportID);
     }
 
     const nextImage = () => {
@@ -170,7 +191,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                         optionsToShow.push({ label: 'Perbarui Perkembangan Laporan', description: "Perbarui perkembangan laporan ini", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/update-progress`) });
                                     }
                                     optionsToShow.push({ label: 'Detail Laporan', description: "Lihat detail laporan yang telah anda buat", icon: <LuNotepadText size={14} />, onClick: () => router.push(`/main/reports/${report.id}`) });
-                                    optionsToShow.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openConfirm({ title: 'Hapus laporan', message: 'Yakin ingin menghapus laporan ini?', type: 'warning', onConfirm: () => { console.log('delete report', report.id); } }) });
+                                    optionsToShow.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openDeleteConfirm(), description: "Hapus laporan ini secara permanen" });
                                 } else {
                                     optionsToShow.push({ label: 'Simpan',  description: "Simpan laporan ini", icon: <FaBookmark size={14} />, onClick: () => onSave(report?.id || 0) },)
                                     optionsToShow.push({ label: 'Laporkan', icon: <FaFlag size={14} />, onClick: () => router.push(`/main/reports/${report.id}/report`) });

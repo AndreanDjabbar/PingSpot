@@ -5,6 +5,7 @@ import { useReportsStore } from '@/stores';
 interface ReportListProps {
     onLike: (reportId: number) => void;
     onDislike: (reportId: number) => void;
+    onRemove: (reportId: number) => void;
     onSave: (reportId: number) => void;
     onComment: (reportId: number) => void;
     onShare: (reportId: number, reportTitle: string) => void;
@@ -17,6 +18,7 @@ const ReportList: React.FC<ReportListProps> = ({
     onSave,
     onComment,
     onShare,
+    onRemove,
     onStatusVote,
 }) => { 
     const filteredReports = useReportsStore((s) => s.filteredReports);
@@ -26,6 +28,7 @@ const ReportList: React.FC<ReportListProps> = ({
             {filteredReports.map(report => (
                 <ReportCard
                     key={report.id}
+                    onRemove={onRemove}
                     reportID={report.id}
                     onLike={onLike}
                     onDislike={onDislike}
