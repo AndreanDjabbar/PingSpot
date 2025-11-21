@@ -53,6 +53,17 @@ export interface IEditReportResponse {
     data?: IReport;
 }
 
+export interface IDeleteReportRequest {
+    reportID: number;
+}
+
+export interface IDeleteReportResponse {
+    message: string;
+    data?: {
+        reportID: number;
+    };
+}
+
 export interface IReactReportResponse {
     message: string;
     data?: IReportReactions;
