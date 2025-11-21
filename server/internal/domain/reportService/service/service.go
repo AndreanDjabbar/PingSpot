@@ -223,6 +223,53 @@ func (s *ReportService) EditReport(db *gorm.DB, userID, reportID uint, req dto.E
 	return reportResult, nil
 }
 
+func (s *ReportService) DeleteReport(db *gorm.DB, userID, reportID uint, deleteType string) error {
+	tx := db.Begin()
+	if tx.Error != nil {
+		return errors.New("Gagal memulai transaksi")
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	existingReport, err := s.reportRepo.GetByIDTX(tx, reportID)
+	if err != nil {
+		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("Laporan tidak ditemukan")
+		}
+		return fmt.Errorf("Gagal mengambil laporan: %w", err)
+	}
+	if existingReport.UserID != userID {
+		tx.Rollback()
+		return errors.New("anda tidak memiliki izin untuk menghapus laporan ini")
+	}
+
+	currentTime := time.Now().Unix()
+	switch deleteType {
+	case "soft":
+		isDeleted := true
+		existingReport.IsDeleted = &isDeleted
+		existingReport.DeletedAt = &currentTime
+		if _, err := s.reportRepo.UpdateTX(tx, existingReport); err != nil {
+			tx.Rollback()
+			return errors.New("Gagal menghapus laporan")
+		}
+	case "hard":
+		if _, err := s.reportRepo.DeleteTX(tx, existingReport); err != nil {
+			tx.Rollback()
+			return errors.New("Gagal menghapus laporan")
+		}
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return errors.New("Gagal menyimpan perubahan")
+	}
+	return nil
+}
+
 func (s *ReportService) GetAllReport(userID, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*dto.GetReportsResponse, error) {
 	reports, err := s.reportRepo.GetPaginated(limit, cursorID, reportType, status, sortBy, hasProgress, distance)
 	if err != nil {
