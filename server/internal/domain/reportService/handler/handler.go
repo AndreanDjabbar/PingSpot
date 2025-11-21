@@ -659,5 +659,7 @@ func (h *ReportHandler) DeleteReportHandler(c *fiber.Ctx) error {
 		logger.Error("Failed to delete report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal menghapus laporan", "", err.Error())
 	}
-	return response.ResponseSuccess(c, 200, "Laporan berhasil dihapus", "data", nil)
+	return response.ResponseSuccess(c, 200, "Laporan berhasil dihapus", "data", fiber.Map{
+		"reportID": uintReportID,
+	})
 }
