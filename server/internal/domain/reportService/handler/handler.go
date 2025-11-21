@@ -638,3 +638,26 @@ func (h *ReportHandler) GetProgressReportHandler(c *fiber.Ctx) error {
 	}
 	return response.ResponseSuccess(c, 200, "Get progress reports success", "data", progressList)
 }
+
+func (h *ReportHandler) DeleteReportHandler(c *fiber.Ctx) error {
+	logger.Info("DELETE REPORT HANDLER")
+	reportIDParam := c.Params("reportID")
+	uintReportID, err := mainutils.StringToUint(reportIDParam)
+	if err != nil {
+		logger.Error("Invalid reportID format", zap.String("reportID", reportIDParam), zap.Error(err))
+		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
+	}
+	claims, err := mainutils.GetJWTClaims(c)
+	if err != nil {
+		logger.Error("Failed to get JWT claims", zap.Error(err))
+		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+	}
+	userID := uint(claims["user_id"].(float64))
+	db := database.GetPostgresDB()
+	err = h.reportService.DeleteReport(db, userID, uintReportID, "soft")
+	if err != nil {
+		logger.Error("Failed to delete report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
+		return response.ResponseError(c, 500, "Gagal menghapus laporan", "", err.Error())
+	}
+	return response.ResponseSuccess(c, 200, "Laporan berhasil dihapus", "data", nil)
+}
