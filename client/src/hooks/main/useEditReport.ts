@@ -12,5 +12,3 @@ export const useEditReport = () => {
         mutationFn: (payload: IEditReportProps) => EditReportService(payload.reportID, payload.data)
     })
 }
-
-export default useEditReport;
