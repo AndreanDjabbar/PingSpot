@@ -10,6 +10,7 @@ import (
 type ReportRepository interface {
 	Create(report *model.Report, tx *gorm.DB) error
 	UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error)
+	DeleteTX(tx *gorm.DB, report *model.Report) (*model.Report, error)
 	GetByID(reportID uint) (*model.Report, error)
 	GetByIDTX(tx *gorm.DB, reportID uint) (*model.Report, error)
 	Get() (*[]model.Report, error)
@@ -223,6 +224,13 @@ func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status
 
 func (r *reportRepository) UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error) {
 	if err := tx.Save(report).Error; err != nil {
+		return nil, err
+	}
+	return report, nil
+}
+
+func (r *reportRepository) DeleteTX(tx *gorm.DB, report *model.Report) (*model.Report, error) {
+	if err := tx.Delete(report).Error; err != nil {
 		return nil, err
 	}
 	return report, nil
