@@ -1,6 +1,8 @@
 import axios from "axios";
 import { 
     ICreateReportResponse,
+    IDeleteReportRequest,
+    IDeleteReportResponse,
     IEditReportResponse,
     IGetProgressReportResponse,
     IGetReportByIDResponse,
@@ -161,5 +163,17 @@ export const updateReportStatusService = async (reportID: number, status: string
 export const EditReportService = async (reportID: number, payload: FormData): Promise<IEditReportResponse> => {
     const authToken = getAuthToken();
     const response = await axios.put<IEditReportResponse>(`${MAIN_API_URL}/report/${reportID}`, payload, MULTIPART_HEADERS(authToken || ''));
+    return response.data;
+}
+
+export const DeleteReportService = async (payload: IDeleteReportRequest): Promise<IDeleteReportResponse> => {
+    const authToken = getAuthToken();
+    const response = await axios.delete<IDeleteReportResponse>(`${MAIN_API_URL}/report/${payload.reportID}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${authToken || ''}`
+        }
+    });
     return response.data;
 }
