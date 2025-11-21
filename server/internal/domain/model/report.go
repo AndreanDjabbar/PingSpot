@@ -47,6 +47,7 @@ type Report struct {
 	LastUpdatedProgressAt *int64            `gorm:"default:null"`
 	AdminOverride   *bool             `gorm:"default:false"`
 	IsDeleted         *bool             `gorm:"default:false"`
+	DeletedAt 		*int64            `gorm:"default:null"`
 	ReportLocation    *ReportLocation   `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ReportImages      *ReportImage      `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ReportReactions   *[]ReportReaction `gorm:"foreignKey:ReportID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`

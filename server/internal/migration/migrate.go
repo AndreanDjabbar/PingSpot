@@ -38,6 +38,15 @@ func Migrate(db *gorm.DB) error {
 				return tx.Migrator().DropColumn(&model.Report{}, "is_deleted")
 			},
 		},
+		{
+			ID: "11212025_add_deleted_at_field_to_report",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Migrator().AddColumn(&model.Report{}, "deleted_at")
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropColumn(&model.Report{}, "deleted_at")
+			},
+		},
 	})
 
 	err := m.Migrate()
