@@ -440,7 +440,8 @@ func (s *ReportService) GetAllReport(userID, cursorID uint, reportType, status, 
 }
 
 func (s *ReportService) GetReportByID(userID, reportID uint) (*dto.GetReportResponse, error) {
-	report, err := s.reportRepo.GetByID(reportID)
+	isDeleted := false
+	report, err := s.reportRepo.GetByIDIsDeleted(reportID, isDeleted)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("Laporan tidak ditemukan")
