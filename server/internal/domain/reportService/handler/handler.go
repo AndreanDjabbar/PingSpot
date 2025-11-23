@@ -10,6 +10,7 @@ import (
 	"server/internal/domain/reportService/service"
 	"server/internal/domain/reportService/validation"
 	"server/internal/infrastructure/database"
+	apperror "server/pkg/appError"
 	"server/pkg/logger"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/response"
@@ -196,6 +197,9 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 			os.Remove(filepath.Join("uploads/main/report", images[i]))
 		}
 		logger.Error("Failed to create report", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal membuat laporan", "", err.Error())
 	}
 
@@ -393,6 +397,9 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 			}
 		}
 		logger.Error("Failed to edit report", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal menyunting laporan", "", err.Error())
 	}
 
@@ -435,6 +442,10 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 		reports, err := h.reportService.GetAllReport(userID, cursorIDUint, reportType, status, sortBy, hasProgress, formattedDistance)
 		if err != nil {
 			logger.Error("Failed to get all reports", zap.Error(err))
+			if appErr, ok := err.(*apperror.AppError); ok {
+				return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+			}
+			return response.ResponseError(c, 500, "Gagal mendapatkan laporan", "", err.Error())
 		}
 		var nextCursor *uint = nil
 		if len(reports.Reports) > 0 {
@@ -456,6 +467,9 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 		report, err := h.reportService.GetReportByID(userID, uintReportID)
 		if err != nil {
 			logger.Error("Failed to get report by ID", zap.Uint("reportID", uintReportID), zap.Error(err))
+			if appErr, ok := err.(*apperror.AppError); ok {
+				return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+			}
 			return response.ResponseError(c, 500, "Gagal mendapatkan laporan", "", err.Error())
 		}
 		mappedData := fiber.Map{
@@ -496,6 +510,9 @@ func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
 	reaction, err := h.reportService.ReactToReport(db, userID, uintReportID, req.ReactionType)
 	if err != nil {
 		logger.Error("Failed to react to report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal mereaksi laporan", "", err.Error())
 	}
 	return response.ResponseSuccess(c, 200, "Reaksi laporan berhasil", "", reaction)
@@ -530,6 +547,9 @@ func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
 	vote, err := h.reportService.VoteToReport(db, userID, uintReportID, req.VoteType)
 	if err != nil {
 		logger.Error("Failed to vote to report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal vote laporan", "", err.Error())
 	}
 	return response.ResponseSuccess(c, 200, "Vote laporan berhasil", "", vote)
@@ -616,6 +636,9 @@ func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 	newProgress, err := h.reportService.UploadProgressReport(db, userID, uintReportID, req)
 	if err != nil {
 		logger.Error("Failed to upload progress report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal mengunggah progres laporan", "", err.Error())
 	}
 	return response.ResponseSuccess(c, 200, "Progres laporan berhasil diunggah", "data", newProgress)
@@ -633,6 +656,9 @@ func (h *ReportHandler) GetProgressReportHandler(c *fiber.Ctx) error {
 	progressList, err := h.reportService.GetProgressReports(uintReportID)
 	if err != nil {
 		logger.Error("Failed to get progress reports", zap.Uint("reportID", uintReportID), zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal mendapatkan progres laporan", "", err.Error())
 	}
 	return response.ResponseSuccess(c, 200, "Get progress reports success", "data", progressList)
@@ -656,6 +682,9 @@ func (h *ReportHandler) DeleteReportHandler(c *fiber.Ctx) error {
 	err = h.reportService.DeleteReport(db, userID, uintReportID, "soft")
 	if err != nil {
 		logger.Error("Failed to delete report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal menghapus laporan", "", err.Error())
 	}
 	return response.ResponseSuccess(c, 200, "Laporan berhasil dihapus", "data", fiber.Map{
