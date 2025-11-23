@@ -15,6 +15,7 @@ type ReportRepository interface {
 	GetByIDTX(tx *gorm.DB, reportID uint) (*model.Report, error)
 	Get() (*[]model.Report, error)
 	GetByReportStatus(status ...string) (*[]model.Report, error)
+	GetByIDIsDeleted(reportID uint, isDeleted bool) (*model.Report, error)
 	GetByIsDeletedPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance, isDeleted bool) (*[]model.Report, error)
 	GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error)
 	GetReportsCount() (*dto.TotalReportCount, error)
@@ -358,6 +359,27 @@ func (r *reportRepository) GetByID(reportID uint) (*model.Report, error) {
 			return db.Order("created_at DESC")
 		}).
 		First(&report, "reports.id = ?", reportID).Error; err != nil {
+		return nil, err
+	}
+
+	return &report, nil
+}
+
+func (r *reportRepository) GetByIDIsDeleted(reportID uint, isDeleted bool) (*model.Report, error) {
+	var report model.Report
+
+	if err := r.db.
+		Preload("User.Profile").
+		Preload("ReportLocation").
+		Preload("ReportImages").
+		Preload("ReportReactions").
+		Preload("ReportVotes").
+		Preload("ReportProgress", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at DESC")
+		}).
+		Where("is_deleted = ?", isDeleted).
+		First(&report, "reports.id = ?", reportID).
+		Error; err != nil {
 		return nil, err
 	}
 
