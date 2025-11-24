@@ -9,7 +9,7 @@ import { useDeleteReport, useGetReport, useReactReport } from '@/hooks/main';
 import { useVoteReport } from '@/hooks/main/useVoteReport';
 import { RxCrossCircled } from "react-icons/rx";
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
+import { getErrorResponseDetails, getErrorResponseMessage, isNotFoundError, isInternalServerError } from '@/utils';
 import { EmptyState, Loading } from '@/components/UI';
 import { 
     ReportSkeleton, 
@@ -106,7 +106,6 @@ const ReportsPage = () => {
         setIsReportModalOpen(false);
         setSelectedReport(null);
     };
-
     const handleLike = (reportId: number) => {
         const updatedReports = reports.map(report => {
             if (report.id === reportId) {
@@ -530,6 +529,35 @@ const ReportsPage = () => {
         return <Loading text='Menghapus Laporan...' size='lg' className='absolute inset-0 left-0 xl:left-60'/>
     }
 
+    if (isGetReportError) {
+        const isServerError = isInternalServerError(getReportError);
+        
+        if (isServerError) {
+            return (
+                <div className=''>
+                    <HeaderSection currentPath={currentPath || '/main/reports'}
+                    message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.'>
+                        <button 
+                            className="bg-sky-700 hover:bg-sky-800 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-all flex items-center justify-center space-x-2 whitespace-nowrap"
+                            onClick={() => router.push('/main/reports/create-report')}>
+                            <BiPlus className="w-5 h-5" />
+                            <span>Buat Laporan</span>
+                        </button>
+                    </HeaderSection>
+                    
+                    <div className='mt-4'>
+                        <ErrorSection
+                            message={getErrorResponseMessage(getReportError) || 'Terjadi kesalahan saat mengambil data laporan'}
+                            errors={getErrorResponseDetails(getReportError)}
+                            onRetry={() => refetchGetReport()}
+                            showRetryButton={true}
+                        />
+                    </div>
+                </div>
+            );
+        }
+    }
+
     return (
         <div className=''>
             <div className='flex gap-6 lg:gap-8 '>
@@ -544,17 +572,10 @@ const ReportsPage = () => {
                         </button>
                     </HeaderSection>
                     
-                    {isGetReportError && (
-                        <ErrorSection
-                            message={getErrorResponseMessage(getReportError) || 'Terjadi kesalahan saat mengambil data laporan'}
-                            errors={getErrorResponseDetails(getReportError) || []}
-                        />
-                    )}
-
                     {isDeleteReportError && (
                         <ErrorSection
-                        message={getErrorResponseMessage(deleteReportError)}
-                        errors={getErrorResponseDetails(deleteReportError)}
+                            message={getErrorResponseMessage(deleteReportError)}
+                            errors={getErrorResponseDetails(deleteReportError)}
                         />
                     )}
 
