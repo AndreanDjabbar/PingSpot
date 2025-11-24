@@ -2,11 +2,16 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getErrorResponseMessage, getImageURL } from '@/utils';
+import { 
+    getErrorResponseDetails, 
+    getErrorResponseMessage, 
+    isNotFoundError, 
+    isInternalServerError, 
+    getImageURL,
+} from '@/utils';
 import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
 import { ReportInteractionBar } from '../components/ReportInteractionBar';
 import { useUserProfileStore, useReportsStore } from '@/stores';
-import { Breadcrumb } from '@/components/layouts';
 import { useGetReportByID, useReactReport, useVoteReport } from '@/hooks/main';
 import { useImagePreviewModalStore } from '@/stores';
 import { useErrorToast } from '@/hooks/toast';
@@ -19,6 +24,8 @@ import {
     ReportVotingSection,
     ReportDetailSkeleton 
 } from './components';
+import { ErrorSection } from '@/components/feedback';
+import { HeaderSection } from '../../components';
 
 const getReportTypeLabel = (type: ReportType): string => {
     const types: Record<ReportType, string> = {
@@ -141,9 +148,10 @@ const ReportDetailPage = () => {
 
     const { 
         data: freshReportData,
-        isLoading,
-        isError,
-        refetch,
+        isLoading: isFreshReportLoading,
+        isError: isFreshReportError,
+        error: freshReportError,
+        refetch: freshReportRefetch,
     } = useGetReportByID(reportId);
     
     const { 
@@ -163,7 +171,7 @@ const ReportDetailPage = () => {
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
     const isReportResolved = report?.reportStatus === 'RESOLVED';
-    const customCurrentPath = `/main/reports/${report?.id}`;
+    const customCurrentPath = `/main/reports/${reportId}`;
     
     const images = useMemo(() => 
         getReportImages(report?.images ?? { id: 0, reportID: 0 }),
@@ -254,7 +262,7 @@ const ReportDetailPage = () => {
     }
 
     const handleVote = async (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS') => {
-        if (isLoading || isReportResolved) return;
+        if (isFreshReportLoading || isReportResolved) return;
         setAnimateButton(voteType);
         handleStatusVote(reportId, voteType);
         setTimeout(() => setAnimateButton(null), 300);
@@ -428,6 +436,7 @@ const ReportDetailPage = () => {
         console.log('Reply to:', parentId, content);
     };
 
+    useErrorToast(isFreshReportError, freshReportError);
     useErrorToast(isVoteReportError, voteReportError);
     useErrorToast(isReactReportError, getErrorResponseMessage(reactReportError) || 'Terjadi kesalahan saat bereaksi pada laporan');
 
@@ -437,50 +446,40 @@ const ReportDetailPage = () => {
         }
     }, [freshReportData]);
 
-    useEffect(() => {
-        if (isVoteReportError) {
-            refetch();
-        }
-    }, [isVoteReportError, refetch]);
-    
-    useEffect(() => {
-        if (isReactReportError) {
-            refetch();
-        }
-    }, [isReactReportError, refetch]);
-
-    if (isLoading) {
+    if (isFreshReportLoading) {
         return <ReportDetailSkeleton />;
     }
 
-    if (isError) {
+    if (isFreshReportError) {
+        const isNotFound = isNotFoundError(freshReportError);
+        const isServerError = isInternalServerError(freshReportError);
+        
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-red-600 mb-4">Gagal memuat laporan</p>
-                    <button
-                        onClick={() => router.push('/main/reports')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        Kembali ke Daftar Laporan
-                    </button>
+            <div className="min-h-screen">
+                <HeaderSection
+                currentPath={customCurrentPath}
+                message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.' 
+                />
+                <div className='mt-4'>
+                    <ErrorSection
+                        message={getErrorResponseMessage(freshReportError) || 'Terjadi kesalahan saat memuat laporan'}
+                        errors={getErrorResponseDetails(freshReportError)}
+                        onRetry={() => freshReportRefetch()}
+                        onGoBack={() => router.back()}
+                        onGoHome={() => router.push('/main/home')}
+                        showRetryButton={isServerError}
+                        showBackButton={isNotFound}
+                        showHomeButton={isNotFound}
+                    />
                 </div>
             </div>
         );
     }
 
-    if (!report) {
+    if (!report || !freshReportData?.data?.report.report) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-gray-600 mb-4">Laporan tidak ditemukan</p>
-                    <button
-                        onClick={() => router.push('/main/reports')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        Kembali ke Daftar Laporan
-                    </button>
-                </div>
+            <div className="min-h-screen">
+                <ErrorSection message="Laporan tidak ditemukan" />
             </div>
         );
     }
@@ -488,83 +487,82 @@ const ReportDetailPage = () => {
     return (
         <div className="min-h-screen ">
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className='flex flex-col gap-3'>
-                        <Breadcrumb path={customCurrentPath}/>
-                        <p className="text-gray-600 text-sm">
-                            Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.
-                        </p>
-                    </div>
-                </div>
+                <HeaderSection
+                currentPath={customCurrentPath}
+                message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.' 
+                />
             </div>
 
-            <div className="max-w-7xl mx-auto py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <ReportHeader report={report} />
+            {report && freshReportData?.data?.report.report && (
 
-                            <ReportMediaViewer 
-                                report={report}
-                                images={images}
-                                onImageClick={onAttachmentImageClick}
-                            />
+                <div className="max-w-7xl mx-auto py-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 space-y-6">
+                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                <ReportHeader report={report} />
 
-                            <div className="border-t border-gray-200">
-                                <ReportInteractionBar
+                                <ReportMediaViewer 
                                     report={report}
-                                    onLike={handleLike}
-                                    onDislike={() => console.log('Dislike')}
-                                    onSave={() => console.log('Save')}
-                                    onComment={() => document.getElementById('comment-input')?.focus()}
-                                    onShare={() => console.log('Share')}
+                                    images={images}
+                                    onImageClick={onAttachmentImageClick}
                                 />
+
+                                <div className="border-t border-gray-200">
+                                    <ReportInteractionBar
+                                        report={report}
+                                        onLike={handleLike}
+                                        onDislike={() => console.log('Dislike')}
+                                        onSave={() => console.log('Save')}
+                                        onComment={() => document.getElementById('comment-input')?.focus()}
+                                        onShare={() => console.log('Share')}
+                                    />
+                                </div>
                             </div>
+
+                            <ReportCommentsSection
+                                comments={displayComments}
+                                onSubmitComment={handleSubmitComment}
+                                onReply={handleReply}
+                            />
                         </div>
 
-                        <ReportCommentsSection
-                            comments={displayComments}
-                            onSubmitComment={handleSubmitComment}
-                            onReply={handleReply}
-                        />
-                    </div>
+                        <div className="lg:col-span-1 space-y-6">
+                            <ReportInfoSidebar 
+                                report={report}
+                                getReportTypeLabel={getReportTypeLabel}
+                            />
 
-                    <div className="lg:col-span-1 space-y-6">
-                        <ReportInfoSidebar 
-                            report={report}
-                            getReportTypeLabel={getReportTypeLabel}
-                        />
-
-                        <ReportProgressTimeline
-                        report={report}
-                        isReportOwner={isReportOwner || false}
-                        onImageClick={onProgressImageClick}
-                        />
-
-                        <ReportVotingSection
+                            <ReportProgressTimeline
                             report={report}
                             isReportOwner={isReportOwner || false}
-                            isReportResolved={isReportResolved}
-                            userCurrentVote={userCurrentVote}
-                            isLoading={isLoading}
-                            animateButton={animateButton}
-                            resolvedPercentage={percentages.resolved}
-                            onProgressPercentage={percentages.onProgress}
-                            notResolvedPercentage={percentages.notResolved}
-                            majorityVote={majorityVote}
-                            majorityPercentage={majorityPercentage}
-                            handleVote={handleVote}
-                        />
-                        
-                        {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                            <h3 className="font-bold text-lg text-gray-900 mb-4">Laporan Terkait</h3>
-                            <div className="space-y-3">
-                                <p className="text-sm text-gray-500">Belum ada laporan terkait</p>
-                            </div>
-                        </div> */}
+                            onImageClick={onProgressImageClick}
+                            />
+
+                            <ReportVotingSection
+                                report={report}
+                                isReportOwner={isReportOwner || false}
+                                isReportResolved={isReportResolved}
+                                userCurrentVote={userCurrentVote}
+                                isLoading={isFreshReportLoading}
+                                animateButton={animateButton}
+                                resolvedPercentage={percentages.resolved}
+                                onProgressPercentage={percentages.onProgress}
+                                notResolvedPercentage={percentages.notResolved}
+                                majorityVote={majorityVote}
+                                majorityPercentage={majorityPercentage}
+                                handleVote={handleVote}
+                            />
+                            
+                            {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                                <h3 className="font-bold text-lg text-gray-900 mb-4">Laporan Terkait</h3>
+                                <div className="space-y-3">
+                                    <p className="text-sm text-gray-500">Belum ada laporan terkait</p>
+                                </div>
+                            </div> */}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };
