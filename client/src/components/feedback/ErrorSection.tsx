@@ -2,13 +2,30 @@
 import React from 'react'
 import { MdCircle } from "react-icons/md";
 import { FaRegCircleXmark } from "react-icons/fa6";
+import { IoMdArrowBack, IoMdRefresh, IoMdHome } from "react-icons/io";
+import { Button } from '../UI';
 
 interface ErrorSectionProps {
     message?: string;
     errors?: any;
+    onRetry?: () => void;
+    onGoBack?: () => void;
+    onGoHome?: () => void;
+    showRetryButton?: boolean;
+    showBackButton?: boolean;
+    showHomeButton?: boolean;
 }
 
-const ErrorSection: React.FC<ErrorSectionProps> = ({ message, errors }) => {
+const ErrorSection: React.FC<ErrorSectionProps> = ({ 
+    message, 
+    errors, 
+    onRetry,
+    onGoBack,
+    onGoHome,
+    showRetryButton = false,
+    showBackButton = false,
+    showHomeButton = false
+}) => {
     if (!message && (!errors || Object.keys(errors).length === 0)) {
         return null;
     }
@@ -79,6 +96,34 @@ const ErrorSection: React.FC<ErrorSectionProps> = ({ message, errors }) => {
                         </div>
                     )}
                 </div>
+
+                {(showRetryButton || showBackButton || showHomeButton) && (
+                    <div className="flex gap-3 mt-4 px-4">
+                        {showRetryButton && onRetry && (
+                            <Button 
+                            variant='danger'
+                            icon={<IoMdRefresh size={23}/>}
+                            onClick={onRetry}
+                            >Coba Lagi</Button>
+                        )}
+                        
+                        {showBackButton && onGoBack && (
+                            <Button 
+                            variant='secondary'
+                            icon={<IoMdArrowBack size={23}/>}
+                            onClick={onGoBack}
+                            >Kembali</Button>
+                        )}
+                        
+                        {showHomeButton && onGoHome && (
+                            <Button 
+                            variant='primary'
+                            icon={<IoMdHome size={23}/>}
+                            onClick={onGoHome}
+                            >Beranda</Button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
