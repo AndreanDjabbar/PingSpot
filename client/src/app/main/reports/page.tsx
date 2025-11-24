@@ -9,7 +9,7 @@ import { useDeleteReport, useGetReport, useReactReport } from '@/hooks/main';
 import { useVoteReport } from '@/hooks/main/useVoteReport';
 import { RxCrossCircled } from "react-icons/rx";
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { getErrorResponseDetails, getErrorResponseMessage, isNotFoundError, isInternalServerError } from '@/utils';
+import { getErrorResponseDetails, getErrorResponseMessage, isInternalServerError } from '@/utils';
 import { EmptyState, Loading } from '@/components/UI';
 import { 
     ReportSkeleton, 
@@ -24,7 +24,6 @@ import { useInView } from 'react-intersection-observer';
 import type { FilterOptions } from './components/ReportFilterModal';
 import { useCurrentLocation } from '@/hooks/main';
 import { FaLocationDot } from 'react-icons/fa6';
-import { is } from 'date-fns/locale';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
@@ -106,6 +105,15 @@ const ReportsPage = () => {
         setIsReportModalOpen(false);
         setSelectedReport(null);
     };
+
+    const activeFiltersCount = 
+    (filters.reportType !== 'all' ? 1 : 0) +
+    (filters.status !== 'all' ? 1 : 0) +
+    ((filters.distance.distance !== 'all' && filters.distance.lat != null && filters.distance.lng != null) ? 1 : 0) +
+    (filters.sortBy !== 'latest' ? 1 : 0) +
+    (filters.hasProgress !== 'all' ? 1 : 0);
+    const isUsingFilters = activeFiltersCount > 0;
+
     const handleLike = (reportId: number) => {
         const updatedReports = reports.map(report => {
             if (report.id === reportId) {
@@ -400,6 +408,7 @@ const ReportsPage = () => {
         }
     };
 
+
     const handleShare = async (reportId: number, reportTitle: string) => {
         try {
             const shareUrl = `${window.location.origin}/main/reports/${reportId}`;
@@ -625,46 +634,54 @@ const ReportsPage = () => {
                                             )}
                                         </div>
                                     </>
-                                ) : reports.length === 0 && !isGetReportError && hasCoords ? (
-                                    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12">
-                                        <EmptyState 
-                                            emptyTitle='Belum ada laporan'
-                                            emptyMessage='Jadilah yang pertama membuat laporan untuk komunitas Anda'
-                                            showCommandButton={true}
-                                            commandLabel='Buat Laporan'
-                                            emptyIcon={<RxCrossCircled />}
-                                            onCommandButton={() => router.push('/main/reports/create-report')} 
-                                        />
-                                    </div>
-                                ) : (
-                                    <>
-                                        {!hasCoords ? (
-                                            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
-                                                <EmptyState
-                                                    emptyTitle='Lokasi tidak tersedia'
-                                                    emptyMessage='Untuk menampilkan laporan di sekitar Anda, izinkan aplikasi mengakses lokasi Anda.'
-                                                    emptyIcon={<RxCrossCircled />}
-                                                    showCommandButton={true}
-                                                    commandLabel='Deteksi Lokasi'
-                                                    commandLoading={loadingRequestLocation}
-                                                    commandIcon={<FaLocationDot/>}
-                                                    commandLoadingMessage='Mendeteksi...'
-                                                    onCommandButton={() => {requestLocation()}}
-                                                />
-                                            </div>
-                                        ) : (
-                                        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12">
-                                            <EmptyState 
-                                                emptyTitle='Laporan tidak ditemukan'
-                                                emptyMessage='Coba sesuaikan kata kunci pencarian atau filter Anda'
-                                                emptyIcon={<RxCrossCircled />}
-                                                showCommandButton={false}
-                                            />
-                                        </div>
-
-                                        )}
-                                    </>
-                                )} 
+                                ) : !hasCoords ? (
+                                    <EmptyState
+                                        emptyTitle='Lokasi tidak tersedia'
+                                        emptyMessage='Untuk menampilkan laporan di sekitar Anda, izinkan aplikasi mengakses lokasi Anda.'
+                                        emptyIcon={<RxCrossCircled />}
+                                        showCommandButton={true}
+                                        commandLabel='Deteksi Lokasi'
+                                        commandLoading={loadingRequestLocation}
+                                        commandIcon={<FaLocationDot/>}
+                                        commandLoadingMessage='Mendeteksi...'
+                                        onCommandButton={() => {requestLocation()}}
+                                    />
+                                ) : reports.length === 0 && !isGetReportError && !isUsingFilters ? (
+                                    <EmptyState 
+                                        emptyTitle='Belum ada laporan'
+                                        emptyMessage='Jadilah yang pertama membuat laporan untuk komunitas Anda'
+                                        showCommandButton={true}
+                                        commandLabel='Buat Laporan'
+                                        emptyIcon={<RxCrossCircled />}
+                                        onCommandButton={() => router.push('/main/reports/create-report')} 
+                                    />
+                                ) : filteredReports.length === 0 && reports.length === 0 && isUsingFilters ? (
+                                    <EmptyState 
+                                        emptyTitle='Tidak ada hasil yang cocok'
+                                        emptyMessage={
+                                            searchTerm 
+                                                ? `Tidak ada laporan yang cocok dengan "${searchTerm}". Coba kata kunci lain atau hapus filter.`
+                                                : 'Tidak ada laporan yang cocok dengan filter yang dipilih. Coba sesuaikan filter Anda.'
+                                        }
+                                        emptyIcon={<RxCrossCircled />}
+                                        showCommandButton={true}
+                                        commandLabel={searchTerm ? 'Hapus Pencarian' : 'Reset Filter'}
+                                        onCommandButton={() => {
+                                            setSearchTerm('');
+                                            setFilters({
+                                                sortBy: 'latest',
+                                                reportType: 'all',
+                                                status: 'all',
+                                                distance: {
+                                                    distance: 'all',
+                                                    lat: null,
+                                                    lng: null,
+                                                },
+                                                hasProgress: 'all'
+                                            });
+                                        }}
+                                    />
+                                ) : null} 
                             </div>
                             <ReportSidebar />
                         </div>
