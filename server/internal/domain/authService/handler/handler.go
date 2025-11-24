@@ -11,6 +11,7 @@ import (
 	"server/internal/domain/authService/validation"
 	"server/internal/infrastructure/cache"
 	"server/internal/infrastructure/database"
+	apperror "server/pkg/appError"
 	"server/pkg/logger"
 	"server/pkg/utils/env"
 	mainutils "server/pkg/utils/mainUtils"
@@ -49,6 +50,9 @@ func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 	user, err := h.authService.Register(db, req, false)
 	if err != nil {
 		logger.Error("Registration failed", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Registrasi gagal", "", err.Error())
 	}
 
@@ -141,6 +145,9 @@ func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
 	user, err := h.authService.VerifyUser(uint(userIdUint))
 	if err != nil {
 		logger.Error("Verification failed", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Verifikasi gagal", "", err.Error())
 	}
 
@@ -172,6 +179,9 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 	_, token, err := h.authService.Login(req)
 	if err != nil {
 		logger.Error("Login failed", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 401, "Login gagal", "", err.Error())
 	}
 
@@ -252,6 +262,9 @@ func (h *AuthHandler) ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error
 	user, err := h.authService.GetUserByEmail(req.Email)
 	if err != nil {
 		logger.Error("Failed to get user by email", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
 	}
 	if user != nil {
@@ -319,6 +332,9 @@ func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	user, err := h.authService.GetUserByEmail(req.Email)
 	if err != nil {
 		logger.Error("Failed to get user by email", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal mendapatkan pengguna", "", err.Error())
 	}
 	if user == nil {
@@ -335,6 +351,9 @@ func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	updatedUser, err := h.authService.UpdateUserByEmail(req.Email, user)
 	if err != nil {
 		logger.Error("Failed to update user password", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal memperbarui kata sandi", "", err.Error())
 	}
 	if updatedUser == nil {

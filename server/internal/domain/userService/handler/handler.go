@@ -7,6 +7,7 @@ import (
 	"server/internal/domain/userService/service"
 	"server/internal/domain/userService/validation"
 	"server/internal/infrastructure/database"
+	apperror "server/pkg/appError"
 	"server/pkg/logger"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/response"
@@ -44,6 +45,9 @@ func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
 	userId := uint(claims["user_id"].(float64))
 	if err := h.userService.SaveSecurity(userId, req); err != nil {
 		logger.Error("Failed to update user password", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal memperbarui kata sandi", "", err.Error())
 	}
 	return response.ResponseSuccess(c, 200, "Kata sandi berhasil diperbarui. Silahkan masuk kembali dengan kata sandi baru anda.", "data", nil)
@@ -119,6 +123,9 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 	newProfile, err := h.userService.SaveProfile(database, userId, req)
 	if err != nil {
 		logger.Error("Failed to save user profile", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal memperbarui profil pengguna", "", err.Error())
 	}
 	return response.ResponseSuccess(c, 200, "Profil pengguna berhasil diperbarui", "data", newProfile)
@@ -135,6 +142,9 @@ func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
 	userProfile, err := h.userService.GetProfile(userId)
 	if err != nil {
 		logger.Error("Failed to get my profile", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
 		return response.ResponseError(c, 500, "Gagal mendapatkan profil pengguna", "", err.Error())
 	}
 	return response.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", userProfile)
