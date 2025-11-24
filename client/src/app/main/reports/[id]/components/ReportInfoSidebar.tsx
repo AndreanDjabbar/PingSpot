@@ -3,15 +3,18 @@
 import React from 'react';
 import { IReport, ReportType } from '@/types/model/report';
 import { getFormattedDate as formattedDate } from '@/utils';
-import { useFormInformationModalStore, useUserProfileStore } from '@/stores';
+import { useConfirmationModalStore, useFormInformationModalStore, useUserProfileStore } from '@/stores';
 import { MdWarning } from 'react-icons/md';
 import { ImInfo } from 'react-icons/im';
 import { Button } from '@/components/UI';
 import { BiEdit } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
+import { IoMdTrash } from 'react-icons/io';
+import { FaTrash } from 'react-icons/fa';
 
 interface ReportInfoSidebarProps {
     report: IReport;
+    onRemoveReport: (reportID: number) => void;
     getReportTypeLabel: (type: ReportType) => string;
 }
 
@@ -60,29 +63,58 @@ const getStatusColor = (status: string) => {
 
 export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({ 
     report, 
-    getReportTypeLabel 
+    getReportTypeLabel,
+    onRemoveReport
 }) => {
     const router = useRouter();
     const userProfile = useUserProfileStore((s) => s.userProfile);
+    const openConfirm = useConfirmationModalStore((s) => s.openConfirm);
     const openFormInfo = useFormInformationModalStore((s) => s.openFormInfo);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const isReportOwner = report && currentUserId === report.userID;
     const isPotentiallyResolved = report?.reportStatus === 'POTENTIALLY_RESOLVED';
     const showWarning = isReportOwner && isPotentiallyResolved;
 
+    const openDeleteConfirm = () => {
+        openConfirm({ 
+            title: 'Hapus laporan', 
+            message: 'Yakin ingin menghapus laporan ini?', 
+            type: 'warning', 
+                icon: <FaTrash className='text-white' />,
+            confirmTitle: 'Hapus', 
+            cancelTitle: 'Batal',
+            onConfirm: () => { onDeleteClick(report.id); } 
+        });
+    }
+
+    const onDeleteClick = (reportID: number) => {
+        onRemoveReport(reportID);
+    }
+
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 lg:flex-col lg:items-start lg:gap-2 xl:items-center xl:flex-row">
                 <h3 className="font-bold text-lg text-gray-900">Informasi Laporan</h3>
                 {isReportOwner && report.hasProgress && (
-                    <Button
-                        onClick={() => router.push(`/main/reports/${report.id}/update-progress`)}
-                        icon={<BiEdit />}
-                        size='sm'
-                        disabled={report.reportStatus === 'RESOLVED' || report.reportStatus === 'EXPIRED'}
-                    >
-                        Perbarui  
-                    </Button>
+                    <div className='flex gap-2'>
+                        <Button
+                            onClick={() => router.push(`/main/reports/${report.id}/update-progress`)}
+                            icon={<BiEdit />}
+                            size='sm'
+                            disabled={report.reportStatus === 'RESOLVED' || report.reportStatus === 'EXPIRED'}
+                        >
+                            Perbarui  
+                        </Button>
+                        <Button
+                            onClick={() => openDeleteConfirm()}
+                            icon={<IoMdTrash />}
+                            size='sm'
+                            variant='danger'
+                            disabled={report.reportStatus === 'RESOLVED' || report.reportStatus === 'EXPIRED'}
+                        >
+                            Hapus  
+                        </Button>
+                    </div>
                 )}
             </div>
             <div className="space-y-3">

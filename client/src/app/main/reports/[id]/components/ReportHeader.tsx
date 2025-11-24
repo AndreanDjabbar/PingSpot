@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 
 interface ReportHeaderProps {
     report: IReport;
+    onRemoveReport: (reportId: number) => void;
 }
 
 const getReportTypeLabel = (type: ReportType): string => {
@@ -34,7 +35,10 @@ const getReportTypeLabel = (type: ReportType): string => {
     return types[type] || 'Lainnya';
 };
 
-export const ReportHeader: React.FC<ReportHeaderProps> = ({ report }) => {
+export const ReportHeader: React.FC<ReportHeaderProps> = ({
+    report,
+    onRemoveReport 
+}) => {
     const router = useRouter();
     const optionsButtonRef = React.useRef<HTMLButtonElement | null>(null);
     const userProfile = useUserProfileStore((s) => s.userProfile);
@@ -63,6 +67,22 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({ report }) => {
     const opts: OptionItem[] = [
         { label: 'Bagikan',  description: "Lihat komentar dan berikan komentar anda mengenai laporan ini", icon: <FaShare size={14} />, onClick: () => handleShare(report?.id || 0, report?.reportTitle || "") }
     ];
+
+    const onDeleteClick = (reportID: number) => {
+        onRemoveReport(reportID);
+    }
+
+    const openDeleteConfirm = () => {
+        openConfirm({ 
+            title: 'Hapus laporan', 
+            message: 'Yakin ingin menghapus laporan ini?', 
+            type: 'warning', 
+                icon: <FaTrash className='text-white' />,
+            confirmTitle: 'Hapus', 
+            cancelTitle: 'Batal',
+            onConfirm: () => { onDeleteClick(report.id); } 
+        });
+    }
 
     return (
         <div className="p-6">
@@ -110,7 +130,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({ report }) => {
                                 if (report.reportStatus !== 'RESOLVED' && report.hasProgress) {
                                     optionsToShow.push({ label: 'Perbarui Perkembangan Laporan', description: "Perbarui perkembangan laporan ini", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/update-progress`) });
                                 }
-                                optionsToShow.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openConfirm({ title: 'Hapus laporan', message: 'Yakin ingin menghapus laporan ini?', type: 'warning', onConfirm: () => { console.log('delete report', report.id); } }) });
+                                optionsToShow.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openDeleteConfirm() });
                             } else {
                                 // optionsToShow.push({ label: 'Simpan',  description: "Simpan laporan ini", icon: <FaBookmark size={14} />, onClick: () => onSave(report?.id || 0) },)
                                 optionsToShow.push({ label: 'Laporkan', icon: <FaFlag size={14} />, onClick: () => router.push(`/main/reports/${report.id}/report`) });

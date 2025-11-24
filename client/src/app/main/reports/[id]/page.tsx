@@ -12,9 +12,9 @@ import {
 import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
 import { ReportInteractionBar } from '../components/ReportInteractionBar';
 import { useUserProfileStore, useReportsStore } from '@/stores';
-import { useGetReportByID, useReactReport, useVoteReport } from '@/hooks/main';
+import { useDeleteReport, useGetReportByID, useReactReport, useVoteReport } from '@/hooks/main';
 import { useImagePreviewModalStore } from '@/stores';
-import { useErrorToast } from '@/hooks/toast';
+import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { 
     ReportHeader, 
     ReportMediaViewer, 
@@ -26,6 +26,7 @@ import {
 } from './components';
 import { ErrorSection } from '@/components/feedback';
 import { HeaderSection } from '../../components';
+import { Loading } from '@/components/UI';
 
 const getReportTypeLabel = (type: ReportType): string => {
     const types: Record<ReportType, string> = {
@@ -166,6 +167,15 @@ const ReportDetailPage = () => {
         error: voteReportError,
     } = useVoteReport();
 
+    const {
+        mutate: deleteReport,
+        data: deleteReportData,
+        isError: isDeleteReportError,
+        isSuccess: isDeleteReportSuccess,
+        error: deleteReportError,
+        isPending: deleteReportPending,
+    } = useDeleteReport();
+
     const [report, setReport] = useState(freshReportData?.data?.report?.report || null);
     
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
@@ -259,6 +269,10 @@ const ReportDetailPage = () => {
                 reactionType: 'LIKE'
             }
         });
+    }
+
+    const handleRemoveReport = (reportId: number) => {
+        deleteReport({ reportID: reportId });
     }
 
     const handleVote = async (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'ON_PROGRESS') => {
@@ -436,15 +450,36 @@ const ReportDetailPage = () => {
         console.log('Reply to:', parentId, content);
     };
 
+    useSuccessToast(
+        isDeleteReportSuccess,
+        deleteReportData || 'Laporan berhasil dihapus'
+    );
+
     useErrorToast(isFreshReportError, freshReportError);
     useErrorToast(isVoteReportError, voteReportError);
     useErrorToast(isReactReportError, getErrorResponseMessage(reactReportError) || 'Terjadi kesalahan saat bereaksi pada laporan');
+    useErrorToast(
+        isDeleteReportError, 
+        getErrorResponseMessage(deleteReportError) || 'Terjadi kesalahan saat mengambil data laporan'
+    );
 
     useEffect(() => {
         if (freshReportData?.data?.report) {
             setReport(freshReportData.data.report.report);
         }
     }, [freshReportData]);
+
+    useEffect(() => {
+        if (isDeleteReportSuccess) {
+            setTimeout(() => {
+                router.push('/main/reports');
+            }, 1500);
+        }
+    }, [deleteReportData, isDeleteReportSuccess])
+
+    if (deleteReportPending) {
+        return <Loading text='Menghapus Laporan...' size='lg' className='absolute inset-0 left-0 xl:left-60'/>
+    }
 
     if (isFreshReportLoading) {
         return <ReportDetailSkeleton />;
@@ -476,6 +511,23 @@ const ReportDetailPage = () => {
         );
     }
 
+    if (isDeleteReportError) {
+        return (
+            <div className="min-h-screen">
+                <HeaderSection
+                currentPath={customCurrentPath}
+                message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.' 
+                />
+                <div className='mt-4'>
+                    <ErrorSection
+                    message={getErrorResponseMessage(deleteReportError)}
+                    errors={getErrorResponseDetails(deleteReportError)}
+                    />
+                </div>
+            </div>
+        ) 
+    }
+
     if (!report || !freshReportData?.data?.report.report) {
         return (
             <div className="min-h-screen">
@@ -486,12 +538,10 @@ const ReportDetailPage = () => {
 
     return (
         <div className="min-h-screen ">
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-                <HeaderSection
-                currentPath={customCurrentPath}
-                message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.' 
-                />
-            </div>
+            <HeaderSection
+            currentPath={customCurrentPath}
+            message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.' 
+            />
 
             {report && freshReportData?.data?.report.report && (
 
@@ -499,7 +549,10 @@ const ReportDetailPage = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-6">
                             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                                <ReportHeader report={report} />
+                                <ReportHeader 
+                                report={report}
+                                onRemoveReport={handleRemoveReport} 
+                                />
 
                                 <ReportMediaViewer 
                                     report={report}
@@ -529,6 +582,7 @@ const ReportDetailPage = () => {
                         <div className="lg:col-span-1 space-y-6">
                             <ReportInfoSidebar 
                                 report={report}
+                                onRemoveReport={handleRemoveReport}
                                 getReportTypeLabel={getReportTypeLabel}
                             />
 
