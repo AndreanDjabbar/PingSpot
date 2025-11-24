@@ -41,7 +41,7 @@ const Button: React.FC<ButtonProps> = ({
 
     const sizeStyles: Record<ButtonSize, string> = {
         sm: 'px-3 py-2 text-sm',
-        md: 'px-6 py-2 text-base',
+        md: 'px-5 py-2 text-base',
         lg: 'px-8 py-3 text-lg',
     };
 
