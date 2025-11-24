@@ -26,7 +26,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
     commandLoading = false,
 }) => {
     return (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-12 text-center">
+        <div className="bg-white backdrop-blur-sm rounded-2xl border border-gray-200 shadow-sm p-12 text-center">
         <div className="text-5xl text-gray-300 mb-4 flex justify-center">
             {emptyIcon}
         </div>
