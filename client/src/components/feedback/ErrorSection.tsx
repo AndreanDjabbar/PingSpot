@@ -104,12 +104,14 @@ const ErrorSection: React.FC<ErrorSectionProps> = ({
                             variant='danger'
                             icon={<IoMdRefresh size={23}/>}
                             onClick={onRetry}
+                            size='sm'
                             >Coba Lagi</Button>
                         )}
                         
                         {showBackButton && onGoBack && (
                             <Button 
                             variant='secondary'
+                            size='sm'
                             icon={<IoMdArrowBack size={23}/>}
                             onClick={onGoBack}
                             >Kembali</Button>
@@ -118,6 +120,7 @@ const ErrorSection: React.FC<ErrorSectionProps> = ({
                         {showHomeButton && onGoHome && (
                             <Button 
                             variant='primary'
+                            size='sm'
                             icon={<IoMdHome size={23}/>}
                             onClick={onGoHome}
                             >Beranda</Button>
