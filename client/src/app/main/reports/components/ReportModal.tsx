@@ -12,7 +12,7 @@ import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
 import { ReportInteractionBar } from './ReportInteractionBar';
 import { BsThreeDots } from 'react-icons/bs';
-import StatusVoting from './StatusVoting';
+import ReportInformation from './ReportInformation';
 import CommentItem from './CommentItem';
 import { useReportsStore } from '@/stores';
 
@@ -284,7 +284,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                                 onShare={onShare}
                             />
 
-                            <StatusVoting
+                            <ReportInformation
                                 reportID={report?.id}
                                 onVote={(voteType: string) => onStatusVote(voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
                                 onImageClick={() => {}}
