@@ -31,7 +31,7 @@
         <circle cx="0" cy="-3" r="4" fill="#ffffff"/>
     </g>
     
-    <text x="59" y="46" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff">PS</text>
+    <text x="58" y="46" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff">PS</text>
     
-    <rect x="60" y="54" width="20" height="2" rx="1.5" fill="#ffffff" opacity="0.9"/>
+    <rect x="59" y="53" width="20" height="2" rx="1.5" fill="#ffffff" opacity="0.9"/>
 </svg>
