@@ -9,15 +9,15 @@
 }
 
 .bg-pingspot {
-    @apply bg-sky-700;
+    @apply bg-sky-800;
 }
 
 .bg-pingspot-hoverable {
-    @apply bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300;
+    @apply bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-900 transition-colors duration-300;
 }
 
 .bg-pingspot-hoverable:hover {
-    @apply bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300;
+    @apply bg-sky-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-900 transition-colors duration-300;
 }
 
 .bg-pingspot-gradient-hoverable:hover {
