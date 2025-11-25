@@ -1,7 +1,7 @@
 "use client";
 
 import { BiHome, BiX } from "react-icons/bi";
-import PingspotLogo from "../UI/PingspotLogo";
+import { PingspotLogo, ProfileBadge } from "../UI";
 import { FaMap, FaUsers } from "react-icons/fa";
 import { GoAlert } from "react-icons/go";
 import { LuActivity, LuMessageCircle } from "react-icons/lu";
@@ -9,6 +9,7 @@ import { CiSettings } from "react-icons/ci";
 import { IoMdHelpCircleOutline } from "react-icons/io";
 import { usePathname, useRouter } from "next/navigation";
 import { useGlobalStore } from "@/stores/globalStore";
+import { useUserProfileStore } from "@/stores";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -34,22 +35,34 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
     const router = useRouter();
     const currentPath = usePathname().split('/')[2] || 'home';
     const { setCurrentPage } = useGlobalStore();
+    const user = useUserProfileStore(state => state.userProfile);
 
     return (
         <>
             <div className={`
                 fixed overflow-y-auto xl:static inset-y-0 left-0 z-50 
-                ${collapsed ? 'w-16' : 'w-80'} bg-pingspot-gradient
+                ${collapsed ? 'w-16' : 'w-80'} bg-pingspot
                 transform transition-transform duration-300 ease-in-out
                 ${isOpen ? '' : '-translate-x-full xl:translate-x-0'}
             `}>
                 <div>
                     <div className="flex flex-col h-full">
-                        <div className={`justify-center ${collapsed ? 'p-4' : 'p-4'} border-b  border-white`}>
-                            <div className="flex justify-start w-full">
-                                <PingspotLogo size='200' />
-                            </div>
-
+                        <div className={`${collapsed ? 'p-4' : 'p-4'} border-b border-white`}>
+                            {collapsed ? (
+                                <div className="flex justify-center">
+                                    <PingspotLogo size='60' type="secondary"/>
+                                </div>
+                            ) : (
+                                <ProfileBadge
+                                    name={user?.username || 'User'}
+                                    email={user?.email || 'User@email.com'}
+                                    followers={123}
+                                    imageUrl={user?.profilePicture}
+                                    following={456}
+                                    size="md"
+                                    onClick={() => router.push('/main/settings/profile')}
+                                />
+                            )}
                         </div>
 
                         <nav className="flex-1 px-4 py-6 space-y-2 h-fit">
@@ -65,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                                     w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
                                     transition-all duration-200 group relative
                                     ${item.id === currentPath
-                                        ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/25' 
+                                        ? 'bg-white/20 text-gray-200' 
                                         : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
                                     }
                                     `}
@@ -75,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                                     <>
                                         <span className="ml-3 font-medium">{item.label}</span>
                                         {item.badge && (
-                                        <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
+                                        <span className="ml-auto bg-red-500 text-gray-200 text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
                                             {item.badge}
                                         </span>
                                         )}
