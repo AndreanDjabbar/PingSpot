@@ -11,12 +11,11 @@ import dynamic from 'next/dynamic';
 import { IReportImage, ReportType } from '@/types/model/report';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { ReportInteractionBar } from '@/app/main/reports/components/ReportInteractionBar';
-import StatusVoting from './StatusVoting';
+import ReportInformation from './ReportInformation';
 import { useReportsStore, useImagePreviewModalStore, useUserProfileStore } from '@/stores';
 import { useRouter } from 'next/navigation';
 import { LuNotepadText } from 'react-icons/lu';
 import { cn } from '@/lib/utils';
-import { useDeleteReport } from '@/hooks/main';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,
@@ -336,7 +335,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
 
             {report.hasProgress && (
                 <div className="border-t border-gray-200">
-                    <StatusVoting
+                    <ReportInformation
                         reportID={report.id}
                         onVote={(voteType: string) => onStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
                         onImageClick={onImageClick}
