@@ -6,6 +6,7 @@ import Stepper from "./Stepper";
 import Guide from "./Guide";
 import Loading from "./Loading";
 import Button from "./Button";
+import ProfileBadge from "./ProfileBadge";
 
 export {
     PingspotLogo,
@@ -15,5 +16,6 @@ export {
     Stepper,
     Guide,
     Loading,
-    Button
+    Button,
+    ProfileBadge
 }
