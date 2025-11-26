@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 import Sidebar from './Sidebar';
 import TopNavigation from './TopNavigation';
+import Footer from './Footer';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -16,9 +17,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     children,
     sidebarCollapsed = false, 
 }) => {
-    const [sidebarOpen, setSidebarOpen] = useState(false)
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [bottomNavHeightPosition, setBottomNavHeightPosition] = useState(0);
 
-    const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
+    const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+    const handleBottomNavHeightChange = (position: number) => {
+        setBottomNavHeightPosition(position);
+    };
 
     return (
         <div className="h-screen flex flex-col">
@@ -29,16 +35,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({
                     isOpen={sidebarOpen} 
                     onToggle={toggleSidebar} 
                     collapsed={sidebarCollapsed}
+                    onBottomNavHeightChange={handleBottomNavHeightChange}
                 />
 
                 <div className={`flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100`}>
                     <MainContent>{children}</MainContent>
+                    <Footer bottomNavHeightPosition={bottomNavHeightPosition} />
+                </div>
+
+                <div>
                 </div>
             </div>
         </div>
     )
 }
-
 
 const MainContent: React.FC<MainContentProps> = ({ children }) => {
     return (
