@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import dynamic from 'next/dynamic';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { FaMap, FaUsers } from 'react-icons/fa'
@@ -15,13 +15,15 @@ const Map = dynamic(() => import("../components/Map"), {
 
 const Homepage = () => {
     const currentPath = usePathname();
-
+    const router = useRouter();
     return (
         <div className="space-y-8">
             <HeaderSection 
             currentPath={currentPath}
             message='Kelola laporan dan pantau kondisi lingkungan sekitar Anda secara real-time.'>
-                <button className="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-sky-500/25 transition-all flex items-center space-x-2">
+                <button 
+                className="bg-pingspot-hoverable text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-sky-500/25 transition-all flex items-center space-x-2"
+                onClick={() => router.push('/main/reports/create-report')}>
                     <BiPlus className="w-5 h-5" />
                     <span>Buat Laporan Baru</span>
                 </button>
