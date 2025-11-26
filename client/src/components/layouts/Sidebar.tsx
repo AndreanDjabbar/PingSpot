@@ -10,11 +10,13 @@ import { IoMdHelpCircleOutline } from "react-icons/io";
 import { usePathname, useRouter } from "next/navigation";
 import { useGlobalStore } from "@/stores/globalStore";
 import { useUserProfileStore } from "@/stores";
+import { useEffect, useRef } from "react";
 
 interface SidebarProps {
     isOpen: boolean;
     onToggle: () => void;
     collapsed?: boolean;
+    onBottomNavHeightChange?: (position: number) => void;
 }
 
 const navigationItems = [
@@ -31,11 +33,28 @@ const bottomNavigationItems = [
     { id: 'help', label: 'Bantuan', icon: IoMdHelpCircleOutline },
 ]
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false, onBottomNavHeightChange }) => {
     const router = useRouter();
     const currentPath = usePathname().split('/')[2] || 'home';
     const { setCurrentPage } = useGlobalStore();
     const user = useUserProfileStore(state => state.userProfile);
+    const bottomNavRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const updateBorderPosition = () => {
+            if (bottomNavRef.current && onBottomNavHeightChange) {
+                const rect = bottomNavRef.current.getBoundingClientRect();
+                onBottomNavHeightChange(rect.height);
+            }
+        };
+
+        updateBorderPosition();
+        window.addEventListener('resize', updateBorderPosition);
+
+        return () => {
+            window.removeEventListener('resize', updateBorderPosition);
+        };
+    }, [collapsed, onBottomNavHeightChange]);
 
     return (
         <>
@@ -45,7 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                 transform transition-transform duration-300 ease-in-out
                 ${isOpen ? '' : '-translate-x-full xl:translate-x-0'}
             `}>
-                <div>
+                <div className="h-full flex flex-col">
                     <div className="flex flex-col h-full">
                         <div className={`${collapsed ? 'p-4' : 'p-4'} border-b border-white`}>
                             {collapsed ? (
@@ -65,65 +84,69 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false }
                             )}
                         </div>
 
-                        <nav className="flex-1 px-4 py-6 space-y-2 h-fit">
-                            {navigationItems.map((item) => (
+                        <div className="h-1/2">
+                            <nav className="flex-1 px-4 py-6 space-y-2">
+                                {navigationItems.map((item) => (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => {
+                                            router.push(`/main/${item.id}`)
+                                            setCurrentPage(item.id);
+                                            onToggle();
+                                        }}
+                                        className={`
+                                        w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
+                                        transition-all duration-200 group relative
+                                        ${item.id === currentPath
+                                            ? 'bg-white/20 text-gray-200' 
+                                            : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
+                                        }
+                                        `}
+                                    >
+                                        <item.icon className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0`} />
+                                        {!collapsed && (
+                                        <>
+                                            <span className="ml-3 font-medium">{item.label}</span>
+                                            {item.badge && (
+                                            <span className="ml-auto bg-red-500 text-gray-200 text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
+                                                {item.badge}
+                                            </span>
+                                            )}
+                                        </>
+                                        )}
+                                        {collapsed && item.badge && (
+                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                            {item.badge}
+                                        </span>
+                                        )}
+                                    </button>
+                                ))}
+                            </nav>    
+                        </div>
+
+                        <div className="h-full" ref={bottomNavRef}>
+                            <div  className="px-4 py-4 border-t border-white space-y-2">
+                                {bottomNavigationItems.map((item) => (
                                 <button
                                     key={item.id}
                                     onClick={() => {
-                                        router.push(`/main/${item.id}`)
                                         setCurrentPage(item.id);
+                                        router.push(`/main/${item.id}`)
                                         onToggle();
                                     }}
                                     className={`
                                     w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
-                                    transition-all duration-200 group relative
+                                    text-gray-200 hover:bg-gray-700/50 hover:text-gray-300 transition-colors
                                     ${item.id === currentPath
-                                        ? 'bg-white/20 text-gray-200' 
-                                        : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
-                                    }
-                                    `}
+                                            ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/25' 
+                                            : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
+                                    }`}
                                 >
                                     <item.icon className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0`} />
-                                    {!collapsed && (
-                                    <>
-                                        <span className="ml-3 font-medium">{item.label}</span>
-                                        {item.badge && (
-                                        <span className="ml-auto bg-red-500 text-gray-200 text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
-                                            {item.badge}
-                                        </span>
-                                        )}
-                                    </>
-                                    )}
-                                    {collapsed && item.badge && (
-                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                        {item.badge}
-                                    </span>
-                                    )}
+                                    {!collapsed && <span className="ml-3 font-medium">{item.label}</span>}
                                 </button>
-                            ))}
-                        </nav>
-
-                        <div className="px-4 py-4 border-t border-white space-y-2">
-                            {bottomNavigationItems.map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => {
-                                    setCurrentPage(item.id);
-                                    router.push(`/main/${item.id}`)
-                                    onToggle();
-                                }}
-                                className={`
-                                w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
-                                text-gray-200 hover:bg-gray-700/50 hover:text-gray-300 transition-colors
-                                ${item.id === currentPath
-                                        ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/25' 
-                                        : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
-                                }`}
-                            >
-                                <item.icon className={`${collapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0`} />
-                                {!collapsed && <span className="ml-3 font-medium">{item.label}</span>}
-                            </button>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
