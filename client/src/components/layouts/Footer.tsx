@@ -40,7 +40,7 @@ const Footer: React.FC<FooterProps> = ({ bottomNavHeightPosition = 0 }) => {
         ref={footerRef}
         >
             <div className="px-4 flex flex-col justify-center items">
-                <div className='flex flex-col py-4'>
+                <div className='flex flex-col py-4 px-8'>
                     <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 sm:gap-8 lg:gap-12">
                         <div className='flex gap-10 justify-between w-full items-center py-3'>
                             <div className="flex flex-col items-center lg:items-start ">
@@ -52,7 +52,7 @@ const Footer: React.FC<FooterProps> = ({ bottomNavHeightPosition = 0 }) => {
                                 </p>
                             </div>
 
-                            <div className="flex flex-col items-center lg:items-start ">
+                            <div className="flex flex-col items-center lg:items-start">
                                 <h3 className="text-white font-bold text-base sm:text-lg lg:text-xl">
                                     Hubungi Developer
                                 </h3>
