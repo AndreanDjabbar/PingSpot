@@ -12,9 +12,6 @@ import ClientLayout from "./client-layout";
 
 export const metadata = {
   title: 'PingSpot',
-  icons: {
-    icon: '/favicon.png'
-  }
 }
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
