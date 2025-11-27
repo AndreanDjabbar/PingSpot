@@ -7,6 +7,7 @@ import (
 	"server/internal/worker/cronWorker/util"
 	"server/pkg/logger"
 	"server/pkg/utils/env"
+	mainutils "server/pkg/utils/mainUtils"
 	"time"
 
 	"gorm.io/gorm"
@@ -81,6 +82,37 @@ func (h *CronHandler) ExpireOldReports() error {
 			}
 
 			logger.Info(fmt.Sprintf("Report ID %d has been marked as EXPIRED", report.ID))
+		}
+	}
+	return nil
+}
+
+func (h *CronHandler) HardDeleteOldReports() error {
+	logger.Info("Executing HardDeleteOldReports cron job")
+
+	deletedReports, err := h.reportRepo.GetByIsDeleted(true)
+	if err != nil {
+		return fmt.Errorf("failed to get soft-deleted reports: %w", err)
+	}
+	
+	now := time.Now().Unix()
+	threshold := mainutils.Int64PtrOrNil(now - (30 * 24 * 60 * 60))
+
+	for _, deletedReport := range deletedReports {
+		if deletedReport.DeletedAt != nil && threshold != nil && *deletedReport.DeletedAt <= *threshold {
+			tx := h.db.Begin()
+
+			if _, err := h.reportRepo.DeleteTX(tx, deletedReport); err != nil {
+				tx.Rollback()
+				logger.Error(fmt.Sprintf("Failed to hard delete report ID %d: %v", deletedReport.ID, err))
+				continue
+			}
+
+			if err := tx.Commit().Error; err != nil {
+				logger.Error(fmt.Sprintf("Failed to commit transaction for hard deleting report ID %d: %v", deletedReport.ID, err))
+				continue
+			}
+			logger.Info(fmt.Sprintf("Report ID %d has been hard deleted", deletedReport.ID))
 		}
 	}
 	return nil
