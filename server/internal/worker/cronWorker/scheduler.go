@@ -40,6 +40,22 @@ func StartCron(client *asynq.Client) {
 		logger.Error("Failed to schedule expire old reports task", zap.Error(err))
 	}
 
+	_, err = c.AddFunc("0 0 12 * * *", func() {
+		err := cronHandler.HardDeleteOldReports()
+		if err != nil {
+			logger.Error("Error executing hard delete reports task", zap.Error(err))
+		}
+	})
+	if err != nil {
+		logger.Error("Failed to schedule hard delete reports task", zap.Error(err))
+	}
+
+	// _, err = c.AddFunc("0 */5 * * * *", func() {
+	// })
+	// if err != nil {
+	// 	logger.Error("", zap.Error(err))
+	// }
+
 	c.Start()
 	logger.Info("Cron scheduler started")
 }
