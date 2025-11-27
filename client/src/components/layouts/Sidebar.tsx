@@ -69,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false, 
                         <div className={`${collapsed ? 'p-4' : 'p-4'} border-b border-white`}>
                             {collapsed ? (
                                 <div className="flex justify-center">
-                                    <PingspotLogo size='60' type="secondary"/>
+                                    <PingspotLogo size='60' type="full"/>
                                 </div>
                             ) : (
                                 <ProfileBadge

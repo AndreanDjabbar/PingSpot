@@ -15,16 +15,16 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ bottomNavHeightPosition = 0 }) => {
     const currentYear = new Date().getFullYear();
     const footerRef = React.useRef<HTMLDivElement>(null);
-    const [logoSize, setLogoSize] = useState("200");
+    const [logoSize, setLogoSize] = useState(200);
 
     useEffect(() => {
         const updateLogoSize = () => {
             if (window.innerWidth < 640) {
-                setLogoSize("150");
+                setLogoSize(150);
             } else if (window.innerWidth < 1024) {
-                setLogoSize("180");
+                setLogoSize(180);
             } else {
-                setLogoSize("200");
+                setLogoSize(200);
             }
         };
 
@@ -43,9 +43,9 @@ const Footer: React.FC<FooterProps> = ({ bottomNavHeightPosition = 0 }) => {
                 <div className='flex flex-col py-4 px-8'>
                     <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 sm:gap-8 lg:gap-12">
                         <div className='flex gap-10 justify-between w-full items-center py-3'>
-                            <div className="flex flex-col items-center lg:items-start ">
-                                <div className="mb-3 sm:mb-4 scale-90 sm:scale-100 origin-center lg:origin-left pl-10 lg:ml-24">
-                                    <PingspotLogo size={logoSize} type="secondary" />
+                            <div className="flex flex-col items-center">
+                                <div className="scale-90 sm:scale-100 origin-center ml-2 ">
+                                    <PingspotLogo size={logoSize} type="full" variant='primary' />
                                 </div>
                                 <p className="text-gray-300 text-xs sm:text-sm lg:text-base leading-relaxed text-center px-2 sm:px-4 lg:px-0 lg:pl-2 max-w-md">
                                     Platform pelaporan masalah infrastruktur berbasis komunitas untuk membangun lingkungan yang lebih baik bersama-sama.
@@ -91,7 +91,6 @@ const Footer: React.FC<FooterProps> = ({ bottomNavHeightPosition = 0 }) => {
                             </div>
                         </div>
                     </div>
-
                     <div className="flex flex-col items-center justify-center gap-2">
                         <div className="w-full border-t border-white/30 my-2"></div>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-gray-300 text-xs sm:text-sm lg:text-base text-center">
