@@ -31,10 +31,6 @@
         <circle cx="0" cy="-3" r="4" fill="#ffffff"/>
     </g>
     
-    <text x="58" y="46" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#3b82f6">P</text>
-    <text x="70" y="46" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff">ing</text>
-    <text x="97" y="46" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#3b82f6">S</text>
-    <text x="108" y="46" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff">pot</text>
+    <text x="58" y="51" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#ffffff">PS</text>
     
-    <rect x="59" y="53" width="78" height="2" rx="1.5" fill="#ffffff" opacity="0.9"/>
 </svg>
