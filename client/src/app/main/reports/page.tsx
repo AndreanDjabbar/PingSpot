@@ -55,7 +55,7 @@ const ReportsPage = () => {
     const setSelectedReport = useReportsStore((s) => s.setSelectedReport);
     const setReportCount = useReportsStore((s) => s.setReportCount);
     const userLocation = useLocationStore((s) => s.location);
-    const hasCoords = userLocation && userLocation?.lat !== null && userLocation?.lng !== null;
+    const hasCoords = userLocation && userLocation?.lat !== null && userLocation?.lat !== '' && userLocation?.lng !== null && userLocation?.lng !== '';
     const { requestLocation, loading: loadingRequestLocation, permissionDenied, isPermissionDenied, } = useCurrentLocation();
 
     const router = useRouter();
