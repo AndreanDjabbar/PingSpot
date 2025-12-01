@@ -24,3 +24,7 @@ func GoogleCallbackURL() string { return os.Getenv("GOOGLE_CALLBACK_URL") }
 func GoogleSecretSessionKey() string { return os.Getenv("GOOGLE_SECRET_SESSION_KEY") }
 func IsProduction() bool { return os.Getenv("IS_PRODUCTION") == "true" }
 func IsHTTPOnly() bool { return os.Getenv("HTTP_ONLY") == "true" }
+func MongoUser() string { return os.Getenv("MONGO_USER") }
+func MongoHost() string { return os.Getenv("MONGO_HOST") }
+func MongoPort() string { return os.Getenv("MONGO_PORT") }
+func MongoPassword() string { return os.Getenv("MONGO_PASSWORD") }
