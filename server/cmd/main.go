@@ -37,6 +37,12 @@ func main() {
 		panic(fmt.Sprintf("failed to initialize PostgreSQL: %v", err))
 	}
 
+	mongoConfig := config.LoadMongoDBConfig()
+	if err := database.InitMongoDB(mongoConfig); err != nil {
+		logger.Error("Failed to initialize MongoDB", zap.Error(err))
+		panic(fmt.Sprintf("failed to initialize MongoDB: %v", err))
+	}
+
 	redisConfig := config.LoadRedisConfig()
 	if err := cache.InitRedis(redisConfig); err != nil {
 		logger.Error("Failed to initialize Redis", zap.Error(err))
