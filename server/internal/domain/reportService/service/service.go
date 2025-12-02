@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"server/internal/domain/model"
@@ -14,6 +15,7 @@ import (
 	mainutils "server/pkg/utils/mainUtils"
 	"time"
 
+	"go.mongodb.org/mongo-driver/v2/mongo"
 	"gorm.io/gorm"
 )
 
@@ -27,9 +29,21 @@ type ReportService struct {
 	tasksService       tasksService.TaskService
 	userRepo           userRepository.UserRepository
 	userProfileRepo    userRepository.UserProfileRepository
+	reportCommentRepo  reportRepository.ReportCommentRepository
 }
 
-func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo reportRepository.ReportLocationRepository, reportReaction reportRepository.ReportReactionRepository, imageRepo reportRepository.ReportImageRepository, userRepo userRepository.UserRepository, userProfileRepo userRepository.UserProfileRepository, reportProgressRepo reportRepository.ReportProgressRepository, reportVoteRepo reportRepository.ReportVoteRepository, tasksService tasksService.TaskService) *ReportService {
+func NewreportService(
+	reportRepo reportRepository.ReportRepository, 
+	locationRepo reportRepository.ReportLocationRepository, 
+	reportReaction reportRepository.ReportReactionRepository, 
+	imageRepo reportRepository.ReportImageRepository, 
+	userRepo userRepository.UserRepository, 
+	userProfileRepo userRepository.UserProfileRepository, 
+	reportProgressRepo reportRepository.ReportProgressRepository, 
+	reportVoteRepo reportRepository.ReportVoteRepository, 
+	tasksService tasksService.TaskService, 
+	reportCommentRepo reportRepository.ReportCommentRepository,
+	) *ReportService {
 	return &ReportService{
 		reportRepo:         reportRepo,
 		reportLocationRepo: locationRepo,
@@ -40,6 +54,7 @@ func NewreportService(reportRepo reportRepository.ReportRepository, locationRepo
 		userProfileRepo:    userProfileRepo,
 		reportVoteRepo:     reportVoteRepo,
 		tasksService:       tasksService,
+		reportCommentRepo:  reportCommentRepo,
 	}
 }
 
@@ -923,4 +938,94 @@ func (s *ReportService) GetProgressReports(reportID uint) ([]dto.GetProgressRepo
 		})
 	}
 	return response, nil
+}
+
+func (s *ReportService) CreateReportCommentService(db *mongo.Client, userID, reportID uint, req dto.CreateReportCommentRequest) (*dto.CreateReportCommentResponse, error) {
+	ctx := context.Background()
+
+	report, err := s.reportRepo.GetByID(reportID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.New(404, "REPORT_NOT_FOUND", "Laporan tidak ditemukan")
+		}
+		return nil, apperror.New(500, "REPORT_FETCH_FAILED", "Gagal mengambil laporan")
+	}
+
+	if report.IsDeleted != nil && *report.IsDeleted {
+		return nil, apperror.New(400, "REPORT_DELETED", "Tidak dapat menambahkan komentar pada laporan yang telah dihapus")
+	}
+
+	if report.ReportStatus == model.EXPIRED {
+		return nil, apperror.New(400, "REPORT_EXPIRED", "Tidak dapat menambahkan komentar pada laporan yang telah kedaluwarsa")
+	}
+
+	parentCommentIDObj, err := mainutils.StringPtrToObjectIDPtr(req.ParentCommentID)
+	if err != nil {
+		return nil, apperror.New(400, "INVALID_PARENT_COMMENT_ID", "ID komentar induk tidak valid")
+	}
+
+	threadRootIDObj, err := mainutils.StringPtrToObjectIDPtr(req.ThreadRootID)
+	if err != nil {
+		return nil, apperror.New(400, "INVALID_THREAD_ROOT_ID", "ID akar thread tidak valid")
+	}
+	commentMediaType := model.CommentMediaType(*req.MediaType)
+
+	// for _, userMentioned := range req.Mentions {
+	// 	user, err := s.userRepo.GetByID(userMentioned)
+	// 	if err != nil {
+	// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 			continue
+	// 		}
+	// 		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data pengguna yang disebutkan")
+	// 	}
+
+	// }
+
+	reportCommentMedia := &model.CommentMedia{
+		URL: *req.MediaURL,
+		Type: commentMediaType,
+		Width: req.MediaWidth,
+		Height: req.MediaHeight,
+	}
+
+	var reportComment model.ReportComment
+	reportComment = model.ReportComment{
+		ReportID:        reportID,
+		UserID:          userID,
+		Content:         req.Content,
+		CreatedAt:       time.Now().Unix(),
+		Media: reportCommentMedia,
+		UpdatedAt:       mainutils.Int64PtrOrNil(time.Now().Unix()),
+		Mentions:        req.Mentions,
+		ParentCommentID: parentCommentIDObj,
+		ThreadRootID:    threadRootIDObj,
+	}
+
+	reportCommentCreated, err := s.reportCommentRepo.Create(ctx, &reportComment)
+	if err != nil {
+		return nil, apperror.New(500, "COMMENT_CREATE_FAILED", "Gagal membuat komentar laporan")
+	}
+	newCommentID := reportCommentCreated.ID.Hex()
+
+	var parentCommentIDStr *string
+	if reportCommentCreated.ParentCommentID != nil {
+		hexValue := reportCommentCreated.ParentCommentID.Hex()
+		parentCommentIDStr = &hexValue
+	}
+
+	var threadRootIDStr *string
+	if reportCommentCreated.ThreadRootID != nil {
+		hexValue := reportCommentCreated.ThreadRootID.Hex()
+		threadRootIDStr = &hexValue
+	}
+
+	return &dto.CreateReportCommentResponse{
+		CommentID:       newCommentID,
+		ReportID:        reportCommentCreated.ReportID,
+		UserID:          reportCommentCreated.UserID,
+		CreatedAt:       reportComment.CreatedAt,
+		Content:         reportComment.Content,
+		ParentCommentID: parentCommentIDStr,
+		ThreadRootID:    threadRootIDStr,
+	}, nil
 }
