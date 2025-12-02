@@ -13,8 +13,8 @@ const (
 type CommentMedia struct {
 	URL 	string `bson:"url"`
 	Type	CommentMediaType `bson:"type"`
-	Width 	*int    `bson:"width,omitempty"`
-	Height 	*int    `bson:"height,omitempty"`
+	Width 	*uint    `bson:"width,omitempty"`
+	Height 	*uint    `bson:"height,omitempty"`
 }
 
 type ReportComment struct {
