@@ -691,3 +691,148 @@ func (h *ReportHandler) DeleteReportHandler(c *fiber.Ctx) error {
 		"reportID": uintReportID,
 	})
 }
+
+func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
+	logger.Info("CREATE REPORT COMMENT HANDLER")
+	reportIDParam := c.Params("reportID")
+	uintReportID, err := mainutils.StringToUint(reportIDParam)
+	if err != nil {
+		logger.Error("Invalid reportID format", zap.String("reportID", reportIDParam), zap.Error(err))
+		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
+	}
+
+	claims, err := mainutils.GetJWTClaims(c)
+	if err != nil {
+		logger.Error("Failed to get JWT claims", zap.Error(err))
+		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
+	}
+	userID := uint(claims["user_id"].(float64))
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		logger.Error("Failed to parse multipart form", zap.Error(err))
+		return response.ResponseError(c, 400, "Format body request tidak valid", "", err.Error())
+	}
+
+	content := c.FormValue("content")
+	mediaURL := c.FormValue("mediaURL")
+	mediaType := c.FormValue("mediaType")
+	mediaWidthStr := c.FormValue("mediaWidth")
+	mediaHeightStr := c.FormValue("mediaHeight")
+	parentCommentIDStr := c.FormValue("parentCommentID")
+	threadRootIDStr := c.FormValue("threadRootID")
+	mentionsSTR := c.FormValue("mentions")
+	files := form.File["mediaFile"]
+
+	if len(files) != 0 && len(files) > 0 && mediaType == "" {
+		logger.Error("Media type is required when media file is provided")
+		return response.ResponseError(c, 400, "mediaType wajib diisi jika mengunggah file media", "", "Isi mediaType sesuai dengan jenis file media yang diunggah")
+	}
+
+	if len(files) > 1 {
+		logger.Error("Too many media files", zap.Int("count", len(files)))
+		return response.ResponseError(c, 400, "Terlalu banyak file media", "", "Hanya boleh mengunggah 1 file media")
+	}
+
+	var mentions []uint 
+	var mediaWidth, mediaHeight *uint
+
+	mediaWidthVal, err := mainutils.StringToUint(mediaWidthStr)
+	if err != nil && mediaWidthStr != "" {
+		logger.Error("Invalid mediaWidth format", zap.String("mediaWidth", mediaWidthStr), zap.Error(err))
+		return response.ResponseError(c, 400, "Format mediaWidth tidak valid", "", "mediaWidth harus berupa angka")
+	}
+
+	if mediaWidthStr != "" {
+		mediaWidth = &mediaWidthVal
+	}
+
+	mediaHeightVal, err := mainutils.StringToUint(mediaHeightStr)
+	if err != nil && mediaHeightStr != "" {
+		logger.Error("Invalid mediaHeight format", zap.String("mediaHeight", mediaHeightStr), zap.Error(err))
+		return response.ResponseError(c, 400, "Format mediaHeight tidak valid", "", "mediaHeight harus berupa angka")
+	}
+
+	if mediaHeightStr != "" {
+		mediaHeight = &mediaHeightVal
+	}
+
+	if mentionsSTR != "" {
+		if err := json.Unmarshal([]byte(mentionsSTR), &mentions); err != nil {
+			logger.Error("Failed to unmarshal mentions", zap.String("mentions", mentionsSTR), zap.Error(err))
+			return response.ResponseError(c, 400, "Format mentions tidak valid", "", "mentions harus berupa array of angka")
+		}
+	}
+
+	validExtensions := map[string]bool{
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+		".webp": true,
+	}
+
+	validMimeTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/jpg":  true,
+		"image/png":  true,
+		"image/webp": true,
+	}	
+	imageName := ""
+	for _, file := range files {
+		if file.Size > 3*1024*1024 {
+			logger.Error("Media file size too large", zap.Int64("size", file.Size))
+			return response.ResponseError(c, 400, "Ukuran file media terlalu besar", "", "Maksimal ukuran file media 3MB")
+		}
+
+		ext := strings.ToLower(filepath.Ext(file.Filename))
+		if !validExtensions[ext] {
+			logger.Error("Unsupported image extension", zap.String("extension", ext))
+			return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
+		}
+
+		contentType := file.Header.Get("Content-Type")
+		if !validMimeTypes[contentType] {
+			logger.Error("Invalid content type", zap.String("mime", contentType))
+			return response.ResponseError(c, 400, "Format file tidak didukung", "", "Gunakan JPG atau PNG")
+		}
+		fileName := fmt.Sprintf("%d%d%s", time.Now().UnixNano(), uintReportID, ext)
+		imageName = fileName
+		savePath := filepath.Join("uploads/main/report/comments", fileName)
+		if err := c.SaveFile(file, savePath); err != nil {
+			logger.Error("Failed to save media file", zap.Error(err))
+			return response.ResponseError(c, 500, "Gagal menyimpan file media", "", err.Error())
+		}
+	}
+
+	if mediaType == "IMAGE" && imageName != "" {
+		mediaURL = imageName
+	}
+
+	req := dto.CreateReportCommentRequest{
+		Content:         mainutils.StrPtrOrNil(content),
+		MediaURL: 		mainutils.StrPtrOrNil(mediaURL),
+		MediaType:      mainutils.StrPtrOrNil(mediaType),
+		MediaWidth:   	mediaWidth,
+		MediaHeight:   	mediaHeight,
+		ParentCommentID: mainutils.StrPtrOrNil(parentCommentIDStr),
+		ThreadRootID:    mainutils.StrPtrOrNil(threadRootIDStr),
+		Mentions:        mentions,	
+	}
+
+	if err := validation.Validate.Struct(req); err != nil {
+		errors := validation.FormatCreateReportCommentValidationErrors(err)
+		logger.Error("Validation failed", zap.Error(err))
+		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
+	}
+	db := database.GetMongoDB()
+
+	newComment, err := h.reportService.CreateReportCommentService(db, userID, uintReportID, req)
+	if err != nil {
+		os.Remove(filepath.Join("uploads/main/report/comments", imageName))
+		logger.Error("Failed to create report comment", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
+	}
+	return response.ResponseSuccess(c, 200, "Komentar laporan berhasil dibuat", "data", newComment)
+}
