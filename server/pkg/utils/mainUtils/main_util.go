@@ -13,6 +13,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
 )
@@ -266,6 +267,17 @@ func StringToFloat64(s string) (float64, error) {
 	}
 
 	return value, nil
+}
+
+func StringPtrToObjectIDPtr(s *string) (*primitive.ObjectID, error) {
+	if s == nil || *s == "" {
+		return nil, nil
+	}
+	objectID, err := primitive.ObjectIDFromHex(*s)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert string to ObjectID: %w", err)
+	}
+	return &objectID, nil
 }
 
 func StringToBool(s string) (*bool, error) {
