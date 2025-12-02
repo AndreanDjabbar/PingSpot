@@ -16,21 +16,24 @@ import (
 )
 
 func RegisterReportRoutes(app *fiber.App) {
-	database := database.GetPostgresDB()
-	reportRepo := reportRepository.NewReportRepository(database)
-	reportLocationRepo := reportRepository.NewReportLocationRepository(database)
-	reportImageRepo := reportRepository.NewReportImageRepository(database)
-	reportReactionRepo := reportRepository.NewReportReactionRepository(database)
-	reportVoteRepo := reportRepository.NewReportVoteRepository(database)
-	reportProgressRepo := reportRepository.NewReportProgressRepository(database)
-	userProfileRepo := userRepository.NewUserProfileRepository(database)
-	userRepo := userRepository.NewUserRepository(database)
+	postgreDB := database.GetPostgresDB()
+	mongoDB := database.GetMongoDB()
+
+	reportRepo := reportRepository.NewReportRepository(postgreDB)
+	reportLocationRepo := reportRepository.NewReportLocationRepository(postgreDB)
+	reportImageRepo := reportRepository.NewReportImageRepository(postgreDB)
+	reportReactionRepo := reportRepository.NewReportReactionRepository(postgreDB)
+	reportVoteRepo := reportRepository.NewReportVoteRepository(postgreDB)
+	reportProgressRepo := reportRepository.NewReportProgressRepository(postgreDB)
+	userProfileRepo := userRepository.NewUserProfileRepository(postgreDB)
+	userRepo := userRepository.NewUserRepository(postgreDB)
+	reportCommentRepository := reportRepository.NewReportCommentRepository(mongoDB)
 
 	redisAddress := fmt.Sprintf("%s:%s", env.RedisHost(), env.RedisPort())
 	client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddress})
 	tasksService := service.NewTaskService(client, reportRepo)
 
-	reportService := reportService.NewreportService(reportRepo, reportLocationRepo, reportReactionRepo, reportImageRepo, userRepo, userProfileRepo, reportProgressRepo, reportVoteRepo, *tasksService)
+	reportService := reportService.NewreportService(reportRepo, reportLocationRepo, reportReactionRepo, reportImageRepo, userRepo, userProfileRepo, reportProgressRepo, reportVoteRepo, *tasksService, reportCommentRepository)
 
 	reportHandler := handler.NewReportHandler(reportService)
 
@@ -43,4 +46,5 @@ func RegisterReportRoutes(app *fiber.App) {
 	reportRoute.Post("/:reportID/progress", reportHandler.UploadProgressReportHandler)
 	reportRoute.Get("/:reportID/progress", reportHandler.GetProgressReportHandler)
 	reportRoute.Delete("/:reportID", reportHandler.DeleteReportHandler)
+	reportRoute.Post("/:reportID/comment", reportHandler.CreateReportCommentHandler)
 }
