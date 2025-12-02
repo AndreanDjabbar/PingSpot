@@ -84,3 +84,10 @@ type ReportImage struct {
 	Image4URL *string `json:"image4URL"`
 	Image5URL *string `json:"image5URL"`
 }
+
+type CommentMediaType struct {
+	URL 	string  `json:"url"`
+	Type	string  `json:"type"`
+	Width 	*uint    `json:"width,omitempty"`
+	Height 	*uint    `json:"height,omitempty"`
+}

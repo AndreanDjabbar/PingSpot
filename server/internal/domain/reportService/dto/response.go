@@ -62,3 +62,14 @@ type GetProgressReportResponse struct {
 	Attachment2 *string `json:"attachment2"`
 	CreatedAt   int64   `json:"createdAt"`
 }
+
+type CreateReportCommentResponse struct {
+	CommentID      string `json:"commentID"`
+	ReportID       uint   `json:"reportID"`
+	UserID         uint   `json:"userID"`
+	Content        *string `json:"content,omitempty"`
+	CreatedAt      int64  `json:"createdAt"`
+	Media 	   	  *CommentMediaType `json:"media,omitempty"`
+	ParentCommentID *string `json:"parentCommentID,omitempty"`
+	ThreadRootID    *string `json:"threadRootID,omitempty"`
+}
