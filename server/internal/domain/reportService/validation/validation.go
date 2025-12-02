@@ -298,3 +298,71 @@ func FormatUploadProgressReportValidationErrors(err error) map[string]string {
 	}
 	return errors
 }
+
+func FormatCreateReportCommentValidationErrors(err error) map[string]string {
+	errors := map[string]string{}
+	if err == nil {
+		return errors
+	}
+	for _, e := range err.(validator.ValidationErrors) {
+		switch e.Field() {
+		case "Content":
+			if e.Tag() == "omitempty" {
+				errors["content"] = "Konten tidak valid"
+			}
+			if e.Tag() == "max" {
+				errors["content"] = "Konten maksimal 1000 karakter"
+			}
+		case "MediaURL":
+			if e.Tag() == "omitempty" {
+				errors["mediaURL"] = "Media URL tidak valid"
+			}
+			if e.Tag() == "max" {
+				errors["mediaURL"] = "Media URL maksimal 255 karakter"
+			}
+		case "MediaType":
+			if e.Tag() == "omitempty" {
+				errors["mediaType"] = "Tipe media tidak valid"
+			}
+			if e.Tag() == "oneof" {
+				errors["mediaType"] = "Tipe media harus salah satu antara IMAGE, GIF, VIDEO"
+			}
+		case "MediaWidth":
+			if e.Tag() == "omitempty" {
+				errors["mediaWidth"] = "Media width tidak valid"
+			}
+			if e.Tag() == "min" {
+				errors["mediaWidth"] = "Media width minimal 1"
+			}
+		case "MediaHeight":
+			if e.Tag() == "omitempty" {
+				errors["mediaHeight"] = "Media height tidak valid"
+			}
+			if e.Tag() == "min" {
+				errors["mediaHeight"] = "Media height minimal 1"
+			}
+		case "Mentions":
+			if e.Tag() == "omitempty" {
+				errors["mentions"] = "Mentions tidak valid"
+			}
+			if e.Tag() == "dive" || e.Tag() == "gt" {
+				errors["mentions"] = "Mentions harus berisi ID user yang valid"
+			}
+		case "ParentCommentID":
+			if e.Tag() == "omitempty" {
+				errors["parentCommentID"] = "Parent comment ID tidak valid"
+			}
+			if e.Tag() == "len" {
+				errors["parentCommentID"] = "Parent comment ID harus memiliki panjang 24 karakter"
+			}
+		case "ThreadRootID":
+			if e.Tag() == "omitempty" {
+				errors["threadRootID"] = "Thread root ID tidak valid"
+			}
+			if e.Tag() == "len" {
+				errors["threadRootID"] = "Thread root ID harus memiliki panjang 24 karakter"
+			}
+		}
+	}
+	return errors
+}
