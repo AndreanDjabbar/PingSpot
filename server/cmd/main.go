@@ -72,6 +72,10 @@ func main() {
 		if err := os.MkdirAll("uploads/main/report/progress", os.ModePerm); err != nil {
 			logger.Error("Failed to create uploads/main/report/progress directory", zap.Error(err))
 		}
+		
+		if err := os.MkdirAll("uploads/main/report/comments", os.ModePerm); err != nil {
+			logger.Error("Failed to create uploads/main/report/comments directory", zap.Error(err))
+		}
 	}
 
 	redisAddr := fmt.Sprintf("%s:%s", redisConfig.Host, redisConfig.Port)
