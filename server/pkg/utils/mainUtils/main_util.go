@@ -280,6 +280,14 @@ func StringPtrToObjectIDPtr(s *string) (*primitive.ObjectID, error) {
 	return &objectID, nil
 }
 
+func ObjectIDPtrToStringPtr(id *primitive.ObjectID) *string {
+	if id == nil {
+		return nil
+	}
+	s := id.Hex()
+	return &s
+}
+
 func StringToBool(s string) (*bool, error) {
 	if s == "" {
 		return nil, nil
