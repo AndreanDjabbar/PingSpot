@@ -47,4 +47,5 @@ func RegisterReportRoutes(app *fiber.App) {
 	reportRoute.Get("/:reportID/progress", reportHandler.GetProgressReportHandler)
 	reportRoute.Delete("/:reportID", reportHandler.DeleteReportHandler)
 	reportRoute.Post("/:reportID/comment", reportHandler.CreateReportCommentHandler)
+	reportRoute.Get("/:reportID/comment", reportHandler.GetReportCommentsHandler)
 }
