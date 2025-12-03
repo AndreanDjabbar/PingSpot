@@ -9,6 +9,7 @@ import (
 type UserRepository interface {
 	UpdateByEmail(email string, updatedUser *model.User) (*model.User, error)
 	GetByID(userID uint) (*model.User, error)
+    GetByIDs(userIDs []uint) ([]model.User, error)
 	GetByEmail(email string) (*model.User, error)
 	Save(user *model.User) error
 	Create(user *model.User) error
@@ -31,6 +32,16 @@ func (r *userRepository) Get() (*[]model.User, error) {
         return nil, err
     }
     return &users, nil
+}
+
+func (r *userRepository) GetByIDs(userIDs []uint) ([]model.User, error) {
+    var users []model.User
+    if err := r.db.
+    Preload("Profile").
+    Where("id IN ?", userIDs).Find(&users).Error; err != nil {
+        return nil, err
+    }
+    return users, nil
 }
 
 func (r *userRepository) GetByEmail(email string) (*model.User, error) {
