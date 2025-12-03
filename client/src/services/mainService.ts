@@ -6,6 +6,7 @@ import {
     IEditReportResponse,
     IGetProgressReportResponse,
     IGetReportByIDResponse,
+    IGetReportCommentsResponse,
     IGetReportResponse,
     IReactReportRequest,
     IReactReportResponse,
@@ -94,6 +95,27 @@ export const getReportService = async (
     const queryString = params.toString() ? `?${params.toString()}` : '';
     
     const response = await axios.get<IGetReportResponse>(`${MAIN_API_URL}/report${queryString}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${authToken || ''}`
+        }
+    });
+    return response.data;
+}
+
+export const getReportCommentsService = async (
+    cursorID?: number,
+    reportID?: number,
+): Promise<IGetReportCommentsResponse> => {
+    const authToken = getAuthToken();
+    const params = new URLSearchParams();
+
+    if (cursorID) params.append('cursorID', cursorID.toString());
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    
+    const response = await axios.get<IGetReportCommentsResponse>(`${MAIN_API_URL}/report/${reportID}/comment/${queryString}`, {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
