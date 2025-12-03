@@ -9,10 +9,10 @@ import {
     isInternalServerError, 
     getImageURL,
 } from '@/utils';
-import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
+import { ReportType, IReportImage, IReportComment } from '@/types/model/report';
 import { ReportInteractionBar } from '../components/ReportInteractionBar';
-import { useUserProfileStore, useReportsStore } from '@/stores';
-import { useDeleteReport, useGetReportByID, useReactReport, useVoteReport } from '@/hooks/main';
+import { useUserProfileStore, useReportsStore, useReportCommentStore } from '@/stores';
+import { useDeleteReport, useGetReportByID, useReactReport, useVoteReport, useGetReportComments } from '@/hooks/main';
 import { useImagePreviewModalStore } from '@/stores';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { 
@@ -59,79 +59,85 @@ const getReportImages = (images: IReportImage): string[] => {
     ].filter((url): url is string => typeof url === 'string');
 };
 
-const dummyComments: ICommentType[] = [
-    {
-        id: 1,
-        content: "Terima kasih laporannya! Saya juga merasakan hal yang sama di area tersebut. Semoga segera ditindaklanjuti oleh pihak terkait.",
-        createdAt: Date.now() - 86400000,
-        updatedAt: Date.now() - 86400000,
-        userId: 101,
-        userName: "budisantoso",
-        fullName: "Budi Santoso",
-        profilePicture: "",
-        parentId: undefined,
-        replies: [
-            {
-                id: 4,
-                content: "Setuju! Saya sudah melapor juga beberapa kali tapi belum ada tindakan.",
-                createdAt: Date.now() - 43200000,
-                updatedAt: Date.now() - 43200000,
-                userId: 104,
-                userName: "dewilestari",
-                fullName: "Dewi Lestari",
-                profilePicture: "",
-                parentId: 1,
-            }
-        ]
-    },
-    {
-        id: 2,
-        content: "Lokasi ini memang sudah lama bermasalah. Sudah beberapa kali saya lewat dan kondisinya semakin parah. Tolong segera diperbaiki 🙏",
-        createdAt: Date.now() - 172800000,
-        updatedAt: Date.now() - 172800000,
-        userId: 102,
-        userName: "sitinurhayati",
-        fullName: "Siti Nurhayati",
-        profilePicture: "",
-        parentId: undefined,
-        replies: []
-    },
-    {
-        id: 3,
-        content: "Saya mendukung laporan ini. Situasinya benar-benar mengganggu dan perlu perhatian serius dari pemerintah daerah.",
-        createdAt: Date.now() - 259200000, // 3 days ago
-        updatedAt: Date.now() - 259200000,
-        userId: 103,
-        userName: "ahmadwijaya",
-        fullName: "Ahmad Wijaya",
-        profilePicture: "",
-        parentId: undefined,
-        replies: [
-            {
-                id: 5,
-                content: "Betul sekali! Saya juga sudah menghubungi RT setempat.",
-                createdAt: Date.now() - 129600000, // 1.5 days ago
-                updatedAt: Date.now() - 129600000,
-                userId: 105,
-                userName: "rina.pratiwi",
-                fullName: "Rina Pratiwi",
-                profilePicture: "",
-                parentId: 3,
-            },
-            {
-                id: 6,
-                content: "Semoga dengan banyaknya laporan, masalah ini segera teratasi.",
-                createdAt: Date.now() - 86400000, // 1 day ago
-                updatedAt: Date.now() - 86400000,
-                userId: 106,
-                userName: "jokoprasetyo",
-                fullName: "Joko Prasetyo",
-                profilePicture: "",
-                parentId: 3,
-            }
-        ]
-    },
-];
+// const dummyComments: IReportComment[] = [
+//     {
+//         commentID: '1',
+//         content: "Terima kasih laporannya! Saya juga merasakan hal yang sama di area tersebut. Semoga segera ditindaklanjuti oleh pihak terkait.",
+//         createdAt: Date.now() - 86400000,
+//         updatedAt: Date.now() - 86400000,
+//         userID: 101,
+//         userName: "budisantoso",
+//         fullName: "Budi Santoso",
+//         profilePicture: "",
+//         reportID: 0,
+//         parentCommentID: undefined,
+//         replies: [
+//             {
+//                 commentID: "4",
+//                 content: "Setuju! Saya sudah melapor juga beberapa kali tapi belum ada tindakan.",
+//                 createdAt: Date.now() - 43200000,
+//                 updatedAt: Date.now() - 43200000,
+//                 userID: 104,
+//                 reportID: 0,
+//                 userName: "dewilestari",
+//                 fullName: "Dewi Lestari",
+//                 profilePicture: "",
+//                 parentCommentID: "1",
+//             }
+//         ]
+//     },
+//     {
+//         commentID: '2',
+//         reportID: 0,
+//         content: "Lokasi ini memang sudah lama bermasalah. Sudah beberapa kali saya lewat dan kondisinya semakin parah. Tolong segera diperbaiki 🙏",
+//         createdAt: Date.now() - 172800000,
+//         updatedAt: Date.now() - 172800000,
+//         userID: 102,
+//         userName: "sitinurhayati",
+//         fullName: "Siti Nurhayati",
+//         profilePicture: "",
+//         parentCommentID: undefined,
+//         replies: []
+//     },
+//     {
+//         commentID: '3',
+//         content: "Saya mendukung laporan ini. Situasinya benar-benar mengganggu dan perlu perhatian serius dari pemerintah daerah.",
+//         createdAt: Date.now() - 259200000, // 3 days ago
+//         updatedAt: Date.now() - 259200000,
+//         userID: 103,
+//         userName: "ahmadwijaya",
+//         fullName: "Ahmad Wijaya",
+//         profilePicture: "",
+//         reportID: 0,
+//         parentCommentID: undefined,
+//         replies: [
+//             {
+//                 commentID: '5',
+//                 content: "Betul sekali! Saya juga sudah menghubungi RT setempat.",
+//                 createdAt: Date.now() - 129600000,
+//                 updatedAt: Date.now() - 129600000,
+//                 userID: 105,
+//                 userName: "rina.pratiwi",
+//                 fullName: "Rina Pratiwi",
+//                 profilePicture: "",
+//                 reportID: 0,
+//                 parentCommentID: '3',
+//             },
+//             {
+//                 commentID: '6',
+//                 content: "Semoga dengan banyaknya laporan, masalah ini segera teratasi.",
+//                 createdAt: Date.now() - 86400000, // 1 day ago
+//                 updatedAt: Date.now() - 86400000,
+//                 userID: 106,
+//                 userName: "jokoprasetyo",
+//                 fullName: "Joko Prasetyo",
+//                 profilePicture: "",
+//                 parentCommentID: '3',
+//                 reportID: 0,
+//             }
+//         ]
+//     },
+// ];
 
 const ReportDetailPage = () => {
     const params = useParams();
@@ -146,6 +152,8 @@ const ReportDetailPage = () => {
     const selectedReport = useReportsStore((s) => s.selectedReport);
     const setSelectedReport = useReportsStore((s) => s.setSelectedReport);
     const userProfile = useUserProfileStore((s) => s.userProfile);
+    const reportComments = useReportCommentStore((s) => s.reportComments);
+    const setReportComments = useReportCommentStore((s) => s.setReportComments);
 
     const { 
         data: freshReportData,
@@ -155,6 +163,19 @@ const ReportDetailPage = () => {
         refetch: freshReportRefetch,
     } = useGetReportByID(reportId);
     
+    const { 
+            data: getReportCommentsData, 
+            isLoading: getReportCommentsLoading, 
+            isSuccess: isGetReportCommentsSuccess,
+            isError: isGetReportCommentsError, 
+            error: getReportCommentsError,
+            fetchNextPage,
+            hasNextPage,
+            isFetchingNextPage,
+            refetch: refetchGetReportComments,
+        } = useGetReportComments(reportId
+        );
+
     const { 
         mutate: reactReport, 
         isError: isReactReportError,  
@@ -189,8 +210,8 @@ const ReportDetailPage = () => {
     );
     
     const displayComments = useMemo(() => 
-        report?.comments && report.comments.length > 0 ? report.comments : dummyComments,
-        [report?.comments]
+        reportComments,
+        [reportComments]
     );
     
     const percentages = useMemo(() => {
@@ -470,6 +491,14 @@ const ReportDetailPage = () => {
     }, [freshReportData]);
 
     useEffect(() => {
+        if (isGetReportCommentsSuccess && getReportCommentsData) {
+            const allComments = getReportCommentsData.pages.flatMap(page => page.data?.comments.comments || []);
+            console.log('Loaded comments:', allComments);
+            setReportComments(allComments);
+        }
+    }, [isGetReportCommentsSuccess, getReportCommentsData]);
+
+    useEffect(() => {
         if (isDeleteReportSuccess) {
             setTimeout(() => {
                 router.push('/main/reports');
@@ -528,6 +557,23 @@ const ReportDetailPage = () => {
         ) 
     }
 
+    if (isGetReportCommentsError) {
+        return (
+            <div className="min-h-screen">
+                <HeaderSection
+                currentPath={customCurrentPath}
+                message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.' 
+                />
+                <div className='mt-4'>
+                    <ErrorSection
+                    message={getErrorResponseMessage(getReportCommentsError)}
+                    errors={getErrorResponseDetails(getReportCommentsError)}
+                    />
+                </div>
+            </div>
+        )
+    }
+
     if (!report || !freshReportData?.data?.report.report) {
         return (
             <div className="min-h-screen">
@@ -572,11 +618,17 @@ const ReportDetailPage = () => {
                                 </div>
                             </div>
 
-                            <ReportCommentsSection
-                                comments={displayComments}
-                                onSubmitComment={handleSubmitComment}
-                                onReply={handleReply}
-                            />
+                            {getReportCommentsLoading ? (
+                                <div className="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+                                    <p className="text-gray-500">Memuat komentar...</p>
+                                </div>
+                            ): (
+                                <ReportCommentsSection
+                                    comments={displayComments}
+                                    onSubmitComment={handleSubmitComment}
+                                    onReply={handleReply}
+                                />
+                            )}
                         </div>
 
                         <div className="lg:col-span-1 space-y-6">

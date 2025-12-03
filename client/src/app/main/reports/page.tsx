@@ -5,7 +5,7 @@ import { BiPlus } from 'react-icons/bi';
 import HeaderSection from '../components/HeaderSection';
 import { useRouter } from 'next/navigation';
 import { ErrorSection } from '@/components/feedback';
-import { useDeleteReport, useGetReport, useReactReport } from '@/hooks/main';
+import { useDeleteReport, useGetReport, useReactReport, useGetReportComments } from '@/hooks/main';
 import { useVoteReport } from '@/hooks/main/useVoteReport';
 import { RxCrossCircled } from "react-icons/rx";
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
@@ -24,6 +24,7 @@ import { useInView } from 'react-intersection-observer';
 import type { FilterOptions } from './components/ReportFilterModal';
 import { useCurrentLocation } from '@/hooks/main';
 import { FaLocationDot } from 'react-icons/fa6';
+import { IReportComment } from '@/types/model/report';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
@@ -100,6 +101,21 @@ const ReportsPage = () => {
         filters.distance,
         hasCoords ? hasCoords : false
     );
+
+    const {
+        data: commentsData,
+        isLoading: commentsLoading,
+        fetchNextPage: fetchNextComments,
+        hasNextPage: hasNextComments,
+        isFetchingNextPage: isFetchingNextComments,
+    } = useGetReportComments(
+        selectedReport?.id || 0,
+        isReportModalOpen && !!selectedReport
+    );
+
+    const allComments: IReportComment[] = commentsData?.pages.flatMap(
+        page => page.data?.comments.comments || []
+    ) || [];
 
     const handleCloseReportModal = () => {
         setIsReportModalOpen(false);
@@ -697,6 +713,10 @@ const ReportsPage = () => {
                             onShare={() => handleShare(selectedReport.id, selectedReport.reportTitle)}
                             onAddComment={(content, parentId) => handleAddComment(selectedReport.id, content, parentId)}
                             onStatusVote={(voteType) => handleStatusVote(selectedReport.id, voteType)}
+                            comments={allComments}
+                            commentsLoading={commentsLoading}
+                            onLoadMoreComments={fetchNextComments}
+                            hasMoreComments={hasNextComments}
                         />
                     )}
 

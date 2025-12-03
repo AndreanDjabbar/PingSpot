@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -7,27 +8,19 @@ import { BiSend } from 'react-icons/bi';
 import { motion } from 'framer-motion';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { useUserProfileStore } from '@/stores';
-
-export interface CommentType {
-    id: number;
-    content: string;
-    createdAt: number;
-    updatedAt: number;
-    userId: number;
-    userName: string;
-    fullName: string;
-    profilePicture?: string;
-    parentId?: number;
-    replies?: CommentType[];
-}
+import MentionInput, { MentionUser } from './MentionInput';
+import MentionText from './MentionText';
+import { Button } from '@/components/UI';
+import { IReportComment } from '@/types/model/report';
 
 interface CommentItemProps {
-    comment: CommentType;
+    comment: IReportComment;
     level?: number;
     variant: 'full' | 'compact';
     showLikes: boolean;
-    onReply: (content: string, parentId: number) => void;
-    onEdit?: (commentId: number, content: string) => void;
+    availableUsers?: MentionUser[];
+    onReply: (content: string, parentId: number, threadRootId?: number, mentions?: number[]) => void;
+    onEdit?: (commentId: number, content: string, mentions?: number[]) => void;
     onDelete?: (commentId: number) => void;
 }
 
@@ -36,14 +29,17 @@ const CommentItem: React.FC<CommentItemProps> = ({
     level = 0, 
     variant = 'full',
     showLikes = true,
+    availableUsers = [],
     onReply,
     onEdit,
     onDelete 
 }) => {
     const [isReplying, setIsReplying] = useState(false);
     const [replyContent, setReplyContent] = useState('');
+    const [replyMentions, setReplyMentions] = useState<number[]>([]);
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
+    const [editMentions, setEditMentions] = useState<number[]>(comment.mentions || []);
     const [showMenu, setShowMenu] = useState(false);
     const [liked, setLiked] = useState(false);
     const replyInputRef = useRef<HTMLTextAreaElement>(null);
@@ -54,37 +50,40 @@ const CommentItem: React.FC<CommentItemProps> = ({
     useEffect(() => {
         if (isReplying && replyInputRef.current) {
             replyInputRef.current.focus();
+            setReplyContent(`@${comment.userName} `);
         }
         if (isEditing && editInputRef.current) {
             editInputRef.current.focus();
         }
-    }, [isReplying, isEditing]);
+    }, [isReplying, isEditing, comment.userName]);
 
     const handleReply = () => {
         if (replyContent.trim()) {
-            onReply(replyContent, comment.id);
+            const threadRootId = comment.threadRootID || Number(comment.commentID);
+            onReply(replyContent, Number(comment.commentID), Number(threadRootId), replyMentions);
             setReplyContent('');
+            setReplyMentions([]);
             setIsReplying(false);
         }
     };
 
     const handleEdit = () => {
-        if (editContent.trim() && onEdit) {
-            onEdit(comment.id, editContent);
+        if (editContent?.trim() && onEdit) {
+            onEdit(Number(comment.commentID), editContent, editMentions);
             setIsEditing(false);
         }
     };
 
     const handleDelete = () => {
         if (onDelete) {
-            onDelete(comment.id);
+            onDelete(Number(comment.commentID));
         }
         setShowMenu(false);
     };
 
     const isCompact = variant === 'compact';
     const marginLeft = isCompact ? Math.min(level * 16, 32) : Math.min(level * 20, 60);
-
+    
     if (isCompact) {
         return (
             <div className="mb-3" style={{ marginLeft: `${marginLeft}px` }}>
@@ -92,7 +91,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                     <div className="flex-shrink-0">
                         <div className={`w-6 h-6 rounded-full overflow-hidden border border-gray-200`}>
                             <Image 
-                                src={getImageURL(comment.profilePicture || '', "user")}
+                                src={getImageURL(comment.userInformation.profilePicture || '', "user")}
                                 alt={comment.fullName}
                                 width={24}
                                 height={24}
@@ -102,16 +101,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-start space-x-2">
-                            <span className="font-semibold text-sm text-gray-900 shrink-0">
-                                {comment.fullName}
-                            </span>
-                            <span className="text-sm text-gray-800 break-words">
-                                {comment.content}
-                            </span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-3 mt-1">
+                    <div className="flex items-start space-x-2">
+                        <span className="font-semibold text-sm text-gray-900 shrink-0">
+                            {comment.userInformation.username}
+                        </span>
+                        <span className="text-sm text-gray-800 break-words">
+                            <MentionText text={comment.content || ""} />
+                        </span>
+                    </div>                        <div className="flex items-center space-x-3 mt-1">
                             <span className="text-xs text-gray-400">
                                 {formattedDate(comment.createdAt, { formatStr: 'dd MMM yyyy' })}
                             </span>
@@ -133,36 +130,38 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 <div className="flex items-start space-x-2">
                                     <div className="w-5 h-5 rounded-full overflow-hidden border border-gray-200 flex-shrink-0">
                                         <Image 
-                                            src={getImageURL('', "user")}
+                                            src={getImageURL(userProfile?.profilePicture || '', "user")}
                                             alt="Current User"
                                             width={20}
                                             height={20}
                                             className="object-cover h-full w-full"
                                         />
                                     </div>
-                                    <div className="flex-1 relative">
-                                        <textarea
-                                            ref={replyInputRef}
+                                    <div className="flex-1">
+                                        <MentionInput
                                             value={replyContent}
-                                            onChange={(e) => setReplyContent(e.target.value)}
-                                            placeholder={`Balas ${comment.fullName}...`}
-                                            className="w-full p-2 pr-8 text-sm border border-gray-200 rounded-lg resize-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 bg-white"
+                                            onChange={setReplyContent}
+                                            onMentionsChange={setReplyMentions}
+                                            placeholder={`Balas ${comment.userInformation.username}...`}
+                                            className="w-full p-2 text-sm border border-gray-200 rounded-lg resize-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 bg-white"
                                             rows={2}
+                                            users={availableUsers}
+                                            autoFocus
                                         />
-                                        <div className="absolute bottom-1 right-1 flex space-x-1">
-                                            <button
+                                        <div className="flex justify-end space-x-1 mt-1">
+                                            <Button
                                                 onClick={() => {
                                                     setIsReplying(false);
                                                     setReplyContent('');
+                                                    setReplyMentions([]);
                                                 }}
-                                                className="text-xs text-gray-400 hover:text-gray-600"
                                             >
                                                 Batal
-                                            </button>
+                                            </Button>
                                             <button
                                                 onClick={handleReply}
                                                 disabled={!replyContent.trim()}
-                                                className="text-xs text-sky-600 hover:text-sky-700 disabled:opacity-50"
+                                                className="text-xs text-white bg-sky-600 hover:bg-sky-700 disabled:opacity-50 px-3 py-1 rounded"
                                             >
                                                 Kirim
                                             </button>
@@ -176,11 +175,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             <div className="mt-2">
                                 {comment.replies.map((reply) => (
                                     <CommentItem
-                                        key={reply.id}
+                                        key={reply.commentID}
                                         comment={reply}
                                         level={level + 1}
                                         variant={variant}
                                         showLikes={showLikes}
+                                        availableUsers={availableUsers}
                                         onReply={onReply}
                                         onEdit={onEdit}
                                         onDelete={onDelete}
@@ -202,12 +202,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
             className="mb-4"
             style={{ marginLeft: `${marginLeft}px` }}
         >
-            <div className="flex space-x-3">
+            <div className="flex items-center">
                 <div className="flex-shrink-0">
                     <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow">
                         <Image 
-                            src={getImageURL(comment.profilePicture || '', "user")}
-                            alt={comment.fullName}
+                            src={getImageURL(comment?.userInformation?.profilePicture || '', "user")}
+                            alt={comment?.userInformation?.username || 'User'}
                             width={32}
                             height={32}
                             className="object-cover h-full w-full"
@@ -220,14 +220,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
                         <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center space-x-2">
                                 <span className="font-semibold text-sm text-gray-900">
-                                    {comment.fullName}
+                                    {comment?.userInformation?.username || 'User'}
                                 </span>
                                 <span className="text-xs text-gray-500">
                                     {formattedDate(comment.createdAt, { formatStr: 'dd MMM yyyy, HH:mm' })}
                                 </span>
                             </div>
                             
-                            {comment.userId === currentUserId && onEdit && onDelete && (
+                            {comment?.userInformation?.userID === currentUserId && onEdit && onDelete && (
                                 <div className="relative">
                                     <button
                                         onClick={() => setShowMenu(!showMenu)}
@@ -261,26 +261,29 @@ const CommentItem: React.FC<CommentItemProps> = ({
                         
                         {isEditing ? (
                             <div className="space-y-2">
-                                <textarea
-                                    ref={editInputRef}
-                                    value={editContent}
-                                    onChange={(e) => setEditContent(e.target.value)}
+                                <MentionInput
+                                    value={editContent || ''}
+                                    onChange={setEditContent}
+                                    onMentionsChange={setEditMentions}
+                                    placeholder="Edit komentar..."
                                     className="w-full p-2 border rounded-lg resize-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                                     rows={2}
+                                    users={availableUsers}
+                                    autoFocus
                                 />
                                 <div className="flex justify-end space-x-2">
-                                    <button
+                                    <Button
                                         onClick={() => {
                                             setIsEditing(false);
                                             setEditContent(comment.content);
+                                            setEditMentions(comment.mentions || []);
                                         }}
-                                        className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
                                     >
                                         Batal
-                                    </button>
+                                    </Button>
                                     <button
                                         onClick={handleEdit}
-                                        disabled={!editContent.trim()}
+                                        disabled={!editContent?.trim()}
                                         className="px-3 py-1 text-sm bg-sky-600 text-white rounded-lg hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         Simpan
@@ -289,7 +292,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             </div>
                         ) : (
                             <p className="text-gray-800 text-sm leading-relaxed">
-                                {comment.content}
+                                <MentionText text={comment.content || ''} />
                             </p>
                         )}
                     </div>
@@ -317,76 +320,79 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             </button>
                         </div>
                     )}
-                    
-                    {isReplying && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="mt-3 ml-2"
-                        >
-                            <div className="flex space-x-2">
-                                <div className="flex-shrink-0">
-                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-200">
-                                        <Image 
-                                            src={getImageURL('', "user")}
-                                            alt="Current User"
-                                            width={24}
-                                            height={24}
-                                            className="object-cover h-full w-full"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex-1 relative">
-                                    <textarea
-                                        ref={replyInputRef}
-                                        value={replyContent}
-                                        onChange={(e) => setReplyContent(e.target.value)}
-                                        placeholder={`Balas ${comment.fullName}...`}
-                                        className="w-full p-3 pr-12 border border-gray-200 rounded-2xl resize-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white"
-                                        rows={2}
-                                    />
-                                    <div className="absolute bottom-2 right-2 flex space-x-1">
-                                        <button
-                                            onClick={() => {
-                                                setIsReplying(false);
-                                                setReplyContent('');
-                                            }}
-                                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                                        >
-                                            Batal
-                                        </button>
-                                        <button
-                                            onClick={handleReply}
-                                            disabled={!replyContent.trim()}
-                                            className="p-2 text-sky-600 hover:text-sky-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <BiSend className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                    
-                    {comment.replies && comment.replies.length > 0 && (
-                        <div className="mt-3">
-                            {comment.replies.map((reply) => (
-                                <CommentItem
-                                    key={reply.id}
-                                    comment={reply}
-                                    level={level + 1}
-                                    variant={variant}
-                                    showLikes={showLikes}
-                                    onReply={onReply}
-                                    onEdit={onEdit}
-                                    onDelete={onDelete}
-                                />
-                            ))}
-                        </div>
-                    )}
                 </div>
             </div>
+            {comment.replies && comment.replies.length > 0 && (
+                <div className="mt-3 pl-6">
+                    {comment.replies.map((reply) => (
+                        <CommentItem
+                            key={reply.commentID}
+                            comment={reply}
+                            level={level + 1}
+                            variant={variant}
+                            showLikes={showLikes}
+                            availableUsers={availableUsers}
+                            onReply={onReply}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
+                        />
+                    ))}
+                </div>
+            )}
+            {isReplying && (
+                <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-3 pl-5"
+                >
+                    <div className="flex flex-col w-full">
+                        <div className='flex space-x-2 items-center ml-6'>
+                            <div className="flex-shrink-0">
+                                <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
+                                    <Image 
+                                        src={getImageURL(userProfile?.profilePicture || '', "user")}
+                                        alt="Current User"
+                                        width={32}
+                                        height={32}
+                                        className="object-cover h-full w-full"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex-1">
+                                <MentionInput
+                                    value={replyContent}
+                                    onChange={setReplyContent}
+                                    onMentionsChange={setReplyMentions}
+                                    placeholder={`Balas ${comment.userName}...`}
+                                    rows={2}
+                                    users={availableUsers}
+                                    autoFocus
+                                    onSubmit={handleReply}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end space-x-2 mt-2">
+                            <Button
+                                onClick={() => {
+                                    setIsReplying(false);
+                                    setReplyContent('');
+                                    setReplyMentions([]);
+                                }}
+                                variant='outline'
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                onClick={handleReply}
+                                disabled={!replyContent.trim()}
+                            >
+                                <BiSend className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
         </motion.div>
     );
 };

@@ -4,11 +4,14 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { BiSend } from 'react-icons/bi';
 import { getImageURL } from '@/utils';
-import { ICommentType } from '@/types/model/report';
 import CommentItem from '../../components/CommentItem';
+import { TextAreaField } from '@/components/form';
+import { useUserProfileStore } from '@/stores';
+import { Button } from '@/components/UI';
+import { IReportComment } from '@/types/model/report';
 
 interface ReportCommentsSectionProps {
-    comments: ICommentType[];
+    comments: IReportComment[];
     onSubmitComment: (content: string) => Promise<void>;
     onReply: (content: string, parentId: number) => void;
 }
@@ -20,6 +23,7 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
 }) => {
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const userProfile = useUserProfileStore((state) => state.userProfile);
 
     const handleSubmitComment = async () => {
         if (!newComment.trim() || isSubmitting) return;
@@ -35,6 +39,58 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
         }
     };
 
+    const organizeComments = (comments: IReportComment[]): IReportComment[] => {
+        const commentMap = new Map<string, IReportComment & { replies: IReportComment[] }>();
+        const rootComments: IReportComment[] = [];
+
+        comments.forEach(comment => {
+            commentMap.set(comment.commentID, { ...comment, replies: [] });
+        });
+
+        comments.forEach(comment => {
+            const commentWithReplies = commentMap.get(comment.commentID)!;
+            
+            if (comment.parentCommentID) {
+                const parentComment = commentMap.get(comment.parentCommentID);
+                if (parentComment) {
+                    if (!parentComment.replies) {
+                        parentComment.replies = [];
+                    }
+                    parentComment.replies.push(commentWithReplies);
+                } else {
+                    rootComments.push(commentWithReplies);
+                }
+            } else if (comment.threadRootID) {
+                const threadRoot = commentMap.get(comment.threadRootID);
+                if (threadRoot) {
+                    if (!threadRoot.replies) {
+                        threadRoot.replies = [];
+                    }
+                    threadRoot.replies.push(commentWithReplies);
+                } else {
+                    rootComments.push(commentWithReplies);
+                }
+            } else {
+                rootComments.push(commentWithReplies);
+            }
+        });
+
+        const sortReplies = (comment: IReportComment & { replies: IReportComment[] }) => {
+            if (comment.replies && comment.replies.length > 0) {
+                comment.replies.sort((a, b) => a.createdAt - b.createdAt);
+                comment.replies.forEach(reply => sortReplies(reply as IReportComment & { replies: IReportComment[] }));
+            }
+        };
+
+        rootComments.forEach(comment => sortReplies(comment as IReportComment & { replies: IReportComment[] }));
+        
+        rootComments.sort((a, b) => b.createdAt - a.createdAt);
+
+        return rootComments;
+    };
+
+    const threadedComments = organizeComments(comments);
+
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-200">
@@ -44,10 +100,10 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
             </div>
 
             <div className="p-6 border-b border-gray-200 bg-gray-50">
-                <div className="flex items-start gap-3">
+                <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0">
                         <Image
-                            src={getImageURL('', "user")}
+                            src={getImageURL(userProfile?.profilePicture || '', "user")}
                             alt="Your profile"
                             width={40}
                             height={40}
@@ -55,33 +111,28 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
                         />
                     </div>
                     <div className="flex-1 flex gap-2">
-                        <textarea
-                            id="comment-input"
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Tulis komentar Anda..."
-                            className="flex-1 p-3 text-sm border border-gray-200 rounded-xl resize-none shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                            rows={3}
-                            disabled={isSubmitting}
-                        />
-                        <button
-                            onClick={handleSubmitComment}
-                            disabled={!newComment.trim() || isSubmitting}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all h-fit shadow-sm hover:shadow-md"
+                        <TextAreaField 
+                        id='comment-input'
+                        className='w-full'
+                        rows={2}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        withLabel={false}/>
+                    </div>
+                    <div>
+                        <Button
+                        onClick={handleSubmitComment}
+                        disabled={!newComment.trim() || isSubmitting}
+                        variant="primary"
                         >
-                            {isSubmitting ? (
-                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                                <BiSend size={20} />
-                            )}
-                        </button>
+                            <BiSend size={20} />
+                        </Button>
                     </div>
                 </div>
             </div>
 
             <div className="divide-y divide-gray-200">
-                {comments.map((comment) => (
-                    <div key={comment.id} className="p-6">
+                {threadedComments.map((comment) => (
+                    <div key={comment.commentID} className="p-6">
                         <CommentItem
                             comment={comment}
                             variant="full"

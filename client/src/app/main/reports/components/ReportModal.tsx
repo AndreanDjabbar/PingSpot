@@ -9,7 +9,7 @@ import { BiSend } from 'react-icons/bi';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
-import { ReportType, IReportImage, ICommentType } from '@/types/model/report';
+import { ReportType, IReportImage, IReportComment } from '@/types/model/report';
 import { ReportInteractionBar } from './ReportInteractionBar';
 import { BsThreeDots } from 'react-icons/bs';
 import ReportInformation from './ReportInformation';
@@ -31,6 +31,10 @@ interface ReportModalProps {
     onAddComment: (content: string, parentId?: number) => void;
     onStatusVote: (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => void;
     onStatusUpdate?: (reportID: number, newStatus: string) => void;
+    comments?: IReportComment[];
+    commentsLoading?: boolean;
+    onLoadMoreComments?: () => void;
+    hasMoreComments?: boolean;
 }
 
 const getReportTypeLabel = (type: ReportType): string => {
@@ -71,9 +75,15 @@ const ReportModal: React.FC<ReportModalProps> = ({
     onDislike,
     onSave,
     onShare,
+    comments = [],
+    commentsLoading = false,
+    hasMoreComments = false,
+    onLoadMoreComments,
     onAddComment,
     onStatusVote,
 }) => {
+    console.log('ReportModal Comments:', comments);
+    type ICommentType = IReportComment & { replies?: ICommentType[] };
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -103,18 +113,18 @@ const ReportModal: React.FC<ReportModalProps> = ({
     };
 
     const organizeComments = (comments: ICommentType[]): ICommentType[] => {
-        const commentMap = new Map<number, ICommentType>();
+        const commentMap = new Map<string, ICommentType>();
         const rootComments: ICommentType[] = [];
 
         comments.forEach(comment => {
-            commentMap.set(comment.id, { ...comment, replies: [] });
+            commentMap.set(comment.commentID, { ...comment, replies: [] });
         });
 
         comments.forEach(comment => {
-            const commentWithReplies = commentMap.get(comment.id)!;
+            const commentWithReplies = commentMap.get(comment.commentID)!;
             
-            if (comment.parentId) {
-                const parent = commentMap.get(comment.parentId);
+            if (comment.parentCommentID) {
+                const parent = commentMap.get(comment.parentCommentID);
                 if (parent) {
                     parent.replies = parent.replies || [];
                     parent.replies.push(commentWithReplies);
@@ -127,7 +137,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
         return rootComments;
     };
 
-    const threadedComments = organizeComments(report?.comments || []);
+    const threadedComments = organizeComments(comments);
 
     const nextImage = () => {
         if (images.length > 1) {
@@ -295,7 +305,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                     <div className="w-full md:w-96 border-t md:border-t-0 md:border-l border-gray-100 flex flex-col max-h-96 md:max-h-none">
                         <div className="flex h-17 justify-between items-center p-4 border-b border-gray-100">
                             <h3 className="font-semibold text-sky-900">
-                                Komentar ({report?.comments?.length || 0})
+                                Komentar ({comments?.length || 0})
                             </h3>
                             <button
                                 onClick={onClose}
@@ -309,7 +319,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             {threadedComments.length > 0 ? (
                                 threadedComments.map((comment) => (
                                     <CommentItem
-                                        key={comment.id}
+                                        key={comment.commentID}
                                         comment={comment}
                                         variant="compact"
                                         showLikes={false}

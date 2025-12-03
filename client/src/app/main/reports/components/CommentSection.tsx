@@ -1,18 +1,21 @@
 "use client";
 
-import React, { useState, useRef,} from 'react';
+import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import { FaComment } from 'react-icons/fa';
 import { BiSend } from 'react-icons/bi';
 import { AnimatePresence } from 'framer-motion';
 import { getImageURL } from '@/utils';
+import { useUserProfileStore } from '@/stores';
 import CommentItem from './CommentItem';
-import { CommentType } from '@/types/model/report';
+import MentionInput, { MentionUser } from './MentionInput';
+import { IReportComment } from '@/types/model/report';
 
 interface CommentSectionProps {
-    comments: CommentType[];
-    onAddComment: (content: string, parentId?: number) => void;
-    onEditComment?: (commentId: number, content: string) => void;
+    comments: IReportComment[];
+    availableUsers?: MentionUser[];
+    onAddComment: (content: string, parentId?: number, threadRootId?: number, mentions?: number[]) => void;
+    onEditComment?: (commentId: number, content: string, mentions?: number[]) => void;
     onDeleteComment?: (commentId: number) => void;
     isLoading?: boolean;
     variant?: 'full' | 'compact';
@@ -22,6 +25,7 @@ interface CommentSectionProps {
 
 const CommentSection: React.FC<CommentSectionProps> = ({
     comments,
+    availableUsers = [],
     onAddComment,
     onEditComment,
     onDeleteComment,
@@ -30,16 +34,19 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     showLikes = true
 }) => {
     const [newComment, setNewComment] = useState('');
+    const [newCommentMentions, setNewCommentMentions] = useState<number[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const commentInputRef = useRef<HTMLTextAreaElement>(null);
+    const userProfile = useUserProfileStore((s) => s.userProfile);
 
     const handleSubmit = async () => {
         if (!newComment.trim() || isSubmitting) return;
         
         setIsSubmitting(true);
         try {
-            await onAddComment(newComment);
+            await onAddComment(newComment, undefined, undefined, newCommentMentions);
             setNewComment('');
+            setNewCommentMentions([]);
         } catch (error) {
             console.error('Error adding comment:', error);
         } finally {
@@ -47,36 +54,74 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         }
     };
 
-    const handleReply = (content: string, parentId: number) => {
-        onAddComment(content, parentId);
+    const handleReply = (content: string, parentId: number, threadRootId?: number, mentions?: number[]) => {
+        onAddComment(content, parentId, threadRootId, mentions);
     };
 
-    const organizeComments = (comments: CommentType[]): CommentType[] => {
-        const commentMap = new Map<number, CommentType>();
-        const rootComments: CommentType[] = [];
+    const organizeComments = (comments: IReportComment[]): IReportComment[] => {
+        const commentMap = new Map<string, IReportComment & { replies: IReportComment[] }>();
+        const rootComments: IReportComment[] = [];
 
+        // First pass: Create a map of all comments with empty replies array
         comments.forEach(comment => {
-            commentMap.set(comment.id, { ...comment, replies: [] });
+            commentMap.set(comment.commentID, { ...comment, replies: [] });
         });
 
+        // Second pass: Build the hierarchy
         comments.forEach(comment => {
-            const commentWithReplies = commentMap.get(comment.id)!;
+            const commentWithReplies = commentMap.get(comment.commentID)!;
             
-            if (comment.parentId) {
-                const parent = commentMap.get(comment.parentId);
-                if (parent) {
-                    parent.replies = parent.replies || [];
-                    parent.replies.push(commentWithReplies);
+            // If this comment has a parentCommentID, it's a direct reply to that comment
+            if (comment.parentCommentID) {
+                const parentComment = commentMap.get(comment.parentCommentID);
+                if (parentComment) {
+                    // Add this comment as a reply to its parent
+                    if (!parentComment.replies) {
+                        parentComment.replies = [];
+                    }
+                    parentComment.replies.push(commentWithReplies);
+                } else {
+                    // If parent not found, treat as root comment
+                    rootComments.push(commentWithReplies);
                 }
-            } else {
+            } 
+            // If no parentCommentID but has threadRootID, it's a reply in a thread
+            else if (comment.threadRootID) {
+                const threadRoot = commentMap.get(comment.threadRootID);
+                if (threadRoot) {
+                    if (!threadRoot.replies) {
+                        threadRoot.replies = [];
+                    }
+                    threadRoot.replies.push(commentWithReplies);
+                } else {
+                    // If thread root not found, treat as root comment
+                    rootComments.push(commentWithReplies);
+                }
+            } 
+            // No parent or thread root - this is a root comment
+            else {
                 rootComments.push(commentWithReplies);
             }
         });
 
+        // Sort replies by createdAt (oldest first) for better readability
+        const sortReplies = (comment: IReportComment & { replies: IReportComment[] }) => {
+            if (comment.replies && comment.replies.length > 0) {
+                comment.replies.sort((a, b) => a.createdAt - b.createdAt);
+                comment.replies.forEach(reply => sortReplies(reply as IReportComment & { replies: IReportComment[] }));
+            }
+        };
+
+        rootComments.forEach(comment => sortReplies(comment as IReportComment & { replies: IReportComment[] }));
+        
+        // Sort root comments (you can change this to newest first if preferred)
+        rootComments.sort((a, b) => b.createdAt - a.createdAt);
+
         return rootComments;
     };
-
+    
     const threadedComments = organizeComments(comments);
+    console.log("ORGANIZED COMMENTS:", threadedComments);
     const isCompact = variant === 'compact';
 
     return (
@@ -92,7 +137,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                     <div className="flex-shrink-0">
                         <div className={`${isCompact ? 'w-6 h-6' : 'w-8 h-8'} rounded-full overflow-hidden ${isCompact ? 'border border-gray-200' : 'border-2 border-white shadow'}`}>
                             <Image 
-                                src={getImageURL('', "user")}
+                                src={getImageURL(userProfile?.profilePicture || '', "user")}
                                 alt="Current User"
                                 width={isCompact ? 24 : 32}
                                 height={isCompact ? 24 : 32}
@@ -100,15 +145,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                             />
                         </div>
                     </div>
-                    <div className="flex-1 relative">
-                        <textarea
-                            ref={commentInputRef}
+                    <div className="flex-1">
+                        <MentionInput
                             value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
+                            onChange={setNewComment}
+                            onMentionsChange={setNewCommentMentions}
                             placeholder="Tulis komentar Anda..."
-                            className={`w-full ${isCompact ? 'p-2 text-sm' : 'p-4 pr-16'} border border-gray-200 ${isCompact ? 'rounded-lg' : 'rounded-2xl'} resize-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white`}
+                            className={`w-full ${isCompact ? 'p-2 text-sm' : 'p-4'} border border-gray-200 ${isCompact ? 'rounded-lg' : 'rounded-2xl'} resize-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white`}
                             rows={isCompact ? 2 : 3}
                             disabled={isLoading || isSubmitting}
+                            users={availableUsers}
+                            onSubmit={handleSubmit}
                         />
                         {isCompact ? (
                             <div className="flex justify-end mt-2">
@@ -125,17 +172,22 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                                 </button>
                             </div>
                         ) : (
-                            <button
-                                onClick={handleSubmit}
-                                disabled={!newComment.trim() || isSubmitting || isLoading}
-                                className="absolute bottom-3 right-3 p-3 bg-sky-600 text-white rounded-xl hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
-                            >
-                                {isSubmitting ? (
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                ) : (
-                                    <BiSend className="w-4 h-4" />
-                                )}
-                            </button>
+                            <div className="flex justify-end mt-2">
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={!newComment.trim() || isSubmitting || isLoading}
+                                    className="px-4 py-2 bg-sky-600 text-white rounded-xl hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 flex items-center space-x-2"
+                                >
+                                    {isSubmitting ? (
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                        <>
+                                            <BiSend className="w-4 h-4" />
+                                            <span>Kirim</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -146,10 +198,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                     {threadedComments.length > 0 ? (
                         threadedComments.map((comment) => (
                             <CommentItem
-                                key={comment.id}
+                                key={comment.commentID}
                                 comment={comment}
                                 variant={variant}
                                 showLikes={showLikes}
+                                availableUsers={availableUsers}
                                 onReply={handleReply}
                                 onEdit={onEditComment}
                                 onDelete={onDeleteComment}
