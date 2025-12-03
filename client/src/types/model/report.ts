@@ -44,33 +44,6 @@ export interface IReportLocation {
     village?: string;
     suburb?: string;
 }
-
-export interface CommentType {
-    id: number;
-    content: string;
-    createdAt: number;
-    updatedAt: number;
-    userId: number;
-    userName: string;
-    fullName: string;
-    profilePicture?: string;
-    parentId?: number;
-    replies?: CommentType[];
-}
-
-export interface ICommentType {
-    id: number;
-    content: string;
-    createdAt: number;
-    updatedAt: number;
-    userId: number;
-    userName: string;
-    fullName: string;
-    profilePicture?: string;
-    replies: CommentType[];
-    parentId?: number;
-}
-
 export interface IReportReactions {
     reportID: number;
     userID: number;
@@ -125,7 +98,6 @@ export interface IReport {
     reportUpdatedAt: number;
     location: IReportLocation;
     images: IReportImage;
-    comments: ICommentType[];
     commentCount: number;
     reportReactions: IReportReactions[];
     reportProgress: IReportProgress[];
@@ -147,6 +119,38 @@ export interface IReport {
     majorityVote?: ReportStatus;
     lastUpdatedBy?: string;
     lastUpdatedProgressAt?: number;
+}
+
+export interface IReportCommentMedia {
+    url: string;
+    type: string;
+    width?: number;
+    height?: number;
+}
+
+export interface IReportComment {
+    commentID: string;
+    reportID: number;
+    userInformation: {
+        userID: number;
+        fullName: string;
+        username: string;
+        profilePicture?: string;
+        gender?: string;
+        bio?: string;
+        birthday?: number;
+    }
+    userName: string;
+    fullName: string;
+    profilePicture?: string;
+    content?: string;
+    createdAt: number;
+    updatedAt: number;
+    parentCommentID?: string;
+    threadRootID?: string;
+    mentions?: number[];
+    media?: IReportCommentMedia;
+    replies?: IReportComment[];
 }
 
 export interface IReportVote {

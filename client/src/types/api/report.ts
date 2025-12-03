@@ -5,7 +5,7 @@ import {
     UploadProgressReportSchema, 
     VoteReportSchema
 } from "@/app/main/schema";
-import { IReport, IReportProgress, IReportReactions, IReportVote, ITotalReportCount } from "../model/report";
+import {  IReport, IReportComment, IReportProgress, IReportReactions, IReportVote, ITotalReportCount } from "../model/report";
 import z from "zod";
 
 export interface IGetReportResponse {
@@ -14,6 +14,17 @@ export interface IGetReportResponse {
         reports: {
             reports: IReport[];
             totalCounts: ITotalReportCount
+        };
+        nextCursor?: number | null;
+    }
+}
+
+export interface IGetReportCommentsResponse {
+    message: string;
+    data?: {
+        comments: {
+            comments: IReportComment[];
+            totalCounts: number;
         };
         nextCursor?: number | null;
     }
