@@ -807,7 +807,8 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 	if mediaType == "IMAGE" && imageName != "" {
 		mediaURL = imageName
 	}
-
+	fmt.Println("MEDIA TYPE: ", mainutils.StrPtrOrNil(mediaType))
+	fmt.Println("MEDIA URL: ", mainutils.StrPtrOrNil(mediaURL))
 	req := dto.CreateReportCommentRequest{
 		Content:         mainutils.StrPtrOrNil(content),
 		MediaURL: 		mainutils.StrPtrOrNil(mediaURL),
@@ -826,7 +827,7 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 	}
 	db := database.GetMongoDB()
 
-	newComment, err := h.reportService.CreateReportCommentService(db, userID, uintReportID, req)
+	newComment, err := h.reportService.CreateReportComment(db, userID, uintReportID, req)
 	if err != nil {
 		os.Remove(filepath.Join("uploads/main/report/comments", imageName))
 		logger.Error("Failed to create report comment", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
@@ -835,4 +836,34 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 		}
 	}
 	return response.ResponseSuccess(c, 200, "Komentar laporan berhasil dibuat", "data", newComment)
+}
+
+func (h *ReportHandler) GetReportCommentsHandler(c *fiber.Ctx) error {
+	logger.Info("GET REPORT COMMENTS HANDLER")
+	reportIDParam := c.Params("reportID")
+	uintReportID, err := mainutils.StringToUint(reportIDParam)
+	if err != nil {
+		logger.Error("Invalid reportID format", zap.String("reportID", reportIDParam), zap.Error(err))
+		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
+	}
+	cursorID := c.Query("cursorID")
+
+	comments, err := h.reportService.GetReportComments(uintReportID, mainutils.StrPtrOrNil(cursorID))
+	if err != nil {
+		logger.Error("Failed to get report comments", zap.Uint("reportID", uintReportID), zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
+		return response.ResponseError(c, 500, "Gagal mendapatkan komentar laporan", "", err.Error())
+	}
+	var nextCursor *string = nil
+	if len(comments.Comments) > 0 {
+		lastComment := comments.Comments[len(comments.Comments)-1]
+		nextCursor = mainutils.StrPtrOrNil(lastComment.CommentID)
+	}
+	mappedData := fiber.Map{
+		"comments":   comments,
+		"nextCursor": nextCursor,
+	}
+	return response.ResponseSuccess(c, 200, "Get report comments success", "data", mappedData)
 }
