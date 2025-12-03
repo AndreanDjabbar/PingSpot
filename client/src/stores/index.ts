@@ -6,6 +6,7 @@ import { useLocationStore } from "./userLocationStore";
 import { useImagePreviewModalStore } from "./imagePreviewModalStore";
 import { useFormInformationModalStore } from "./formInformationModalStore";
 import { useOptionsModalStore } from "./optionsModalStore";
+import { useReportCommentStore } from "./reportCommentStore";
 
 export {
     useGlobalStore,
@@ -14,6 +15,7 @@ export {
     useReportsStore,
     useLocationStore,
     useImagePreviewModalStore,
-    useFormInformationModalStore
-    ,useOptionsModalStore
+    useFormInformationModalStore,
+    useOptionsModalStore,
+    useReportCommentStore
 }
