@@ -1,5 +1,7 @@
 package dto
 
+import userDTO "server/internal/domain/userService/dto"
+
 type TotalReportCount struct {
 	TotalReports               int64 `json:"totalReports"`
 	TotalInfrastructureReports int64 `json:"totalInfrastructureReports"`
@@ -30,8 +32,8 @@ type Report struct {
 	UserName                   string                      `json:"userName"`
 	FullName                   string                      `json:"fullName"`
 	ProfilePicture             *string                     `json:"profilePicture"`
-	Location                   ReportLocation      `json:"location"`
-	Images                     ReportImage         `json:"images"`
+	Location                   ReportLocation              `json:"location"`
+	Images                     ReportImage                 `json:"images"`
 	TotalReactions             int64                       `json:"totalReactions"`
 	TotalLikeReactions         *int64                      `json:"totalLikeReactions"`
 	TotalDislikeReactions      *int64                      `json:"totalDislikeReactions"`
@@ -48,8 +50,8 @@ type Report struct {
 	IsOnProgressByCurrentUser  bool                        `json:"isOnProgressByCurrentUser"`
 	IsNotResolvedByCurrentUser bool                        `json:"isNotResolvedByCurrentUser"`
 	MajorityVote               *string                     `json:"majorityVote,omitempty"`
-	LastUpdatedBy			  *string                     `json:"lastUpdatedBy,omitempty"`
-	LastUpdatedProgressAt	  *int64                      `json:"lastUpdatedProgressAt,omitempty"`
+	LastUpdatedBy              *string                     `json:"lastUpdatedBy,omitempty"`
+	LastUpdatedProgressAt      *int64                      `json:"lastUpdatedProgressAt,omitempty"`
 	ReportUpdatedAt            int64                       `json:"reportUpdatedAt"`
 }
 
@@ -85,9 +87,22 @@ type ReportImage struct {
 	Image5URL *string `json:"image5URL"`
 }
 
-type CommentMediaType struct {
-	URL 	string  `json:"url"`
-	Type	string  `json:"type"`
-	Width 	*uint    `json:"width,omitempty"`
-	Height 	*uint    `json:"height,omitempty"`
+type CommentMedia struct {
+	URL    string `json:"url"`
+	Type   string `json:"type"`
+	Width  *uint  `json:"width,omitempty"`
+	Height *uint  `json:"height,omitempty"`
+}
+
+type Comment struct {
+	CommentID       string `json:"commentID"`
+	ReportID        uint   `json:"reportID"`
+	UserInformation userDTO.UserProfile `json:"userInformation"`
+	Content         *string       `json:"content,omitempty"`
+	Media           *CommentMedia `json:"media,omitempty"`
+	Mentions        []uint        `json:"mentions,omitempty"`
+	ParentCommentID *string       `json:"parentCommentID,omitempty"`
+	ThreadRootID    *string       `json:"threadRootID,omitempty"`
+	CreatedAt       int64         `json:"createdAt"`
+	UpdatedAt       *int64        `json:"updatedAt,omitempty"`
 }
