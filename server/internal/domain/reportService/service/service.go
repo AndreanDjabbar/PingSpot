@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"server/internal/domain/model"
 	"server/internal/domain/reportService/dto"
+	userDTO "server/internal/domain/userService/dto"
 	reportRepository "server/internal/domain/reportService/repository"
 	"server/internal/domain/reportService/util"
 	tasksService "server/internal/domain/taskService/service"
@@ -940,7 +941,7 @@ func (s *ReportService) GetProgressReports(reportID uint) ([]dto.GetProgressRepo
 	return response, nil
 }
 
-func (s *ReportService) CreateReportCommentService(db *mongo.Client, userID, reportID uint, req dto.CreateReportCommentRequest) (*dto.CreateReportCommentResponse, error) {
+func (s *ReportService) CreateReportComment(db *mongo.Client, userID, reportID uint, req dto.CreateReportCommentRequest) (*dto.CreateReportCommentResponse, error) {
 	ctx := context.Background()
 
 	report, err := s.reportRepo.GetByID(reportID)
@@ -968,7 +969,21 @@ func (s *ReportService) CreateReportCommentService(db *mongo.Client, userID, rep
 	if err != nil {
 		return nil, apperror.New(400, "INVALID_THREAD_ROOT_ID", "ID akar thread tidak valid")
 	}
-	commentMediaType := model.CommentMediaType(*req.MediaType)
+	
+	var commentMedia model.CommentMedia
+
+	if req.MediaType != nil {
+		commentMediaType := model.CommentMediaType(*req.MediaType)
+		if req.MediaURL == nil {
+			return nil, apperror.New(400, "MEDIA_URL_REQUIRED", "URL media diperlukan saat tipe media disediakan")
+		}
+		commentMedia = model.CommentMedia{
+			URL:  *req.MediaURL,
+			Type: commentMediaType,
+			Width: req.MediaWidth,
+			Height: req.MediaHeight,
+		}
+	}	
 
 	// for _, userMentioned := range req.Mentions {
 	// 	user, err := s.userRepo.GetByID(userMentioned)
@@ -981,20 +996,13 @@ func (s *ReportService) CreateReportCommentService(db *mongo.Client, userID, rep
 
 	// }
 
-	reportCommentMedia := &model.CommentMedia{
-		URL: *req.MediaURL,
-		Type: commentMediaType,
-		Width: req.MediaWidth,
-		Height: req.MediaHeight,
-	}
-
 	var reportComment model.ReportComment
 	reportComment = model.ReportComment{
 		ReportID:        reportID,
 		UserID:          userID,
 		Content:         req.Content,
 		CreatedAt:       time.Now().Unix(),
-		Media: reportCommentMedia,
+		Media: 			&commentMedia,
 		UpdatedAt:       mainutils.Int64PtrOrNil(time.Now().Unix()),
 		Mentions:        req.Mentions,
 		ParentCommentID: parentCommentIDObj,
@@ -1028,4 +1036,74 @@ func (s *ReportService) CreateReportCommentService(db *mongo.Client, userID, rep
 		ParentCommentID: parentCommentIDStr,
 		ThreadRootID:    threadRootIDStr,
 	}, nil
+}
+
+func (s *ReportService) GetReportComments(reportID uint, cursorID *string) (*dto.GetReportCommentsResponse, error) {
+	ctx := context.Background()
+	limit := 10
+
+	primitiveCursor, err := mainutils.StringPtrToObjectIDPtr(cursorID)
+	if err != nil {
+		return nil, apperror.New(400, "INVALID_CURSOR_ID", "ID kursor tidak valid")
+	}
+
+	commentsFromDB, err := s.reportCommentRepo.GetPaginatedByReportID(ctx, reportID, primitiveCursor, limit)
+	if err != nil {
+		return nil, apperror.New(500, "COMMENT_FETCH_FAILED", "Gagal mengambil komentar laporan")
+	}
+
+	userIDs := make([]uint, 0)
+	userIDMap := make(map[uint]struct{})
+
+	for _, c := range commentsFromDB {
+		if _, exists := userIDMap[c.UserID]; !exists {
+			userIDMap[c.UserID] = struct{}{}
+			userIDs = append(userIDs, c.UserID)
+		}
+	}
+
+	users, err := s.userRepo.GetByIDs(userIDs)
+	if err != nil {
+		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data pengguna komentar")
+	}
+
+	userMap := make(map[uint]userDTO.UserProfile)
+	for _, u := range users {
+		userMap[u.ID] = userDTO.UserProfile{
+			UserID:         u.ID,
+			Username:       u.Username,
+			FullName:       u.FullName,
+			ProfilePicture: u.Profile.ProfilePicture,
+			Bio: u.Profile.Bio,
+			Birthday: u.Profile.Birthday,
+		}
+	}
+
+	resp := dto.GetReportCommentsResponse{}
+	for _, c := range commentsFromDB {
+		var mediaResp *dto.CommentMedia
+		if c.Media != nil {
+			mediaResp = &dto.CommentMedia{
+				URL:    c.Media.URL,
+				Type:   string(c.Media.Type),
+				Width:  c.Media.Width,
+				Height: c.Media.Height,
+			}
+		}
+
+		resp.Comments = append(resp.Comments, dto.Comment{
+			CommentID:       c.ID.Hex(),
+			ReportID:        c.ReportID,
+			UserInformation:	userMap[c.UserID],
+			CreatedAt:       c.CreatedAt,
+			Media:           mediaResp,
+			Content:         c.Content,
+			ParentCommentID: mainutils.ObjectIDPtrToStringPtr(c.ParentCommentID),
+			ThreadRootID:    mainutils.ObjectIDPtrToStringPtr(c.ThreadRootID),
+		})
+	}
+
+	total, _ := s.reportCommentRepo.GetCountsByReportID(ctx, reportID)
+	resp.TotalCounts = total
+	return &resp, nil
 }
