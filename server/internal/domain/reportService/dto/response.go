@@ -69,7 +69,12 @@ type CreateReportCommentResponse struct {
 	UserID         uint   `json:"userID"`
 	Content        *string `json:"content,omitempty"`
 	CreatedAt      int64  `json:"createdAt"`
-	Media 	   	  *CommentMediaType `json:"media,omitempty"`
+	Media 	   	  *CommentMedia `json:"media,omitempty"`
 	ParentCommentID *string `json:"parentCommentID,omitempty"`
 	ThreadRootID    *string `json:"threadRootID,omitempty"`
+}
+
+type GetReportCommentsResponse struct {
+	Comments []Comment `json:"comments"`
+	TotalCounts int64    `json:"totalCounts"`
 }
