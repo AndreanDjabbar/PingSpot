@@ -14,12 +14,14 @@ interface TextAreaFieldProps {
     value?: string;
     onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
     register?: unknown;
     rows?: number;
     disabled?: boolean;
+    autoFocus?: boolean;
 }
 
-const TextAreaField: React.FC<TextAreaFieldProps> = ({
+const TextAreaField = React.forwardRef<HTMLTextAreaElement, TextAreaFieldProps>(({
     id,
     name,
     required = false,
@@ -32,50 +34,57 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
     value,
     onChange,
     onBlur,
+    onKeyDown,
     register,
     rows = 4,
     disabled = false,
-}) => {
+    autoFocus = false,
+}, ref) => {
     return (
         <div className={`space-y-1 ${className}`}>
-        {withLabel && (
-            <div className='flex gap-2'>
-                {labelIcon && (
-                    <span className="text-gray-700">{labelIcon}</span>
-                )}
-                <label htmlFor={id} className="block text-sm font-semibold text-gray-900">
-                {labelTitle}
-                {required && <span className="text-red-500 ml-1">*</span>}
-                </label>
-            </div>
-        )}
-        <div className="relative flex">
+            {withLabel && (
+                <div className='flex gap-2'>
+                    {labelIcon && (
+                        <span className="text-gray-700">{labelIcon}</span>
+                    )}
+                    <label htmlFor={id} className="block text-sm font-semibold text-gray-900">
+                    {labelTitle}
+                    {required && <span className="text-red-500 ml-1">*</span>}
+                    </label>
+                </div>
+            )}
+            <div className="relative flex">
                 {icon && (
                     <div className="absolute left-0 top-1/2 transform -translate-y-1/2 pl-3 flex items-center pointer-events-none text-gray-500">
                         {icon}
                     </div>
                 )}
                 <textarea
-                id={id}
-                name={name}
-                required={required}
-                rows={rows}
-                disabled={disabled}
-                style={{ minHeight: '50px' }}
-                className={cn("block w-full", 
-                    icon ? 'pl-10' : 'pl-3',
-                    "pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200",
-                    disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'
-                )}
-                placeholder={placeHolder || `Masukkan ${labelTitle.toLowerCase()}`}
-                value={value}
-                onChange={onChange}
-                onBlur={onBlur}
-                {...(register || {})}
+                    ref={ref}
+                    id={id}
+                    name={name}
+                    required={required}
+                    rows={rows}
+                    disabled={disabled}
+                    autoFocus={autoFocus}
+                    style={{ minHeight: '50px' }}
+                    className={cn("block w-full", 
+                        icon ? 'pl-10' : 'pl-3',
+                        "pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200",
+                        disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'
+                    )}
+                    placeholder={placeHolder || `Masukkan ${labelTitle.toLowerCase()}`}
+                    value={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    onKeyDown={onKeyDown}
+                    {...(register || {})}
                 />
             </div>
         </div>
     );
-};
+});
+
+TextAreaField.displayName = 'TextAreaField';
 
 export default TextAreaField;
