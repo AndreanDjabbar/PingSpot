@@ -68,12 +68,11 @@ type UploadProgressReportRequest struct {
 }
 
 type CreateReportCommentRequest struct {
-	Content  *string `json:"content" validate:"omitempty,max=1000"`
-	MediaURL *string `json:"mediaURL" validate:"omitempty,max=255"`
-	MediaType *string `json:"mediaType" validate:"omitempty,oneof=IMAGE GIF VIDEO"`
-	MediaWidth  *uint    `json:"mediaWidth" validate:"omitempty,min=1"`
-	MediaHeight *uint    `json:"mediaHeight" validate:"omitempty,min=1"`
-	Mentions    []uint  `json:"mentions" validate:"omitempty,dive,gt=0"`
+	Content         *string `json:"content" validate:"omitempty,max=1000"`
+	MediaURL        *string `json:"mediaURL" validate:"omitempty,max=255"`
+	MediaType       *string `json:"mediaType" validate:"omitempty,oneof=IMAGE GIF VIDEO"`
+	MediaWidth      *uint   `json:"mediaWidth" validate:"omitempty,min=1"`
+	MediaHeight     *uint   `json:"mediaHeight" validate:"omitempty,min=1"`
+	Mentions        []uint  `json:"mentions" validate:"omitempty,dive,gt=0"`
 	ParentCommentID *string `json:"parentCommentID" validate:"omitempty,len=24"`
-	ThreadRootID    *string `json:"threadRootID" validate:"omitempty,len=24"`
 }
