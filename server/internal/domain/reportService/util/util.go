@@ -187,12 +187,11 @@ func OrganizeComments(comments []*model.ReportComment, users map[uint]*model.Use
 		}
 		commentID := comment.ID.Hex()
 		commentDTO := convertToDTO(comment, user)
+		commentMap[commentID] = commentDTO
 		
 		if comment.ParentCommentID == nil {
 			rootCommentMap[commentID] = commentDTO
 			organizedComments = append(organizedComments, commentDTO)
-		} else {
-			commentMap[commentID] = commentDTO
 		}
 	}
 
@@ -200,25 +199,32 @@ func OrganizeComments(comments []*model.ReportComment, users map[uint]*model.Use
 		if comment.ParentCommentID != nil {
 			parentID := *comment.ParentCommentID
 			
-			if parentComment, exists := rootCommentMap[parentID]; exists {
-				parentComment.Replies = append(parentComment.Replies, *comment)
-			} else if siblingComment, exists := commentMap[parentID]; exists {
+			var parentComment *reportDTO.Comment
+			if parent, exists := rootCommentMap[parentID]; exists {
+				parentComment = parent
+			} else if parent, exists := commentMap[parentID]; exists {
+				parentComment = parent
+			}
+			
+			if parentComment != nil {
 				comment.ReplyTo = &dto.UserProfile{
-					UserID:         siblingComment.UserInformation.UserID,
-					Username:       siblingComment.UserInformation.Username,
-					FullName:       siblingComment.UserInformation.FullName,
-					ProfilePicture: siblingComment.UserInformation.ProfilePicture,
-					Bio:            siblingComment.UserInformation.Bio,
-					Gender:         siblingComment.UserInformation.Gender,
-					Birthday:       siblingComment.UserInformation.Birthday,
+					UserID:         parentComment.UserInformation.UserID,
+					Username:       parentComment.UserInformation.Username,
+					FullName:       parentComment.UserInformation.FullName,
+					ProfilePicture: parentComment.UserInformation.ProfilePicture,
+					Bio:            parentComment.UserInformation.Bio,
+					Gender:         parentComment.UserInformation.Gender,
+					Birthday:       parentComment.UserInformation.Birthday,
 				}
-				rootParent := findRootParent(siblingComment, rootCommentMap, commentMap)
+				
+				rootParent := findRootParent(parentComment, rootCommentMap, commentMap)
 				if rootParent != nil {
 					rootParent.Replies = append(rootParent.Replies, *comment)
 				}
 			}
 		}
 	}
+	
 	return organizedComments
 }
 
@@ -232,8 +238,8 @@ func findRootParent(comment *reportDTO.Comment, rootCommentMap map[string]*repor
 		return rootParent
 	}
 	
-	if siblingComment, exists := commentMap[parentID]; exists {
-		return findRootParent(siblingComment, rootCommentMap, commentMap)
+	if parentComment, exists := commentMap[parentID]; exists {
+		return findRootParent(parentComment, rootCommentMap, commentMap)
 	}
 	
 	return nil
