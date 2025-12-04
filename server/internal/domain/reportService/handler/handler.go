@@ -720,7 +720,6 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 	mediaWidthStr := c.FormValue("mediaWidth")
 	mediaHeightStr := c.FormValue("mediaHeight")
 	parentCommentIDStr := c.FormValue("parentCommentID")
-	threadRootIDStr := c.FormValue("threadRootID")
 	mentionsSTR := c.FormValue("mentions")
 	files := form.File["mediaFile"]
 
@@ -807,17 +806,14 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 	if mediaType == "IMAGE" && imageName != "" {
 		mediaURL = imageName
 	}
-	fmt.Println("MEDIA TYPE: ", mainutils.StrPtrOrNil(mediaType))
-	fmt.Println("MEDIA URL: ", mainutils.StrPtrOrNil(mediaURL))
+
 	req := dto.CreateReportCommentRequest{
 		Content:         mainutils.StrPtrOrNil(content),
 		MediaURL: 		mainutils.StrPtrOrNil(mediaURL),
 		MediaType:      mainutils.StrPtrOrNil(mediaType),
 		MediaWidth:   	mediaWidth,
 		MediaHeight:   	mediaHeight,
-		ParentCommentID: mainutils.StrPtrOrNil(parentCommentIDStr),
-		ThreadRootID:    mainutils.StrPtrOrNil(threadRootIDStr),
-		Mentions:        mentions,	
+		ParentCommentID: mainutils.StrPtrOrNil(parentCommentIDStr),	
 	}
 
 	if err := validation.Validate.Struct(req); err != nil {
