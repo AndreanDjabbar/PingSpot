@@ -1,3 +1,5 @@
+import { IUserProfile } from "./user";
+
 export type ReportType = 
     | 'INFRASTRUCTURE' 
     | 'ENVIRONMENT' 
@@ -131,24 +133,16 @@ export interface IReportCommentMedia {
 export interface IReportComment {
     commentID: string;
     reportID: number;
-    userInformation: {
-        userID: number;
-        fullName: string;
-        username: string;
-        profilePicture?: string;
-        gender?: string;
-        bio?: string;
-        birthday?: number;
-    }
+    userInformation: IUserProfile;
     userName: string;
     fullName: string;
     profilePicture?: string;
     content?: string;
     createdAt: number;
-    updatedAt: number;
-    parentCommentID?: string;
+    updammentID?: string;
     threadRootID?: string;
     mentions?: number[];
+    replyTo?: IUserProfile;
     media?: IReportCommentMedia;
     replies?: IReportComment[];
 }
