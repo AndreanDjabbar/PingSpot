@@ -7,7 +7,7 @@ import { FaReply, FaEllipsisV, FaHeart, FaRegHeart } from 'react-icons/fa';
 import { BiSend } from 'react-icons/bi';
 import { motion } from 'framer-motion';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
-import { useUserProfileStore } from '@/stores';
+import { useUserProfileStore, useImagePreviewModalStore } from '@/stores';
 import MentionInput, { MentionUser } from './MentionInput';
 import MentionText from './MentionText';
 import { Button } from '@/components/UI';
@@ -43,23 +43,24 @@ const CommentItem: React.FC<CommentItemProps> = ({
     const [showMenu, setShowMenu] = useState(false);
     const [liked, setLiked] = useState(false);
     const replyInputRef = useRef<HTMLTextAreaElement>(null);
-    const editInputRef = useRef<HTMLTextAreaElement>(null);
+    const editInputRef = useRef<HTMLTextAreaElement>(null); 
     const userProfile = useUserProfileStore((s) => s.userProfile);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
+    const openPreviewModal = useImagePreviewModalStore((s) => s.openImagePreview);
 
     useEffect(() => {
         if (isReplying && replyInputRef.current) {
             replyInputRef.current.focus();
-            setReplyContent(`@${comment.userName} `);
+            setReplyContent(`@${comment.userInformation.username} `);
         }
         if (isEditing && editInputRef.current) {
             editInputRef.current.focus();
         }
-    }, [isReplying, isEditing, comment.userName]);
+    }, [isReplying, isEditing, comment.userInformation.username]);
 
     const handleReply = () => {
         if (replyContent.trim()) {
-            const threadRootId = comment.threadRootID || Number(comment.commentID);
+            const threadRootId = Number(comment.commentID);
             onReply(replyContent, Number(comment.commentID), Number(threadRootId), replyMentions);
             setReplyContent('');
             setReplyMentions([]);
@@ -73,6 +74,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
             setIsEditing(false);
         }
     };
+
+    const handleImageClick = (imageURL: string) => {
+        openPreviewModal(imageURL);
+    }
 
     const handleDelete = () => {
         if (onDelete) {
@@ -92,7 +97,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                         <div className={`w-6 h-6 rounded-full overflow-hidden border border-gray-200`}>
                             <Image 
                                 src={getImageURL(comment.userInformation.profilePicture || '', "user")}
-                                alt={comment.fullName}
+                                alt={comment.userInformation.fullName}
                                 width={24}
                                 height={24}
                                 className="object-cover h-full w-full"
@@ -106,9 +111,30 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             {comment.userInformation.username}
                         </span>
                         <span className="text-sm text-gray-800 break-words">
-                            <MentionText text={comment.content || ""} />
+                            <MentionText 
+                            text={comment.content || ""}
+                            userMentioned={comment.replyTo || null} 
+                            />
                         </span>
-                    </div>                        <div className="flex items-center space-x-3 mt-1">
+                    </div>
+                        {comment.media && (
+                            <div className="mt-2">
+                                {comment.media.type === 'IMAGE' || comment.media.type === 'gif' ? (
+                                    <div className="relative rounded-lg overflow-hidden max-w-[200px]">
+                                        <Image
+                                            src={getImageURL(`/report/comments/${comment.media.url}`, "main")}
+                                            onClick={() => handleImageClick(getImageURL(`/report/comments/${comment?.media?.url}`, "main"))}
+                                            alt="Comment media"
+                                            width={comment?.media?.width || 200}
+                                            height={comment?.media?.height || 150}
+                                            className="object-cover w-full h-auto"
+                                        />
+                                    </div>
+                                ) : null}
+                            </div>
+                        )}
+                        
+                        <div className="flex items-center space-x-3 mt-1">
                             <span className="text-xs text-gray-400">
                                 {formattedDate(comment.createdAt, { formatStr: 'dd MMM yyyy' })}
                             </span>
@@ -202,8 +228,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
             className="mb-4"
             style={{ marginLeft: `${marginLeft}px` }}
         >
-            <div className="flex items-center">
-                <div className="flex-shrink-0">
+            <div className="flex items-start">
+                <div className="pt-3">
                     <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow">
                         <Image 
                             src={getImageURL(comment?.userInformation?.profilePicture || '', "user")}
@@ -227,7 +253,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 </span>
                             </div>
                             
-                            {comment?.userInformation?.userID === currentUserId && onEdit && onDelete && (
+                            {Number(comment?.userInformation?.userID) === currentUserId && onEdit && onDelete && (
                                 <div className="relative">
                                     <button
                                         onClick={() => setShowMenu(!showMenu)}
@@ -291,9 +317,31 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-gray-800 text-sm leading-relaxed">
-                                <MentionText text={comment.content || ''} />
-                            </p>
+                            <>
+                                <p className="text-gray-800 text-sm leading-relaxed">
+                                    <MentionText 
+                                    text={comment.content || ''} 
+                                    userMentioned={comment.replyTo || null}
+                                    />
+                                </p>
+                                
+                                {comment.media && (
+                                    <div className="mt-3">
+                                        {comment.media.type === 'IMAGE' || comment.media.type === 'gif' ? (
+                                            <div className="relative rounded-xl overflow-hidden max-w-[150px]">
+                                                <Image
+                                                    src={getImageURL(`/report/comments/${comment.media.url}`, "main")}
+                                                    alt="Comment media"
+                                                    onClick={() => handleImageClick(getImageURL(`/report/comments/${comment?.media?.url}`, "main"))}
+                                                    width={comment.media.width || 250}
+                                                    height={comment.media.height || 180}
+                                                    className="object-cover w-full h-auto"
+                                                />
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                     
@@ -312,7 +360,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             )}
                             
                             <button
-                                onClick={() => setIsReplying(true)}
+                                onClick={() => {
+                                    console.log("REPLY TO COMMENTID:", comment.commentID);
+                                    setIsReplying(true)
+                                }} 
                                 className="flex items-center space-x-1 text-xs font-medium text-gray-500 hover:text-sky-600 transition-colors"
                             >
                                 <FaReply className="w-3 h-3" />
@@ -364,7 +415,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                     value={replyContent}
                                     onChange={setReplyContent}
                                     onMentionsChange={setReplyMentions}
-                                    placeholder={`Balas ${comment.userName}...`}
+                                    placeholder={`Balas ${comment.userInformation.username}...`}
                                     rows={2}
                                     users={availableUsers}
                                     autoFocus

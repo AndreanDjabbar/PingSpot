@@ -82,8 +82,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
     onAddComment,
     onStatusVote,
 }) => {
-    console.log('ReportModal Comments:', comments);
-    type ICommentType = IReportComment & { replies?: ICommentType[] };
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -111,33 +109,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
     const handleReply = (content: string, parentId: number) => {
         onAddComment(content, parentId);
     };
-
-    const organizeComments = (comments: ICommentType[]): ICommentType[] => {
-        const commentMap = new Map<string, ICommentType>();
-        const rootComments: ICommentType[] = [];
-
-        comments.forEach(comment => {
-            commentMap.set(comment.commentID, { ...comment, replies: [] });
-        });
-
-        comments.forEach(comment => {
-            const commentWithReplies = commentMap.get(comment.commentID)!;
-            
-            if (comment.parentCommentID) {
-                const parent = commentMap.get(comment.parentCommentID);
-                if (parent) {
-                    parent.replies = parent.replies || [];
-                    parent.replies.push(commentWithReplies);
-                }
-            } else {
-                rootComments.push(commentWithReplies);
-            }
-        });
-
-        return rootComments;
-    };
-
-    const threadedComments = organizeComments(comments);
 
     const nextImage = () => {
         if (images.length > 1) {
@@ -316,8 +287,8 @@ const ReportModal: React.FC<ReportModalProps> = ({
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            {threadedComments.length > 0 ? (
-                                threadedComments.map((comment) => (
+                            {comments.length > 0 ? (
+                                comments.map((comment) => (
                                     <CommentItem
                                         key={comment.commentID}
                                         comment={comment}

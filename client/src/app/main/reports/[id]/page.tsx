@@ -625,6 +625,7 @@ const ReportDetailPage = () => {
                             ): (
                                 <ReportCommentsSection
                                     comments={displayComments}
+                                    totalComments={getReportCommentsData?.pages[0]?.data?.comments.totalCounts || 0}
                                     onSubmitComment={handleSubmitComment}
                                     onReply={handleReply}
                                 />

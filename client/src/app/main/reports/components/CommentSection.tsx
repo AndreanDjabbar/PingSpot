@@ -57,71 +57,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     const handleReply = (content: string, parentId: number, threadRootId?: number, mentions?: number[]) => {
         onAddComment(content, parentId, threadRootId, mentions);
     };
-
-    const organizeComments = (comments: IReportComment[]): IReportComment[] => {
-        const commentMap = new Map<string, IReportComment & { replies: IReportComment[] }>();
-        const rootComments: IReportComment[] = [];
-
-        // First pass: Create a map of all comments with empty replies array
-        comments.forEach(comment => {
-            commentMap.set(comment.commentID, { ...comment, replies: [] });
-        });
-
-        // Second pass: Build the hierarchy
-        comments.forEach(comment => {
-            const commentWithReplies = commentMap.get(comment.commentID)!;
-            
-            // If this comment has a parentCommentID, it's a direct reply to that comment
-            if (comment.parentCommentID) {
-                const parentComment = commentMap.get(comment.parentCommentID);
-                if (parentComment) {
-                    // Add this comment as a reply to its parent
-                    if (!parentComment.replies) {
-                        parentComment.replies = [];
-                    }
-                    parentComment.replies.push(commentWithReplies);
-                } else {
-                    // If parent not found, treat as root comment
-                    rootComments.push(commentWithReplies);
-                }
-            } 
-            // If no parentCommentID but has threadRootID, it's a reply in a thread
-            else if (comment.threadRootID) {
-                const threadRoot = commentMap.get(comment.threadRootID);
-                if (threadRoot) {
-                    if (!threadRoot.replies) {
-                        threadRoot.replies = [];
-                    }
-                    threadRoot.replies.push(commentWithReplies);
-                } else {
-                    // If thread root not found, treat as root comment
-                    rootComments.push(commentWithReplies);
-                }
-            } 
-            // No parent or thread root - this is a root comment
-            else {
-                rootComments.push(commentWithReplies);
-            }
-        });
-
-        // Sort replies by createdAt (oldest first) for better readability
-        const sortReplies = (comment: IReportComment & { replies: IReportComment[] }) => {
-            if (comment.replies && comment.replies.length > 0) {
-                comment.replies.sort((a, b) => a.createdAt - b.createdAt);
-                comment.replies.forEach(reply => sortReplies(reply as IReportComment & { replies: IReportComment[] }));
-            }
-        };
-
-        rootComments.forEach(comment => sortReplies(comment as IReportComment & { replies: IReportComment[] }));
-        
-        // Sort root comments (you can change this to newest first if preferred)
-        rootComments.sort((a, b) => b.createdAt - a.createdAt);
-
-        return rootComments;
-    };
-    
-    const threadedComments = organizeComments(comments);
-    console.log("ORGANIZED COMMENTS:", threadedComments);
     const isCompact = variant === 'compact';
 
     return (
@@ -195,8 +130,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             
             <div className="space-y-2">
                 <AnimatePresence>
-                    {threadedComments.length > 0 ? (
-                        threadedComments.map((comment) => (
+                    {comments.length > 0 ? (
+                        comments.map((comment) => (
                             <CommentItem
                                 key={comment.commentID}
                                 comment={comment}

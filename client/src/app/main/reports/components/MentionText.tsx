@@ -2,64 +2,39 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { IUserProfile } from '@/types/model/user';
 
 interface MentionTextProps {
     text: string;
     className?: string;
+    userMentioned: IUserProfile | null;
 }
 
-const MentionText: React.FC<MentionTextProps> = ({ text, className = "" }) => {
-    const parseTextWithMentions = (text: string) => {
-        const mentionRegex = /@(\w+)/g;
-        const parts: Array<{ type: 'text' | 'mention'; content: string }> = [];
-        let lastIndex = 0;
-        let match;
-
-        while ((match = mentionRegex.exec(text)) !== null) {
-            if (match.index > lastIndex) {
-                parts.push({
-                    type: 'text',
-                    content: text.substring(lastIndex, match.index)
-                });
-            }
-
-            parts.push({
-                type: 'mention',
-                content: match[1]
-            });
-
-            lastIndex = match.index + match[0].length;
-        }
-
-        if (lastIndex < text.length) {
-            parts.push({
-                type: 'text',
-                content: text.substring(lastIndex)
-            });
-        }
-
-        return parts;
-    };
-
-    const parts = parseTextWithMentions(text);
-
+const MentionText: React.FC<MentionTextProps> = ({ 
+    text, 
+    className = "",
+    userMentioned 
+}) => {
     return (
         <span className={className}>
-            {parts.map((part, index) => {
-                if (part.type === 'mention') {
-                    return (
+            {userMentioned ? (
+                <>
+                    <div className='flex gap-1'>
                         <Link
-                            key={index}
-                            href={`/main/profile/${part.content}`}
+                            href={`/main/profile/${userMentioned.username}`}
                             className="text-sky-600 hover:text-sky-700 font-medium hover:underline"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            @{part.content}
+                            @{userMentioned.username}
                         </Link>
-                    );
-                }
-                return <span key={index}>{part.content}</span>;
-            })}
+                        {text}
+                    </div>
+                </>
+            ) : (
+                <>
+                    {text}
+                </>
+            )}
         </span>
     );
 };

@@ -12,6 +12,7 @@ import { IReportComment } from '@/types/model/report';
 
 interface ReportCommentsSectionProps {
     comments: IReportComment[];
+    totalComments?: number;
     onSubmitComment: (content: string) => Promise<void>;
     onReply: (content: string, parentId: number) => void;
 }
@@ -19,6 +20,7 @@ interface ReportCommentsSectionProps {
 export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({ 
     comments, 
     onSubmitComment,
+    totalComments,
     onReply 
 }) => {
     const [newComment, setNewComment] = useState('');
@@ -39,63 +41,11 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
         }
     };
 
-    const organizeComments = (comments: IReportComment[]): IReportComment[] => {
-        const commentMap = new Map<string, IReportComment & { replies: IReportComment[] }>();
-        const rootComments: IReportComment[] = [];
-
-        comments.forEach(comment => {
-            commentMap.set(comment.commentID, { ...comment, replies: [] });
-        });
-
-        comments.forEach(comment => {
-            const commentWithReplies = commentMap.get(comment.commentID)!;
-            
-            if (comment.parentCommentID) {
-                const parentComment = commentMap.get(comment.parentCommentID);
-                if (parentComment) {
-                    if (!parentComment.replies) {
-                        parentComment.replies = [];
-                    }
-                    parentComment.replies.push(commentWithReplies);
-                } else {
-                    rootComments.push(commentWithReplies);
-                }
-            } else if (comment.threadRootID) {
-                const threadRoot = commentMap.get(comment.threadRootID);
-                if (threadRoot) {
-                    if (!threadRoot.replies) {
-                        threadRoot.replies = [];
-                    }
-                    threadRoot.replies.push(commentWithReplies);
-                } else {
-                    rootComments.push(commentWithReplies);
-                }
-            } else {
-                rootComments.push(commentWithReplies);
-            }
-        });
-
-        const sortReplies = (comment: IReportComment & { replies: IReportComment[] }) => {
-            if (comment.replies && comment.replies.length > 0) {
-                comment.replies.sort((a, b) => a.createdAt - b.createdAt);
-                comment.replies.forEach(reply => sortReplies(reply as IReportComment & { replies: IReportComment[] }));
-            }
-        };
-
-        rootComments.forEach(comment => sortReplies(comment as IReportComment & { replies: IReportComment[] }));
-        
-        rootComments.sort((a, b) => b.createdAt - a.createdAt);
-
-        return rootComments;
-    };
-
-    const threadedComments = organizeComments(comments);
-
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-200">
                 <h2 className="text-lg font-bold text-gray-900">
-                    Komentar ({comments.length})
+                    Komentar ({totalComments || comments.length})
                 </h2>
             </div>
 
@@ -131,7 +81,7 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
             </div>
 
             <div className="divide-y divide-gray-200">
-                {threadedComments.map((comment) => (
+                {comments.map((comment) => (
                     <div key={comment.commentID} className="p-6">
                         <CommentItem
                             comment={comment}
