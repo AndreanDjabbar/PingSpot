@@ -2,6 +2,8 @@ package util
 
 import (
 	"server/internal/domain/model"
+	reportDTO "server/internal/domain/reportService/dto"
+	"server/internal/domain/userService/dto"
 	mainutils "server/pkg/utils/mainUtils"
 	"sort"
 )
@@ -129,4 +131,110 @@ func getProgressReminderEmailTemplate() string {
 	</table>
 </body>
 </html>`
+}
+
+func convertToDTO(c *model.ReportComment, u *model.User) *reportDTO.Comment {
+	comment := &reportDTO.Comment{
+		CommentID: c.ID.Hex(),
+		ReportID:  c.ReportID,
+		UserInformation: dto.UserProfile{
+			UserID:         c.UserID,
+			Username:       u.Username,
+			FullName:       u.FullName,
+			ProfilePicture: u.Profile.ProfilePicture,
+			Gender:         u.Profile.Gender,
+			Bio:            u.Profile.Bio,
+			Birthday:       u.Profile.Birthday,
+		},
+		Content:  c.Content,
+		ParentCommentID: func() *string {
+			if c.ParentCommentID != nil {
+				id := c.ParentCommentID.Hex()
+				return &id
+			}
+			return nil
+		}(),
+		CreatedAt: c.CreatedAt,
+		UpdatedAt: func() *int64 {
+			if c.UpdatedAt != nil {
+				t := c.UpdatedAt
+				return t
+			}
+			return nil
+		}(),
+	}
+
+	if c.Media != nil {
+		comment.Media = &reportDTO.CommentMedia{
+			URL:    c.Media.URL,
+			Type:   string(c.Media.Type),
+			Width:  c.Media.Width,
+			Height: c.Media.Height,
+		}
+	}
+	return comment
+}
+
+func OrganizeComments(comments []*model.ReportComment, users map[uint]*model.User) []*reportDTO.Comment {
+	rootCommentMap := make(map[string]*reportDTO.Comment)
+	commentMap := make(map[string]*reportDTO.Comment)
+	organizedComments := make([]*reportDTO.Comment, 0)
+
+	for _, comment := range comments {
+		user := users[comment.UserID]
+		if user == nil {
+			continue
+		}
+		commentID := comment.ID.Hex()
+		commentDTO := convertToDTO(comment, user)
+		
+		if comment.ParentCommentID == nil {
+			rootCommentMap[commentID] = commentDTO
+			organizedComments = append(organizedComments, commentDTO)
+		} else {
+			commentMap[commentID] = commentDTO
+		}
+	}
+
+	for _, comment := range commentMap {
+		if comment.ParentCommentID != nil {
+			parentID := *comment.ParentCommentID
+			
+			if parentComment, exists := rootCommentMap[parentID]; exists {
+				parentComment.Replies = append(parentComment.Replies, *comment)
+			} else if siblingComment, exists := commentMap[parentID]; exists {
+				comment.ReplyTo = &dto.UserProfile{
+					UserID:         siblingComment.UserInformation.UserID,
+					Username:       siblingComment.UserInformation.Username,
+					FullName:       siblingComment.UserInformation.FullName,
+					ProfilePicture: siblingComment.UserInformation.ProfilePicture,
+					Bio:            siblingComment.UserInformation.Bio,
+					Gender:         siblingComment.UserInformation.Gender,
+					Birthday:       siblingComment.UserInformation.Birthday,
+				}
+				rootParent := findRootParent(siblingComment, rootCommentMap, commentMap)
+				if rootParent != nil {
+					rootParent.Replies = append(rootParent.Replies, *comment)
+				}
+			}
+		}
+	}
+	return organizedComments
+}
+
+func findRootParent(comment *reportDTO.Comment, rootCommentMap map[string]*reportDTO.Comment, commentMap map[string]*reportDTO.Comment) *reportDTO.Comment {
+	if comment.ParentCommentID == nil {
+		return comment
+	}
+	
+	parentID := *comment.ParentCommentID
+	if rootParent, exists := rootCommentMap[parentID]; exists {
+		return rootParent
+	}
+	
+	if siblingComment, exists := commentMap[parentID]; exists {
+		return findRootParent(siblingComment, rootCommentMap, commentMap)
+	}
+	
+	return nil
 }
