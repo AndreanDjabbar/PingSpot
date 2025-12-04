@@ -63,25 +63,27 @@ func (h *CronHandler) ExpireOldReports() error {
 	threshold := now - (30 * 24 * 60 * 60)
 
 	for _, report := range *reports {
-		if *report.LastUpdatedProgressAt <= threshold && report.LastUpdatedBy == "SYSTEM" {
-			tx := h.db.Begin()
-
-			report.ReportStatus = "EXPIRED"
-			report.LastUpdatedBy = "SYSTEM"
-			report.UpdatedAt = time.Now().Unix()
-
-			if _, err := h.reportRepo.UpdateTX(tx, &report); err != nil {
-				tx.Rollback()
-				logger.Error(fmt.Sprintf("Failed to expire report ID %d: %v", report.ID, err))
-				continue
+		if report.LastUpdatedProgressAt != nil && report.LastUpdatedBy != "" {
+			if *report.LastUpdatedProgressAt <= threshold && report.LastUpdatedBy == "SYSTEM" {
+				tx := h.db.Begin()
+	
+				report.ReportStatus = "EXPIRED"
+				report.LastUpdatedBy = "SYSTEM"
+				report.UpdatedAt = time.Now().Unix()
+	
+				if _, err := h.reportRepo.UpdateTX(tx, &report); err != nil {
+					tx.Rollback()
+					logger.Error(fmt.Sprintf("Failed to expire report ID %d: %v", report.ID, err))
+					continue
+				}
+	
+				if err := tx.Commit().Error; err != nil {
+					logger.Error(fmt.Sprintf("Failed to commit transaction for report ID %d: %v", report.ID, err))
+					continue
+				}
+	
+				logger.Info(fmt.Sprintf("Report ID %d has been marked as EXPIRED", report.ID))
 			}
-
-			if err := tx.Commit().Error; err != nil {
-				logger.Error(fmt.Sprintf("Failed to commit transaction for report ID %d: %v", report.ID, err))
-				continue
-			}
-
-			logger.Info(fmt.Sprintf("Report ID %d has been marked as EXPIRED", report.ID))
 		}
 	}
 	return nil
