@@ -100,9 +100,10 @@ type Comment struct {
 	UserInformation userDTO.UserProfile `json:"userInformation"`
 	Content         *string       `json:"content,omitempty"`
 	Media           *CommentMedia `json:"media,omitempty"`
-	Mentions        []uint        `json:"mentions,omitempty"`
+	Mentions        []userDTO.UserProfile   `json:"mentions,omitempty"`
+	ReplyTo 		*userDTO.UserProfile `json:"replyTo,omitempty"`
 	ParentCommentID *string       `json:"parentCommentID,omitempty"`
-	ThreadRootID    *string       `json:"threadRootID,omitempty"`
+	Replies			[]Comment     `json:"replies,omitempty"`
 	CreatedAt       int64         `json:"createdAt"`
 	UpdatedAt       *int64        `json:"updatedAt,omitempty"`
 }
