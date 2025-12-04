@@ -1,6 +1,9 @@
 package dto
 
-import "server/internal/domain/model"
+import (
+	"server/internal/domain/model"
+	userDTO "server/internal/domain/userService/dto"
+)
 
 type CreateReportResponse struct {
 	Report         model.Report         `json:"report"`
@@ -69,12 +72,12 @@ type CreateReportCommentResponse struct {
 	UserID         uint   `json:"userID"`
 	Content        *string `json:"content,omitempty"`
 	CreatedAt      int64  `json:"createdAt"`
+	ReplyTo 	  *userDTO.UserProfile `json:"replyTo,omitempty"`
 	Media 	   	  *CommentMedia `json:"media,omitempty"`
 	ParentCommentID *string `json:"parentCommentID,omitempty"`
-	ThreadRootID    *string `json:"threadRootID,omitempty"`
 }
 
 type GetReportCommentsResponse struct {
-	Comments []Comment `json:"comments"`
+	Comments []*Comment `json:"comments"`
 	TotalCounts int64    `json:"totalCounts"`
 }
