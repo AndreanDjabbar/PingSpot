@@ -9,6 +9,7 @@ import { useVoteReport } from "./useVoteReport";
 import { useEditReport } from "./useEditReport";
 import { useDeleteReport } from "./useDeleteReport";
 import { useGetReportComments } from "./useGetReportComment";
+import { useCreateReportCommentReport } from "./useCreateReportComment";
 
 export {
     useCreateReport,
@@ -22,5 +23,6 @@ export {
     useVoteReport,
     useEditReport,
     useDeleteReport,
-    useGetReportComments
+    useGetReportComments,
+    useCreateReportCommentReport,
 }
