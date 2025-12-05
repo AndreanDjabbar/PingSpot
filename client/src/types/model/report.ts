@@ -134,12 +134,10 @@ export interface IReportComment {
     commentID: string;
     reportID: number;
     userInformation: IUserProfile;
-    userName: string;
-    fullName: string;
-    profilePicture?: string;
+    commentType: 'TEMP' | 'PERM';
     content?: string;
     createdAt: number;
-    updammentID?: string;
+    parentCommentID?: string;
     threadRootID?: string;
     mentions?: number[];
     replyTo?: IUserProfile;
