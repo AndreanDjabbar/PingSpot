@@ -330,7 +330,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                         {comment.media.type === 'IMAGE' || comment.media.type === 'gif' ? (
                                             <div className="relative rounded-xl overflow-hidden max-w-[150px]">
                                                 <Image
-                                                    src={getImageURL(`/report/comments/${comment.media.url}`, "main")}
+                                                    src={comment.commentType === 'TEMP' ? comment.media.url : getImageURL(`/report/comments/${comment.media.url}`, "main")}
                                                     alt="Comment media"
                                                     onClick={() => handleImageClick(getImageURL(`/report/comments/${comment?.media?.url}`, "main"))}
                                                     width={comment.media.width || 250}
