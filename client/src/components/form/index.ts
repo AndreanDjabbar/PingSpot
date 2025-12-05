@@ -7,6 +7,7 @@ import TextAreaField from './TextaAreaField';
 import MultipleImageField from './MultipleImageField';
 import CheckboxField from './CheckboxField';
 import SelectField from './SelectField';
+import InlineImageUpload, { ImagePreview } from './InlineImageUpload';
 
 export {
     ImageField,
@@ -17,7 +18,9 @@ export {
     TextAreaField,
     MultipleImageField,
     CheckboxField,
-    SelectField
+    SelectField,
+    InlineImageUpload,
+    ImagePreview
 };
 
 export type CheckboxOption = {
