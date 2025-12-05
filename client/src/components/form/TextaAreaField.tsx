@@ -8,6 +8,7 @@ interface TextAreaFieldProps {
     id: string;
     name?: string;
     required?: boolean;
+    disableRowsResize?: boolean;
     labelIcon?: React.ReactNode;
     icon?: React.ReactNode;
     placeHolder?: string;
@@ -30,6 +31,7 @@ const TextAreaField = React.forwardRef<HTMLTextAreaElement, TextAreaFieldProps>(
     withLabel = true,
     labelTitle = '',
     labelIcon,
+    disableRowsResize = false,
     icon,
     value,
     onChange,
@@ -71,7 +73,8 @@ const TextAreaField = React.forwardRef<HTMLTextAreaElement, TextAreaFieldProps>(
                     className={cn("block w-full", 
                         icon ? 'pl-10' : 'pl-3',
                         "pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800 transition-all duration-200",
-                        disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'
+                        disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white',
+                        disableRowsResize ? 'resize-none' : 'resize-y',
                     )}
                     placeholder={placeHolder || `Masukkan ${labelTitle.toLowerCase()}`}
                     value={value}
