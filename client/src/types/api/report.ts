@@ -3,7 +3,8 @@ import {
     ReactReportSchema,
     EditReportSchema,
     UploadProgressReportSchema, 
-    VoteReportSchema
+    VoteReportSchema,
+    CreateReportCommentSchema
 } from "@/app/main/schema";
 import {  IReport, IReportComment, IReportProgress, IReportReactions, IReportVote, ITotalReportCount } from "../model/report";
 import z from "zod";
@@ -42,6 +43,13 @@ export interface IGetReportByIDResponse {
 export type ICreateReportRequest = z.infer<typeof CreateReportSchema>;
 
 export type IEditReportRequest = z.infer<typeof EditReportSchema>;
+
+export type ICreateReportCommentRequest = z.infer<typeof CreateReportCommentSchema>;
+
+export interface ICreateReportCommentResponse {
+    message: string;
+    data?: IReportComment;
+}
 
 export type IUploadProgressReportRequest = z.infer<typeof UploadProgressReportSchema>; 
 

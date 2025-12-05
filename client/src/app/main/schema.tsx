@@ -135,3 +135,13 @@ export const UploadProgressReportSchema = z.object({
     "Setiap gambar maksimal 5MB"
     ).optional(),
 })
+
+export const CreateReportCommentSchema = z.object({
+    commentContent: z.string()
+        .min(1, "Komentar tidak boleh kosong")
+        .max(500, "Komentar maksimal 500 karakter"),
+    parentCommentID: z.string().optional().nullable(),
+    mediaType: z.enum(['IMAGE', 'GIF']).optional().nullable(),
+    mediaURL: z.string().optional().nullable(),
+    mediaFile: z.file().min(1).max(5 * 1024 * 1024).optional()
+});
