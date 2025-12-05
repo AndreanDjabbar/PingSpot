@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/purity */
+/* eslint-disable react-hooks/immutability */
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -8,11 +10,12 @@ import {
     isNotFoundError, 
     isInternalServerError, 
     getImageURL,
+    compressImages,
 } from '@/utils';
 import { ReportType, IReportImage, IReportComment } from '@/types/model/report';
 import { ReportInteractionBar } from '../components/ReportInteractionBar';
 import { useUserProfileStore, useReportsStore, useReportCommentStore } from '@/stores';
-import { useDeleteReport, useGetReportByID, useReactReport, useVoteReport, useGetReportComments } from '@/hooks/main';
+import { useDeleteReport, useGetReportByID, useReactReport, useVoteReport, useGetReportComments, useCreateReportCommentReport } from '@/hooks/main';
 import { useImagePreviewModalStore } from '@/stores';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { 
@@ -26,7 +29,14 @@ import {
 } from './components';
 import { ErrorSection } from '@/components/feedback';
 import { HeaderSection } from '../../components';
-import { Loading } from '@/components/UI';
+import { Button, Loading } from '@/components/UI';
+import { ICreateReportCommentRequest } from '@/types/api/report';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CreateReportCommentSchema } from '../../schema';
+import { ImagePreview, InlineImageUpload, TextAreaField } from '@/components/form';
+import { BiSend } from 'react-icons/bi';
+import Image from 'next/image';
 
 const getReportTypeLabel = (type: ReportType): string => {
     const types: Record<ReportType, string> = {
@@ -59,94 +69,13 @@ const getReportImages = (images: IReportImage): string[] => {
     ].filter((url): url is string => typeof url === 'string');
 };
 
-// const dummyComments: IReportComment[] = [
-//     {
-//         commentID: '1',
-//         content: "Terima kasih laporannya! Saya juga merasakan hal yang sama di area tersebut. Semoga segera ditindaklanjuti oleh pihak terkait.",
-//         createdAt: Date.now() - 86400000,
-//         updatedAt: Date.now() - 86400000,
-//         userID: 101,
-//         userName: "budisantoso",
-//         fullName: "Budi Santoso",
-//         profilePicture: "",
-//         reportID: 0,
-//         parentCommentID: undefined,
-//         replies: [
-//             {
-//                 commentID: "4",
-//                 content: "Setuju! Saya sudah melapor juga beberapa kali tapi belum ada tindakan.",
-//                 createdAt: Date.now() - 43200000,
-//                 updatedAt: Date.now() - 43200000,
-//                 userID: 104,
-//                 reportID: 0,
-//                 userName: "dewilestari",
-//                 fullName: "Dewi Lestari",
-//                 profilePicture: "",
-//                 parentCommentID: "1",
-//             }
-//         ]
-//     },
-//     {
-//         commentID: '2',
-//         reportID: 0,
-//         content: "Lokasi ini memang sudah lama bermasalah. Sudah beberapa kali saya lewat dan kondisinya semakin parah. Tolong segera diperbaiki 🙏",
-//         createdAt: Date.now() - 172800000,
-//         updatedAt: Date.now() - 172800000,
-//         userID: 102,
-//         userName: "sitinurhayati",
-//         fullName: "Siti Nurhayati",
-//         profilePicture: "",
-//         parentCommentID: undefined,
-//         replies: []
-//     },
-//     {
-//         commentID: '3',
-//         content: "Saya mendukung laporan ini. Situasinya benar-benar mengganggu dan perlu perhatian serius dari pemerintah daerah.",
-//         createdAt: Date.now() - 259200000, // 3 days ago
-//         updatedAt: Date.now() - 259200000,
-//         userID: 103,
-//         userName: "ahmadwijaya",
-//         fullName: "Ahmad Wijaya",
-//         profilePicture: "",
-//         reportID: 0,
-//         parentCommentID: undefined,
-//         replies: [
-//             {
-//                 commentID: '5',
-//                 content: "Betul sekali! Saya juga sudah menghubungi RT setempat.",
-//                 createdAt: Date.now() - 129600000,
-//                 updatedAt: Date.now() - 129600000,
-//                 userID: 105,
-//                 userName: "rina.pratiwi",
-//                 fullName: "Rina Pratiwi",
-//                 profilePicture: "",
-//                 reportID: 0,
-//                 parentCommentID: '3',
-//             },
-//             {
-//                 commentID: '6',
-//                 content: "Semoga dengan banyaknya laporan, masalah ini segera teratasi.",
-//                 createdAt: Date.now() - 86400000, // 1 day ago
-//                 updatedAt: Date.now() - 86400000,
-//                 userID: 106,
-//                 userName: "jokoprasetyo",
-//                 fullName: "Joko Prasetyo",
-//                 profilePicture: "",
-//                 parentCommentID: '3',
-//                 reportID: 0,
-//             }
-//         ]
-//     },
-// ];
-
 const ReportDetailPage = () => {
     const params = useParams();
     const router = useRouter();
     const reportId = Number(params.id);
-
-    const [newComment, setNewComment] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [animateButton, setAnimateButton] = useState<string | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [commentMediaImage, setCommentMediaImage] = useState<File | null>(null);
 
     const openImagePreview = useImagePreviewModalStore((s) => s.openImagePreview);
     const selectedReport = useReportsStore((s) => s.selectedReport);
@@ -154,6 +83,8 @@ const ReportDetailPage = () => {
     const userProfile = useUserProfileStore((s) => s.userProfile);
     const reportComments = useReportCommentStore((s) => s.reportComments);
     const setReportComments = useReportCommentStore((s) => s.setReportComments);
+    const reportCommentCounts = useReportCommentStore((s) => s.reportCommentsCount);
+    const setReportCommentCounts = useReportCommentStore((s) => s.setReportCommentsCount);
 
     const { 
         data: freshReportData,
@@ -164,17 +95,55 @@ const ReportDetailPage = () => {
     } = useGetReportByID(reportId);
     
     const { 
-            data: getReportCommentsData, 
-            isLoading: getReportCommentsLoading, 
-            isSuccess: isGetReportCommentsSuccess,
-            isError: isGetReportCommentsError, 
-            error: getReportCommentsError,
-            fetchNextPage,
-            hasNextPage,
-            isFetchingNextPage,
-            refetch: refetchGetReportComments,
-        } = useGetReportComments(reportId
-        );
+        data: getReportCommentsData, 
+        isLoading: getReportCommentsLoading, 
+        isSuccess: isGetReportCommentsSuccess,
+        isError: isGetReportCommentsError, 
+        error: getReportCommentsError,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        refetch: refetchGetReportComments,
+    } = useGetReportComments(reportId);
+
+    const handleImageSelect = (file: File) => {
+        setCommentMediaImage(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleRemoveImage = () => {
+        setCommentMediaImage(null);
+        setImagePreview(null);
+    };
+
+    const { 
+        mutate: createReportComment, 
+        isError: isCreateReportCommentError, 
+        isSuccess: isCreateReportCommentSuccess, 
+        error: createReportCommentError,
+        data: createReportCommentData,
+    } = useCreateReportCommentReport();
+
+    const formMethods = useForm<ICreateReportCommentRequest>({
+        resolver: zodResolver(CreateReportCommentSchema),
+        defaultValues: {
+            commentContent: '',
+            parentCommentID: null,
+            mediaType: null,
+            mediaURL: null
+        },
+    });
+
+    const {
+        register: registerReportComment,
+        handleSubmit: handleSubmitReportComment,
+        formState: { errors: reportCommentFormErrors },
+        reset: resetReportCommentForm,
+    } = formMethods;
 
     const { 
         mutate: reactReport, 
@@ -207,11 +176,6 @@ const ReportDetailPage = () => {
     const images = useMemo(() => 
         getReportImages(report?.images ?? { id: 0, reportID: 0 }),
         [report?.images]
-    );
-    
-    const displayComments = useMemo(() => 
-        reportComments,
-        [reportComments]
     );
     
     const percentages = useMemo(() => {
@@ -259,6 +223,88 @@ const ReportDetailPage = () => {
     const onAttachmentImageClick = (imageURL: string) => {
         const url = getImageURL(`/report/${imageURL}`, "main");
         openImagePreview(url);
+    };
+
+    const prepareFormData = async(formData: ICreateReportCommentRequest): Promise<FormData> => {
+        const data = new FormData();
+        data.append('reportID', String(report?.id));
+        data.append('content', formData.commentContent);
+        if (formData.parentCommentID) {
+            data.append('parrentCommentID', formData.parentCommentID.toString());
+        }
+        if (commentMediaImage) {
+            console.log('Appending media image to form data:', commentMediaImage);
+            const compressedFile = await compressImages(commentMediaImage);
+            data.append('mediaFile', compressedFile);
+            data.append('mediaType', 'IMAGE');
+        }
+        return data;
+    }
+
+    const setOptimisticComment = (formData: ICreateReportCommentRequest) => {
+        if (formData.parentCommentID) {
+            setReportComments(
+                reportComments.map((comment) =>
+                    comment.commentID === formData.parentCommentID
+                ? {
+                        ...comment,
+                        replies: [
+                        ...(comment.replies ?? []),
+                        {
+                            commentID: 'temp-id-' + Date.now(),
+                            reportID: report?.id || 0,
+                            createdAt: Math.floor(Date.now() / 1000),
+                            content: formData.commentContent,
+                            media: commentMediaImage
+                                ? {
+                                    url: URL.createObjectURL(commentMediaImage),
+                                    type: 'IMAGE',
+                                    height: 100,
+                                    width: 100,
+                                }
+                                : undefined,
+                            userInformation: userProfile!,
+                            commentType: 'TEMP',
+                        } as IReportComment
+                        ],
+                        }
+                    : comment
+                )
+            );
+        } else {
+            setReportComments([...reportComments, {
+                commentID: 'temp-id-' + Date.now(),
+                reportID: report?.id || 0,
+                createdAt: Math.floor(Date.now() / 1000),
+                content: formData.commentContent,
+                media: commentMediaImage
+                    ? {
+                        url: URL.createObjectURL(commentMediaImage),
+                        type: 'IMAGE',
+                        height: 100,
+                        width: 100,
+                    }
+                    : undefined,
+                userInformation: userProfile!,
+                commentType: 'TEMP',
+            } as IReportComment]);
+        }
+    }
+
+    const handleCreateReportComment = async (formData: ICreateReportCommentRequest) => {
+        if (!report?.id) return;
+        console.log('Creating comment with data:', formData);
+        setReportCommentCounts(reportCommentCounts + 1);
+        setOptimisticComment(formData);
+        setImagePreview(null);
+        setCommentMediaImage(null);
+        resetReportCommentForm();
+        
+        const preparedData = await prepareFormData(formData);
+        createReportComment({
+            reportID: report.id,
+            data: preparedData
+        });
     };
 
     const onProgressImageClick = (imageURL: string) => {
@@ -453,20 +499,6 @@ const ReportDetailPage = () => {
         }
     };
 
-    const handleSubmitComment = async () => {
-        if (!newComment.trim() || isSubmitting) return;
-        
-        setIsSubmitting(true);
-        try {
-            console.log('Adding comment:', newComment);
-            setNewComment('');
-        } catch (error) {
-            console.error('Error adding comment:', error);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
     const handleReply = (content: string, parentId: number) => {
         console.log('Reply to:', parentId, content);
     };
@@ -483,6 +515,7 @@ const ReportDetailPage = () => {
         isDeleteReportError, 
         getErrorResponseMessage(deleteReportError) || 'Terjadi kesalahan saat mengambil data laporan'
     );
+    useErrorToast(isCreateReportCommentError, createReportCommentError);
 
     useEffect(() => {
         if (freshReportData?.data?.report) {
@@ -495,6 +528,7 @@ const ReportDetailPage = () => {
             const allComments = getReportCommentsData.pages.flatMap(page => page.data?.comments.comments || []);
             console.log('Loaded comments:', allComments);
             setReportComments(allComments);
+            setReportCommentCounts(getReportCommentsData.pages[0]?.data?.comments.totalCounts || 0);
         }
     }, [isGetReportCommentsSuccess, getReportCommentsData]);
 
@@ -505,6 +539,13 @@ const ReportDetailPage = () => {
             }, 1500);
         }
     }, [deleteReportData, isDeleteReportSuccess])
+
+    // useEffect(() => {
+    //     if (isCreateReportCommentSuccess && createReportCommentData) {
+    //         resetReportCommentForm();
+    //         resetCreateReportComment();
+    //     }
+    // }, [isCreateReportCommentSuccess, createReportCommentData]);
 
     if (deleteReportPending) {
         return <Loading text='Menghapus Laporan...' size='lg' className='absolute inset-0 left-0 xl:left-60'/>
@@ -623,12 +664,81 @@ const ReportDetailPage = () => {
                                     <p className="text-gray-500">Memuat komentar...</p>
                                 </div>
                             ): (
-                                <ReportCommentsSection
-                                    comments={displayComments}
-                                    totalComments={getReportCommentsData?.pages[0]?.data?.comments.totalCounts || 0}
-                                    onSubmitComment={handleSubmitComment}
-                                    onReply={handleReply}
-                                />
+                                <>
+                                    {isCreateReportCommentError && (
+                                        <ErrorSection
+                                        message={getErrorResponseMessage(createReportCommentError) || 'Terjadi kesalahan saat mengirim komentar'} 
+                                        errors={createReportCommentError}
+                                        />
+                                    )}
+                                    <form onSubmit={handleSubmitReportComment(handleCreateReportComment)} encType="multipart/form-data">
+                                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                            <div className="p-6 border-b border-gray-200">
+                                                <h2 className="text-lg font-bold text-gray-900">
+                                                    Komentar ({reportCommentCounts || reportComments.length})
+                                                </h2>
+                                            </div>
+                                            <div className="p-6 border-b border-gray-200 bg-gray-50">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0">
+                                                        <Image
+                                                            src={getImageURL(userProfile?.profilePicture || '', "user")}
+                                                            alt="Your profile"
+                                                            width={40}
+                                                            height={40}
+                                                            className="object-cover h-full w-full"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <ImagePreview 
+                                                            preview={imagePreview}
+                                                            onRemove={handleRemoveImage}
+                                                            className="mb-3"
+                                                        />
+                                                        
+                                                        <div className="flex gap-2">
+                                                            <TextAreaField 
+                                                                id='commentContent'
+                                                                register={registerReportComment('commentContent')}
+                                                                placeHolder='Tulis komentar...'
+                                                                className='w-full'
+                                                                rows={1}
+                                                                disableRowsResize
+                                                                withLabel={false}
+                                                            />
+                                                            <InlineImageUpload
+                                                                preview={imagePreview}
+                                                                onImageSelect={handleImageSelect}
+                                                                onImageRemove={handleRemoveImage}
+                                                                maxSizeMB={5}
+                                                                buttonSize='sm'
+                                                                previewPosition="separate"
+                                                            />
+                                                            <Button
+                                                                variant="primary"
+                                                                size='sm'
+                                                                type="submit"
+                                                            >
+                                                                <BiSend size={20} />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <ReportCommentsSection
+                                                handleCreateReportComment={handleCreateReportComment}
+                                                handleSubmitCreateReportComment={handleSubmitReportComment}
+                                                comments={reportComments}
+                                                reportID={report.id}
+                                                imagePreview={imagePreview}
+                                                setImagePreview={setImagePreview}
+                                                setCommentMedia={setCommentMediaImage}
+                                                totalComments={reportCommentCounts}
+                                                onReply={handleReply}
+                                            />
+                                        </div>
+                                    </form>
+                                </>
                             )}
                         </div>
 

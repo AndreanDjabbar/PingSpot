@@ -1,5 +1,6 @@
 import axios from "axios";
 import { 
+    ICreateReportCommentResponse,
     ICreateReportResponse,
     IDeleteReportRequest,
     IDeleteReportResponse,
@@ -166,6 +167,12 @@ export const voteReportService = async (reportID: number, data: IVoteReportReque
 export const uploadProgressReportService = async (reportID: number, payload: FormData): Promise<IUploadProgressReportResponse> => {
     const authToken = getAuthToken();
     const response = await axios.post<IUploadProgressReportResponse>(`${MAIN_API_URL}/report/${reportID}/progress`, payload, MULTIPART_HEADERS(authToken || ''));
+    return response.data;
+}
+
+export const createReportCommentService = async (reportID: number, payload: FormData): Promise<ICreateReportCommentResponse> => {
+    const authToken = getAuthToken();
+    const response = await axios.post<ICreateReportCommentResponse>(`${MAIN_API_URL}/report/${reportID}/comment`, payload, MULTIPART_HEADERS(authToken || ''));
     return response.data;
 }
 
