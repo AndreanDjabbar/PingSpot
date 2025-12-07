@@ -29,14 +29,8 @@ import {
 } from './components';
 import { ErrorSection } from '@/components/feedback';
 import { HeaderSection } from '../../components';
-import { Button, Loading } from '@/components/UI';
+import { Loading } from '@/components/UI';
 import { ICreateReportCommentRequest } from '@/types/api/report';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { CreateReportCommentSchema } from '../../schema';
-import { ImagePreview, InlineImageUpload, TextAreaField } from '@/components/form';
-import { BiSend } from 'react-icons/bi';
-import Image from 'next/image';
 
 const getReportTypeLabel = (type: ReportType): string => {
     const types: Record<ReportType, string> = {
@@ -74,8 +68,6 @@ const ReportDetailPage = () => {
     const router = useRouter();
     const reportId = Number(params.id);
     const [animateButton, setAnimateButton] = useState<string | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [commentMediaImage, setCommentMediaImage] = useState<File | null>(null);
 
     const openImagePreview = useImagePreviewModalStore((s) => s.openImagePreview);
     const selectedReport = useReportsStore((s) => s.selectedReport);
@@ -105,45 +97,13 @@ const ReportDetailPage = () => {
         isFetchingNextPage,
         refetch: refetchGetReportComments,
     } = useGetReportComments(reportId);
-
-    const handleImageSelect = (file: File) => {
-        setCommentMediaImage(file);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setImagePreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-    };
-
-    const handleRemoveImage = () => {
-        setCommentMediaImage(null);
-        setImagePreview(null);
-    };
+    
 
     const { 
         mutate: createReportComment, 
         isError: isCreateReportCommentError, 
-        isSuccess: isCreateReportCommentSuccess, 
         error: createReportCommentError,
-        data: createReportCommentData,
     } = useCreateReportCommentReport();
-
-    const formMethods = useForm<ICreateReportCommentRequest>({
-        resolver: zodResolver(CreateReportCommentSchema),
-        defaultValues: {
-            commentContent: '',
-            parentCommentID: null,
-            mediaType: null,
-            mediaURL: null
-        },
-    });
-
-    const {
-        register: registerReportComment,
-        handleSubmit: handleSubmitReportComment,
-        formState: { errors: reportCommentFormErrors },
-        reset: resetReportCommentForm,
-    } = formMethods;
 
     const { 
         mutate: reactReport, 
@@ -232,9 +192,8 @@ const ReportDetailPage = () => {
         if (formData.parentCommentID) {
             data.append('parrentCommentID', formData.parentCommentID.toString());
         }
-        if (commentMediaImage) {
-            console.log('Appending media image to form data:', commentMediaImage);
-            const compressedFile = await compressImages(commentMediaImage);
+        if (formData.mediaFile) {
+            const compressedFile = await compressImages(formData.mediaFile);
             data.append('mediaFile', compressedFile);
             data.append('mediaType', 'IMAGE');
         }
@@ -255,9 +214,9 @@ const ReportDetailPage = () => {
                             reportID: report?.id || 0,
                             createdAt: Math.floor(Date.now() / 1000),
                             content: formData.commentContent,
-                            media: commentMediaImage
+                            media: formData.mediaFile
                                 ? {
-                                    url: URL.createObjectURL(commentMediaImage),
+                                    url: URL.createObjectURL(formData.mediaFile),
                                     type: 'IMAGE',
                                     height: 100,
                                     width: 100,
@@ -277,9 +236,9 @@ const ReportDetailPage = () => {
                 reportID: report?.id || 0,
                 createdAt: Math.floor(Date.now() / 1000),
                 content: formData.commentContent,
-                media: commentMediaImage
+                media: formData.mediaFile
                     ? {
-                        url: URL.createObjectURL(commentMediaImage),
+                        url: URL.createObjectURL(formData.mediaFile),
                         type: 'IMAGE',
                         height: 100,
                         width: 100,
@@ -293,12 +252,9 @@ const ReportDetailPage = () => {
 
     const handleCreateReportComment = async (formData: ICreateReportCommentRequest) => {
         if (!report?.id) return;
-        console.log('Creating comment with data:', formData);
         setReportCommentCounts(reportCommentCounts + 1);
+
         setOptimisticComment(formData);
-        setImagePreview(null);
-        setCommentMediaImage(null);
-        resetReportCommentForm();
         
         const preparedData = await prepareFormData(formData);
         createReportComment({
@@ -526,7 +482,6 @@ const ReportDetailPage = () => {
     useEffect(() => {
         if (isGetReportCommentsSuccess && getReportCommentsData) {
             const allComments = getReportCommentsData.pages.flatMap(page => page.data?.comments.comments || []);
-            console.log('Loaded comments:', allComments);
             setReportComments(allComments);
             setReportCommentCounts(getReportCommentsData.pages[0]?.data?.comments.totalCounts || 0);
         }
@@ -539,13 +494,6 @@ const ReportDetailPage = () => {
             }, 1500);
         }
     }, [deleteReportData, isDeleteReportSuccess])
-
-    // useEffect(() => {
-    //     if (isCreateReportCommentSuccess && createReportCommentData) {
-    //         resetReportCommentForm();
-    //         resetCreateReportComment();
-    //     }
-    // }, [isCreateReportCommentSuccess, createReportCommentData]);
 
     if (deleteReportPending) {
         return <Loading text='Menghapus Laporan...' size='lg' className='absolute inset-0 left-0 xl:left-60'/>
@@ -671,73 +619,11 @@ const ReportDetailPage = () => {
                                         errors={createReportCommentError}
                                         />
                                     )}
-                                    <form onSubmit={handleSubmitReportComment(handleCreateReportComment)} encType="multipart/form-data">
-                                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                                            <div className="p-6 border-b border-gray-200">
-                                                <h2 className="text-lg font-bold text-gray-900">
-                                                    Komentar ({reportCommentCounts || reportComments.length})
-                                                </h2>
-                                            </div>
-                                            <div className="p-6 border-b border-gray-200 bg-gray-50">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0">
-                                                        <Image
-                                                            src={getImageURL(userProfile?.profilePicture || '', "user")}
-                                                            alt="Your profile"
-                                                            width={40}
-                                                            height={40}
-                                                            className="object-cover h-full w-full"
-                                                        />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <ImagePreview 
-                                                            preview={imagePreview}
-                                                            onRemove={handleRemoveImage}
-                                                            className="mb-3"
-                                                        />
-                                                        
-                                                        <div className="flex gap-2">
-                                                            <TextAreaField 
-                                                                id='commentContent'
-                                                                register={registerReportComment('commentContent')}
-                                                                placeHolder='Tulis komentar...'
-                                                                className='w-full'
-                                                                rows={1}
-                                                                disableRowsResize
-                                                                withLabel={false}
-                                                            />
-                                                            <InlineImageUpload
-                                                                preview={imagePreview}
-                                                                onImageSelect={handleImageSelect}
-                                                                onImageRemove={handleRemoveImage}
-                                                                maxSizeMB={5}
-                                                                buttonSize='sm'
-                                                                previewPosition="separate"
-                                                            />
-                                                            <Button
-                                                                variant="primary"
-                                                                size='sm'
-                                                                type="submit"
-                                                            >
-                                                                <BiSend size={20} />
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <ReportCommentsSection
-                                                handleCreateReportComment={handleCreateReportComment}
-                                                handleSubmitCreateReportComment={handleSubmitReportComment}
-                                                comments={reportComments}
-                                                reportID={report.id}
-                                                imagePreview={imagePreview}
-                                                setImagePreview={setImagePreview}
-                                                setCommentMedia={setCommentMediaImage}
-                                                totalComments={reportCommentCounts}
-                                                onReply={handleReply}
-                                            />
-                                        </div>
-                                    </form>
+                                    <ReportCommentsSection
+                                    onCreateReportComment={handleCreateReportComment}
+                                    comments={reportComments}
+                                    onReply={handleReply}
+                                    />
                                 </>
                             )}
                         </div>
