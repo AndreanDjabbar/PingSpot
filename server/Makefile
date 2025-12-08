@@ -33,4 +33,8 @@ clean:
 	@echo "Cleaning..."
 	@rm -f main
 
+generate-key:
+	@go run scripts/keys.go
+	@echo "✓ Keys generated in /keys directory."
+
 .PHONY: all build run test clean watch
