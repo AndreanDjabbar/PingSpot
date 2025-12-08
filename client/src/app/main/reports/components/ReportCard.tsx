@@ -25,12 +25,14 @@ const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
 interface ReportCardProps {
     reportID: number;
     onLike: (reportId: number) => void;
-    onDislike: (reportId: number) => void;
-    onRemove: (reportId: number) => void;
-    onSave: (reportId: number) => void;
-    onComment: (reportId: number) => void;
+    onDislike?: (reportId: number) => void;
+    onRemove?: (reportId: number) => void;
+    onSave?: (reportId: number) => void;
+    onComment?: (reportId: number) => void;
     onShare: (reportId: number, reportTitle: string) => void;
-    onStatusVote: (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => void;
+    onStatusVote?: (reportId: number, voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => void;
+    enableOptions?: boolean;
+    enableInformation?: boolean;
     onStatusUpdate?: (reportID: number, newStatus: string) => void;
 }
 
@@ -67,12 +69,14 @@ const getReportImages = (images: IReportImage): string[] => {
 
 const ReportCard: React.FC<ReportCardProps> = ({
     reportID,
-    onLike,
-    onDislike,
+    onLike=() => {},
+    onDislike=() => {},
     onSave,
     onComment,
     onRemove,
     onShare,
+    enableOptions = true,
+    enableInformation = true,
     onStatusVote,
 }) => {
     const router = useRouter();
@@ -118,7 +122,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
     }
 
     const onDeleteClick = (reportID: number) => {
-        onRemove(reportID);
+        onRemove!(reportID);
     }
 
     const nextImage = () => {
@@ -175,32 +179,34 @@ const ReportCard: React.FC<ReportCardProps> = ({
                         <span className={`inline-flex items-center px-2.5 py-1 bg-blue-50 text-xs font-bold text-sky-800 rounded-full`}>
                             {getReportTypeLabel(report.reportType)}
                         </span>
+                        {enableOptions && (
 
-                        <button
-                            ref={optionsButtonRef}
-                            className='p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors'
-                            onClick={() => {
-                                if (!report) return;
-                                const optionsToShow: OptionItem[] = [...opts];
-                                if (isReportOwner) {
-                                    if (report.reportStatus !== 'RESOLVED' && report.reportStatus !== 'EXPIRED') {
-                                        optionsToShow.push({ label: 'Sunting Laporan', description: "Anda dapat menyunting laporan ini.", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/edit`) });
+                            <button
+                                ref={optionsButtonRef}
+                                className='p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors'
+                                onClick={() => {
+                                    if (!report) return;
+                                    const optionsToShow: OptionItem[] = [...opts];
+                                    if (isReportOwner) {
+                                        if (report.reportStatus !== 'RESOLVED' && report.reportStatus !== 'EXPIRED') {
+                                            optionsToShow.push({ label: 'Sunting Laporan', description: "Anda dapat menyunting laporan ini.", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/edit`) });
+                                        }
+                                        if (report.reportStatus !== 'RESOLVED' && report.hasProgress) {
+                                            optionsToShow.push({ label: 'Perbarui Perkembangan Laporan', description: "Perbarui perkembangan laporan ini", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/update-progress`) });
+                                        }
+                                        optionsToShow.push({ label: 'Detail Laporan', description: "Lihat detail laporan yang telah anda buat", icon: <LuNotepadText size={14} />, onClick: () => router.push(`/main/reports/${report.id}`) });
+                                        optionsToShow.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openDeleteConfirm(), description: "Hapus laporan ini secara permanen" });
+                                    } else {
+                                        optionsToShow.push({ label: 'Simpan',  description: "Simpan laporan ini", icon: <FaBookmark size={14} />, onClick: () => onSave!(report?.id || 0) },)
+                                        optionsToShow.push({ label: 'Laporkan', icon: <FaFlag size={14} />, onClick: () => router.push(`/main/reports/${report.id}/report`) });
                                     }
-                                    if (report.reportStatus !== 'RESOLVED' && report.hasProgress) {
-                                        optionsToShow.push({ label: 'Perbarui Perkembangan Laporan', description: "Perbarui perkembangan laporan ini", icon: <FaEdit size={14} />, onClick: () => router.push(`/main/reports/${report.id}/update-progress`) });
-                                    }
-                                    optionsToShow.push({ label: 'Detail Laporan', description: "Lihat detail laporan yang telah anda buat", icon: <LuNotepadText size={14} />, onClick: () => router.push(`/main/reports/${report.id}`) });
-                                    optionsToShow.push({ label: 'Hapus', icon: <FaTrash size={14} />, onClick: () => openDeleteConfirm(), description: "Hapus laporan ini secara permanen" });
-                                } else {
-                                    optionsToShow.push({ label: 'Simpan',  description: "Simpan laporan ini", icon: <FaBookmark size={14} />, onClick: () => onSave(report?.id || 0) },)
-                                    optionsToShow.push({ label: 'Laporkan', icon: <FaFlag size={14} />, onClick: () => router.push(`/main/reports/${report.id}/report`) });
-                                }
 
-                                openOptionsModal({ optionsList: optionsToShow, anchorRef: optionsButtonRef });
-                            }}
-                        >
-                            <BsThreeDots size={18} className="text-gray-600 sm:w-5 sm:h-5"/>
-                        </button>
+                                    openOptionsModal({ optionsList: optionsToShow, anchorRef: optionsButtonRef });
+                                }}
+                            >
+                                <BsThreeDots size={18} className="text-gray-600 sm:w-5 sm:h-5"/>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -326,18 +332,18 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 <ReportInteractionBar
                     report={report}
                     onLike={() => onLike(report.id)}
-                    onDislike={() => onDislike(report.id)}
-                    onSave={() => onSave(report.id)}
-                    onComment={() => onComment(report.id)}
+                    onDislike={() => onDislike!(report.id)}
+                    onSave={() => onSave!(report.id)}
+                    onComment={onComment ? () => onComment(report.id) : undefined}
                     onShare={() => onShare(report.id, report.reportTitle)}
                 />
             </div>
 
-            {report.hasProgress && (
+            {report.hasProgress && enableInformation && (
                 <div className="border-t border-gray-200">
                     <ReportInformation
                         reportID={report.id}
-                        onVote={(voteType: string) => onStatusVote(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
+                        onVote={(voteType: string) => onStatusVote!(report.id, voteType as 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL')}
                         onImageClick={onImageClick}
                     />
                 </div>

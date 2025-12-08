@@ -116,6 +116,7 @@ const ReportsPage = () => {
     const allComments: IReportComment[] = commentsData?.pages.flatMap(
         page => page.data?.comments.comments || []
     ) || [];
+    const commentsCount: number = commentsData?.pages[0].data?.comments.totalCounts || 0;
 
     const handleCloseReportModal = () => {
         setIsReportModalOpen(false);
@@ -705,9 +706,11 @@ const ReportsPage = () => {
 
                     {selectedReport && (
                         <ReportModal
+                            reportID={selectedReport.id}
                             isOpen={isReportModalOpen}
                             onClose={handleCloseReportModal}
                             onLike={() => handleLike(selectedReport.id)}
+                            commentsCount={commentsCount}
                             onDislike={() => handleDislike(selectedReport.id)}
                             onSave={() => handleSave(selectedReport.id)}
                             onShare={() => handleShare(selectedReport.id, selectedReport.reportTitle)}
@@ -716,7 +719,7 @@ const ReportsPage = () => {
                             comments={allComments}
                             commentsLoading={commentsLoading}
                             onLoadMoreComments={fetchNextComments}
-                            hasMoreComments={hasNextComments}
+                            hasMoreComments={false}
                         />
                     )}
 

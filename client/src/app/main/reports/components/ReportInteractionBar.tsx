@@ -22,7 +22,7 @@ interface ReportInteractionBarProps {
     onLike: () => void;
     onDislike: () => void;
     onSave: () => void;
-    onComment: () => void;
+    onComment?: () => void;
     onShare: () => void;
     isLoading?: boolean;
     showSecondaryActions?: boolean;
@@ -101,14 +101,16 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
                         )}
                         <span className="text-sm font-medium">Suka</span>
                     </motion.button>
-
-                    <button
-                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-1 cursor-pointer"
-                        onClick={onComment}
-                    >
-                        <FaComment className="w-[18px] h-[18px]" />
-                        <span className="text-sm font-medium">Komentar</span>
-                    </button>
+                    
+                    {onComment && (
+                        <button
+                            className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-1 cursor-pointer"
+                            onClick={onComment}
+                        >
+                            <FaComment className="w-[18px] h-[18px]" />
+                            <span className="text-sm font-medium">Komentar</span>
+                        </button>
+                    )}
 
                     <button
                         className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-1 cursor-pointer"

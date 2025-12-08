@@ -106,17 +106,17 @@ const CommentItem: React.FC<CommentItemProps> = ({
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                    <div className="flex items-start space-x-2">
-                        <span className="font-semibold text-sm text-gray-900 shrink-0">
-                            {comment.userInformation.username}
-                        </span>
-                        <span className="text-sm text-gray-800 break-words">
-                            <MentionText 
-                            text={comment.content || ""}
-                            userMentioned={comment.replyTo || null} 
-                            />
-                        </span>
-                    </div>
+                        <div className="flex items-start space-x-2">
+                            <span className="font-semibold text-sm text-gray-900 shrink-0">
+                                {comment.userInformation.username}
+                            </span>
+                            <span className="text-sm text-gray-800 break-words">
+                                <MentionText 
+                                text={comment.content || ""}
+                                userMentioned={comment.replyTo || null} 
+                                />
+                            </span>
+                        </div>
                         {comment.media && (
                             <div className="mt-2">
                                 {comment.media.type === 'IMAGE' || comment.media.type === 'gif' ? (
@@ -136,13 +136,19 @@ const CommentItem: React.FC<CommentItemProps> = ({
                         
                         <div className="flex items-center space-x-3 mt-1">
                             <span className="text-xs text-gray-400">
-                                {formattedDate(comment.createdAt, { formatStr: 'dd MMM yyyy' })}
+                                {formattedDate(comment.createdAt, { formatStr: 'dd MMM yyyy, HH:mm' })}
                             </span>
                             <button
                                 onClick={() => setIsReplying(true)}
                                 className="text-xs text-gray-400 hover:text-gray-600 font-medium"
                             >
                                 Balas
+                            </button>
+                            <button
+                                onClick={() => setIsReplying(true)}
+                                className="text-xs text-gray-400 hover:text-gray-600 font-medium"
+                            >
+                                Suka
                             </button>
                         </div>
                         
@@ -215,6 +221,16 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             </div>
                         )}
                     </div>
+                    {showLikes && (
+                        <div className='flex flex-col items-center'>
+                            <div>
+                                {liked ? <FaHeart className="w-4 h-4 text-red-500" /> : <FaRegHeart className="w-4 h-4 text-gray-400 hover:text-red-500 cursor-pointer" />}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                                72
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         );
