@@ -25,11 +25,14 @@ interface ReportModalProps {
     onAddComment: (content: string, parentId?: number) => void;
     onStatusVote: (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => void;
     onStatusUpdate?: (reportID: number, newStatus: string) => void;
-    comments?: IReportComment[];
     commentsCount: number;
     commentsLoading?: boolean;
+    reportComments: IReportComment[];
     onLoadMoreComments?: () => void;
     hasMoreComments?: boolean;
+    onCreateReportComment: (formData: ICreateReportCommentRequest) => void;
+    isCreateReportCommentError: boolean;
+    createReportCommentError?: Error;
 }
 
 const ReportModal: React.FC<ReportModalProps> = ({
@@ -37,34 +40,39 @@ const ReportModal: React.FC<ReportModalProps> = ({
     onClose,
     onLike,
     onShare,
+    reportComments,
     reportID,
     commentsCount,
-    comments = [],
     commentsLoading = false,
     hasMoreComments = false,
     onLoadMoreComments,
     onAddComment,
+    onCreateReportComment,
+    isCreateReportCommentError,
+    createReportCommentError,
 }) => {
+    const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
     const [commentContent, setCommentContent] = React.useState('');
     const [commentMediaImage, setCommentMediaImage] = React.useState<File | null>(null);
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
-    const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
-
-    const reportComments = useReportCommentStore((state) => state.reportComments);
-    const setReportCommentCounts = useReportCommentStore((state) => state.setReportCommentsCount);
-    const setReportComments = useReportCommentStore((state) => state.setReportComments);
-    const userProfile = useUserProfileStore((state) => state.userProfile);
-    const report = useReportsStore((state) => state.selectedReport);
-
-    const { 
-        mutate: createReportComment, 
-        isError: isCreateReportCommentError, 
-        error: createReportCommentError,
-    } = useCreateReportCommentReport();
 
     const handleReply = (content: string, parentId: number) => {
         onAddComment(content, parentId);
     };
+
+    const handleImageSelect = (file:File) => {
+        setCommentMediaImage(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    const handleRemoveImage = () => {
+        setCommentMediaImage(null);
+        setImagePreview(null);
+    }
 
     const handleCommentContentChange = (content: string) => {
         setCommentContent(content);
@@ -73,109 +81,17 @@ const ReportModal: React.FC<ReportModalProps> = ({
         }
     };
 
-    const prepareFormData = async(formData: ICreateReportCommentRequest): Promise<FormData> => {
-        const data = new FormData();
-        data.append('reportID', String(reportID));
-        data.append('content', formData.commentContent);
-        if (formData.parentCommentID) {
-            data.append('parrentCommentID', formData.parentCommentID.toString());
-        }
-        if (formData.mediaFile) {
-            const compressedFile = await compressImages(formData.mediaFile);
-            data.append('mediaFile', compressedFile);
-            data.append('mediaType', 'IMAGE');
-        }
-        return data;
-    }
-
-    const setOptimisticComment = (formData: ICreateReportCommentRequest) => {
-        if (formData.parentCommentID) {
-            setReportComments(
-                reportComments.map((comment) =>
-                    comment.commentID === formData.parentCommentID
-                ? {
-                        ...comment,
-                        replies: [
-                        ...(comment.replies ?? []),
-                        {
-                            commentID: 'temp-id-' + Date.now(),
-                            reportID: report?.id || 0,
-                            createdAt: Math.floor(Date.now() / 1000),
-                            content: formData.commentContent,
-                            media: formData.mediaFile
-                                ? {
-                                    url: URL.createObjectURL(formData.mediaFile),
-                                    type: 'IMAGE',
-                                    height: 100,
-                                    width: 100,
-                                }
-                                : undefined,
-                            userInformation: userProfile!,
-                            commentType: 'TEMP',
-                        } as IReportComment
-                        ],
-                        }
-                    : comment
-                )
-            );
-        } else {
-            console.log("Adding optimistic comment");
-            setReportComments([...reportComments, {
-                commentID: 'temp-id-' + Date.now(),
-                reportID: report?.id || 0,
-                createdAt: Math.floor(Date.now() / 1000),
-                content: formData.commentContent,
-                media: formData.mediaFile
-                    ? {
-                        url: URL.createObjectURL(formData.mediaFile),
-                        type: 'IMAGE',
-                        height: 100,
-                        width: 100,
-                    }
-                    : undefined,
-                userInformation: userProfile!,
-                commentType: 'TEMP',
-            } as IReportComment]);
-        }
-    }
-
-    const handleCreateReportComment = async (formData: ICreateReportCommentRequest) => {
-        if (!report?.id) return;
-        setOptimisticComment(formData);
-        setReportCommentCounts(commentsCount + 1);
-
-        setCommentContent('');
-        setCommentMediaImage(null);
-        setImagePreview(null);
-        
-        const preparedData = await prepareFormData(formData);
-        createReportComment({
-            reportID: report.id,
-            data: preparedData
-        });
-    };
-
-    const handleImageSelect = (file: File) => {
-        setCommentMediaImage(file);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setImagePreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-    };
-
-    const handleRemoveImage = () => {
-        setCommentMediaImage(null);
-        setImagePreview(null);
-    };
-
     const handleSubmitComment = () => {
         const newCommentFormat: ICreateReportCommentRequest = {
             commentContent: commentContent,
             mediaFile: commentMediaImage || undefined,
             mediaType: commentMediaImage ? 'IMAGE' : undefined,
         };
-        handleCreateReportComment(newCommentFormat);
+        console.log('Submitting comment:', newCommentFormat);
+        setCommentContent('');
+        setCommentMediaImage(null);
+        setImagePreview(null);
+        onCreateReportComment(newCommentFormat);
     };
 
     if (!isOpen) return null;
@@ -226,7 +142,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                         )}
 
                         <CommentsList
-                            comments={comments}
+                            comments={reportComments!}
                             commentCount={commentsCount}
                             showCommentInput={false}
                             onReply={handleReply}

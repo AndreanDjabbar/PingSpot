@@ -91,7 +91,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
     
     if (isCompact) {
         return (
-            <div className="mb-3" style={{ marginLeft: `${marginLeft}px` }}>
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="mb-3"
+                style={{ marginLeft: `${marginLeft}px` }}
+            >
                 <div className="flex space-x-2">
                     <div className="flex-shrink-0">
                         <div className={`w-6 h-6 rounded-full overflow-hidden border border-gray-200`}>
@@ -122,8 +129,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 {comment.media.type === 'IMAGE' || comment.media.type === 'gif' ? (
                                     <div className="relative rounded-lg overflow-hidden max-w-[200px]">
                                         <Image
-                                            src={getImageURL(`/report/comments/${comment.media.url}`, "main")}
-                                            onClick={() => handleImageClick(getImageURL(`/report/comments/${comment?.media?.url}`, "main"))}
+                                            src={comment.commentType === 'TEMP' ? comment.media.url : getImageURL(`/report/comments/${comment.media.url}`, "main")}
                                             alt="Comment media"
                                             width={comment?.media?.width || 200}
                                             height={comment?.media?.height || 150}
@@ -232,7 +238,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                         </div>
                     )}
                 </div>
-            </div>
+            </motion.div>
         );
     }
 

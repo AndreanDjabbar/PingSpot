@@ -26,7 +26,6 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
     const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
 
-    const reportComments = useReportCommentStore((state) => state.reportComments);
     const reportCommentCounts = useReportCommentStore((state) => state.reportCommentsCount);
 
     const handleImageSelect = (file: File) => {
@@ -84,7 +83,7 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
     return (
         <CommentsList
             comments={comments}
-            commentCount={reportCommentCounts || reportComments.length}
+            commentCount={reportCommentCounts}
             showCommentInput={true}
             commentContent={commentContent}
             commentMediaImage={commentMediaImage}

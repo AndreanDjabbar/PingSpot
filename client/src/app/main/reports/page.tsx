@@ -5,11 +5,11 @@ import { BiPlus } from 'react-icons/bi';
 import HeaderSection from '../components/HeaderSection';
 import { useRouter } from 'next/navigation';
 import { ErrorSection } from '@/components/feedback';
-import { useDeleteReport, useGetReport, useReactReport, useGetReportComments } from '@/hooks/main';
+import { useDeleteReport, useGetReport, useReactReport, useGetReportComments, useCreateReportCommentReport } from '@/hooks/main';
 import { useVoteReport } from '@/hooks/main/useVoteReport';
 import { RxCrossCircled } from "react-icons/rx";
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { getErrorResponseDetails, getErrorResponseMessage, isInternalServerError } from '@/utils';
+import { compressImages, getErrorResponseDetails, getErrorResponseMessage, isInternalServerError } from '@/utils';
 import { EmptyState, Loading } from '@/components/UI';
 import { 
     ReportSkeleton, 
@@ -19,12 +19,13 @@ import {
     ReportSidebar,
     ReportFilterModal
 } from './components';
-import { useReportsStore, useLocationStore } from '@/stores';
+import { useReportsStore, useLocationStore, useReportCommentStore, useUserProfileStore } from '@/stores';
 import { useInView } from 'react-intersection-observer';
 import type { FilterOptions } from './components/ReportFilterModal';
 import { useCurrentLocation } from '@/hooks/main';
 import { FaLocationDot } from 'react-icons/fa6';
 import { IReportComment } from '@/types/model/report';
+import { ICreateReportCommentRequest } from '@/types/api/report';
 
 const ReportsPage = () => {
     const currentPath = usePathname();
@@ -57,6 +58,12 @@ const ReportsPage = () => {
     const setReportCount = useReportsStore((s) => s.setReportCount);
     const userLocation = useLocationStore((s) => s.location);
     const hasCoords = userLocation && userLocation?.lat !== null && userLocation?.lat !== '' && userLocation?.lng !== null && userLocation?.lng !== '';
+    const reportComments = useReportCommentStore((state) => state.reportComments);
+    const reportCommentCounts = useReportCommentStore((state) => state.reportCommentsCount);
+    const setReportCommentCounts = useReportCommentStore((state) => state.setReportCommentsCount);
+    const setReportComments = useReportCommentStore((state) => state.setReportComments);
+    const userProfile = useUserProfileStore((state) => state.userProfile);
+    const report = useReportsStore((state) => state.selectedReport);
     const { requestLocation, loading: loadingRequestLocation, permissionDenied, isPermissionDenied, } = useCurrentLocation();
 
     const router = useRouter();
@@ -65,6 +72,12 @@ const ReportsPage = () => {
         isError: isReactReportError,  
         error: reactReportError,
     } = useReactReport();
+
+    const { 
+        mutate: createReportComment, 
+        isError: isCreateReportCommentError, 
+        error: createReportCommentError,
+    } = useCreateReportCommentReport();
 
     const {
         mutate: voteReport,
@@ -106,17 +119,13 @@ const ReportsPage = () => {
         data: commentsData,
         isLoading: commentsLoading,
         fetchNextPage: fetchNextComments,
+        isSuccess: isGetReportCommentsSuccess,
         hasNextPage: hasNextComments,
         isFetchingNextPage: isFetchingNextComments,
     } = useGetReportComments(
         selectedReport?.id || 0,
         isReportModalOpen && !!selectedReport
     );
-
-    const allComments: IReportComment[] = commentsData?.pages.flatMap(
-        page => page.data?.comments.comments || []
-    ) || [];
-    const commentsCount: number = commentsData?.pages[0].data?.comments.totalCounts || 0;
 
     const handleCloseReportModal = () => {
         setIsReportModalOpen(false);
@@ -169,6 +178,21 @@ const ReportsPage = () => {
             }
         });
     };
+
+    const prepareFormData = async(formData: ICreateReportCommentRequest): Promise<FormData> => {
+        const data = new FormData();
+        data.append('reportID', String(report?.id || 0));
+        data.append('content', formData.commentContent);
+        if (formData.parentCommentID) {
+            data.append('parrentCommentID', formData.parentCommentID.toString());
+        }
+        if (formData.mediaFile) {
+            const compressedFile = await compressImages(formData.mediaFile);
+            data.append('mediaFile', compressedFile);
+            data.append('mediaType', 'IMAGE');
+        }
+        return data;
+    }
 
     const handleDislike = (reportId: number) => {
         const updatedReports = reports.map(report => {
@@ -444,6 +468,68 @@ const ReportsPage = () => {
         }
     };
 
+    const setOptimisticComment = (formData: ICreateReportCommentRequest) => {
+        if (formData.parentCommentID) {
+            setReportComments(
+                reportComments.map((comment) =>
+                    comment.commentID === formData.parentCommentID
+                ? {
+                        ...comment,
+                        replies: [
+                        ...(comment.replies ?? []),
+                        {
+                            commentID: 'temp-id-' + Date.now(),
+                            reportID: report?.id || 0,
+                            createdAt: Math.floor(Date.now() / 1000),
+                            content: formData.commentContent,
+                            media: formData.mediaFile
+                                ? {
+                                    url: URL.createObjectURL(formData.mediaFile),
+                                    type: 'IMAGE',
+                                    height: 100,
+                                    width: 100,
+                                }
+                                : undefined,
+                            userInformation: userProfile!,
+                            commentType: 'TEMP',
+                        } as IReportComment
+                        ],
+                        }
+                    : comment
+                )
+            );
+        } else {
+            setReportComments([...reportComments, {
+                commentID: 'temp-id-' + Date.now(),
+                reportID: report?.id || 0,
+                createdAt: Math.floor(Date.now() / 1000),
+                content: formData.commentContent,
+                media: formData.mediaFile
+                    ? {
+                        url: URL.createObjectURL(formData.mediaFile),
+                        type: 'IMAGE',
+                        height: 100,
+                        width: 100,
+                    }
+                    : undefined,
+                userInformation: userProfile!,
+                commentType: 'TEMP',
+            } as IReportComment]);
+        }
+    }
+
+    const handleCreateReportComment = async (formData: ICreateReportCommentRequest) => {
+        if (!report?.id) return;
+        setOptimisticComment(formData);
+        setReportCommentCounts(reportCommentCounts + 1);
+        
+        const preparedData = await prepareFormData(formData);
+        createReportComment({
+            reportID: report.id,
+            data: preparedData
+        });
+    };
+
     const handleAddComment = async (reportId: number, content: string, parentId?: number) => {
         console.log("Adding comment to report:", reportId, "Content:", content, "Parent ID:", parentId);
     };
@@ -509,6 +595,16 @@ const ReportsPage = () => {
             setSelectedReport(null);
         }
     }, [isDeleteReportSuccess, deleteReportData]);
+
+    useEffect(() => {
+        if (isGetReportCommentsSuccess && commentsData) {
+            const allComments = commentsData.pages.flatMap(
+                page => page.data?.comments.comments || []
+            ) || [];
+            setReportComments(allComments);
+            setReportCommentCounts(commentsData.pages[0].data?.comments.totalCounts || 0);
+        }
+    }, [isGetReportCommentsSuccess, commentsData]);
 
     useEffect(() => {
         if (voteReportData?.data) {
@@ -709,17 +805,20 @@ const ReportsPage = () => {
                             reportID={selectedReport.id}
                             isOpen={isReportModalOpen}
                             onClose={handleCloseReportModal}
+                            reportComments={reportComments}
                             onLike={() => handleLike(selectedReport.id)}
-                            commentsCount={commentsCount}
                             onDislike={() => handleDislike(selectedReport.id)}
                             onSave={() => handleSave(selectedReport.id)}
                             onShare={() => handleShare(selectedReport.id, selectedReport.reportTitle)}
                             onAddComment={(content, parentId) => handleAddComment(selectedReport.id, content, parentId)}
                             onStatusVote={(voteType) => handleStatusVote(selectedReport.id, voteType)}
-                            comments={allComments}
+                            commentsCount={reportCommentCounts}
                             commentsLoading={commentsLoading}
                             onLoadMoreComments={fetchNextComments}
                             hasMoreComments={false}
+                            onCreateReportComment={handleCreateReportComment}
+                            isCreateReportCommentError={isCreateReportCommentError}
+                            createReportCommentError={createReportCommentError!}
                         />
                     )}
 
