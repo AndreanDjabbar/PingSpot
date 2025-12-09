@@ -72,6 +72,46 @@ func GenerateJWT(userID uint, JWTSecret []byte, email, username, fullName string
 	return token.SignedString(JWTSecret)
 }
 
+func ValidateRefreshToken(refreshToken string) (jwt.MapClaims, error) {
+	if refreshToken == "" {
+		return nil, fmt.Errorf("refresh token is empty")
+	}
+
+	publicKeyPath := mainutils.GetKeyPath("public.pem")
+	publicKey, err := LoadPublicKey(publicKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load public key: %w", err)
+	}
+
+	parsedToken, err := jwt.Parse(refreshToken, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return publicKey, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse token: %w", err)
+	}
+
+	if !parsedToken.Valid {
+		return nil, fmt.Errorf("invalid refresh token")
+	}
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("invalid claims")
+	}
+
+	tokenType, ok := claims["token_type"].(string)
+	if !ok || tokenType != "refresh" {
+		return nil, fmt.Errorf("invalid refresh token type")
+	}
+
+	return claims, nil
+}
+
+
 func GetJWTClaims(c *fiber.Ctx) (jwt.MapClaims, error) {
 	token := c.Locals("user")
 	if token == nil {
@@ -154,7 +194,7 @@ func LoadPublicKey(path string) (*rsa.PublicKey, error) {
 	return publicKey, nil
 }
 
-func GenerateAccessToken(userID uint, email, username, fullName string) string {
+func GenerateAccessToken(userID, sessionID uint, email, username, fullName string) string {
 	privateKeyPath := mainutils.GetKeyPath("private.pem")
 	privateKey, err := LoadPrivateKey(privateKeyPath)
 	if err != nil {
@@ -162,12 +202,13 @@ func GenerateAccessToken(userID uint, email, username, fullName string) string {
 	}
 
 	claims := jwt.MapClaims{
-		"user_id":  userID,
-		"email":    email,
-		"username": username,
-		"full_name": fullName,
-		"exp":      jwt.NewNumericDate(time.Now().Add(20 * time.Minute)),
-		"iat":      jwt.NewNumericDate(time.Now()),
+		"user_id":    userID,
+		"session_id": sessionID,
+		"email":      email,
+		"username":   username,
+		"full_name":  fullName,
+		"exp":        time.Now().Add(20 * time.Minute).Unix(),
+		"iat":        time.Now().Unix(),
 		"token_type": "access",
 	}
 
@@ -179,18 +220,22 @@ func GenerateAccessToken(userID uint, email, username, fullName string) string {
 	return signedToken
 }
 
-func GenerateRefreshToken(userID uint) string {
+
+func GenerateRefreshToken(userID uint, refreshTokenID string) string {
 	privateKeyPath := mainutils.GetKeyPath("private.pem")
 	privateKey, err := LoadPrivateKey(privateKeyPath)
 	if err != nil {
 		panic("Failed to load private key: " + err.Error())
 	}
+
 	claims := jwt.MapClaims{
-		"user_id":    userID,
-		"exp":        jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
-		"iat":        jwt.NewNumericDate(time.Now()),
-		"token_type": "refresh",
+		"user_id":          userID,
+		"refresh_token_id": refreshTokenID,
+		"exp":              time.Now().Add(7 * 24 * time.Hour).Unix(),
+		"iat":              time.Now().Unix(),
+		"token_type":       "refresh",
 	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	signedToken, err := token.SignedString(privateKey)
 	if err != nil {
