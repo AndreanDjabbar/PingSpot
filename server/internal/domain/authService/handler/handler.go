@@ -16,6 +16,7 @@ import (
 	"server/pkg/utils/env"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/response"
+	"server/pkg/utils/tokenutils"
 	"strconv"
 	"time"
 
@@ -64,12 +65,12 @@ func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 		"updated_at": user.UpdatedAt,
 	}
 
-	randomCode1, err := mainutils.GenerateRandomCode(150)
+	randomCode1, err := tokenutils.GenerateRandomCode(150)
 	if err != nil {
 		logger.Error("Failed to generate random code", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal membuat kode acak", "", err.Error())
 	}
-	randomCode2, err := mainutils.GenerateRandomCode(150)
+	randomCode2, err := tokenutils.GenerateRandomCode(150)
 	if err != nil {
 		logger.Error("Failed to generate random code", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal membuat kode acak", "", err.Error())
@@ -164,6 +165,7 @@ func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
 
 func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 	logger.Info("LOGIN HANDLER")
+	db := database.GetPostgresDB()
 	var req dto.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -176,7 +178,13 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	_, token, err := h.authService.Login(req)
+	userIP := mainutils.GetClientIP(c)
+	userAgent := mainutils.GetUserAgent(c)
+	
+	req.IPAddress = userIP
+	req.UserAgent = userAgent
+
+	_, accessToken, refreshToken, err := h.authService.Login(db, req)
 	if err != nil {
 		logger.Error("Login failed", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -185,7 +193,10 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Login gagal", "", err.Error())
 	}
 
-	return response.ResponseSuccess(c, 200, "Login berhasil", "data", dto.LoginResponse{Token: token})
+	return response.ResponseSuccess(c, 200, "Login berhasil", "data", dto.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	})
 }
 
 func (h *AuthHandler) GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -237,7 +248,7 @@ func (h *AuthHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Reque
 		existingUser = createdUser
 	}
 
-	token, err := mainutils.GenerateJWT(existingUser.ID, []byte(env.JWTSecret()), existingUser.Email, existingUser.Username, existingUser.FullName)
+	token, err := tokenutils.GenerateJWT(existingUser.ID, []byte(env.JWTSecret()), existingUser.Email, existingUser.Username, existingUser.FullName)
 	if err != nil {
 		logger.Error("Error generating token for Google user", zap.Error(err))
 		http.Error(w, "Terdapat masalah saat login", http.StatusInternalServerError)
@@ -269,7 +280,7 @@ func (h *AuthHandler) ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error
 	}
 	if user != nil {
 		redisClient := cache.GetRedis()
-		verificationCode, err := mainutils.GenerateRandomCode(200)
+		verificationCode, err := tokenutils.GenerateRandomCode(200)
 		if err != nil {
 			logger.Error("Failed to generate verification code", zap.Error(err))
 			return response.ResponseError(c, 500, "Gagal membuat kode verifikasi", "", err.Error())
@@ -341,7 +352,7 @@ func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 404, "Pengguna tidak ditemukan", "", "Email tidak terdaftar")
 	}
 
-	hashNewPassword, err := mainutils.HashPassword(req.Password)
+	hashNewPassword, err := tokenutils.HashString(req.Password)
 	if err != nil {
 		logger.Error("Failed to hash new password", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal mengenkripsi kata sandi baru", "", err.Error())
@@ -374,7 +385,7 @@ func (h *AuthHandler) LogoutHandler(c *fiber.Ctx) error {
 		token = token[7:]
 	}
 
-	claims, err := mainutils.ParseJWT(token, []byte(env.JWTSecret()))
+	claims, err := tokenutils.ParseJWT(token, []byte(env.JWTSecret()))
 	if err != nil {
 		logger.Error("Failed to parse JWT token", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", err.Error())
