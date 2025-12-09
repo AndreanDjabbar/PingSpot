@@ -14,6 +14,7 @@ import (
 	"server/pkg/logger"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/response"
+	"server/pkg/utils/tokenutils"
 	"strings"
 	"time"
 
@@ -184,7 +185,7 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
@@ -372,7 +373,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
@@ -431,7 +432,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Format afterID tidak valid", "", "afterID harus berupa angka")
 	}
 
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
@@ -499,7 +500,7 @@ func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
@@ -537,7 +538,7 @@ func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
 		logger.Error("Validation failed", zap.Error(err))
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
@@ -624,7 +625,7 @@ func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
@@ -672,7 +673,7 @@ func (h *ReportHandler) DeleteReportHandler(c *fiber.Ctx) error {
 		logger.Error("Invalid reportID format", zap.String("reportID", reportIDParam), zap.Error(err))
 		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
 	}
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
@@ -701,7 +702,7 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
 	}
 
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
