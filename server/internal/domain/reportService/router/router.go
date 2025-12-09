@@ -37,7 +37,7 @@ func RegisterReportRoutes(app *fiber.App) {
 
 	reportHandler := handler.NewReportHandler(reportService)
 
-	reportRoute := app.Group("/pingspot/api/report", middleware.JWTProtected())
+	reportRoute := app.Group("/pingspot/api/report", middleware.ValidateAccessToken())
 	reportRoute.Post("/", reportHandler.CreateReportHandler)
 	reportRoute.Put("/:reportID", reportHandler.EditReportHandler)
 	reportRoute.Get("/", reportHandler.GetReportHandler)
