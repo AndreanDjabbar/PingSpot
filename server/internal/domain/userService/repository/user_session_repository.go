@@ -8,6 +8,8 @@ import (
 
 type UserSessionRepository interface {
 	CreateTX(tx *gorm.DB, user *model.UserSession) (*model.UserSession, error)
+	GetByRefreshTokenID(refreshTokenID string) (*model.UserSession, error)
+	Update(userSession *model.UserSession) error
 }
 
 type userSessionRepository struct {
@@ -23,4 +25,19 @@ func (r *userSessionRepository) CreateTX(tx *gorm.DB, userSession *model.UserSes
 		return nil, err
 	}
 	return userSession, nil
+}
+
+func (r *userSessionRepository) Update(userSession *model.UserSession) error {
+	if err := r.db.Save(userSession).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userSessionRepository) GetByRefreshTokenID(refreshTokenID string) (*model.UserSession, error) {
+	var userSession model.UserSession
+	if err := r.db.Where("refresh_token_id = ?", refreshTokenID).First(&userSession).Error; err != nil {
+		return nil, err
+	}
+	return &userSession, nil
 }
