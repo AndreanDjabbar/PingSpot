@@ -2,7 +2,10 @@ package dto
 
 type LoginResponse struct {
 	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+}
+
+type RefreshTokenResponse struct {
+	AccessToken  string `json:"accessToken"`
 }
 
 type VerificationResponse struct {
