@@ -15,18 +15,36 @@ func Migrate(db *gorm.DB) error {
 			ID: "11142025_initial_migration",
 			Migrate: func(tx *gorm.DB) error {
 				return tx.AutoMigrate(
-					&model.User{}, 
+					&model.User{},
 					&model.UserProfile{},
-					&model.Report{}, 
-					&model.ReportLocation{}, 
+					&model.Report{},
+					&model.ReportLocation{},
 					&model.ReportImage{},
-					&model.ReportReaction{}, 
-					&model.ReportProgress{}, 
+					&model.ReportReaction{},
+					&model.ReportProgress{},
 					&model.ReportVote{},
 				)
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.Migrator().DropTable(&model.User{})
+			},
+		},
+		{
+			ID: "12092025_add_user_session_table",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&model.UserSession{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Migrator().DropTable(&model.UserSession{})
+			},
+		},
+		{
+			ID: "12092025_alter_refresh_token_id_to_varchar",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Exec("ALTER TABLE user_sessions ALTER COLUMN refresh_token_id TYPE VARCHAR(64)").Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Exec("ALTER TABLE user_sessions ALTER COLUMN refresh_token_id TYPE UUID USING refresh_token_id::UUID").Error
 			},
 		},
 	})
