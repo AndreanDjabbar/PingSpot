@@ -16,6 +16,7 @@ import (
 	tokenutils "server/pkg/utils/tokenutils"
 	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -141,17 +142,17 @@ func (s *AuthService) Login(db *gorm.DB, req dto.LoginRequest) (*model.User, str
 		return nil, "", "", apperror.New(403, "ACCOUNT_NOT_VERIFIED", "Akun belum diverifikasi, silakan cek email untuk verifikasi")
 	}
 
-	accessToken := tokenutils.GenerateAccessToken(user.ID, user.Email, user.Username, user.FullName)
-	refreshToken := tokenutils.GenerateRefreshToken(user.ID)
-
+	refreshTokenID := uuid.New().String()
+	refreshToken := tokenutils.GenerateRefreshToken(user.ID, refreshTokenID)
 	hashedRefreshToken := tokenutils.HashSHA256String(refreshToken)
 
 	tx := db.Begin()
-	_, err = s.userSessionRepo.CreateTX(tx, &model.UserSession{
+	userSession, err := s.userSessionRepo.CreateTX(tx, &model.UserSession{
 		UserID:         user.ID,
-		ExpiresAt:      time.Now().Add(300 * time.Second).Unix(),
+		ExpiresAt:      time.Now().Add(7 * 24 * time.Hour).Unix(),
 		IsActive:       true,
-		RefreshTokenID: hashedRefreshToken,
+		RefreshTokenID: refreshTokenID,
+		HashedRefreshToken: hashedRefreshToken,
 		IPAddress:      req.IPAddress,
 		UserAgent:      req.UserAgent,
 	})
@@ -166,16 +167,81 @@ func (s *AuthService) Login(db *gorm.DB, req dto.LoginRequest) (*model.User, str
 		return nil, "", "", apperror.New(500, "USER_SESSION_COMMIT_FAILED", "Gagal menyimpan sesi user")
 	}
 
+	accessToken := tokenutils.GenerateAccessToken(user.ID, userSession.ID, user.Email, user.Username, user.FullName)
+
 	redisClient := cache.GetRedis()
-	refreshKey := fmt.Sprintf("refresh_token:%d", user.ID)
-	err = redisClient.Set(context.Background(), refreshKey, refreshToken, 7*24*time.Hour).Err()
+
+	refreshKey := fmt.Sprintf("refresh_token:%s", refreshTokenID)
+	err = redisClient.Set(context.Background(), refreshKey, hashedRefreshToken, 7*24*time.Hour).Err()
 	if err != nil {
 		logger.Error("Failed to save refresh token to Redis", zap.Error(err))
 		return nil, "", "", apperror.New(500, "REFRESH_TOKEN_SAVE_FAILED", "Gagal menyimpan refresh token")
 	}
 
+	userSessionKey := fmt.Sprintf("user_session:%d", user.ID)
+	err = redisClient.SAdd(context.Background(), userSessionKey, userSession.ID).Err()
+	if err != nil {
+		logger.Error("Failed to save user session ID to Redis set", zap.Error(err))
+		return nil, "", "", apperror.New(500, "USER_SESSION_SAVE_FAILED", "Gagal menyimpan sesi user")
+	}
 	return user, accessToken, refreshToken, nil
 }
+
+func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) {
+    claims, err := tokenutils.ValidateRefreshToken(refreshToken)
+    if err != nil {
+        return "", "", apperror.New(401, "INVALID_REFRESH_TOKEN", "Refresh token tidak valid")
+    }
+
+    userID := uint(claims["user_id"].(float64))
+    username := claims["username"].(string)
+    email := claims["email"].(string)
+    fullName := claims["full_name"].(string)
+    refreshTokenID := claims["refresh_token_id"].(string)
+    hashedRefreshToken := tokenutils.HashSHA256String(refreshToken)
+
+    redisClient := cache.GetRedis()
+    refreshKey := fmt.Sprintf("refresh_token:%s", refreshTokenID)
+
+    storedHashedRefreshToken, err := redisClient.Get(context.Background(), refreshKey).Result()
+    if err != nil || storedHashedRefreshToken != hashedRefreshToken {
+        return "", "", apperror.New(401, "REFRESH_TOKEN_INVALID", "Refresh token tidak cocok atau tidak ditemukan")
+    }
+
+    userSession, err := s.userSessionRepo.GetByRefreshTokenID(refreshTokenID)
+    if err != nil {
+        return "", "", apperror.New(401, "USER_SESSION_NOT_FOUND", "Sesi user tidak ditemukan")
+    }
+
+    if !userSession.IsActive || time.Now().Unix() > userSession.ExpiresAt {
+        return "", "", apperror.New(401, "SESSION_INVALID", "Sesi sudah tidak aktif atau kedaluwarsa")
+    }
+
+    newRefreshTokenID := uuid.New().String()
+    newRefreshToken := tokenutils.GenerateRefreshToken(userID, newRefreshTokenID)
+    newHashedRefreshToken := tokenutils.HashSHA256String(newRefreshToken)
+
+    if err := redisClient.Del(context.Background(), refreshKey).Err(); err != nil {
+        logger.Warn("Failed to delete old refresh token", zap.Error(err))
+    }
+
+    newRefreshKey := fmt.Sprintf("refresh_token:%s", newRefreshTokenID)
+    if err := redisClient.Set(context.Background(), newRefreshKey, newHashedRefreshToken, 7*24*time.Hour).Err(); err != nil {
+        return "", "", apperror.New(500, "REFRESH_TOKEN_SAVE_FAILED", "Gagal menyimpan refresh token baru")
+    }
+
+    userSession.RefreshTokenID = newRefreshTokenID
+    userSession.HashedRefreshToken = newHashedRefreshToken
+	
+    if err := s.userSessionRepo.Update(userSession); err != nil {
+        return "", "", apperror.New(500, "SESSION_UPDATE_FAILED", "Gagal memperbarui sesi")
+    }
+
+    accessToken := tokenutils.GenerateAccessToken(userID, userSession.ID, email, username, fullName)
+
+    return accessToken, newRefreshToken, nil
+}
+
 
 func (s *AuthService) VerifyUser(userID uint) (*model.User, error) {
 	user, err := s.userRepo.GetByID(userID)
