@@ -193,9 +193,19 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Login gagal", "", err.Error())
 	}
 
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: fiber.CookieSameSiteStrictMode,
+		Path:     "/",
+		MaxAge:   7 * 24 * 3600,
+	})
+
 	return response.ResponseSuccess(c, 200, "Login berhasil", "data", dto.LoginResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken: accessToken,
+		ExpiresIn: 1200,
 	})
 }
 
@@ -324,6 +334,37 @@ func (h *AuthHandler) ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error 
 
 	return response.ResponseSuccess(c, 200, "Link verifikasi berhasil", "data", dto.ForgotPasswordLinkVerificationResponse{
 		Email: email,
+	})
+}
+
+func (h * AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
+	logger.Info("REFRESH TOKEN HANDLER")
+	refreshToken := c.Cookies("refresh_token")
+	if refreshToken == "" {
+		return response.ResponseError(c, 401, "Refresh token tidak ditemukan", "", "Anda harus login terlebih dahulu")
+	}
+
+	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(refreshToken)
+	if err != nil {
+		logger.Error("Failed to refresh tokens", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
+		return response.ResponseError(c, 500, "Gagal memperbarui token", "", err.Error())
+	}
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    newRefreshToken,
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: fiber.CookieSameSiteStrictMode,
+		Path: "/",
+		MaxAge:   7 * 24 * 3600,
+	})
+	return response.ResponseSuccess(c, 200, "Token berhasil diperbarui", "data", dto.RefreshTokenResponse{
+		AccessToken: newAccessToken,
+		ExpiresIn: 1200,
 	})
 }
 
