@@ -12,6 +12,8 @@ type RegisterRequest struct {
 type LoginRequest struct {
 	Email      string  `json:"email" validate:"required,email"`
 	Password   string  `json:"password" validate:"required,min=6"`
+	IPAddress  string  `json:"-"`
+	UserAgent  string  `json:"-"`
 }
 
 type ForgotPasswordEmailVerificationRequest struct {
