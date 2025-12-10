@@ -29,7 +29,8 @@ export interface IRegisterResponse {
 export interface ILoginResponse {
     message: string;
     data?: {
-        token: string;
+        accessToken: string;
+        expiresIn: number;
     }
 }
 

@@ -37,12 +37,6 @@ const LoginPage = () => {
 
     useEffect(() => {
         if (isSuccess && data) {
-            const token = data.data?.token || '';
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const jwtExpiration = payload.exp || 0;
-            if (token) {
-                document.cookie = `auth_token=${token}; path=/; expires=${new Date(jwtExpiration * 1000).toUTCString()}; secure; samesite=strict`;
-            }
             setTimeout(() => {
                 router.push("/main/home");
             }, 1000);
