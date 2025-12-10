@@ -192,11 +192,8 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
     if err != nil {
         return "", "", apperror.New(401, "INVALID_REFRESH_TOKEN", "Refresh token tidak valid")
     }
-
+	
     userID := uint(claims["user_id"].(float64))
-    username := claims["username"].(string)
-    email := claims["email"].(string)
-    fullName := claims["full_name"].(string)
     refreshTokenID := claims["refresh_token_id"].(string)
     hashedRefreshToken := tokenutils.HashSHA256String(refreshToken)
 
@@ -207,6 +204,11 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
     if err != nil || storedHashedRefreshToken != hashedRefreshToken {
         return "", "", apperror.New(401, "REFRESH_TOKEN_INVALID", "Refresh token tidak cocok atau tidak ditemukan")
     }
+
+	user, err := s.userRepo.GetByID(userID)
+	if err != nil {
+		return "", "", apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data user")
+	}
 
     userSession, err := s.userSessionRepo.GetByRefreshTokenID(refreshTokenID)
     if err != nil {
@@ -237,7 +239,7 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
         return "", "", apperror.New(500, "SESSION_UPDATE_FAILED", "Gagal memperbarui sesi")
     }
 
-    accessToken := tokenutils.GenerateAccessToken(userID, userSession.ID, email, username, fullName)
+    accessToken := tokenutils.GenerateAccessToken(userID, userSession.ID, user.Email, user.Username, user.FullName)
 
     return accessToken, newRefreshToken, nil
 }
