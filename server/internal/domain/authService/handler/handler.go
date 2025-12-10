@@ -180,7 +180,7 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 
 	userIP := mainutils.GetClientIP(c)
 	userAgent := mainutils.GetUserAgent(c)
-	
+
 	req.IPAddress = userIP
 	req.UserAgent = userAgent
 
@@ -194,6 +194,16 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    accessToken,
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: fiber.CookieSameSiteStrictMode,
+		Path:     "/",
+		MaxAge:   20 * 60,
+	})
+
+	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
 		Value:    refreshToken,
 		HTTPOnly: true,
@@ -205,7 +215,7 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 
 	return response.ResponseSuccess(c, 200, "Login berhasil", "data", dto.LoginResponse{
 		AccessToken: accessToken,
-		ExpiresIn: 1200,
+		ExpiresIn:   1200,
 	})
 }
 
@@ -337,7 +347,7 @@ func (h *AuthHandler) ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error 
 	})
 }
 
-func (h * AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
+func (h *AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
 	logger.Info("REFRESH TOKEN HANDLER")
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {
@@ -354,17 +364,28 @@ func (h * AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    newAccessToken,
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: fiber.CookieSameSiteStrictMode,
+		Path:     "/",
+		MaxAge:   20 * 60,
+	})
+
+	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
 		Value:    newRefreshToken,
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: fiber.CookieSameSiteStrictMode,
-		Path: "/",
+		Path:     "/",
 		MaxAge:   7 * 24 * 3600,
 	})
+
 	return response.ResponseSuccess(c, 200, "Token berhasil diperbarui", "data", dto.RefreshTokenResponse{
 		AccessToken: newAccessToken,
-		ExpiresIn: 1200,
+		ExpiresIn:   1200,
 	})
 }
 
