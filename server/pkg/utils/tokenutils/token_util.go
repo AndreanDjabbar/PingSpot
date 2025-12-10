@@ -28,7 +28,7 @@ func CheckHashString(txt, hash string) bool {
 	return err == nil
 }
 
-func HashSHA256String(txt string) (string) {
+func HashSHA256String(txt string) string {
 	hash := sha256.Sum256(([]byte(txt)))
 	return fmt.Sprintf("%x", hash)
 }
@@ -111,9 +111,15 @@ func ValidateRefreshToken(refreshToken string) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
-
 func GetJWTClaims(c *fiber.Ctx) (jwt.MapClaims, error) {
-	token := c.Locals("user")
+	claims := c.Locals("claims")
+	if claims != nil {
+		if jwtClaims, ok := claims.(jwt.MapClaims); ok {
+			return jwtClaims, nil
+		}
+	}
+
+	token := c.Locals("token")
 	if token == nil {
 		return nil, fmt.Errorf("no JWT token found in context")
 	}
@@ -123,8 +129,8 @@ func GetJWTClaims(c *fiber.Ctx) (jwt.MapClaims, error) {
 		return nil, fmt.Errorf("invalid JWT token type")
 	}
 
-	if claims, ok := jwtToken.Claims.(jwt.MapClaims); ok && jwtToken.Valid {
-		return claims, nil
+	if jwtClaims, ok := jwtToken.Claims.(jwt.MapClaims); ok && jwtToken.Valid {
+		return jwtClaims, nil
 	}
 	return nil, fmt.Errorf("invalid JWT token")
 }
@@ -219,7 +225,6 @@ func GenerateAccessToken(userID, sessionID uint, email, username, fullName strin
 	}
 	return signedToken
 }
-
 
 func GenerateRefreshToken(userID uint, refreshTokenID string) string {
 	privateKeyPath := mainutils.GetKeyPath("private.pem")
