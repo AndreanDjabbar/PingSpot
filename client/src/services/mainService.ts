@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosInstance from "@/lib/axiosInstance";
 import { 
     ICreateReportCommentResponse,
     ICreateReportResponse,
@@ -20,27 +21,6 @@ import { IReverseLocationRequest } from "@/types/api/user";
 import { IReverseLocation } from "@/types/model/user";
 
 const REVERSE_LOCATION_API_URL = `${process.env.NEXT_PUBLIC_REVERSE_LOCATION_URL}`;
-const MAIN_API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
-
-const COMMON_HEADERS = () => {
-    return {
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        withCredentials: true
-    }
-}
-
-const MULTIPART_HEADERS = () => {
-    return {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-            'Accept': 'application/json',
-        },
-        withCredentials: true
-    }
-}
 
 export const reverseCurrentLocationService = async (payload: IReverseLocationRequest): 
 Promise<IReverseLocation> => {
@@ -49,12 +29,17 @@ Promise<IReverseLocation> => {
 };
 
 export const createReportService = async (payload: FormData): Promise<ICreateReportResponse> => {
-    const response = await axios.post<ICreateReportResponse>(`${MAIN_API_URL}/report`, payload, MULTIPART_HEADERS());
+    const response = await axiosInstance.post<ICreateReportResponse>(`/report`, payload, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+        },
+    });
     return response.data;
 }
 
 export const getReportByIDService = async (reportID: number): Promise<IGetReportByIDResponse> => {
-    const response = await axios.get<IGetReportByIDResponse>(`${MAIN_API_URL}/report?reportID=${reportID}`, COMMON_HEADERS());
+    const response = await axiosInstance.get<IGetReportByIDResponse>(`/report?reportID=${reportID}`);
     return response.data;
 }
 
@@ -85,7 +70,7 @@ export const getReportService = async (
     
     const queryString = params.toString() ? `?${params.toString()}` : '';
     
-    const response = await axios.get<IGetReportResponse>(`${MAIN_API_URL}/report${queryString}`, COMMON_HEADERS());
+    const response = await axiosInstance.get<IGetReportResponse>(`/report${queryString}`);
     return response.data;
 }
 
@@ -99,49 +84,74 @@ export const getReportCommentsService = async (
     
     const queryString = params.toString() ? `?${params.toString()}` : '';
     
-    const response = await axios.get<IGetReportCommentsResponse>(`${MAIN_API_URL}/report/${reportID}/comment/${queryString}`, COMMON_HEADERS());
+    const response = await axiosInstance.get<IGetReportCommentsResponse>(`/report/${reportID}/comment/${queryString}`);
     return response.data;
 }
 
 export const getProgressReportService = async (reportID: number): Promise<IGetProgressReportResponse> => {
-    const response = await axios.get<IGetProgressReportResponse>(`${MAIN_API_URL}/report/${reportID}/progress`, COMMON_HEADERS());
+    const response = await axiosInstance.get<IGetProgressReportResponse>(`/report/${reportID}/progress`);
     return response.data;
 }
 
 export const reactReportService = async (reportID: number, data: IReactReportRequest): Promise<IReactReportResponse> => {
-    const response = await axios.post<IReactReportResponse>(`${MAIN_API_URL}/report/${reportID}/reaction`, 
-        { reactionType: data.reactionType }, MULTIPART_HEADERS());
+    const response = await axiosInstance.post<IReactReportResponse>(`/report/${reportID}/reaction`, 
+        { reactionType: data.reactionType }, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Accept': 'application/json',
+            },
+        });
     return response.data;
 }
 
 export const voteReportService = async (reportID: number, data: IVoteReportRequest): Promise<IVoteReportResponse> => {
-    const response = await axios.post<IVoteReportResponse>(`${MAIN_API_URL}/report/${reportID}/vote`, 
-        { voteType: data.voteType }, MULTIPART_HEADERS());
+    const response = await axiosInstance.post<IVoteReportResponse>(`/report/${reportID}/vote`, 
+        { voteType: data.voteType }, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Accept': 'application/json',
+            },
+        });
     return response.data;
 }
 
 export const uploadProgressReportService = async (reportID: number, payload: FormData): Promise<IUploadProgressReportResponse> => {
-    const response = await axios.post<IUploadProgressReportResponse>(`${MAIN_API_URL}/report/${reportID}/progress`, payload, MULTIPART_HEADERS());
+    const response = await axiosInstance.post<IUploadProgressReportResponse>(`/report/${reportID}/progress`, payload, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+        },
+    });
     return response.data;
 }
 
 export const createReportCommentService = async (reportID: number, payload: FormData): Promise<ICreateReportCommentResponse> => {
-    const response = await axios.post<ICreateReportCommentResponse>(`${MAIN_API_URL}/report/${reportID}/comment`, payload, MULTIPART_HEADERS());
+    const response = await axiosInstance.post<ICreateReportCommentResponse>(`/report/${reportID}/comment`, payload, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+        },
+    });
     return response.data;
 }
 
 export const updateReportStatusService = async (reportID: number, status: string): Promise<IUpdateReportStatusResponse> => {
-    const response = await axios.patch(`${MAIN_API_URL}/report/${reportID}/status`, 
-        { status }, COMMON_HEADERS());
+    const response = await axiosInstance.patch(`/report/${reportID}/status`, 
+        { status });
     return response.data;
 }
 
 export const EditReportService = async (reportID: number, payload: FormData): Promise<IEditReportResponse> => {
-    const response = await axios.put<IEditReportResponse>(`${MAIN_API_URL}/report/${reportID}`, payload, MULTIPART_HEADERS());
+    const response = await axiosInstance.put<IEditReportResponse>(`/report/${reportID}`, payload, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+        },
+    });
     return response.data;
 }
 
 export const DeleteReportService = async (payload: IDeleteReportRequest): Promise<IDeleteReportResponse> => {
-    const response = await axios.delete<IDeleteReportResponse>(`${MAIN_API_URL}/report/${payload.reportID}`, COMMON_HEADERS());
+    const response = await axiosInstance.delete<IDeleteReportResponse>(`/report/${payload.reportID}`);
     return response.data;
 }

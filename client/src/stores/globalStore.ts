@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { getJWTExpired } from '@/utils';
 
 type GlobalState = {
     currentPage: string;
@@ -13,7 +12,7 @@ export const useGlobalStore = create<GlobalState>()(
     persist(
         (set, get) => ({
         currentPage: "home",
-        expiredAt: getJWTExpired() || (Date.now() + 5 * 60 * 1000),
+        expiredAt: Date.now() + 5 * 60 * 1000,
         setCurrentPage: (currentPage) => {
             set({ currentPage: currentPage });
         },

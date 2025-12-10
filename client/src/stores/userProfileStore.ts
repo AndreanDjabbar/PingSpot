@@ -1,6 +1,6 @@
 // store/useUserStore.ts
 import { create } from "zustand";
-import { getAuthToken, getFormattedDate } from "@/utils"
+import { getFormattedDate } from "@/utils"
 import { getMyProfileService } from "@/services/userService";
 import { IUserProfile } from "@/types/model/user";
 
@@ -14,11 +14,6 @@ export const useUserProfileStore = create<UserProfileStore>((set) => ({
     userProfile: null,
     loadUser: async () => {
         try {
-            const authToken = getAuthToken();
-            if (!authToken) {
-                set({ userProfile: null });
-                return;
-            }
             const profileData = await getMyProfileService();
             const mappedData: IUserProfile = {
                 userID: profileData?.data?.userID || "",

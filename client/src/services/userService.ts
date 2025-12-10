@@ -3,33 +3,13 @@ import { ISaveSecurityRequest, ISaveSecurityResponse } from "@/types/api/user";
 import { IForgotPasswordEmailVerificationRequest, IForgotPasswordEmailVerificationResponse, IForgotPasswordLinkVerificationRequest, IForgotPasswordLinkVerificationResponse, IForgotPasswordResetPasswordRequest, IForgotPasswordResetPasswordResponse, ILoginRequest, ILoginResponse, IRegisterRequest, IRegisterResponse, IVerificationRequest, IVerificationResponse } from "@/types/api/auth";
 import { IGetProfileResponse, ISaveProfileResponse } from "@/types/api/user";
 import axios from "axios";
+import axiosInstance from "@/lib/axiosInstance";
 
-const USER_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/user`;
 const AUTH_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/auth`;
 
 type IResponseType = {
     message: string;
     data?: any;
-}
-
-const COMMON_HEADERS = () => {
-    return {
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        withCredentials: true
-    }
-}
-
-const MULTIPART_HEADERS = () => {
-    return {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-            'Accept': 'application/json',
-        },
-        withCredentials: true
-    }
 }
 
 export const registerService = async (payload: IRegisterRequest): Promise<IRegisterResponse> => {
@@ -72,16 +52,21 @@ export const resetPasswordService = async (payload: IForgotPasswordResetPassword
 };
 
 export const saveProfileService = async (payload: FormData): Promise<ISaveProfileResponse> => {
-    const response = await axios.post<ISaveProfileResponse>(`${USER_API_URL}/profile`, payload, MULTIPART_HEADERS());
+    const response = await axiosInstance.post<ISaveProfileResponse>(`/user/profile`, payload, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+        },
+    });
     return response.data;
 }
 
 export const saveSecurityService = async (payload: ISaveSecurityRequest): Promise<ISaveSecurityResponse> => {
-    const response = await axios.post<ISaveSecurityResponse>(`${USER_API_URL}/security`, payload, COMMON_HEADERS());
+    const response = await axiosInstance.post<ISaveSecurityResponse>(`/user/security`, payload);
     return response.data;
 }
 
 export const getMyProfileService = async (): Promise<IGetProfileResponse> => {
-    const response = await axios.get<IGetProfileResponse>(`${USER_API_URL}/profile/`, COMMON_HEADERS());
+    const response = await axiosInstance.get<IGetProfileResponse>(`/user/profile/`);
     return response.data;
 }
