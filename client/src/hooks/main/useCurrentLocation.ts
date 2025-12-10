@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { useLocationStore } from "@/stores";
-import { getAuthToken, getJWTExpired } from "@/utils";
 import { ICurrentLocation } from "@/types/model/user";
 
 export const useCurrentLocation = () => {
@@ -29,14 +28,7 @@ export const useCurrentLocation = () => {
                 lastUpdated: new Date().toLocaleString(),
             };
             
-            const jwtToken = getAuthToken();
-            let expiresAt: number | undefined;
-            if (jwtToken) {
-                expiresAt = getJWTExpired(jwtToken);
-            } else {
-                expiresAt = location?.expiresAt || (Date.now() + 5 * 60 * 1000);
-            } 
-            setLocationStore(coords, expiresAt);
+            setLocationStore(coords);
             setIsUpdateRequest(isUpdate);
             setLoading(false);
         },

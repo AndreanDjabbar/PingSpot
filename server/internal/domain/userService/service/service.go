@@ -6,7 +6,7 @@ import (
 	"server/internal/domain/userService/dto"
 	"server/internal/domain/userService/repository"
 	apperror "server/pkg/appError"
-	mainutils "server/pkg/utils/mainUtils"
+	tokenutils "server/pkg/utils/tokenutils"
 
 	"gorm.io/gorm"
 )
@@ -124,14 +124,14 @@ func (s *UserService) SaveSecurity(userID uint, req dto.SaveUserSecurityRequest)
 
 	isValidPassword := false
 	if user.Password != nil {
-		isValidPassword = mainutils.CheckPasswordHash(req.CurrentPassword, *user.Password)
+		isValidPassword = tokenutils.CheckHashString(req.CurrentPassword, *user.Password)
 	}
 
 	if !isValidPassword {
 		return apperror.New(400, "INVALID_PASSWORD", "Kata sandi lama anda salah")
 	}
 
-	hashedPassword, err := mainutils.HashPassword(req.NewPassword)
+	hashedPassword, err := tokenutils.HashString(req.NewPassword)
 	if err != nil {
 		return apperror.New(500, "PASSWORD_HASH_FAILED", "Gagal mengenkripsi kata sandi")
 	}

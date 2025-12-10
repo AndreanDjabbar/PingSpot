@@ -2,103 +2,53 @@ package mainutils
 
 import (
 	"bytes"
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"math/big"
+	"os"
+	"path/filepath"
 	"server/pkg/utils/env"
 	"strconv"
 	"time"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
 )
 
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(bytes), err
-}
-
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-func GenerateRandomCode(length int) (string, error) {
-	if length <= 0 {
-		return "", fmt.Errorf("length must be greater than 0")
-	}
-
-	characters := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	code := make([]byte, length)
-	for i := range code {
-		index, err := rand.Int(rand.Reader, big.NewInt(int64(len(characters))))
-		if err != nil {
-			return "", fmt.Errorf("failed to generate random number: %w", err)
+func GetClientIP(c *fiber.Ctx) string {
+	if ip := c.Get("X-Forwarded-For"); ip != "" {
+		if idx := len(ip); idx > 0 {
+			for i := 0; i < idx; i++ {
+				if ip[i] == ',' {
+					return ip[:i]
+				}
+			}
+			return ip
 		}
-		code[i] = characters[index.Int64()]
 	}
-	return string(code), nil
+
+	if ip := c.Get("X-Real-IP"); ip != "" {
+		return ip
+	}
+
+	if ip := c.Get("CF-Connecting-IP"); ip != "" {
+		return ip
+	}
+
+	return c.IP()
 }
 
-func GenerateJWT(userID uint, JWTSecret []byte, email, username, fullName string) (string, error) {
-	if len(JWTSecret) == 0 {
-		return "", fmt.Errorf("JWT secret cannot be empty")
-	}
-
-	claims := jwt.MapClaims{
-		"user_id":   userID,
-		"email":     email,
-		"username":  username,
-		"full_name": fullName,
-		"exp":       time.Now().Add(time.Hour * 10).Unix(),
-		"iat":       time.Now().Unix(),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(JWTSecret)
+func GetUserAgent(c *fiber.Ctx) string {
+	return c.Get("User-Agent")
 }
 
-func GetJWTClaims(c *fiber.Ctx) (jwt.MapClaims, error) {
-	token := c.Locals("user")
-	if token == nil {
-		return nil, fmt.Errorf("no JWT token found in context")
-	}
-
-	jwtToken, ok := token.(*jwt.Token)
-	if !ok {
-		return nil, fmt.Errorf("invalid JWT token type")
-	}
-
-	if claims, ok := jwtToken.Claims.(jwt.MapClaims); ok && jwtToken.Valid {
-		return claims, nil
-	}
-	return nil, fmt.Errorf("invalid JWT token")
+func GetDeviceInfo(c *fiber.Ctx) string {
+	return fmt.Sprintf("IP: %s, UA: %s", GetClientIP(c), GetUserAgent(c))
 }
 
-func ParseJWT(tokenString string, JWTSecret []byte) (jwt.MapClaims, error) {
-	if len(JWTSecret) == 0 {
-		return nil, fmt.Errorf("JWT secret cannot be empty")
-	}
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return JWTSecret, nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims, nil
-	}
-	return nil, fmt.Errorf("invalid token")
+func GetKeyPath(filename string) string {
+	wd, _ := os.Getwd()
+	return filepath.Join(wd, "keys", filename)
 }
 
 type EmailType string
@@ -134,7 +84,7 @@ func SendEmail(data EmailData) error {
 	m.SetHeader("From", email)
 	m.SetHeader("To", data.To)
 	m.SetHeader("Subject", data.Subject)
-	
+
 	body, err := RenderEmailTemplate(data)
 
 	if err != nil {
@@ -309,7 +259,6 @@ func StringToUint(s string) (uint, error) {
 	}
 	return uint(value), nil
 }
-
 
 func MustJSON(v any) []byte {
 	b, _ := json.Marshal(v)

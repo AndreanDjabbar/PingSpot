@@ -1,7 +1,13 @@
 package dto
 
 type LoginResponse struct {
-	Token string `json:"token"`
+	AccessToken  string `json:"accessToken"`
+	ExpiresIn    int64  `json:"expiresIn"`
+}
+
+type RefreshTokenResponse struct {
+	AccessToken  string `json:"accessToken"`
+	ExpiresIn    int64  `json:"expiresIn"`
 }
 
 type VerificationResponse struct {

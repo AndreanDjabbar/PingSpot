@@ -2,16 +2,19 @@ import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export const proxy = (request: NextRequest) => {
-    const jwtToken = request.cookies.get('auth_token')?.value;
+    const accessToken = request.cookies.get('access_token')?.value;
+    const refreshToken = request.cookies.get('refresh_token')?.value;
+    
+    const isAuthenticated = !!(accessToken || refreshToken);
 
     if (request.nextUrl.pathname.startsWith('/main')) {
-        if (!jwtToken) {
+        if (!isAuthenticated) {
             return NextResponse.redirect(new URL('/auth/login', request.url));
         }
     }
 
     if (request.nextUrl.pathname.startsWith('/auth')) {
-        if (jwtToken) {
+        if (isAuthenticated) {
             return NextResponse.redirect(new URL('/main/home', request.url));
         }
     }

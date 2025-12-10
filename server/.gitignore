@@ -39,3 +39,5 @@ main
 **/log/*.log.*
 
 uploads/**
+
+/keys

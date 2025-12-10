@@ -14,7 +14,8 @@ func RegisterAuthRoutes(app *fiber.App) {
 	db := database.GetPostgresDB()
 	userRepo := repository.NewUserRepository(db)
 	userProfileRepo := repository.NewUserProfileRepository(db)
-	authService := service.NewAuthService(userRepo, userProfileRepo)
+	userSessionRepo := repository.NewUserSessionRepository(db)
+	authService := service.NewAuthService(userRepo, userProfileRepo, userSessionRepo)
 	authHandler := handler.NewAuthHandler(authService)
 
 	authRoute := app.Group("/pingspot/api/auth")
@@ -25,6 +26,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	authRoute.Post("/forgot-password/email-verification", authHandler.ForgotPasswordEmailVerificationHandler)
 	authRoute.Post("/forgot-password/link-verification", authHandler.ForgotPasswordLinkVerificationHandler)
 	authRoute.Post("/forgot-password/reset-password", authHandler.ForgotPasswordResetPasswordHandler)
+	authRoute.Post("/refresh-token", authHandler.RefreshTokenHandler)
 	authRoute.Get("/google", adaptor.HTTPHandlerFunc(authHandler.GoogleLoginHandler))
 	authRoute.Get("/google/callback", adaptor.HTTPHandlerFunc(authHandler.GoogleCallbackHandler))
 }

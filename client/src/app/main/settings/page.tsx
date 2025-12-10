@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import { BiLock, BiEnvelope, BiUser, BiCog } from 'react-icons/bi';
 import { MdOutlineLanguage, MdOutlineMarkEmailUnread } from 'react-icons/md';
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { getAuthToken } from '@/utils';
 import { useLogout } from '@/hooks/user';
 import { useRouter, usePathname } from 'next/navigation';
 import { ImExit } from 'react-icons/im';
@@ -54,13 +53,8 @@ const SettingsPage = () => {
     }
     
     const confirmLogout = () => {
-        const token = getAuthToken();
-        if (token) {
-            logout();
-        } else {
-            document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
-            router.push("/auth/login");
-        }
+        document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
+        router.push("/auth/login");
     };
 
     const handleLogout = () => {

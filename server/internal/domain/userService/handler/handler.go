@@ -11,6 +11,7 @@ import (
 	"server/pkg/logger"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/response"
+	tokenutils "server/pkg/utils/tokenutils"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -37,7 +38,7 @@ func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
 		logger.Error("Validation failed", zap.Error(err))
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
@@ -113,7 +114,7 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
@@ -133,7 +134,7 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 
 func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
 	logger.Info("GET MY PROFILE HANDLER")
-	claims, err := mainutils.GetJWTClaims(c)
+	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")

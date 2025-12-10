@@ -17,10 +17,10 @@ func RegisterUserRoutes(app *fiber.App) {
 	userService := service.NewUserService(userRepo, userProfileRepo)
 	userHandler := handler.NewUserHandler(userService)
 
-	profileRoute := app.Group("/pingspot/api/user/profile", middleware.JWTProtected())
+	profileRoute := app.Group("/pingspot/api/user/profile", middleware.ValidateAccessToken())
 	profileRoute.Get("/", userHandler.GetProfileHandler)
 	profileRoute.Post("/", userHandler.SaveUserProfileHandler)
 
-	securityRoute := app.Group("/pingspot/api/user/security", middleware.JWTProtected())
+	securityRoute := app.Group("/pingspot/api/user/security", middleware.ValidateAccessToken())
 	securityRoute.Post("/", userHandler.SaveUserSecurityHandler)
 }
