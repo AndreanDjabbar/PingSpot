@@ -56,6 +56,15 @@ func Migrate(db *gorm.DB) error {
 				return tx.Exec("ALTER TABLE user_sessions DROP COLUMN hashed_refresh_token").Error
 			},
 		},
+		{
+			ID: "12112025_add_map_zoom_to_report_location",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Exec("ALTER TABLE report_locations ADD COLUMN map_zoom INT").Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Exec("ALTER TABLE report_locations DROP COLUMN map_zoom").Error
+			},
+		},
 	})
 
 	err := m.Migrate()

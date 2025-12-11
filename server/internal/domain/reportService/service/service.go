@@ -94,6 +94,7 @@ func (s *ReportService) CreateReport(db *gorm.DB, userID uint, req dto.CreateRep
 		Geometry:       fmt.Sprintf("SRID=4326;POINT(%f %f)", req.Longitude, req.Latitude),
 		DetailLocation: req.DetailLocation,
 		DisplayName:    req.DisplayName,
+		MapZoom: 		req.MapZoom,	
 		AddressType:    req.AddressType,
 		Country:        req.Country,
 		CountryCode:    req.CountryCode,
@@ -192,6 +193,7 @@ func (s *ReportService) EditReport(db *gorm.DB, userID, reportID uint, req dto.E
 		existingReportLocation.State = req.State
 		existingReportLocation.Village = req.Village
 		existingReportLocation.Suburb = req.Suburb
+		existingReportLocation.MapZoom = req.MapZoom
 
 		existingReportImages.Image1URL = req.Image1URL
 		existingReportImages.Image2URL = req.Image2URL
@@ -201,7 +203,8 @@ func (s *ReportService) EditReport(db *gorm.DB, userID, reportID uint, req dto.E
 
 	case model.ON_PROGRESS, model.NOT_RESOLVED, model.POTENTIALLY_RESOLVED, model.EXPIRED:
 		existingReport.ReportDescription = req.ReportDescription
-
+		
+		existingReportLocation.MapZoom = req.MapZoom
 		existingReportImages.Image1URL = req.Image1URL
 		existingReportImages.Image2URL = req.Image2URL
 		existingReportImages.Image3URL = req.Image3URL
@@ -352,6 +355,7 @@ func (s *ReportService) GetAllReport(userID, cursorID uint, reportType, status, 
 				CountryCode:    report.ReportLocation.CountryCode,
 				Region:         report.ReportLocation.Region,
 				Road:           report.ReportLocation.Road,
+				MapZoom:  		report.ReportLocation.MapZoom,
 				PostCode:       report.ReportLocation.PostCode,
 				County:         report.ReportLocation.County,
 				State:          report.ReportLocation.State,

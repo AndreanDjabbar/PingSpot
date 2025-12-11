@@ -6,6 +6,7 @@ type CreateReportRequest struct {
 	ReportDescription string  `json:"reportDescription" validate:"required"`
 	DetailLocation    string  `json:"detailLocation" validate:"required"`
 	HasProgress       *bool   `json:"hasProgress" validate:"omitempty"`
+	MapZoom           *int    `json:"mapZoom" validate:"omitempty,min=0,max=21"`
 	Latitude          float64 `json:"latitude" validate:"required"`
 	Longitude         float64 `json:"longitude" validate:"required"`
 	DisplayName       *string `json:"displayName" validate:"omitempty,max=255"`
@@ -33,6 +34,7 @@ type EditReportRequest struct {
 	DetailLocation    string  `json:"detailLocation" validate:"required"`
 	HasProgress       *bool   `json:"hasProgress" validate:"omitempty"`
 	Latitude          float64 `json:"latitude" validate:"required"`
+	MapZoom           *int    `json:"mapZoom" validate:"omitempty,min=0,max=21"`
 	Longitude         float64 `json:"longitude" validate:"required"`
 	DisplayName       *string `json:"displayName" validate:"omitempty,max=255"`
 	AddressType       *string `json:"addressType" validate:"omitempty,max=100"`

@@ -66,6 +66,7 @@ type ReportLocation struct {
 	Latitude       float64 `json:"latitude"`
 	Longitude      float64 `json:"longitude"`
 	DisplayName    *string `json:"displayName"`
+	MapZoom		   *int    `json:"mapZoom"`
 	AddressType    *string `json:"addressType"`
 	Country        *string `json:"country"`
 	CountryCode    *string `json:"countryCode"`

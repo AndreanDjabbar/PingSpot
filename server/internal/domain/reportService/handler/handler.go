@@ -51,6 +51,7 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 	state := c.FormValue("state")
 	country := c.FormValue("country")
 	postCode := c.FormValue("postCode")
+	mapZoom := c.FormValue("mapZoom")
 	region := c.FormValue("region")
 	countryCode := c.FormValue("countryCode")
 	county := c.FormValue("county")
@@ -58,6 +59,11 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 	suburb := c.FormValue("suburb")
 	totalImageSize := int64(0)
 	var images map[int]string = make(map[int]string)
+
+	mapZoomInt, err := mainutils.StringToInt(mapZoom)
+	if err != nil && mapZoom != "" {
+		logger.Error("Invalid mapZoom format", zap.String("mapZoom", mapZoom), zap.Error(err))
+	}
 
 	files := form.File["reportImages"]
 	if len(files) > 5 {
@@ -164,6 +170,7 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 		AddressType:       mainutils.StrPtrOrNil(addressType),
 		Country:           mainutils.StrPtrOrNil(country),
 		CountryCode:       mainutils.StrPtrOrNil(countryCode),
+		MapZoom: 			&mapZoomInt,
 		Region:            mainutils.StrPtrOrNil(region),
 		PostCode:          mainutils.StrPtrOrNil(postCode),
 		County:            mainutils.StrPtrOrNil(county),
@@ -235,6 +242,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 	road := c.FormValue("road")
 	state := c.FormValue("state")
 	country := c.FormValue("country")
+	mapZoom := c.FormValue("mapZoom")
 	postCode := c.FormValue("postCode")
 	region := c.FormValue("region")
 	countryCode := c.FormValue("countryCode")
@@ -242,6 +250,11 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 	village := c.FormValue("village")
 	suburb := c.FormValue("suburb")
 	existingImagesSTR := c.FormValue("existingImages")
+
+	mapZoomInt, err := mainutils.StringToInt(mapZoom)
+	if err != nil && mapZoom != "" {
+		logger.Error("Invalid mapZoom format", zap.String("mapZoom", mapZoom), zap.Error(err))
+	}
 
 	var existingImages []string
 	if existingImagesSTR != "" {
@@ -346,6 +359,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 		ReportDescription: reportDescription,
 		DetailLocation:    detailLocation,
 		HasProgress:       hasProgress,
+		MapZoom:  			&mapZoomInt,	
 		Latitude:          floatLatitude,
 		Longitude:         floatLongitude,
 		DisplayName:       mainutils.StrPtrOrNil(displayName),
