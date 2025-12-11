@@ -53,8 +53,7 @@ const SettingsPage = () => {
     }
     
     const confirmLogout = () => {
-        document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
-        router.push("/auth/login");
+        logout();
     };
 
     const handleLogout = () => {
@@ -66,7 +65,6 @@ const SettingsPage = () => {
 
     useEffect(() => {
         if (isSuccess) {
-            document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
             setTimeout(() => {
                 router.push("/auth/login");
             }, 1000);
