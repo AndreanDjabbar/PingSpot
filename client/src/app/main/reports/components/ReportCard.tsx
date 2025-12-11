@@ -309,6 +309,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                     latitude={report.location.latitude}
                                     longitude={report.location.longitude}
                                     height={380}
+                                    zoom={(report.location.mapZoom != 0 && report.location.mapZoom) && report.location.mapZoom || 15}
                                     markerColor='red'
                                     popupText={report.reportTitle}
                                 />

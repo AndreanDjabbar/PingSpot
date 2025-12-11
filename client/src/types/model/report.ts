@@ -39,6 +39,7 @@ export interface IReportLocation {
     country?: string;
     countryCode?: string;
     region?: string;
+    mapZoom?: number;
     road?: string;
     postCode?: string;
     county?: string;
