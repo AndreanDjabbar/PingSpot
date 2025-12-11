@@ -438,37 +438,44 @@ func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 
 func (h *AuthHandler) LogoutHandler(c *fiber.Ctx) error {
 	logger.Info("LOGOUT HANDLER")
-	token := c.Get("Authorization")
-	if token == "" {
-		return response.ResponseError(c, 401, "Token tidak ditemukan", "", "Anda harus login terlebih dahulu")
+	refreshToken := c.Cookies("refresh_token")
+	if refreshToken == "" {
+		return response.ResponseError(c, 401, "Refresh token tidak ditemukan", "", "Anda harus login terlebih dahulu")
 	}
 
-	if len(token) > 7 && token[:7] == "Bearer " {
-		token = token[7:]
-	}
-
-	claims, err := tokenutils.ParseJWT(token, []byte(env.JWTSecret()))
+	refreshTokenClaims, err := tokenutils.ValidateRefreshToken(refreshToken)
 	if err != nil {
-		logger.Error("Failed to parse JWT token", zap.Error(err))
-		return response.ResponseError(c, 401, "Token tidak valid", "", err.Error())
+		logger.Error("Failed to validate refresh token", zap.Error(err))
+		return response.ResponseError(c, 401, "Refresh token tidak valid", "", "Token tidak dapat diverifikasi")
 	}
 
-	exp := claims["exp"].(float64)
-	now := time.Now().Unix()
-	ttl := time.Duration(int64(exp)-now) * time.Second
-
-	if ttl > 0 {
-		redisClient := cache.GetRedis()
-		blacklistKey := fmt.Sprintf("blacklist:%s", token)
-
-		err = redisClient.Set(c.Context(), blacklistKey, "true", ttl).Err()
-		if err != nil {
-			logger.Error("Failed to blacklist token in Redis", zap.Error(err))
-			return response.ResponseError(c, 500, "Gagal memproses logout", "", err.Error())
-		}
-
-		logger.Info("Token blacklisted successfully", zap.String("token_prefix", token[:10]+"..."))
+	refreshTokenID := refreshTokenClaims["refresh_token_id"].(string)
+	userID := uint(refreshTokenClaims["user_id"].(float64))
+	
+	if err := h.authService.Logout(userID, refreshTokenID); err != nil {
+		logger.Error("Failed to logout user", zap.Error(err))
+		return response.ResponseError(c, 500, "Gagal logout", "", err.Error())
 	}
+	
+	c.Cookie(&fiber.Cookie{
+		Name:	 "access_token",
+		Value:	 "",
+		HTTPOnly: true,
+		Secure:	 true,
+		SameSite: fiber.CookieSameSiteStrictMode,
+		MaxAge: -1,
+		Path: "/",
+	})
+
+	c.Cookie(&fiber.Cookie{
+		Name:	 "refresh_token",
+		Value:	 "",
+		HTTPOnly: true,
+		Secure:	 true,
+		SameSite: fiber.CookieSameSiteStrictMode,
+		MaxAge: -1,
+		Path: "/",
+	})
 
 	return response.ResponseSuccess(c, 200, "Logout berhasil", "data", nil)
 }
