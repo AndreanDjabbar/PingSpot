@@ -195,6 +195,17 @@ func Int64PtrOrNil(i int64) *int64 {
 	return &i
 }
 
+func StringToInt(s string) (int, error) {
+	if s == "" {
+		return 0, nil
+	}
+	value, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert string to int: %w", err)
+	}
+	return value, nil
+}
+
 func StringToTimePtr(s string) (*time.Time, error) {
 	if s == "" {
 		return nil, nil
