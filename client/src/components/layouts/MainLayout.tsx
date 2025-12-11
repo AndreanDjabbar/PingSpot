@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Sidebar from './Sidebar';
 import TopNavigation from './TopNavigation';
 import Footer from './Footer';
+import { useUserProfileStore } from '@/stores';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -53,6 +54,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({
 }
 
 const MainContent: React.FC<MainContentProps> = ({ children }) => {
+    const loadUser = useUserProfileStore((state) => state.loadUser);
+    
+    useEffect(() => {
+        loadUser();
+    }, [loadUser]);
+
     return (
         <main className="flex-1 min-h-screen bg-gradient-to-br from-gray-50 via-sky-50/30 to-indigo-50/30">
             <div className="h-full p-4 lg:p-8">
