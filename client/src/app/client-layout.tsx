@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { useUserProfileStore, useGlobalStore, useLocationStore } from "@/stores";
+import { useGlobalStore, useLocationStore } from "@/stores";
 
 const ClientLayout = ({ children }: { children: React.ReactNode }) => {
-    const loadUser = useUserProfileStore((state) => state.loadUser);
     const globalStore = useGlobalStore();
     const locationStore = useLocationStore();
 
@@ -18,10 +17,6 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
         locationStore.clearLocation();
         }
     }, []);
-
-    useEffect(() => {
-        loadUser();
-    }, [loadUser]);
 
     return <>{children}</>;
 };
