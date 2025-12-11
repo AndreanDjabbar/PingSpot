@@ -9,6 +9,8 @@ const DynamicMap = dynamic(() => import('../../../../components/DynamicMap'), {
 
 interface MapStepProps {
     onMarkerPositionChange: (position: { lat: number; lng: number } | null) => void;
+    onZoomLevelChange: (zoom: number) => void;
+    defaultZoom?: number;
     markerPosition?: { lat: number; lng: number } | null;
     latitudeError?: string;
     longitudeError?: string;
@@ -18,8 +20,14 @@ const MapStep: React.FC<MapStepProps> = ({
     onMarkerPositionChange, 
     markerPosition,
     latitudeError, 
+    defaultZoom,
+    onZoomLevelChange,
     longitudeError 
 }) => {
+    const handleZoomChange = (newZoom: number) => {
+        onZoomLevelChange(newZoom);
+    }
+
     return (
         <div>
             <div className="w-full bg-gray-100 rounded-lg p-4 border-2 border-dashed border-gray-200">
@@ -33,6 +41,8 @@ const MapStep: React.FC<MapStepProps> = ({
                 <div className="h-[400px] w-full mb-4">
                     <DynamicMap 
                     onMarkerPositionChange={onMarkerPositionChange}
+                    defaultZoom={defaultZoom}
+                    onZoomChange={handleZoomChange}
                     initialMarker={markerPosition}
                     />
                 </div>

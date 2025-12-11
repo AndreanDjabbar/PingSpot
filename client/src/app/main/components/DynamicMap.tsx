@@ -11,6 +11,7 @@ import 'leaflet/dist/leaflet.css';
 
 interface DynamicMapProps {
     onMarkerPositionChange?: (position: { lat: number, lng: number }) => void;
+    onZoomChange?: (zoom: number) => void;
     height?: string | number;
     width?: string | number;
     defaultZoom?: number;
@@ -76,18 +77,40 @@ const MapUpdater = ({
     return null;
 };
 
-const MapEvents = ({ onClick, disabled }: { onClick: (position: { lat: number, lng: number }) => void, disabled?: boolean }) => {
-    useMapEvents({
+const MapEvents = ({ 
+    onClick, 
+    disabled,
+    onZoomChange 
+}: { 
+    onClick: (position: { lat: number, lng: number }) => void, 
+    disabled?: boolean,
+    onZoomChange?: (zoom: number) => void
+}) => {
+    const map = useMapEvents({
         click: (e) => {
             if (disabled) return;
             onClick({ lat: e.latlng.lat, lng: e.latlng.lng });
         },
+        zoomend: () => {
+            if (onZoomChange) {
+                onZoomChange(map.getZoom());
+            }
+        }
     });
+    
+    useEffect(() => {
+        // Report initial zoom level
+        if (onZoomChange) {
+            onZoomChange(map.getZoom());
+        }
+    }, [map, onZoomChange]);
+    
     return null;
 };
 
 const DynamicMap: React.FC<DynamicMapProps> = ({ 
     onMarkerPositionChange,
+    onZoomChange,
     height = '400px',
     width = '100%',
     defaultZoom = 13,
@@ -285,7 +308,11 @@ const DynamicMap: React.FC<DynamicMapProps> = ({
                     </Marker>
                 )}
                 
-                <MapEvents onClick={handleMapClick} disabled={disabled} />
+                <MapEvents 
+                    onClick={handleMapClick} 
+                    disabled={disabled}
+                    onZoomChange={onZoomChange}
+                />
             </MapContainer>
             
             <div className="absolute top-4 right-4 z-1000 flex flex-col gap-2">

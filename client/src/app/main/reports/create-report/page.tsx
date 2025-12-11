@@ -24,6 +24,7 @@ const CreateReportPage = () => {
 
     const [reportImages, setReportImages] = useState<ImageItem[]>([]);
     const [markerPosition, setMarkerPosition] = useState<{ lat: number, lng: number } | null>(null);
+    const [zoomLevel, setZoomLevel] = useState<number>(15);
     const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
     const [currentStep, setCurrentStep] = useState(0);
 
@@ -158,6 +159,7 @@ const CreateReportPage = () => {
             formDataToSubmit.append('countryCode', country_code || '');
             formDataToSubmit.append('county', county || '');
             formDataToSubmit.append('postCode', postcode || '');
+            formDataToSubmit.append('mapZoom', zoomLevel.toString());
             formDataToSubmit.append('region', region || '');
             formDataToSubmit.append('state', state || '');
             formDataToSubmit.append('village', village || '');
@@ -217,6 +219,8 @@ const CreateReportPage = () => {
                             <MapStep
                                 onMarkerPositionChange={setMarkerPosition}
                                 markerPosition={markerPosition}
+                                onZoomLevelChange={setZoomLevel}
+                                defaultZoom={zoomLevel}
                                 latitudeError={errors?.latitude?.message as string}
                                 longitudeError={errors?.longitude?.message as string}
                             />
