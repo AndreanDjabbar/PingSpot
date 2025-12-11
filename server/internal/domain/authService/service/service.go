@@ -244,6 +244,27 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
     return accessToken, newRefreshToken, nil
 }
 
+func (s *AuthService) Logout(userID uint, refreshTokenID string) error {
+	redisClient := cache.GetRedis()
+	refreshKey := fmt.Sprintf("refresh_token:%s", refreshTokenID)
+	if err := redisClient.Del(context.Background(), refreshKey).Err(); err != nil {
+		logger.Warn("Failed to delete refresh token from Redis", zap.Error(err))
+	}
+	userSession, err := s.userSessionRepo.GetByRefreshTokenID(refreshTokenID)
+	if err != nil {
+		return apperror.New(500, "USER_SESSION_FETCH_FAILED", "Gagal mengambil sesi user")
+	}
+	userSession.IsActive = false
+	if err := s.userSessionRepo.Update(userSession); err != nil {
+		return apperror.New(500, "USER_SESSION_UPDATE_FAILED", "Gagal memperbarui sesi user")
+	}
+	userSessionKey := fmt.Sprintf("user_session:%d", userID)
+	if err := redisClient.SRem(context.Background(), userSessionKey, userSession.ID).Err(); err != nil {
+		logger.Warn("Failed to remove user session ID from Redis set", zap.Error(err))
+	}
+	return nil
+}
+
 
 func (s *AuthService) VerifyUser(userID uint) (*model.User, error) {
 	user, err := s.userRepo.GetByID(userID)
