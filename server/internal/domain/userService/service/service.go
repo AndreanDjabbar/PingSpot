@@ -26,12 +26,12 @@ func NewUserService(userRepo repository.UserRepository, userProfileRepo reposito
 func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProfileRequest) (*dto.SaveUserProfileResponse, error) {
 	tx := db.Begin()
 	if tx.Error != nil {
-		return nil, apperror.New(500, "TRANSACTION_START_FAILED", "gagal memulai transaksi")
+		return nil, apperror.New(500, "TRANSACTION_START_FAILED", "gagal memulai transaksi", tx.Error.Error())
 	}
 
 	if err := s.userRepo.UpdateFullNameTX(tx, userID, req.FullName); err != nil {
 		tx.Rollback()
-		return nil, apperror.New(500, "FULLNAME_UPDATE_FAILED", "gagal memperbarui nama lengkap")
+		return nil, apperror.New(500, "FULLNAME_UPDATE_FAILED", "gagal memperbarui nama lengkap", err.Error())
 	}
 
 	profile, err := s.userProfileRepo.GetByIDTX(tx, userID)
@@ -46,10 +46,10 @@ func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProf
 			}
 			if _, err := s.userProfileRepo.CreateTX(tx, &newProfile); err != nil {
 				tx.Rollback()
-				return nil, apperror.New(500, "PROFILE_CREATE_FAILED", "gagal membuat profil")
+				return nil, apperror.New(500, "PROFILE_CREATE_FAILED", "gagal membuat profil", err.Error())
 			}
 			if err := tx.Commit().Error; err != nil {
-				return nil, apperror.New(500, "TRANSACTION_COMMIT_FAILED", "gagal menyimpan perubahan")
+				return nil, apperror.New(500, "TRANSACTION_COMMIT_FAILED", "gagal menyimpan perubahan", err.Error())
 			}
 			newProfileResponse := dto.SaveUserProfileResponse{
 				UserID:         userID,
@@ -62,7 +62,7 @@ func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProf
 			return &newProfileResponse, nil
 		} else {
 			tx.Rollback()
-			return nil, apperror.New(500, "PROFILE_FETCH_FAILED", "gagal mengambil profil")
+			return nil, apperror.New(500, "PROFILE_FETCH_FAILED", "gagal mengambil profil", err.Error())
 		}
 	}
 
@@ -73,11 +73,11 @@ func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProf
 
 	if _, err := s.userProfileRepo.UpdateTX(tx, profile); err != nil {
 		tx.Rollback()
-		return nil, apperror.New(500, "PROFILE_UPDATE_FAILED", "gagal memperbarui profil")
+		return nil, apperror.New(500, "PROFILE_UPDATE_FAILED", "gagal memperbarui profil", err.Error())
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return nil, apperror.New(500, "TRANSACTION_COMMIT_FAILED", "gagal menyimpan perubahan")
+		return nil, apperror.New(500, "TRANSACTION_COMMIT_FAILED", "gagal menyimpan perubahan", err.Error())
 	}
 
 	profileResponse := dto.SaveUserProfileResponse{
@@ -96,9 +96,9 @@ func (s *UserService) GetProfile(userID uint) (*dto.GetProfileResponse, error) {
 	user, err := s.userRepo.GetByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, apperror.New(404, "USER_NOT_FOUND", "pengguna tidak ditemukan")
+			return nil, apperror.New(404, "USER_NOT_FOUND", "pengguna tidak ditemukan", "")
 		}
-		return nil, apperror.New(500, "USER_FETCH_FAILED", "gagal mendapatkan profil user")
+		return nil, apperror.New(500, "USER_FETCH_FAILED", "gagal mendapatkan profil user", err.Error())
 	}
 
 	return &dto.GetProfileResponse{
@@ -117,9 +117,9 @@ func (s *UserService) SaveSecurity(userID uint, req dto.SaveUserSecurityRequest)
 	user, err := s.userRepo.GetByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return apperror.New(404, "USER_NOT_FOUND", "pengguna tidak ditemukan")
+			return apperror.New(404, "USER_NOT_FOUND", "pengguna tidak ditemukan", "")
 		}
-		return apperror.New(500, "USER_FETCH_FAILED", "gagal mengambil data pengguna")
+		return apperror.New(500, "USER_FETCH_FAILED", "gagal mengambil data pengguna", err.Error())
 	}
 
 	isValidPassword := false
@@ -128,17 +128,17 @@ func (s *UserService) SaveSecurity(userID uint, req dto.SaveUserSecurityRequest)
 	}
 
 	if !isValidPassword {
-		return apperror.New(400, "INVALID_PASSWORD", "Kata sandi lama anda salah")
+		return apperror.New(400, "INVALID_PASSWORD", "Kata sandi lama anda salah", "")
 	}
 
 	hashedPassword, err := tokenutils.HashString(req.NewPassword)
 	if err != nil {
-		return apperror.New(500, "PASSWORD_HASH_FAILED", "Gagal mengenkripsi kata sandi")
+		return apperror.New(500, "PASSWORD_HASH_FAILED", "Gagal mengenkripsi kata sandi", "")
 	}
 
 	user.Password = &hashedPassword
 	if err := s.userRepo.Save(user); err != nil {
-		return apperror.New(500, "PASSWORD_UPDATE_FAILED", "Gagal memperbarui kata sandi")
+		return apperror.New(500, "PASSWORD_UPDATE_FAILED", "Gagal memperbarui kata sandi", err.Error())
 	}
 
 	return nil
