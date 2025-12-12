@@ -219,62 +219,110 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 	})
 }
 
+func (h *AuthHandler) OAuthLoginHandler(provider string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("OAUTH LOGIN HANDLER", zap.String("provider", provider))
+		r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
+		gothic.BeginAuthHandler(w, r)
+	}
+}
+
 func (h *AuthHandler) GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
-	logger.Info("GOOGLE LOGIN HANDLER")
-	r = r.WithContext(context.WithValue(context.Background(), "provider", "google"))
-	gothic.BeginAuthHandler(w, r)
+	h.OAuthLoginHandler("google")(w, r)
+}
+
+func (h *AuthHandler) OAuthCallbackHandler(provider string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("OAUTH CALLBACK HANDLER", zap.String("provider", provider))
+		r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
+		user, err := gothic.CompleteUserAuth(w, r)
+		if err != nil {
+			logger.Error("OAuth authentication failed", zap.String("provider", provider), zap.Error(err))
+			http.Error(w, "Authentication failed", http.StatusUnauthorized)
+			return
+		}
+		email := user.Email
+		fullName := user.Name
+		nickName := user.RawData["given_name"].(string)
+		if nickName == "" {
+			nickName = user.RawData["name"].(string)
+		}
+		providerId := user.RawData["id"].(string)
+		logger.Info("OAuth user authenticated", zap.String("provider", provider), zap.String("email", email), zap.String("name", fullName))
+
+		existingUser, err := h.authService.GetUserByEmail(email)
+		if err != nil {
+			logger.Error("Error retrieving user by email", zap.Error(err))
+			http.Error(w, "Terdapat masalah", http.StatusNotFound)
+			return
+		}
+
+		if existingUser == nil {
+			newUser := dto.RegisterRequest{
+				Username:   nickName,
+				Email:      email,
+				FullName:   fullName,
+				Provider:   provider,
+				ProviderID: &providerId,
+			}
+			db := database.GetPostgresDB()
+			createdUser, err := h.authService.Register(db, newUser, true)
+			if err != nil {
+				logger.Error("Error registering new user", zap.String("provider", provider), zap.Error(err))
+				http.Error(w, "Terdapat masalah saat registrasi", http.StatusInternalServerError)
+				return
+			}
+			logger.Info("New user registered", zap.String("provider", provider), zap.String("user_id", fmt.Sprintf("%d", createdUser.ID)))
+			existingUser = createdUser
+		}
+		
+		db := database.GetPostgresDB()
+
+		var loginReq dto.LoginRequest
+		loginReq.Email = existingUser.Email
+		loginReq.Password = ""
+
+		userIP := mainutils.GetHTTPClientIP(r)
+		userAgent := mainutils.GetHTTPUserAgent(r)
+
+		loginReq.IPAddress = userIP
+		loginReq.UserAgent = userAgent
+
+		_, accessToken, refreshToken, err := h.authService.Login(db, loginReq)
+		if err != nil {
+			logger.Error("Login failed for OAuth user", zap.String("provider", provider), zap.Error(err))
+			http.Error(w, "Terdapat masalah saat login", http.StatusInternalServerError)
+			return
+		}
+
+		cookieAccess := &http.Cookie{
+			Name:	 "access_token",
+			Value:	 accessToken,
+			HttpOnly: true,
+			Secure:	 true,
+			SameSite: http.SameSiteStrictMode,
+			Path: "/",
+			MaxAge:   20 * 60,
+		}
+		http.SetCookie(w, cookieAccess)
+
+		cookieRefresh := &http.Cookie{
+			Name:	 "refresh_token",
+			Value:	 refreshToken,
+			HttpOnly: true,
+			Secure:	 true,
+			SameSite: http.SameSiteStrictMode,
+			Path: "/",
+			MaxAge:   7 * 24 * 3600,
+		}
+		http.SetCookie(w, cookieRefresh)
+
+		http.Redirect(w, r, fmt.Sprintf("%s/auth/%s?status=%d", env.ClientURL(), provider, http.StatusAccepted), http.StatusFound)
+	}
 }
 
 func (h *AuthHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	logger.Info("GOOGLE CALLBACK HANDLER")
-	r = r.WithContext(context.WithValue(context.Background(), "provider", "google"))
-	user, err := gothic.CompleteUserAuth(w, r)
-	if err != nil {
-		logger.Error("Google authentication failed", zap.Error(err))
-		http.Error(w, "Authentication failed", http.StatusUnauthorized)
-		return
-	}
-	email := user.Email
-	fullName := user.Name
-	nickName := user.RawData["given_name"].(string)
-	if nickName == "" {
-		nickName = user.RawData["name"].(string)
-	}
-	providerId := user.RawData["id"].(string)
-	logger.Info("Google user authenticated", zap.String("email", email), zap.String("name", fullName))
-
-	existingUser, err := h.authService.GetUserByEmail(email)
-	if err != nil {
-		logger.Error("Error retrieving user by email", zap.Error(err))
-		http.Error(w, "Terdapat masalah", http.StatusNotFound)
-	}
-
-	if existingUser == nil {
-		newUser := dto.RegisterRequest{
-			Username:   nickName,
-			Email:      email,
-			FullName:   fullName,
-			Provider:   "GOOGLE",
-			ProviderID: &providerId,
-		}
-		db := database.GetPostgresDB()
-		createdUser, err := h.authService.Register(db, newUser, true)
-		if err != nil {
-			logger.Error("Error registering new user", zap.Error(err))
-			http.Error(w, "Terdapat masalah saat registrasi", http.StatusInternalServerError)
-			return
-		}
-		logger.Info("New user registered", zap.String("user_id", fmt.Sprintf("%d", createdUser.ID)))
-		existingUser = createdUser
-	}
-
-	token, err := tokenutils.GenerateJWT(existingUser.ID, []byte(env.JWTSecret()), existingUser.Email, existingUser.Username, existingUser.FullName)
-	if err != nil {
-		logger.Error("Error generating token for Google user", zap.Error(err))
-		http.Error(w, "Terdapat masalah saat login", http.StatusInternalServerError)
-		return
-	}
-	http.Redirect(w, r, fmt.Sprintf("%s/auth/google?token=%s", env.ClientURL(), token), http.StatusFound)
+	h.OAuthCallbackHandler("google")(w, r)
 }
 
 func (h *AuthHandler) ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
