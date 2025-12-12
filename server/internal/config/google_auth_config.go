@@ -21,14 +21,15 @@ func InitGoogleAuth() error {
 		return fmt.Errorf("missing required Google Auth environment variables")
 	}
 
-	goth.UseProviders(
-		google.New(
-			googleClientId,
-			googleClientSecret,
-			googleCallbackURL,
-			"email", "profile",
-		),
+	googleProvider := google.New(
+		googleClientId,
+		googleClientSecret,
+		googleCallbackURL,
+		"email", "profile",
 	)
+	googleProvider.SetPrompt("select_account")
+
+	goth.UseProviders(googleProvider)
 
 	maxAge := 60 * 60 * 24 * 30
 	isProduction := env.IsProduction()
