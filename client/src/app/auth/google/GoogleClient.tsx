@@ -8,23 +8,22 @@ const GoogleAuthClient = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const token = searchParams.get('token');
+    const status = searchParams.get('status');
 
     const { toastSuccess } = useToast();
 
     useEffect(() => {
-        if (token) {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const jwtExpiration = payload.exp || 0;
-            if (token) {
-                document.cookie = `auth_token=${token}; path=/; expires=${new Date(jwtExpiration * 1000).toUTCString()}; secure; samesite=strict`;
+        if (status) {
+            if (status === '202') {
+                setTimeout(() => {
+                    router.push("/main/home");
+                }, 1000);
+                toastSuccess('Akun berhasil diverifikasi');
+            } else {
+                router.push("/auth/login");
             }
-            setTimeout(() => {
-                router.push("/main/home");
-            }, 1000);
-            toastSuccess('Akun berhasil diverifikasi');
         }
-    }, [token, toastSuccess, router]);
+    }, [status, toastSuccess, router]);
     
     return (
         <div className="space-y-8">
@@ -32,7 +31,7 @@ const GoogleAuthClient = () => {
                 <h1 className="text-3xl font-bold text-gray-900">Verifikasi Akun Google</h1>
                 <p className="text-gray-800">Kami akan memverifikasi akun anda</p>
             </div>
-            {token && (
+            {status === '202' && (
                 <SuccessSection message="Akun berhasil diverifikasi melalui Google.." />
             )}
         </div>
