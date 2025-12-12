@@ -42,7 +42,7 @@ func NewAuthService(
 func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified bool) (*model.User, error) {
 	tx := db.Begin()
 	if tx.Error != nil {
-		return nil, apperror.New(500, "TRANSACTION_START_FAILED", "Gagal memulai transaksi")
+		return nil, apperror.New(500, "TRANSACTION_START_FAILED", "Gagal memulai transaksi", tx.Error.Error())
 	}
 	defer func() {
 		if r := recover(); r != nil {
@@ -53,17 +53,17 @@ func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified 
 	_, err := s.userRepo.GetByEmail(req.Email)
 	if err == nil {
 		tx.Rollback()
-		return nil, apperror.New(400, "EMAIL_ALREADY_REGISTERED", "Email sudah terdaftar")
+		return nil, apperror.New(400, "EMAIL_ALREADY_REGISTERED", "Email sudah terdaftar", "")
 	}
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		tx.Rollback()
-		return nil, apperror.New(500, "USER_CHECK_FAILED", "Terjadi kesalahan saat cek data user")
+		return nil, apperror.New(500, "USER_CHECK_FAILED", "Terjadi kesalahan saat cek data user", err.Error())
 	}
 
 	hashedPassword, err := tokenutils.HashString(req.Password)
 	if err != nil {
 		tx.Rollback()
-		return nil, apperror.New(500, "PASSWORD_HASH_FAILED", "Gagal mengenkripsi password")
+		return nil, apperror.New(500, "PASSWORD_HASH_FAILED", "Gagal mengenkripsi password", err.Error())
 	}
 
 	user := model.User{
@@ -79,7 +79,7 @@ func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified 
 	createdUser, err := s.userRepo.CreateTX(tx, &user)
 	if err != nil {
 		tx.Rollback()
-		return nil, apperror.New(500, "USER_CREATE_FAILED", "Gagal membuat user")
+		return nil, apperror.New(500, "USER_CREATE_FAILED", "Gagal membuat user", err.Error())
 	}
 
 	newProfile := model.UserProfile{
@@ -89,11 +89,11 @@ func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified 
 	if _, err := s.userProfileRepo.CreateTX(tx, &newProfile); err != nil {
 		fmt.Println("Error creating UserProfile:", err)
 		tx.Rollback()
-		return nil, apperror.New(500, "PROFILE_CREATE_FAILED", "Gagal membuat profil user")
+		return nil, apperror.New(500, "PROFILE_CREATE_FAILED", "Gagal membuat profil user", err.Error())
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return nil, apperror.New(500, "TRANSACTION_COMMIT_FAILED", "Gagal menyimpan perubahan")
+		return nil, apperror.New(500, "TRANSACTION_COMMIT_FAILED", "Gagal menyimpan perubahan", err.Error())
 	}
 
 	return createdUser, nil
@@ -102,23 +102,25 @@ func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified 
 func (s *AuthService) Login(db *gorm.DB, req dto.LoginRequest) (*model.User, string, string, error) {
 	user, err := s.userRepo.GetByEmail(req.Email)
 	if err != nil {
-		return nil, "", "", apperror.New(401, "INVALID_CREDENTIALS", "Email atau password salah")
+		return nil, "", "", apperror.New(401, "INVALID_CREDENTIALS", "Email atau password salah", err.Error())
 	}
 
-	if user.Password == nil || !tokenutils.CheckHashString(req.Password, *user.Password) {
-		return nil, "", "", apperror.New(401, "INVALID_CREDENTIALS", "Email atau password salah")
+	if user.Provider == model.ProviderEmail {
+		if user.Password == nil || !tokenutils.CheckHashString(req.Password, *user.Password) {
+			return nil, "", "", apperror.New(401, "INVALID_CREDENTIALS", "Email atau password salah", "")
+		}
 	}
 
 	if !user.IsVerified {
 		randomCode1, err := tokenutils.GenerateRandomCode(150)
 		if err != nil {
 			logger.Error("Failed to generate random code", zap.Error(err))
-			return nil, "", "", apperror.New(500, "CODE_GENERATION_FAILED", "Gagal membuat kode acak")
+			return nil, "", "", apperror.New(500, "CODE_GENERATION_FAILED", "Gagal membuat kode acak", err.Error())
 		}
 		randomCode2, err := tokenutils.GenerateRandomCode(150)
 		if err != nil {
 			logger.Error("Failed to generate random code", zap.Error(err))
-			return nil, "", "", apperror.New(500, "CODE_GENERATION_FAILED", "Gagal membuat kode acak")
+			return nil, "", "", apperror.New(500, "CODE_GENERATION_FAILED", "Gagal membuat kode acak", err.Error())
 		}
 		verificationLink := fmt.Sprintf("%s/auth/verify-account/%s/%d/%s", env.ClientURL(), randomCode1, user.ID, randomCode2)
 
@@ -130,16 +132,16 @@ func (s *AuthService) Login(db *gorm.DB, req dto.LoginRequest) (*model.User, str
 		linkJSON, err := json.Marshal(linkData)
 		if err != nil {
 			logger.Error("Failed to marshal verification link data", zap.Error(err))
-			return nil, "", "", apperror.New(500, "VERIFICATION_CODE_SAVE_FAILED", "Gagal menyimpan kode verifikasi")
+			return nil, "", "", apperror.New(500, "VERIFICATION_CODE_SAVE_FAILED", "Gagal menyimpan kode verifikasi", err.Error())
 		}
 		redisKey := fmt.Sprintf("link:%d", user.ID)
 		err = redisClient.Set(context.Background(), redisKey, linkJSON, 300*time.Second).Err()
 		if err != nil {
 			logger.Error("Failed to save verification link to Redis", zap.Error(err))
-			return nil, "", "", apperror.New(500, "VERIFICATION_CODE_REDIS_FAILED", "Gagal menyimpan kode verifikasi ke Redis")
+			return nil, "", "", apperror.New(500, "VERIFICATION_CODE_REDIS_FAILED", "Gagal menyimpan kode verifikasi ke Redis", err.Error())
 		}
 		go util.SendVerificationEmail(user.Email, user.Username, verificationLink)
-		return nil, "", "", apperror.New(403, "ACCOUNT_NOT_VERIFIED", "Akun belum diverifikasi, silakan cek email untuk verifikasi")
+		return nil, "", "", apperror.New(403, "ACCOUNT_NOT_VERIFIED", "Akun belum diverifikasi, silakan cek email untuk verifikasi", "")
 	}
 
 	refreshTokenID := uuid.New().String()
@@ -148,23 +150,23 @@ func (s *AuthService) Login(db *gorm.DB, req dto.LoginRequest) (*model.User, str
 
 	tx := db.Begin()
 	userSession, err := s.userSessionRepo.CreateTX(tx, &model.UserSession{
-		UserID:         user.ID,
-		ExpiresAt:      time.Now().Add(7 * 24 * time.Hour).Unix(),
-		IsActive:       true,
-		RefreshTokenID: refreshTokenID,
+		UserID:             user.ID,
+		ExpiresAt:          time.Now().Add(7 * 24 * time.Hour).Unix(),
+		IsActive:           true,
+		RefreshTokenID:     refreshTokenID,
 		HashedRefreshToken: hashedRefreshToken,
-		IPAddress:      req.IPAddress,
-		UserAgent:      req.UserAgent,
+		IPAddress:          req.IPAddress,
+		UserAgent:          req.UserAgent,
 	})
 	if err != nil {
 		tx.Rollback()
 		logger.Error("Failed to create user session", zap.Error(err))
-		return nil, "", "", apperror.New(500, "USER_SESSION_CREATE_FAILED", "Gagal membuat sesi user")
+		return nil, "", "", apperror.New(500, "USER_SESSION_CREATE_FAILED", "Gagal membuat sesi user", err.Error())
 	}
 
 	if err := tx.Commit().Error; err != nil {
 		logger.Error("Failed to commit user session transaction", zap.Error(err))
-		return nil, "", "", apperror.New(500, "USER_SESSION_COMMIT_FAILED", "Gagal menyimpan sesi user")
+		return nil, "", "", apperror.New(500, "USER_SESSION_COMMIT_FAILED", "Gagal menyimpan sesi user", err.Error())
 	}
 
 	accessToken := tokenutils.GenerateAccessToken(user.ID, userSession.ID, user.Email, user.Username, user.FullName)
@@ -175,73 +177,73 @@ func (s *AuthService) Login(db *gorm.DB, req dto.LoginRequest) (*model.User, str
 	err = redisClient.Set(context.Background(), refreshKey, hashedRefreshToken, 7*24*time.Hour).Err()
 	if err != nil {
 		logger.Error("Failed to save refresh token to Redis", zap.Error(err))
-		return nil, "", "", apperror.New(500, "REFRESH_TOKEN_SAVE_FAILED", "Gagal menyimpan refresh token")
+		return nil, "", "", apperror.New(500, "REFRESH_TOKEN_SAVE_FAILED", "Gagal menyimpan refresh token", err.Error())
 	}
 
 	userSessionKey := fmt.Sprintf("user_session:%d", user.ID)
 	err = redisClient.SAdd(context.Background(), userSessionKey, userSession.ID).Err()
 	if err != nil {
 		logger.Error("Failed to save user session ID to Redis set", zap.Error(err))
-		return nil, "", "", apperror.New(500, "USER_SESSION_SAVE_FAILED", "Gagal menyimpan sesi user")
+		return nil, "", "", apperror.New(500, "USER_SESSION_SAVE_FAILED", "Gagal menyimpan sesi user", err.Error())
 	}
 	return user, accessToken, refreshToken, nil
 }
 
 func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) {
-    claims, err := tokenutils.ValidateRefreshToken(refreshToken)
-    if err != nil {
-        return "", "", apperror.New(401, "INVALID_REFRESH_TOKEN", "Refresh token tidak valid")
-    }
-	
-    userID := uint(claims["user_id"].(float64))
-    refreshTokenID := claims["refresh_token_id"].(string)
-    hashedRefreshToken := tokenutils.HashSHA256String(refreshToken)
+	claims, err := tokenutils.ValidateRefreshToken(refreshToken)
+	if err != nil {
+		return "", "", apperror.New(401, "INVALID_REFRESH_TOKEN", "Refresh token tidak valid", err.Error())
+	}
 
-    redisClient := cache.GetRedis()
-    refreshKey := fmt.Sprintf("refresh_token:%s", refreshTokenID)
+	userID := uint(claims["user_id"].(float64))
+	refreshTokenID := claims["refresh_token_id"].(string)
+	hashedRefreshToken := tokenutils.HashSHA256String(refreshToken)
 
-    storedHashedRefreshToken, err := redisClient.Get(context.Background(), refreshKey).Result()
-    if err != nil || storedHashedRefreshToken != hashedRefreshToken {
-        return "", "", apperror.New(401, "REFRESH_TOKEN_INVALID", "Refresh token tidak cocok atau tidak ditemukan")
-    }
+	redisClient := cache.GetRedis()
+	refreshKey := fmt.Sprintf("refresh_token:%s", refreshTokenID)
+
+	storedHashedRefreshToken, err := redisClient.Get(context.Background(), refreshKey).Result()
+	if err != nil || storedHashedRefreshToken != hashedRefreshToken {
+		return "", "", apperror.New(401, "REFRESH_TOKEN_INVALID", "Refresh token tidak cocok atau tidak ditemukan", "")
+	}
 
 	user, err := s.userRepo.GetByID(userID)
 	if err != nil {
-		return "", "", apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data user")
+		return "", "", apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data user", err.Error())
 	}
 
-    userSession, err := s.userSessionRepo.GetByRefreshTokenID(refreshTokenID)
-    if err != nil {
-        return "", "", apperror.New(401, "USER_SESSION_NOT_FOUND", "Sesi user tidak ditemukan")
-    }
+	userSession, err := s.userSessionRepo.GetByRefreshTokenID(refreshTokenID)
+	if err != nil {
+		return "", "", apperror.New(401, "USER_SESSION_NOT_FOUND", "Sesi user tidak ditemukan", err.Error())
+	}
 
-    if !userSession.IsActive || time.Now().Unix() > userSession.ExpiresAt {
-        return "", "", apperror.New(401, "SESSION_INVALID", "Sesi sudah tidak aktif atau kedaluwarsa")
-    }
+	if !userSession.IsActive || time.Now().Unix() > userSession.ExpiresAt {
+		return "", "", apperror.New(401, "SESSION_INVALID", "Sesi sudah tidak aktif atau kedaluwarsa", "")
+	}
 
-    newRefreshTokenID := uuid.New().String()
-    newRefreshToken := tokenutils.GenerateRefreshToken(userID, newRefreshTokenID)
-    newHashedRefreshToken := tokenutils.HashSHA256String(newRefreshToken)
+	newRefreshTokenID := uuid.New().String()
+	newRefreshToken := tokenutils.GenerateRefreshToken(userID, newRefreshTokenID)
+	newHashedRefreshToken := tokenutils.HashSHA256String(newRefreshToken)
 
-    if err := redisClient.Del(context.Background(), refreshKey).Err(); err != nil {
-        logger.Warn("Failed to delete old refresh token", zap.Error(err))
-    }
+	if err := redisClient.Del(context.Background(), refreshKey).Err(); err != nil {
+		logger.Warn("Failed to delete old refresh token", zap.Error(err))
+	}
 
-    newRefreshKey := fmt.Sprintf("refresh_token:%s", newRefreshTokenID)
-    if err := redisClient.Set(context.Background(), newRefreshKey, newHashedRefreshToken, 7*24*time.Hour).Err(); err != nil {
-        return "", "", apperror.New(500, "REFRESH_TOKEN_SAVE_FAILED", "Gagal menyimpan refresh token baru")
-    }
+	newRefreshKey := fmt.Sprintf("refresh_token:%s", newRefreshTokenID)
+	if err := redisClient.Set(context.Background(), newRefreshKey, newHashedRefreshToken, 7*24*time.Hour).Err(); err != nil {
+		return "", "", apperror.New(500, "REFRESH_TOKEN_SAVE_FAILED", "Gagal menyimpan refresh token baru", err.Error())
+	}
 
-    userSession.RefreshTokenID = newRefreshTokenID
-    userSession.HashedRefreshToken = newHashedRefreshToken
-	
-    if err := s.userSessionRepo.Update(userSession); err != nil {
-        return "", "", apperror.New(500, "SESSION_UPDATE_FAILED", "Gagal memperbarui sesi")
-    }
+	userSession.RefreshTokenID = newRefreshTokenID
+	userSession.HashedRefreshToken = newHashedRefreshToken
 
-    accessToken := tokenutils.GenerateAccessToken(userID, userSession.ID, user.Email, user.Username, user.FullName)
+	if err := s.userSessionRepo.Update(userSession); err != nil {
+		return "", "", apperror.New(500, "SESSION_UPDATE_FAILED", "Gagal memperbarui sesi", err.Error())
+	}
 
-    return accessToken, newRefreshToken, nil
+	accessToken := tokenutils.GenerateAccessToken(userID, userSession.ID, user.Email, user.Username, user.FullName)
+
+	return accessToken, newRefreshToken, nil
 }
 
 func (s *AuthService) Logout(userID uint, refreshTokenID string) error {
@@ -252,11 +254,11 @@ func (s *AuthService) Logout(userID uint, refreshTokenID string) error {
 	}
 	userSession, err := s.userSessionRepo.GetByRefreshTokenID(refreshTokenID)
 	if err != nil {
-		return apperror.New(500, "USER_SESSION_FETCH_FAILED", "Gagal mengambil sesi user")
+		return apperror.New(500, "USER_SESSION_FETCH_FAILED", "Gagal mengambil sesi user", err.Error())
 	}
 	userSession.IsActive = false
 	if err := s.userSessionRepo.Update(userSession); err != nil {
-		return apperror.New(500, "USER_SESSION_UPDATE_FAILED", "Gagal memperbarui sesi user")
+		return apperror.New(500, "USER_SESSION_UPDATE_FAILED", "Gagal memperbarui sesi user", err.Error())
 	}
 	userSessionKey := fmt.Sprintf("user_session:%d", userID)
 	if err := redisClient.SRem(context.Background(), userSessionKey, userSession.ID).Err(); err != nil {
@@ -265,24 +267,23 @@ func (s *AuthService) Logout(userID uint, refreshTokenID string) error {
 	return nil
 }
 
-
 func (s *AuthService) VerifyUser(userID uint) (*model.User, error) {
 	user, err := s.userRepo.GetByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, apperror.New(404, "USER_NOT_FOUND", "User tidak ditemukan")
+			return nil, apperror.New(404, "USER_NOT_FOUND", "User tidak ditemukan", err.Error())
 		}
-		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data user")
+		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data user", err.Error())
 	}
 
 	if user.IsVerified {
-		return nil, apperror.New(400, "ALREADY_VERIFIED", "Akun sudah diverifikasi")
+		return nil, apperror.New(400, "ALREADY_VERIFIED", "Akun sudah diverifikasi", "")
 	}
 
 	user.IsVerified = true
 
 	if err := s.userRepo.Save(user); err != nil {
-		return nil, apperror.New(500, "USER_SAVE_FAILED", "Gagal menyimpan data user")
+		return nil, apperror.New(500, "USER_SAVE_FAILED", "Gagal menyimpan data user", err.Error())
 	}
 
 	return user, nil
@@ -292,14 +293,14 @@ func (s *AuthService) UpdateUserByEmail(email string, updatedUser *model.User) (
 	_, err := s.userRepo.GetByEmail(email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, apperror.New(404, "USER_NOT_FOUND", "User tidak ditemukan")
+			return nil, apperror.New(404, "USER_NOT_FOUND", "User tidak ditemukan", err.Error())
 		}
-		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mencari user")
+		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mencari user", err.Error())
 	}
 
 	user, err := s.userRepo.UpdateByEmail(email, updatedUser)
 	if err != nil {
-		return nil, apperror.New(500, "USER_UPDATE_FAILED", "Gagal update user")
+		return nil, apperror.New(500, "USER_UPDATE_FAILED", "Gagal update user", err.Error())
 	}
 
 	return user, nil
@@ -311,7 +312,7 @@ func (s *AuthService) GetUserByEmail(email string) (*model.User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data user")
+		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data user", err.Error())
 	}
 	return user, nil
 }
