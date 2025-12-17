@@ -28,6 +28,7 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 
 func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
 	logger.Info("SAVE USER SECURITY HANDLER")
+	ctx := c.Context()
 	var req dto.SaveUserSecurityRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -44,7 +45,7 @@ func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
-	if err := h.userService.SaveSecurity(userId, req); err != nil {
+	if err := h.userService.SaveSecurity(ctx, userId, req); err != nil {
 		logger.Error("Failed to update user password", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
 			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
@@ -120,8 +121,9 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
+	ctx := c.Context()
 	database := database.GetPostgresDB()
-	newProfile, err := h.userService.SaveProfile(database, userId, req)
+	newProfile, err := h.userService.SaveProfile(ctx, database, userId, req)
 	if err != nil {
 		logger.Error("Failed to save user profile", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -134,13 +136,14 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 
 func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
 	logger.Info("GET MY PROFILE HANDLER")
+	ctx := c.Context()
 	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
-	userProfile, err := h.userService.GetProfile(userId)
+	userProfile, err := h.userService.GetProfile(ctx, userId)
 	if err != nil {
 		logger.Error("Failed to get my profile", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {

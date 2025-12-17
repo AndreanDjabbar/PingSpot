@@ -32,6 +32,7 @@ func NewReportHandler(reportService *service.ReportService) *ReportHandler {
 
 func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 	logger.Info("CREATE REPORT HANDLER")
+	ctx := c.Context()
 	form, err := c.MultipartForm()
 	if err != nil {
 		logger.Error("Failed to parse multipart form", zap.Error(err))
@@ -170,7 +171,7 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 		AddressType:       mainutils.StrPtrOrNil(addressType),
 		Country:           mainutils.StrPtrOrNil(country),
 		CountryCode:       mainutils.StrPtrOrNil(countryCode),
-		MapZoom: 			&mapZoomInt,
+		MapZoom:           &mapZoomInt,
 		Region:            mainutils.StrPtrOrNil(region),
 		PostCode:          mainutils.StrPtrOrNil(postCode),
 		County:            mainutils.StrPtrOrNil(county),
@@ -199,7 +200,7 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 	}
 	userID := uint(claims["user_id"].(float64))
 
-	result, err := h.reportService.CreateReport(db, userID, req)
+	result, err := h.reportService.CreateReport(ctx, db, userID, req)
 	if err != nil {
 		for i := range files {
 			os.Remove(filepath.Join("uploads/main/report", images[i]))
@@ -217,6 +218,7 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 
 func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 	logger.Info("EDIT REPORT HANDLER")
+	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
 	if err != nil {
@@ -359,7 +361,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 		ReportDescription: reportDescription,
 		DetailLocation:    detailLocation,
 		HasProgress:       hasProgress,
-		MapZoom:  			&mapZoomInt,	
+		MapZoom:           &mapZoomInt,
 		Latitude:          floatLatitude,
 		Longitude:         floatLongitude,
 		DisplayName:       mainutils.StrPtrOrNil(displayName),
@@ -404,7 +406,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 		}
 	}
 
-	result, err := h.reportService.EditReport(db, userID, uintReportID, req)
+	result, err := h.reportService.EditReport(ctx, db, userID, uintReportID, req)
 	if err != nil {
 		for _, file := range newImages {
 			for k := range file {
@@ -425,6 +427,7 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 
 func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	logger.Info("GET REPORT HANDLER")
+	ctx := c.Context()
 	reportID := c.Query("reportID")
 	cursorID := c.Query("cursorID")
 	distance := c.Query("distance")
@@ -454,7 +457,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 	userID := uint(claims["user_id"].(float64))
 
 	if reportID == "" {
-		reports, err := h.reportService.GetAllReport(userID, cursorIDUint, reportType, status, sortBy, hasProgress, formattedDistance)
+		reports, err := h.reportService.GetAllReport(ctx, userID, cursorIDUint, reportType, status, sortBy, hasProgress, formattedDistance)
 		if err != nil {
 			logger.Error("Failed to get all reports", zap.Error(err))
 			if appErr, ok := err.(*apperror.AppError); ok {
@@ -479,7 +482,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 			return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
 		}
 
-		report, err := h.reportService.GetReportByID(userID, uintReportID)
+		report, err := h.reportService.GetReportByID(ctx, userID, uintReportID)
 		if err != nil {
 			logger.Error("Failed to get report by ID", zap.Uint("reportID", uintReportID), zap.Error(err))
 			if appErr, ok := err.(*apperror.AppError); ok {
@@ -496,6 +499,7 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 
 func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
 	logger.Info("REACTION REPORT HANDLER")
+	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
 	if err != nil {
@@ -522,7 +526,7 @@ func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
 	userID := uint(claims["user_id"].(float64))
 	db := database.GetPostgresDB()
 
-	reaction, err := h.reportService.ReactToReport(db, userID, uintReportID, req.ReactionType)
+	reaction, err := h.reportService.ReactToReport(ctx, db, userID, uintReportID, req.ReactionType)
 	if err != nil {
 		logger.Error("Failed to react to report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -535,6 +539,7 @@ func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
 
 func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
 	logger.Info("VOTE REPORT HANDLER")
+	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
 	if err != nil {
@@ -559,7 +564,7 @@ func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
 	}
 	userID := uint(claims["user_id"].(float64))
 	db := database.GetPostgresDB()
-	vote, err := h.reportService.VoteToReport(db, userID, uintReportID, req.VoteType)
+	vote, err := h.reportService.VoteToReport(ctx, db, userID, uintReportID, req.VoteType)
 	if err != nil {
 		logger.Error("Failed to vote to report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -572,6 +577,7 @@ func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
 
 func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 	logger.Info("UPLOAD PROGRESS REPORT HANDLER")
+	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
 	if err != nil {
@@ -648,7 +654,7 @@ func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 
 	db := database.GetPostgresDB()
 
-	newProgress, err := h.reportService.UploadProgressReport(db, userID, uintReportID, req)
+	newProgress, err := h.reportService.UploadProgressReport(ctx, db, userID, uintReportID, req)
 	if err != nil {
 		logger.Error("Failed to upload progress report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -661,6 +667,7 @@ func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 
 func (h *ReportHandler) GetProgressReportHandler(c *fiber.Ctx) error {
 	logger.Info("GET PROGRESS REPORT HANDLER")
+	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
 	if err != nil {
@@ -668,7 +675,7 @@ func (h *ReportHandler) GetProgressReportHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Format reportID tidak valid", "", "reportID harus berupa angka")
 	}
 
-	progressList, err := h.reportService.GetProgressReports(uintReportID)
+	progressList, err := h.reportService.GetProgressReports(ctx, uintReportID)
 	if err != nil {
 		logger.Error("Failed to get progress reports", zap.Uint("reportID", uintReportID), zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -681,6 +688,7 @@ func (h *ReportHandler) GetProgressReportHandler(c *fiber.Ctx) error {
 
 func (h *ReportHandler) DeleteReportHandler(c *fiber.Ctx) error {
 	logger.Info("DELETE REPORT HANDLER")
+	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
 	if err != nil {
@@ -694,7 +702,7 @@ func (h *ReportHandler) DeleteReportHandler(c *fiber.Ctx) error {
 	}
 	userID := uint(claims["user_id"].(float64))
 	db := database.GetPostgresDB()
-	err = h.reportService.DeleteReport(db, userID, uintReportID, "soft")
+	err = h.reportService.DeleteReport(ctx, db, userID, uintReportID, "soft")
 	if err != nil {
 		logger.Error("Failed to delete report", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -709,6 +717,7 @@ func (h *ReportHandler) DeleteReportHandler(c *fiber.Ctx) error {
 
 func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 	logger.Info("CREATE REPORT COMMENT HANDLER")
+	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
 	if err != nil {
@@ -748,7 +757,7 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Terlalu banyak file media", "", "Hanya boleh mengunggah 1 file media")
 	}
 
-	var mentions []uint 
+	var mentions []uint
 	var mediaWidth, mediaHeight *uint
 
 	mediaWidthVal, err := mainutils.StringToUint(mediaWidthStr)
@@ -790,7 +799,7 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 		"image/jpg":  true,
 		"image/png":  true,
 		"image/webp": true,
-	}	
+	}
 	imageName := ""
 	for _, file := range files {
 		if file.Size > 3*1024*1024 {
@@ -824,11 +833,11 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 
 	req := dto.CreateReportCommentRequest{
 		Content:         mainutils.StrPtrOrNil(content),
-		MediaURL: 		mainutils.StrPtrOrNil(mediaURL),
-		MediaType:      mainutils.StrPtrOrNil(mediaType),
-		MediaWidth:   	mediaWidth,
-		MediaHeight:   	mediaHeight,
-		ParentCommentID: mainutils.StrPtrOrNil(parentCommentIDStr),	
+		MediaURL:        mainutils.StrPtrOrNil(mediaURL),
+		MediaType:       mainutils.StrPtrOrNil(mediaType),
+		MediaWidth:      mediaWidth,
+		MediaHeight:     mediaHeight,
+		ParentCommentID: mainutils.StrPtrOrNil(parentCommentIDStr),
 	}
 
 	if err := validation.Validate.Struct(req); err != nil {
@@ -838,7 +847,7 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 	}
 	db := database.GetMongoDB()
 
-	newComment, err := h.reportService.CreateReportComment(db, userID, uintReportID, req)
+	newComment, err := h.reportService.CreateReportComment(ctx, db, userID, uintReportID, req)
 	if err != nil {
 		os.Remove(filepath.Join("uploads/main/report/comments", imageName))
 		logger.Error("Failed to create report comment", zap.Uint("reportID", uintReportID), zap.Uint("userID", userID), zap.Error(err))
@@ -851,6 +860,7 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 
 func (h *ReportHandler) GetReportCommentsHandler(c *fiber.Ctx) error {
 	logger.Info("GET REPORT COMMENTS HANDLER")
+	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
 	if err != nil {
@@ -859,7 +869,7 @@ func (h *ReportHandler) GetReportCommentsHandler(c *fiber.Ctx) error {
 	}
 	cursorID := c.Query("cursorID")
 
-	comments, err := h.reportService.GetReportComments(uintReportID, mainutils.StrPtrOrNil(cursorID))
+	comments, err := h.reportService.GetReportComments(ctx, uintReportID, mainutils.StrPtrOrNil(cursorID))
 	if err != nil {
 		logger.Error("Failed to get report comments", zap.Uint("reportID", uintReportID), zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {

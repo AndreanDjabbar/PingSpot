@@ -35,7 +35,7 @@ func (h *TaskHandler) AutoResolveReportHandler(ctx context.Context, t *asynq.Tas
 	}
 
 	tx := h.DB.Begin()
-	report, err := h.ReportRepo.GetByIDTX(tx, payload.ReportID)
+	report, err := h.ReportRepo.GetByIDTX(ctx, tx, payload.ReportID)
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("report not found: %w", err)
@@ -52,7 +52,7 @@ func (h *TaskHandler) AutoResolveReportHandler(ctx context.Context, t *asynq.Tas
 			report.ReportStatus = "RESOLVED"
 			report.LastUpdatedProgressAt = mainutils.Int64PtrOrNil(time.Now().Unix())
 			report.LastUpdatedBy = model.System
-			if _, err := h.ReportRepo.UpdateTX(tx, report); err != nil {
+			if _, err := h.ReportRepo.UpdateTX(ctx, tx, report); err != nil {
 				tx.Rollback()
 				return fmt.Errorf("failed to update report: %w", err)
 			}

@@ -35,6 +35,8 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 }
 
 func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
+	ctx := c.Context()
+
 	logger.Info("REGISTER HANDLER")
 	var req dto.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -48,7 +50,7 @@ func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 	db := database.GetPostgresDB()
-	user, err := h.authService.Register(db, req, false)
+	user, err := h.authService.Register(ctx, db, req, false)
 	if err != nil {
 		logger.Error("Registration failed", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -105,6 +107,7 @@ func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 
 func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
 	logger.Info("VERIFICATION HANDLER")
+	ctx := c.Context()
 	code1 := c.Query("code1")
 	userId := c.Query("userId")
 	code2 := c.Query("code2")
@@ -143,7 +146,7 @@ func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "ID pengguna tidak valid", "", err.Error())
 	}
 
-	user, err := h.authService.VerifyUser(uint(userIdUint))
+	user, err := h.authService.VerifyUser(ctx, uint(userIdUint))
 	if err != nil {
 		logger.Error("Verification failed", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -165,6 +168,7 @@ func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
 
 func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 	logger.Info("LOGIN HANDLER")
+	ctx := c.Context()
 	db := database.GetPostgresDB()
 	var req dto.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -184,7 +188,7 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 	req.IPAddress = userIP
 	req.UserAgent = userAgent
 
-	_, accessToken, refreshToken, err := h.authService.Login(db, req)
+	_, accessToken, refreshToken, err := h.authService.Login(ctx, db, req)
 	if err != nil {
 		logger.Error("Login failed", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -250,7 +254,8 @@ func (h *AuthHandler) OAuthCallbackHandler(provider string) http.HandlerFunc {
 		providerId := user.RawData["id"].(string)
 		logger.Info("OAuth user authenticated", zap.String("provider", provider), zap.String("email", email), zap.String("name", fullName))
 
-		existingUser, err := h.authService.GetUserByEmail(email)
+		ctx := r.Context()
+		existingUser, err := h.authService.GetUserByEmail(ctx, email)
 		if err != nil {
 			logger.Error("Error retrieving user by email", zap.Error(err))
 			http.Error(w, "Terdapat masalah", http.StatusNotFound)
@@ -266,7 +271,7 @@ func (h *AuthHandler) OAuthCallbackHandler(provider string) http.HandlerFunc {
 				ProviderID: &providerId,
 			}
 			db := database.GetPostgresDB()
-			createdUser, err := h.authService.Register(db, newUser, true)
+			createdUser, err := h.authService.Register(ctx, db, newUser, true)
 			if err != nil {
 				logger.Error("Error registering new user", zap.String("provider", provider), zap.Error(err))
 				http.Error(w, "Terdapat masalah saat registrasi", http.StatusInternalServerError)
@@ -275,7 +280,7 @@ func (h *AuthHandler) OAuthCallbackHandler(provider string) http.HandlerFunc {
 			logger.Info("New user registered", zap.String("provider", provider), zap.String("user_id", fmt.Sprintf("%d", createdUser.ID)))
 			existingUser = createdUser
 		}
-		
+
 		db := database.GetPostgresDB()
 
 		var loginReq dto.LoginRequest
@@ -288,7 +293,7 @@ func (h *AuthHandler) OAuthCallbackHandler(provider string) http.HandlerFunc {
 		loginReq.IPAddress = userIP
 		loginReq.UserAgent = userAgent
 
-		_, accessToken, refreshToken, err := h.authService.Login(db, loginReq)
+		_, accessToken, refreshToken, err := h.authService.Login(ctx, db, loginReq)
 		if err != nil {
 			logger.Error("Login failed for OAuth user", zap.String("provider", provider), zap.Error(err))
 			http.Error(w, "Terdapat masalah saat login", http.StatusInternalServerError)
@@ -296,23 +301,23 @@ func (h *AuthHandler) OAuthCallbackHandler(provider string) http.HandlerFunc {
 		}
 
 		cookieAccess := &http.Cookie{
-			Name:	 "access_token",
-			Value:	 accessToken,
+			Name:     "access_token",
+			Value:    accessToken,
 			HttpOnly: true,
-			Secure:	 true,
+			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
-			Path: "/",
+			Path:     "/",
 			MaxAge:   20 * 60,
 		}
 		http.SetCookie(w, cookieAccess)
 
 		cookieRefresh := &http.Cookie{
-			Name:	 "refresh_token",
-			Value:	 refreshToken,
+			Name:     "refresh_token",
+			Value:    refreshToken,
 			HttpOnly: true,
-			Secure:	 true,
+			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
-			Path: "/",
+			Path:     "/",
 			MaxAge:   7 * 24 * 3600,
 		}
 		http.SetCookie(w, cookieRefresh)
@@ -327,6 +332,7 @@ func (h *AuthHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Reque
 
 func (h *AuthHandler) ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
 	logger.Info("FORGOT PASSWORD EMAIL VERIFICATION HANDLER")
+	ctx := c.Context()
 	var req dto.ForgotPasswordEmailVerificationRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -338,7 +344,7 @@ func (h *AuthHandler) ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	user, err := h.authService.GetUserByEmail(req.Email)
+	user, err := h.authService.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		logger.Error("Failed to get user by email", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -397,12 +403,13 @@ func (h *AuthHandler) ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error 
 
 func (h *AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
 	logger.Info("REFRESH TOKEN HANDLER")
+	ctx := c.Context()
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {
 		return response.ResponseError(c, 401, "Refresh token tidak ditemukan", "", "Anda harus login terlebih dahulu")
 	}
 
-	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(refreshToken)
+	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(ctx, refreshToken)
 	if err != nil {
 		logger.Error("Failed to refresh tokens", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -439,6 +446,7 @@ func (h *AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
 
 func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	logger.Info("FORGOT PASSWORD RESET PASSWORD HANDLER")
+	ctx := c.Context()
 	var req dto.ForgotPasswordResetPasswordRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -450,7 +458,7 @@ func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Validasi gagal", "errors", errors)
 	}
 
-	user, err := h.authService.GetUserByEmail(req.Email)
+	user, err := h.authService.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		logger.Error("Failed to get user by email", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -469,7 +477,7 @@ func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 	}
 	user.Password = &hashNewPassword
 
-	updatedUser, err := h.authService.UpdateUserByEmail(req.Email, user)
+	updatedUser, err := h.authService.UpdateUserByEmail(ctx, req.Email, user)
 	if err != nil {
 		logger.Error("Failed to update user password", zap.Error(err))
 		if appErr, ok := err.(*apperror.AppError); ok {
@@ -486,6 +494,7 @@ func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 
 func (h *AuthHandler) LogoutHandler(c *fiber.Ctx) error {
 	logger.Info("LOGOUT HANDLER")
+	ctx := c.Context()
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {
 		return response.ResponseError(c, 401, "Refresh token tidak ditemukan", "", "Anda harus login terlebih dahulu")
@@ -499,30 +508,30 @@ func (h *AuthHandler) LogoutHandler(c *fiber.Ctx) error {
 
 	refreshTokenID := refreshTokenClaims["refresh_token_id"].(string)
 	userID := uint(refreshTokenClaims["user_id"].(float64))
-	
-	if err := h.authService.Logout(userID, refreshTokenID); err != nil {
+
+	if err := h.authService.Logout(ctx, userID, refreshTokenID); err != nil {
 		logger.Error("Failed to logout user", zap.Error(err))
 		return response.ResponseError(c, 500, "Gagal logout", "", err.Error())
 	}
-	
+
 	c.Cookie(&fiber.Cookie{
-		Name:	 "access_token",
-		Value:	 "",
+		Name:     "access_token",
+		Value:    "",
 		HTTPOnly: true,
-		Secure:	 true,
+		Secure:   true,
 		SameSite: fiber.CookieSameSiteStrictMode,
-		MaxAge: -1,
-		Path: "/",
+		MaxAge:   -1,
+		Path:     "/",
 	})
 
 	c.Cookie(&fiber.Cookie{
-		Name:	 "refresh_token",
-		Value:	 "",
+		Name:     "refresh_token",
+		Value:    "",
 		HTTPOnly: true,
-		Secure:	 true,
+		Secure:   true,
 		SameSite: fiber.CookieSameSiteStrictMode,
-		MaxAge: -1,
-		Path: "/",
+		MaxAge:   -1,
+		Path:     "/",
 	})
 
 	return response.ResponseSuccess(c, 200, "Logout berhasil", "data", nil)
