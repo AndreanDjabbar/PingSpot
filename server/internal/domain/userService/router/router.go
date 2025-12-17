@@ -6,6 +6,7 @@ import (
 	"server/internal/domain/userService/service"
 	"server/internal/infrastructure/database"
 	"server/internal/middleware"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,9 +19,9 @@ func RegisterUserRoutes(app *fiber.App) {
 	userHandler := handler.NewUserHandler(userService)
 
 	profileRoute := app.Group("/pingspot/api/user/profile", middleware.ValidateAccessToken())
-	profileRoute.Get("/", userHandler.GetProfileHandler)
-	profileRoute.Post("/", userHandler.SaveUserProfileHandler)
+	profileRoute.Get("/", middleware.TimeoutMiddleware(5*time.Second), userHandler.GetProfileHandler)
+	profileRoute.Post("/", middleware.TimeoutMiddleware(10*time.Second), userHandler.SaveUserProfileHandler)
 
 	securityRoute := app.Group("/pingspot/api/user/security", middleware.ValidateAccessToken())
-	securityRoute.Post("/", userHandler.SaveUserSecurityHandler)
+	securityRoute.Post("/", middleware.TimeoutMiddleware(10*time.Second), userHandler.SaveUserSecurityHandler)
 }

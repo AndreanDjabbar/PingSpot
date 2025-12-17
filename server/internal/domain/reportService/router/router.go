@@ -10,6 +10,7 @@ import (
 	"server/internal/infrastructure/database"
 	"server/internal/middleware"
 	"server/pkg/utils/env"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hibiken/asynq"
@@ -38,14 +39,14 @@ func RegisterReportRoutes(app *fiber.App) {
 	reportHandler := handler.NewReportHandler(reportService)
 
 	reportRoute := app.Group("/pingspot/api/report", middleware.ValidateAccessToken())
-	reportRoute.Post("/", reportHandler.CreateReportHandler)
-	reportRoute.Put("/:reportID", reportHandler.EditReportHandler)
-	reportRoute.Get("/", reportHandler.GetReportHandler)
-	reportRoute.Post("/:reportID/reaction", reportHandler.ReactionReportHandler)
-	reportRoute.Post("/:reportID/vote", reportHandler.VoteReportHandler)
-	reportRoute.Post("/:reportID/progress", reportHandler.UploadProgressReportHandler)
-	reportRoute.Get("/:reportID/progress", reportHandler.GetProgressReportHandler)
-	reportRoute.Delete("/:reportID", reportHandler.DeleteReportHandler)
-	reportRoute.Post("/:reportID/comment", reportHandler.CreateReportCommentHandler)
-	reportRoute.Get("/:reportID/comment", reportHandler.GetReportCommentsHandler)
+	reportRoute.Post("/", middleware.TimeoutMiddleware(20*time.Second), reportHandler.CreateReportHandler)
+	reportRoute.Put("/:reportID", middleware.TimeoutMiddleware(20*time.Second), reportHandler.EditReportHandler)
+	reportRoute.Get("/", middleware.TimeoutMiddleware(15*time.Second), reportHandler.GetReportHandler)
+	reportRoute.Post("/:reportID/reaction", middleware.TimeoutMiddleware(5*time.Second), reportHandler.ReactionReportHandler)
+	reportRoute.Post("/:reportID/vote", middleware.TimeoutMiddleware(5*time.Second), reportHandler.VoteReportHandler)
+	reportRoute.Post("/:reportID/progress", middleware.TimeoutMiddleware(15*time.Second), reportHandler.UploadProgressReportHandler)
+	reportRoute.Get("/:reportID/progress", middleware.TimeoutMiddleware(10*time.Second), reportHandler.GetProgressReportHandler)
+	reportRoute.Delete("/:reportID", middleware.TimeoutMiddleware(10*time.Second), reportHandler.DeleteReportHandler)
+	reportRoute.Post("/:reportID/comment", middleware.TimeoutMiddleware(8*time.Second), reportHandler.CreateReportCommentHandler)
+	reportRoute.Get("/:reportID/comment", middleware.TimeoutMiddleware(15*time.Second), reportHandler.GetReportCommentsHandler)
 }
