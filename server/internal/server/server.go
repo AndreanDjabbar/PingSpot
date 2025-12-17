@@ -1,10 +1,13 @@
 package server
 
 import (
+	"server/internal/middleware"
 	"server/internal/router"
 	"server/pkg/logger"
 	"server/pkg/utils/env"
 	"server/pkg/utils/response"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
@@ -22,6 +25,8 @@ func New() *FiberServer {
 
 	app.Static("/user", "./uploads/user")
 	app.Static("/main", "./uploads/main")
+
+	app.Use(middleware.TimeoutMiddleware(5 * time.Second))
 
 	return &FiberServer{
 		App: app,
