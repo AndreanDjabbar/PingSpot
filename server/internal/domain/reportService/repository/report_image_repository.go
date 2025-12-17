@@ -1,15 +1,16 @@
 package repository
 
 import (
+	"context"
 	"server/internal/domain/model"
 
 	"gorm.io/gorm"
 )
 
 type ReportImageRepository interface {
-	Create(images *model.ReportImage, tx *gorm.DB) error
-	UpdateTX(tx *gorm.DB, images *model.ReportImage) (*model.ReportImage, error)
-	GetByReportID(reportID uint) (*model.ReportImage, error)
+	Create(ctx context.Context, images *model.ReportImage, tx *gorm.DB) error
+	UpdateTX(ctx context.Context, tx *gorm.DB, images *model.ReportImage) (*model.ReportImage, error)
+	GetByReportID(ctx context.Context, reportID uint) (*model.ReportImage, error)
 }
 
 type reportImageRepository struct {
@@ -20,23 +21,23 @@ func NewReportImageRepository(db *gorm.DB) ReportImageRepository {
 	return &reportImageRepository{db: db}
 }
 
-func (r *reportImageRepository) Create(images *model.ReportImage, tx *gorm.DB) error {
+func (r *reportImageRepository) Create(ctx context.Context, images *model.ReportImage, tx *gorm.DB) error {
 	if tx != nil {
-		return tx.Create(images).Error
+		return tx.WithContext(ctx).Create(images).Error
 	}
-	return r.db.Create(images).Error
+	return r.db.WithContext(ctx).Create(images).Error
 }
 
-func (r *reportImageRepository) UpdateTX(tx *gorm.DB, images *model.ReportImage) (*model.ReportImage, error) {
-	if err := tx.Save(images).Error; err != nil {
+func (r *reportImageRepository) UpdateTX(ctx context.Context, tx *gorm.DB, images *model.ReportImage) (*model.ReportImage, error) {
+	if err := tx.WithContext(ctx).Save(images).Error; err != nil {
 		return nil, err
 	}
 	return images, nil
 }
 
-func (r *reportImageRepository) GetByReportID(reportID uint) (*model.ReportImage, error) {
+func (r *reportImageRepository) GetByReportID(ctx context.Context, reportID uint) (*model.ReportImage, error) {
 	var images model.ReportImage
-	if err := r.db.Where("report_id = ?", reportID).First(&images).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("report_id = ?", reportID).First(&images).Error; err != nil {
 		return nil, err
 	}
 	return &images, nil

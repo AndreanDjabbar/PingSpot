@@ -1,90 +1,91 @@
 package repository
 
 import (
+	"context"
 	"server/internal/domain/model"
 
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
-	UpdateByEmail(email string, updatedUser *model.User) (*model.User, error)
-	GetByID(userID uint) (*model.User, error)
-    GetByIDs(userIDs []uint) ([]model.User, error)
-	GetByEmail(email string) (*model.User, error)
-	Save(user *model.User) error
-	Create(user *model.User) error
-    CreateTX(tx *gorm.DB, user *model.User) (*model.User, error)
-	UpdateFullNameTX(tx *gorm.DB, userID uint, fullName string) error
-    Get() (*[]model.User, error)
+	UpdateByEmail(ctx context.Context, email string, updatedUser *model.User) (*model.User, error)
+	GetByID(ctx context.Context, userID uint) (*model.User, error)
+	GetByIDs(ctx context.Context, userIDs []uint) ([]model.User, error)
+	GetByEmail(ctx context.Context, email string) (*model.User, error)
+	Save(ctx context.Context, user *model.User) error
+	Create(ctx context.Context, user *model.User) error
+	CreateTX(ctx context.Context, tx *gorm.DB, user *model.User) (*model.User, error)
+	UpdateFullNameTX(ctx context.Context, tx *gorm.DB, userID uint, fullName string) error
+	Get(ctx context.Context) (*[]model.User, error)
 }
 
 type userRepository struct {
-    db *gorm.DB
+	db *gorm.DB
 }
 
 func NewUserRepository(db *gorm.DB) UserRepository {
-    return &userRepository{db: db}
+	return &userRepository{db: db}
 }
 
-func (r *userRepository) Get() (*[]model.User, error) {
-    var users []model.User
-    if err := r.db.Find(&users).Error; err != nil {
-        return nil, err
-    }
-    return &users, nil
+func (r *userRepository) Get(ctx context.Context) (*[]model.User, error) {
+	var users []model.User
+	if err := r.db.WithContext(ctx).Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return &users, nil
 }
 
-func (r *userRepository) GetByIDs(userIDs []uint) ([]model.User, error) {
-    var users []model.User
-    if err := r.db.
-    Preload("Profile").
-    Where("id IN ?", userIDs).Find(&users).Error; err != nil {
-        return nil, err
-    }
-    return users, nil
+func (r *userRepository) GetByIDs(ctx context.Context, userIDs []uint) ([]model.User, error) {
+	var users []model.User
+	if err := r.db.WithContext(ctx).
+		Preload("Profile").
+		Where("id IN ?", userIDs).Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
-func (r *userRepository) GetByEmail(email string) (*model.User, error) {
-    var user model.User
-    if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
-        return nil, err
-    }
-    return &user, nil
+func (r *userRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+	var user model.User
+	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
-func (r *userRepository) UpdateByEmail(email string, updatedUser *model.User) (*model.User, error) {
-    var user model.User
-    if err := r.db.Model(&user).Updates(updatedUser).Error; err != nil {
-        return nil, err
-    }
-    return &user, nil
+func (r *userRepository) UpdateByEmail(ctx context.Context, email string, updatedUser *model.User) (*model.User, error) {
+	var user model.User
+	if err := r.db.WithContext(ctx).Model(&user).Updates(updatedUser).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
-func (r *userRepository) GetByID(userID uint) (*model.User, error) {
-    var user model.User
-    if err := r.db.Preload("Profile").First(&user, userID).Error; err != nil {
-        return nil, err
-    }
-    return &user, nil
+func (r *userRepository) GetByID(ctx context.Context, userID uint) (*model.User, error) {
+	var user model.User
+	if err := r.db.WithContext(ctx).Preload("Profile").First(&user, userID).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
-func (r *userRepository) Create(user *model.User) error {
-    return r.db.Create(user).Error
+func (r *userRepository) Create(ctx context.Context, user *model.User) error {
+	return r.db.WithContext(ctx).Create(user).Error
 }
 
-func (r *userRepository) CreateTX(tx *gorm.DB, user *model.User) (*model.User, error) {
-    if err := tx.Create(user).Error; err != nil {
-        return nil, err
-    }
-    return user, nil
+func (r *userRepository) CreateTX(ctx context.Context, tx *gorm.DB, user *model.User) (*model.User, error) {
+	if err := tx.WithContext(ctx).Create(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
-func (r *userRepository) Save(user *model.User) error {
-    return r.db.Save(user).Error
+func (r *userRepository) Save(ctx context.Context, user *model.User) error {
+	return r.db.WithContext(ctx).Save(user).Error
 }
 
-func (r *userRepository) UpdateFullNameTX(tx *gorm.DB, userID uint, fullName string) error {
-    return tx.Model(&model.User{}).
-        Where("id = ?", userID).
-        Update("full_name", fullName).Error
+func (r *userRepository) UpdateFullNameTX(ctx context.Context, tx *gorm.DB, userID uint, fullName string) error {
+	return tx.WithContext(ctx).Model(&model.User{}).
+		Where("id = ?", userID).
+		Update("full_name", fullName).Error
 }

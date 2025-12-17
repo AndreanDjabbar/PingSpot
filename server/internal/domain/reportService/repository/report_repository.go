@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"server/internal/domain/model"
 	"server/internal/domain/reportService/dto"
 
@@ -8,18 +9,18 @@ import (
 )
 
 type ReportRepository interface {
-	Create(report *model.Report, tx *gorm.DB) error
-	UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error)
-	DeleteTX(tx *gorm.DB, report *model.Report) (*model.Report, error)
-	GetByID(reportID uint) (*model.Report, error)
-	GetByIDTX(tx *gorm.DB, reportID uint) (*model.Report, error)
-	Get() (*[]model.Report, error)
-	GetByReportStatus(status ...string) (*[]model.Report, error)
-	GetByIDIsDeleted(reportID uint, isDeleted bool) (*model.Report, error)
-	GetByIsDeleted(isDeleted bool) ([]*model.Report, error)
-	GetByIsDeletedPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance, isDeleted bool) (*[]model.Report, error)
-	GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error)
-	GetReportsCount() (*dto.TotalReportCount, error)
+	Create(ctx context.Context, report *model.Report, tx *gorm.DB) error
+	UpdateTX(ctx context.Context, tx *gorm.DB, report *model.Report) (*model.Report, error)
+	DeleteTX(ctx context.Context, tx *gorm.DB, report *model.Report) (*model.Report, error)
+	GetByID(ctx context.Context, reportID uint) (*model.Report, error)
+	GetByIDTX(ctx context.Context, tx *gorm.DB, reportID uint) (*model.Report, error)
+	Get(ctx context.Context) (*[]model.Report, error)
+	GetByReportStatus(ctx context.Context, status ...string) (*[]model.Report, error)
+	GetByIDIsDeleted(ctx context.Context, reportID uint, isDeleted bool) (*model.Report, error)
+	GetByIsDeleted(ctx context.Context, isDeleted bool) ([]*model.Report, error)
+	GetByIsDeletedPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance, isDeleted bool) (*[]model.Report, error)
+	GetPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error)
+	GetReportsCount(ctx context.Context) (*dto.TotalReportCount, error)
 }
 
 type reportRepository struct {
@@ -30,13 +31,13 @@ func NewReportRepository(db *gorm.DB) ReportRepository {
 	return &reportRepository{db: db}
 }
 
-func (r *reportRepository) GetReportsCount() (*dto.TotalReportCount, error) {
+func (r *reportRepository) GetReportsCount(ctx context.Context) (*dto.TotalReportCount, error) {
 	var grouped []struct {
 		ReportType string
 		Total      int64
 	}
 
-	if err := r.db.Model(&model.Report{}).
+	if err := r.db.WithContext(ctx).Model(&model.Report{}).
 		Select("report_type, COUNT(*) as total").
 		Group("report_type").
 		Scan(&grouped).Error; err != nil {
@@ -81,9 +82,9 @@ func (r *reportRepository) GetReportsCount() (*dto.TotalReportCount, error) {
 	return &result, nil
 }
 
-func (r *reportRepository) GetByReportStatus(status ...string) (*[]model.Report, error) {
+func (r *reportRepository) GetByReportStatus(ctx context.Context, status ...string) (*[]model.Report, error) {
 	var reports []model.Report
-	if err := r.db.
+	if err := r.db.WithContext(ctx).
 		Preload("User").
 		Preload("User.Profile").
 		Where("report_status IN ?", status).
@@ -93,16 +94,16 @@ func (r *reportRepository) GetByReportStatus(status ...string) (*[]model.Report,
 	return &reports, nil
 }
 
-func (r *reportRepository) Create(report *model.Report, tx *gorm.DB) error {
+func (r *reportRepository) Create(ctx context.Context, report *model.Report, tx *gorm.DB) error {
 	if tx != nil {
-		return tx.Create(report).Error
+		return tx.WithContext(ctx).Create(report).Error
 	}
-	return r.db.Create(report).Error
+	return r.db.WithContext(ctx).Create(report).Error
 }
 
-func (r *reportRepository) Get() (*[]model.Report, error) {
+func (r *reportRepository) Get(ctx context.Context) (*[]model.Report, error) {
 	var reports []model.Report
-	if err := r.db.
+	if err := r.db.WithContext(ctx).
 		Preload("User.Profile").
 		Preload("ReportLocation").
 		Preload("ReportImages").
@@ -118,11 +119,11 @@ func (r *reportRepository) Get() (*[]model.Report, error) {
 	return &reports, nil
 }
 
-func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error) {
+func (r *reportRepository) GetPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error) {
 	var reportIDs []int64
 	var reports []model.Report
 
-	subQuery := r.db.Table("reports")
+	subQuery := r.db.WithContext(ctx).Table("reports")
 
 	if reportType != "" && reportType != "all" {
 		subQuery = subQuery.Where("reports.report_type = ?", reportType)
@@ -135,12 +136,12 @@ func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status
 	if distance.Distance != "" && distance.Distance != "all" {
 		straightDistance := 0
 		switch distance.Distance {
-			case "1000":
-				straightDistance = 1000
-			case "5000":
-				straightDistance = 5000
-			case "10000":
-				straightDistance = 10000
+		case "1000":
+			straightDistance = 1000
+		case "5000":
+			straightDistance = 5000
+		case "10000":
+			straightDistance = 10000
 		}
 		if straightDistance > 0 {
 			subQuery = subQuery.
@@ -225,11 +226,11 @@ func (r *reportRepository) GetPaginated(limit, cursorID uint, reportType, status
 	return &reports, nil
 }
 
-func (r *reportRepository) GetByIsDeletedPaginated(limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance, isDeleted bool) (*[]model.Report, error) {
+func (r *reportRepository) GetByIsDeletedPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance, isDeleted bool) (*[]model.Report, error) {
 	var reportIDs []int64
 	var reports []model.Report
 
-	subQuery := r.db.Table("reports")
+	subQuery := r.db.WithContext(ctx).Table("reports")
 
 	if reportType != "" && reportType != "all" {
 		subQuery = subQuery.Where("reports.report_type = ?", reportType)
@@ -242,12 +243,12 @@ func (r *reportRepository) GetByIsDeletedPaginated(limit, cursorID uint, reportT
 	if distance.Distance != "" && distance.Distance != "all" {
 		straightDistance := 0
 		switch distance.Distance {
-			case "1000":
-				straightDistance = 1000
-			case "5000":
-				straightDistance = 5000
-			case "10000":
-				straightDistance = 10000
+		case "1000":
+			straightDistance = 1000
+		case "5000":
+			straightDistance = 5000
+		case "10000":
+			straightDistance = 10000
 		}
 		if straightDistance > 0 {
 			subQuery = subQuery.
@@ -307,7 +308,7 @@ func (r *reportRepository) GetByIsDeletedPaginated(limit, cursorID uint, reportT
 		return &reports, nil
 	}
 
-	query := r.db.
+	query := r.db.WithContext(ctx).
 		Preload("User.Profile").
 		Preload("ReportLocation").
 		Preload("ReportImages").
@@ -333,24 +334,24 @@ func (r *reportRepository) GetByIsDeletedPaginated(limit, cursorID uint, reportT
 	return &reports, nil
 }
 
-func (r *reportRepository) UpdateTX(tx *gorm.DB, report *model.Report) (*model.Report, error) {
-	if err := tx.Save(report).Error; err != nil {
+func (r *reportRepository) UpdateTX(ctx context.Context, tx *gorm.DB, report *model.Report) (*model.Report, error) {
+	if err := tx.WithContext(ctx).Save(report).Error; err != nil {
 		return nil, err
 	}
 	return report, nil
 }
 
-func (r *reportRepository) DeleteTX(tx *gorm.DB, report *model.Report) (*model.Report, error) {
-	if err := tx.Delete(report).Error; err != nil {
+func (r *reportRepository) DeleteTX(ctx context.Context, tx *gorm.DB, report *model.Report) (*model.Report, error) {
+	if err := tx.WithContext(ctx).Delete(report).Error; err != nil {
 		return nil, err
 	}
 	return report, nil
 }
 
-func (r *reportRepository) GetByID(reportID uint) (*model.Report, error) {
+func (r *reportRepository) GetByID(ctx context.Context, reportID uint) (*model.Report, error) {
 	var report model.Report
 
-	if err := r.db.
+	if err := r.db.WithContext(ctx).
 		Preload("User.Profile").
 		Preload("ReportLocation").
 		Preload("ReportImages").
@@ -366,10 +367,10 @@ func (r *reportRepository) GetByID(reportID uint) (*model.Report, error) {
 	return &report, nil
 }
 
-func (r *reportRepository) GetByIDIsDeleted(reportID uint, isDeleted bool) (*model.Report, error) {
+func (r *reportRepository) GetByIDIsDeleted(ctx context.Context, reportID uint, isDeleted bool) (*model.Report, error) {
 	var report model.Report
 
-	if err := r.db.
+	if err := r.db.WithContext(ctx).
 		Preload("User.Profile").
 		Preload("ReportLocation").
 		Preload("ReportImages").
@@ -387,10 +388,10 @@ func (r *reportRepository) GetByIDIsDeleted(reportID uint, isDeleted bool) (*mod
 	return &report, nil
 }
 
-func (r *reportRepository) GetByIsDeleted(isDeleted bool) ([]*model.Report, error) {
+func (r *reportRepository) GetByIsDeleted(ctx context.Context, isDeleted bool) ([]*model.Report, error) {
 	var report []*model.Report
 
-	if err := r.db.
+	if err := r.db.WithContext(ctx).
 		Preload("User.Profile").
 		Preload("ReportLocation").
 		Preload("ReportImages").
@@ -408,9 +409,9 @@ func (r *reportRepository) GetByIsDeleted(isDeleted bool) ([]*model.Report, erro
 	return report, nil
 }
 
-func (r *reportRepository) GetByIDTX(tx *gorm.DB, reportID uint) (*model.Report, error) {
+func (r *reportRepository) GetByIDTX(ctx context.Context, tx *gorm.DB, reportID uint) (*model.Report, error) {
 	var report model.Report
-	if err := tx.
+	if err := tx.WithContext(ctx).
 		Preload("User.Profile").
 		Preload("ReportLocation").
 		Preload("ReportImages").

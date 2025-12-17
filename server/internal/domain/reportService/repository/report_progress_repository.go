@@ -1,14 +1,15 @@
 package repository
 
 import (
+	"context"
 	"server/internal/domain/model"
 
 	"gorm.io/gorm"
 )
 
 type ReportProgressRepository interface {
-	Create(progress *model.ReportProgress, tx *gorm.DB) (*model.ReportProgress, error)
-	GetByReportID(reportID uint) ([]model.ReportProgress, error)
+	Create(ctx context.Context, progress *model.ReportProgress, tx *gorm.DB) (*model.ReportProgress, error)
+	GetByReportID(ctx context.Context, reportID uint) ([]model.ReportProgress, error)
 }
 
 type reporProgressRepository struct {
@@ -19,16 +20,16 @@ func NewReportProgressRepository(db *gorm.DB) ReportProgressRepository {
 	return &reporProgressRepository{db: db}
 }
 
-func (r *reporProgressRepository) Create(progress *model.ReportProgress, tx *gorm.DB) (*model.ReportProgress, error) {
-	if err := r.db.Create(progress).Error; err != nil {
+func (r *reporProgressRepository) Create(ctx context.Context, progress *model.ReportProgress, tx *gorm.DB) (*model.ReportProgress, error) {
+	if err := r.db.WithContext(ctx).Create(progress).Error; err != nil {
 		return nil, err
 	}
 	return progress, nil
 }
 
-func (r *reporProgressRepository) GetByReportID(reportID uint) ([]model.ReportProgress, error) {
+func (r *reporProgressRepository) GetByReportID(ctx context.Context, reportID uint) ([]model.ReportProgress, error) {
 	var progresses []model.ReportProgress
-	if err := r.db.Where("report_id = ?", reportID).Preload("User").Find(&progresses).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("report_id = ?", reportID).Preload("User").Find(&progresses).Error; err != nil {
 		return nil, err
 	}
 	return progresses, nil
