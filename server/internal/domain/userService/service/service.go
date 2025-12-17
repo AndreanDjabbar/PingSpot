@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"server/internal/domain/model"
 	"server/internal/domain/userService/dto"
@@ -23,18 +24,18 @@ func NewUserService(userRepo repository.UserRepository, userProfileRepo reposito
 	}
 }
 
-func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProfileRequest) (*dto.SaveUserProfileResponse, error) {
+func (s *UserService) SaveProfile(ctx context.Context, db *gorm.DB, userID uint, req dto.SaveUserProfileRequest) (*dto.SaveUserProfileResponse, error) {
 	tx := db.Begin()
 	if tx.Error != nil {
 		return nil, apperror.New(500, "TRANSACTION_START_FAILED", "gagal memulai transaksi", tx.Error.Error())
 	}
 
-	if err := s.userRepo.UpdateFullNameTX(tx, userID, req.FullName); err != nil {
+	if err := s.userRepo.UpdateFullNameTX(ctx, tx, userID, req.FullName); err != nil {
 		tx.Rollback()
 		return nil, apperror.New(500, "FULLNAME_UPDATE_FAILED", "gagal memperbarui nama lengkap", err.Error())
 	}
 
-	profile, err := s.userProfileRepo.GetByIDTX(tx, userID)
+	profile, err := s.userProfileRepo.GetByIDTX(ctx, tx, userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			newProfile := model.UserProfile{
@@ -44,7 +45,7 @@ func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProf
 				Birthday:       req.Birthday,
 				Gender:         req.Gender,
 			}
-			if _, err := s.userProfileRepo.CreateTX(tx, &newProfile); err != nil {
+			if _, err := s.userProfileRepo.CreateTX(ctx, tx, &newProfile); err != nil {
 				tx.Rollback()
 				return nil, apperror.New(500, "PROFILE_CREATE_FAILED", "gagal membuat profil", err.Error())
 			}
@@ -71,7 +72,7 @@ func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProf
 	profile.Birthday = req.Birthday
 	profile.Gender = req.Gender
 
-	if _, err := s.userProfileRepo.UpdateTX(tx, profile); err != nil {
+	if _, err := s.userProfileRepo.UpdateTX(ctx, tx, profile); err != nil {
 		tx.Rollback()
 		return nil, apperror.New(500, "PROFILE_UPDATE_FAILED", "gagal memperbarui profil", err.Error())
 	}
@@ -92,8 +93,8 @@ func (s *UserService) SaveProfile(db *gorm.DB, userID uint, req dto.SaveUserProf
 	return &profileResponse, nil
 }
 
-func (s *UserService) GetProfile(userID uint) (*dto.GetProfileResponse, error) {
-	user, err := s.userRepo.GetByID(userID)
+func (s *UserService) GetProfile(ctx context.Context, userID uint) (*dto.GetProfileResponse, error) {
+	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperror.New(404, "USER_NOT_FOUND", "pengguna tidak ditemukan", "")
@@ -113,8 +114,8 @@ func (s *UserService) GetProfile(userID uint) (*dto.GetProfileResponse, error) {
 	}, nil
 }
 
-func (s *UserService) SaveSecurity(userID uint, req dto.SaveUserSecurityRequest) error {
-	user, err := s.userRepo.GetByID(userID)
+func (s *UserService) SaveSecurity(ctx context.Context, userID uint, req dto.SaveUserSecurityRequest) error {
+	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return apperror.New(404, "USER_NOT_FOUND", "pengguna tidak ditemukan", "")
@@ -137,7 +138,7 @@ func (s *UserService) SaveSecurity(userID uint, req dto.SaveUserSecurityRequest)
 	}
 
 	user.Password = &hashedPassword
-	if err := s.userRepo.Save(user); err != nil {
+	if err := s.userRepo.Save(ctx, user); err != nil {
 		return apperror.New(500, "PASSWORD_UPDATE_FAILED", "Gagal memperbarui kata sandi", err.Error())
 	}
 

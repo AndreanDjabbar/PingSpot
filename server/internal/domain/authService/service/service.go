@@ -39,7 +39,7 @@ func NewAuthService(
 	}
 }
 
-func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified bool) (*model.User, error) {
+func (s *AuthService) Register(ctx context.Context, db *gorm.DB, req dto.RegisterRequest, isVerified bool) (*model.User, error) {
 	tx := db.Begin()
 	if tx.Error != nil {
 		return nil, apperror.New(500, "TRANSACTION_START_FAILED", "Gagal memulai transaksi", tx.Error.Error())
@@ -50,7 +50,7 @@ func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified 
 		}
 	}()
 
-	_, err := s.userRepo.GetByEmail(req.Email)
+	_, err := s.userRepo.GetByEmail(ctx, req.Email)
 	if err == nil {
 		tx.Rollback()
 		return nil, apperror.New(400, "EMAIL_ALREADY_REGISTERED", "Email sudah terdaftar", "")
@@ -76,7 +76,7 @@ func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified 
 		IsVerified: isVerified,
 	}
 
-	createdUser, err := s.userRepo.CreateTX(tx, &user)
+	createdUser, err := s.userRepo.CreateTX(ctx, tx, &user)
 	if err != nil {
 		tx.Rollback()
 		return nil, apperror.New(500, "USER_CREATE_FAILED", "Gagal membuat user", err.Error())
@@ -86,7 +86,7 @@ func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified 
 		UserID: createdUser.ID,
 	}
 
-	if _, err := s.userProfileRepo.CreateTX(tx, &newProfile); err != nil {
+	if _, err := s.userProfileRepo.CreateTX(ctx, tx, &newProfile); err != nil {
 		fmt.Println("Error creating UserProfile:", err)
 		tx.Rollback()
 		return nil, apperror.New(500, "PROFILE_CREATE_FAILED", "Gagal membuat profil user", err.Error())
@@ -99,8 +99,8 @@ func (s *AuthService) Register(db *gorm.DB, req dto.RegisterRequest, isVerified 
 	return createdUser, nil
 }
 
-func (s *AuthService) Login(db *gorm.DB, req dto.LoginRequest) (*model.User, string, string, error) {
-	user, err := s.userRepo.GetByEmail(req.Email)
+func (s *AuthService) Login(ctx context.Context, db *gorm.DB, req dto.LoginRequest) (*model.User, string, string, error) {
+	user, err := s.userRepo.GetByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, "", "", apperror.New(401, "INVALID_CREDENTIALS", "Email atau password salah", err.Error())
 	}
@@ -149,7 +149,7 @@ func (s *AuthService) Login(db *gorm.DB, req dto.LoginRequest) (*model.User, str
 	hashedRefreshToken := tokenutils.HashSHA256String(refreshToken)
 
 	tx := db.Begin()
-	userSession, err := s.userSessionRepo.CreateTX(tx, &model.UserSession{
+	userSession, err := s.userSessionRepo.CreateTX(ctx, tx, &model.UserSession{
 		UserID:             user.ID,
 		ExpiresAt:          time.Now().Add(7 * 24 * time.Hour).Unix(),
 		IsActive:           true,
@@ -189,7 +189,7 @@ func (s *AuthService) Login(db *gorm.DB, req dto.LoginRequest) (*model.User, str
 	return user, accessToken, refreshToken, nil
 }
 
-func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) {
+func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
 	claims, err := tokenutils.ValidateRefreshToken(refreshToken)
 	if err != nil {
 		return "", "", apperror.New(401, "INVALID_REFRESH_TOKEN", "Refresh token tidak valid", err.Error())
@@ -207,12 +207,12 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
 		return "", "", apperror.New(401, "REFRESH_TOKEN_INVALID", "Refresh token tidak cocok atau tidak ditemukan", "")
 	}
 
-	user, err := s.userRepo.GetByID(userID)
+	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		return "", "", apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data user", err.Error())
 	}
 
-	userSession, err := s.userSessionRepo.GetByRefreshTokenID(refreshTokenID)
+	userSession, err := s.userSessionRepo.GetByRefreshTokenID(ctx, refreshTokenID)
 	if err != nil {
 		return "", "", apperror.New(401, "USER_SESSION_NOT_FOUND", "Sesi user tidak ditemukan", err.Error())
 	}
@@ -237,7 +237,7 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
 	userSession.RefreshTokenID = newRefreshTokenID
 	userSession.HashedRefreshToken = newHashedRefreshToken
 
-	if err := s.userSessionRepo.Update(userSession); err != nil {
+	if err := s.userSessionRepo.Update(ctx, userSession); err != nil {
 		return "", "", apperror.New(500, "SESSION_UPDATE_FAILED", "Gagal memperbarui sesi", err.Error())
 	}
 
@@ -246,18 +246,18 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
 	return accessToken, newRefreshToken, nil
 }
 
-func (s *AuthService) Logout(userID uint, refreshTokenID string) error {
+func (s *AuthService) Logout(ctx context.Context, userID uint, refreshTokenID string) error {
 	redisClient := cache.GetRedis()
 	refreshKey := fmt.Sprintf("refresh_token:%s", refreshTokenID)
 	if err := redisClient.Del(context.Background(), refreshKey).Err(); err != nil {
 		logger.Warn("Failed to delete refresh token from Redis", zap.Error(err))
 	}
-	userSession, err := s.userSessionRepo.GetByRefreshTokenID(refreshTokenID)
+	userSession, err := s.userSessionRepo.GetByRefreshTokenID(ctx, refreshTokenID)
 	if err != nil {
 		return apperror.New(500, "USER_SESSION_FETCH_FAILED", "Gagal mengambil sesi user", err.Error())
 	}
 	userSession.IsActive = false
-	if err := s.userSessionRepo.Update(userSession); err != nil {
+	if err := s.userSessionRepo.Update(ctx, userSession); err != nil {
 		return apperror.New(500, "USER_SESSION_UPDATE_FAILED", "Gagal memperbarui sesi user", err.Error())
 	}
 	userSessionKey := fmt.Sprintf("user_session:%d", userID)
@@ -267,8 +267,8 @@ func (s *AuthService) Logout(userID uint, refreshTokenID string) error {
 	return nil
 }
 
-func (s *AuthService) VerifyUser(userID uint) (*model.User, error) {
-	user, err := s.userRepo.GetByID(userID)
+func (s *AuthService) VerifyUser(ctx context.Context, userID uint) (*model.User, error) {
+	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperror.New(404, "USER_NOT_FOUND", "User tidak ditemukan", err.Error())
@@ -282,15 +282,15 @@ func (s *AuthService) VerifyUser(userID uint) (*model.User, error) {
 
 	user.IsVerified = true
 
-	if err := s.userRepo.Save(user); err != nil {
+	if err := s.userRepo.Save(ctx, user); err != nil {
 		return nil, apperror.New(500, "USER_SAVE_FAILED", "Gagal menyimpan data user", err.Error())
 	}
 
 	return user, nil
 }
 
-func (s *AuthService) UpdateUserByEmail(email string, updatedUser *model.User) (*model.User, error) {
-	_, err := s.userRepo.GetByEmail(email)
+func (s *AuthService) UpdateUserByEmail(ctx context.Context, email string, updatedUser *model.User) (*model.User, error) {
+	_, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperror.New(404, "USER_NOT_FOUND", "User tidak ditemukan", err.Error())
@@ -298,7 +298,7 @@ func (s *AuthService) UpdateUserByEmail(email string, updatedUser *model.User) (
 		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mencari user", err.Error())
 	}
 
-	user, err := s.userRepo.UpdateByEmail(email, updatedUser)
+	user, err := s.userRepo.UpdateByEmail(ctx, email, updatedUser)
 	if err != nil {
 		return nil, apperror.New(500, "USER_UPDATE_FAILED", "Gagal update user", err.Error())
 	}
@@ -306,8 +306,8 @@ func (s *AuthService) UpdateUserByEmail(email string, updatedUser *model.User) (
 	return user, nil
 }
 
-func (s *AuthService) GetUserByEmail(email string) (*model.User, error) {
-	user, err := s.userRepo.GetByEmail(email)
+func (s *AuthService) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
