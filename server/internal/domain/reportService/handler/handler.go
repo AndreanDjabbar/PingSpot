@@ -31,7 +31,6 @@ func NewReportHandler(reportService *service.ReportService) *ReportHandler {
 }
 
 func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
-	logger.Info("CREATE REPORT HANDLER")
 	ctx := c.Context()
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -217,7 +216,6 @@ func (h *ReportHandler) CreateReportHandler(c *fiber.Ctx) error {
 }
 
 func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
-	logger.Info("EDIT REPORT HANDLER")
 	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
@@ -426,7 +424,6 @@ func (h *ReportHandler) EditReportHandler(c *fiber.Ctx) error {
 }
 
 func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
-	logger.Info("GET REPORT HANDLER")
 	ctx := c.Context()
 	reportID := c.Query("reportID")
 	cursorID := c.Query("cursorID")
@@ -498,7 +495,6 @@ func (h *ReportHandler) GetReportHandler(c *fiber.Ctx) error {
 }
 
 func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
-	logger.Info("REACTION REPORT HANDLER")
 	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
@@ -538,7 +534,6 @@ func (h *ReportHandler) ReactionReportHandler(c *fiber.Ctx) error {
 }
 
 func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
-	logger.Info("VOTE REPORT HANDLER")
 	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
@@ -576,7 +571,6 @@ func (h *ReportHandler) VoteReportHandler(c *fiber.Ctx) error {
 }
 
 func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
-	logger.Info("UPLOAD PROGRESS REPORT HANDLER")
 	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
@@ -666,7 +660,6 @@ func (h *ReportHandler) UploadProgressReportHandler(c *fiber.Ctx) error {
 }
 
 func (h *ReportHandler) GetProgressReportHandler(c *fiber.Ctx) error {
-	logger.Info("GET PROGRESS REPORT HANDLER")
 	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
@@ -687,7 +680,6 @@ func (h *ReportHandler) GetProgressReportHandler(c *fiber.Ctx) error {
 }
 
 func (h *ReportHandler) DeleteReportHandler(c *fiber.Ctx) error {
-	logger.Info("DELETE REPORT HANDLER")
 	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
@@ -716,7 +708,6 @@ func (h *ReportHandler) DeleteReportHandler(c *fiber.Ctx) error {
 }
 
 func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
-	logger.Info("CREATE REPORT COMMENT HANDLER")
 	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)
@@ -859,7 +850,6 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 }
 
 func (h *ReportHandler) GetReportCommentsHandler(c *fiber.Ctx) error {
-	logger.Info("GET REPORT COMMENTS HANDLER")
 	ctx := c.Context()
 	reportIDParam := c.Params("reportID")
 	uintReportID, err := mainutils.StringToUint(reportIDParam)

@@ -37,7 +37,6 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 	ctx := c.Context()
 
-	logger.Info("REGISTER HANDLER")
 	var req dto.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -106,7 +105,6 @@ func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
-	logger.Info("VERIFICATION HANDLER")
 	ctx := c.Context()
 	code1 := c.Query("code1")
 	userId := c.Query("userId")
@@ -167,7 +165,6 @@ func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
-	logger.Info("LOGIN HANDLER")
 	ctx := c.Context()
 	db := database.GetPostgresDB()
 	var req dto.LoginRequest
@@ -331,7 +328,6 @@ func (h *AuthHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *AuthHandler) ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
-	logger.Info("FORGOT PASSWORD EMAIL VERIFICATION HANDLER")
 	ctx := c.Context()
 	var req dto.ForgotPasswordEmailVerificationRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -373,7 +369,6 @@ func (h *AuthHandler) ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error
 }
 
 func (h *AuthHandler) ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error {
-	logger.Info("FORGOT PASSWORD LINK VERIFICATION HANDLER")
 	code := c.Query("code")
 	email := c.Query("email")
 
@@ -402,7 +397,6 @@ func (h *AuthHandler) ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error 
 }
 
 func (h *AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
-	logger.Info("REFRESH TOKEN HANDLER")
 	ctx := c.Context()
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {
@@ -445,7 +439,6 @@ func (h *AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
-	logger.Info("FORGOT PASSWORD RESET PASSWORD HANDLER")
 	ctx := c.Context()
 	var req dto.ForgotPasswordResetPasswordRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -493,7 +486,6 @@ func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandler) LogoutHandler(c *fiber.Ctx) error {
-	logger.Info("LOGOUT HANDLER")
 	ctx := c.Context()
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {

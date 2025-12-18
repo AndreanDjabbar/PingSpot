@@ -27,7 +27,6 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 }
 
 func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
-	logger.Info("SAVE USER SECURITY HANDLER")
 	ctx := c.Context()
 	var req dto.SaveUserSecurityRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -56,7 +55,6 @@ func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
-	logger.Info("SAVE USER PROFILE HANDLER")
 	_, err := c.MultipartForm()
 	if err != nil {
 		logger.Error("Failed to parse multipart form", zap.Error(err))
@@ -135,7 +133,6 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
-	logger.Info("GET MY PROFILE HANDLER")
 	ctx := c.Context()
 	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
