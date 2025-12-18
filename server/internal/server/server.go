@@ -1,10 +1,12 @@
 package server
 
 import (
+	"server/internal/middleware"
 	"server/internal/router"
 	"server/pkg/logger"
 	"server/pkg/utils/env"
 	"server/pkg/utils/response"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
@@ -22,6 +24,8 @@ func New() *FiberServer {
 
 	app.Static("/user", "./uploads/user")
 	app.Static("/main", "./uploads/main")
+
+	app.Use(middleware.LoggingMiddleware())
 
 	return &FiberServer{
 		App: app,
