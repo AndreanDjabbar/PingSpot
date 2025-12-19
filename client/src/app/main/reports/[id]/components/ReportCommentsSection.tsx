@@ -13,12 +13,10 @@ interface ReportCommentsSectionProps {
     setCommentContent?: React.Dispatch<React.SetStateAction<string>>;
     setCommentMediaImage?: React.Dispatch<React.SetStateAction<File | null>>;
     onCreateReportComment: (formData: ICreateReportCommentRequest) => void;
-    onReply: (content: string, parentId: number) => void;
 }
 
 export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({ 
     comments,
-    onReply,
     onCreateReportComment,
 }) => {
     const [commentContent, setCommentContent] = React.useState('');
@@ -80,6 +78,28 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
         }
     }
 
+    const handleReplyComment = (formData: ICreateReportCommentRequest) => {
+        try {
+            CreateReportCommentSchema.parse(formData);
+            setValidationErrors({});
+            
+            onCreateReportComment(formData);
+            setCommentContent('');
+            setCommentMediaImage(null);
+            setImagePreview(null);
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const errors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    if (issue.path[0]) {
+                        errors[issue.path[0].toString()] = issue.message;
+                    }
+                });
+                setValidationErrors(errors);
+            }
+        }
+    }
+
     return (
         <CommentsList
             comments={comments}
@@ -93,7 +113,7 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
             onImageSelect={handleImageSelect}
             onImageRemove={handleRemoveImage}
             onSubmitComment={handleSubmitComment}
-            onReply={onReply}
+            onReply={handleReplyComment}
             variant="full"
             showLikes={true}
         />

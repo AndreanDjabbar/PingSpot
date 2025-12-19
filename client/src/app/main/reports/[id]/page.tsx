@@ -190,7 +190,7 @@ const ReportDetailPage = () => {
         data.append('reportID', String(report?.id));
         data.append('content', formData.commentContent);
         if (formData.parentCommentID) {
-            data.append('parrentCommentID', formData.parentCommentID.toString());
+            data.append('parentCommentID', formData.parentCommentID.toString());
         }
         if (formData.mediaFile) {
             const compressedFile = await compressImages(formData.mediaFile);
@@ -455,9 +455,6 @@ const ReportDetailPage = () => {
         }
     };
 
-    const handleReply = (content: string, parentId: number) => {
-        console.log('Reply to:', parentId, content);
-    };
 
     useSuccessToast(
         isDeleteReportSuccess,
@@ -622,7 +619,6 @@ const ReportDetailPage = () => {
                                     <ReportCommentsSection
                                     onCreateReportComment={handleCreateReportComment}
                                     comments={reportComments}
-                                    onReply={handleReply}
                                     />
                                 </>
                             )}

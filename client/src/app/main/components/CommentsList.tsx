@@ -7,6 +7,7 @@ import CommentItem from '../reports/components/CommentItem';
 import { ImagePreview, InlineImageUpload, TextAreaField } from '@/components/form';
 import { Button } from '@/components/UI';
 import { FaComment } from 'react-icons/fa';
+import { ICreateReportCommentRequest } from '@/types/api/report';
 
 interface CommentsListProps {
     comments: IReportComment[];
@@ -21,7 +22,7 @@ interface CommentsListProps {
     onImageSelect?: (file: File) => void;
     onImageRemove?: () => void;
     onSubmitComment?: () => void;
-    onReply?: (content: string, parentId: number) => void;
+    onReply?: (formData: ICreateReportCommentRequest) => void;
     variant?: 'full' | 'compact';
     showLikes?: boolean;
     commentsLoading?: boolean;

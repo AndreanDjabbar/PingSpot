@@ -10,11 +10,12 @@ import { useUserProfileStore } from '@/stores';
 import CommentItem from './CommentItem';
 import MentionInput, { MentionUser } from './MentionInput';
 import { IReportComment } from '@/types/model/report';
+import { ICreateReportCommentRequest } from '@/types/api/report';
 
 interface CommentSectionProps {
     comments: IReportComment[];
     availableUsers?: MentionUser[];
-    onAddComment: (content: string, parentId?: number, threadRootId?: number, mentions?: number[]) => void;
+    onAddComment: (formData: ICreateReportCommentRequest) => void;
     onEditComment?: (commentId: number, content: string, mentions?: number[]) => void;
     onDeleteComment?: (commentId: number) => void;
     isLoading?: boolean;
@@ -44,7 +45,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         
         setIsSubmitting(true);
         try {
-            await onAddComment(newComment, undefined, undefined, newCommentMentions);
+            onAddComment({
+                commentContent: newComment,
+            });
             setNewComment('');
             setNewCommentMentions([]);
         } catch (error) {
@@ -54,8 +57,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         }
     };
 
-    const handleReply = (content: string, parentId: number, threadRootId?: number, mentions?: number[]) => {
-        onAddComment(content, parentId, threadRootId, mentions);
+    const handleReply = (formData: ICreateReportCommentRequest) => {
+        onAddComment(formData);
     };
     const isCompact = variant === 'compact';
 

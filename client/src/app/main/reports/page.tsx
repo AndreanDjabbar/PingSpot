@@ -448,10 +448,6 @@ const ReportsPage = () => {
         }
     };
 
-    const handleAddComment = async (reportId: number, content: string, parentId?: number) => {
-        console.log("Adding comment to report:", reportId, "Content:", content, "Parent ID:", parentId);
-    };
-
     useErrorToast(
         isGetReportError, 
         getErrorResponseMessage(getReportError) || 'Terjadi kesalahan saat mengambil data laporan'
@@ -728,7 +724,6 @@ const ReportsPage = () => {
                             onDislike={() => handleDislike(selectedReport.id)}
                             onSave={() => handleSave(selectedReport.id)}
                             onShare={() => handleShare(selectedReport.id, selectedReport.reportTitle)}
-                            onAddComment={(content, parentId) => handleAddComment(selectedReport.id, content, parentId)}
                             onStatusVote={(voteType) => handleStatusVote(selectedReport.id, voteType)}
                             commentsLoading={commentsLoading}
                             onLoadMoreComments={fetchNextComments}

@@ -13,6 +13,8 @@ import { ErrorSection } from '@/components/feedback';
 import { CommentsList } from '@/app/main/components/CommentsList';
 import { CommentInput } from '@/app/main/components/CommentInput';
 import { UseMutateFunction } from '@tanstack/react-query';
+import { CreateReportCommentSchema } from '../../schema';
+import z from 'zod';
 
 interface ReportModalProps {
     isOpen: boolean;
@@ -22,7 +24,6 @@ interface ReportModalProps {
     reportID: number;
     onSave: () => void;
     onShare: () => void;
-    onAddComment: (content: string, parentId?: number) => void;
     onStatusVote: (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => void;
     onStatusUpdate?: (reportID: number, newStatus: string) => void;
     commentsLoading?: boolean;
@@ -43,7 +44,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
     hasMoreComments = false,
     createReportCommentMutation,
     onLoadMoreComments,
-    onAddComment,
     isCreateReportCommentError,
     createReportCommentError,
 }) => {
@@ -114,7 +114,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
         data.append('reportID', String(report?.id || 0));
         data.append('content', formData.commentContent);
         if (formData.parentCommentID) {
-            data.append('parrentCommentID', formData.parentCommentID.toString());
+            data.append('parentCommentID', formData.parentCommentID.toString());
         }
         if (formData.mediaFile) {
             const compressedFile = await compressImages(formData.mediaFile);
@@ -134,10 +134,6 @@ const ReportModal: React.FC<ReportModalProps> = ({
             reportID: report.id,
             data: preparedData
         });
-    };
-
-    const handleReply = (content: string, parentId: number) => {
-        onAddComment(content, parentId);
     };
 
     const handleImageSelect = (file:File) => {
@@ -167,12 +163,33 @@ const ReportModal: React.FC<ReportModalProps> = ({
             mediaFile: commentMediaImage || undefined,
             mediaType: commentMediaImage ? 'IMAGE' : undefined,
         };
-        console.log('Submitting comment:', newCommentFormat);
+
         setCommentContent('');
         handleCreateReportComment(newCommentFormat);
         setCommentMediaImage(null);
         setImagePreview(null);
     };
+
+    const handleReplyComment = (formData: ICreateReportCommentRequest) => {
+        try {
+            CreateReportCommentSchema.parse(formData);
+            setValidationErrors({});
+            handleCreateReportComment(formData);
+            setCommentContent('');
+            setCommentMediaImage(null);
+            setImagePreview(null);
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const errors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    if (issue.path[0]) {
+                        errors[issue.path[0].toString()] = issue.message;
+                    }
+                });
+                setValidationErrors(errors);
+            }
+        }
+    }
 
     if (!isOpen) return null;
 
@@ -225,7 +242,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             comments={reportComments!}
                             commentCount={reportCommentCounts}
                             showCommentInput={false}
-                            onReply={handleReply}
+                            onReply={handleReplyComment}
                             variant="compact"
                             showLikes={false}
                             commentsLoading={commentsLoading}
