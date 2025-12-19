@@ -31,7 +31,6 @@ const MentionInput: React.FC<MentionInputProps> = ({
     onMentionsChange,
     placeholder = "Write a comment...",
     rows = 2,
-    className = "",
     disabled = false,
     autoFocus = false,
     onSubmit,
@@ -168,25 +167,14 @@ const MentionInput: React.FC<MentionInputProps> = ({
         }
     }, [selectedIndex]);
 
-    const getSuggestionsPosition = () => {
-        if (!textareaRef.current) return { top: 0, left: 0 };
-        
-        const textarea = textareaRef.current;
-        const rect = textarea.getBoundingClientRect();
-        
-        return {
-            top: rect.bottom + window.scrollY,
-            left: rect.left + window.scrollX
-        };
-    };
-
     return (
-        <div className="relative">
+        <div className="relative w-full" >
             <TextAreaField
             id='comment'
             withLabel
             placeHolder={placeholder}
             rows={rows}
+            disableRowsResize
             ref={textareaRef}
             value={value}
             onChange={handleChange}
@@ -238,9 +226,9 @@ const MentionInput: React.FC<MentionInputProps> = ({
                 </div>
             )}
 
-            <div className="text-xs text-gray-400 mt-1">
+            {/* <div className="text-xs text-gray-400 mt-1">
                 Tip: Type @ to mention users{onSubmit && ', press Ctrl+Enter to send'}
-            </div>
+            </div> */}
         </div>
     );
 };

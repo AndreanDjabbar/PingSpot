@@ -3,24 +3,23 @@
 import React from 'react';
 import Link from 'next/link';
 import { IUserProfile } from '@/types/model/user';
-import { useUserProfileStore } from '@/stores';
 
 interface MentionTextProps {
     text: string;
+    commentUserID: number;
     className?: string;
     userMentioned: IUserProfile | null;
 }
 
 const MentionText: React.FC<MentionTextProps> = ({ 
     text, 
+    commentUserID,
     className = "",
     userMentioned 
 }) => {
-    const userProfile = useUserProfileStore((state) => state.userProfile);
-    const userID = userProfile?.userID;
     return (
         <span className={className}>
-            {userMentioned && userMentioned.userID !== userID ? (
+            {userMentioned && Number(userMentioned.userID) !== commentUserID ? (
                 <>
                     <div className='flex gap-1'>
                         <Link
