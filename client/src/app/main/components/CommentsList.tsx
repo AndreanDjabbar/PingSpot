@@ -1,12 +1,12 @@
 "use client";
 
 import React from 'react';
-import { MdOutlineCategory } from 'react-icons/md';
 import { BiSend } from 'react-icons/bi';
 import { IReportComment } from '@/types/model/report';
 import CommentItem from '../reports/components/CommentItem';
 import { ImagePreview, InlineImageUpload, TextAreaField } from '@/components/form';
 import { Button } from '@/components/UI';
+import { FaComment } from 'react-icons/fa';
 
 interface CommentsListProps {
     comments: IReportComment[];
@@ -116,7 +116,7 @@ export const CommentsList: React.FC<CommentsListProps> = ({
                     ) : (
                         <div className="text-center py-12">
                             <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                                <MdOutlineCategory className="w-8 h-8 text-gray-400" />
+                                <FaComment className="w-8 h-8 text-gray-400" />
                             </div>
                             <p className="text-sm font-medium text-gray-500">{emptyStateMessage}</p>
                             <p className="text-xs text-gray-400 mt-1">Jadilah yang pertama berkomentar!</p>
@@ -204,10 +204,6 @@ export const CommentsList: React.FC<CommentsListProps> = ({
                                     )}
                                 </div>
                             )}
-                            
-                            <p className="text-xs text-gray-400 mt-2">
-                                Tekan Enter untuk kirim, Shift+Enter untuk baris baru
-                            </p>
                         </div>
                     </div>
                 </div>
@@ -245,7 +241,7 @@ export const CommentsList: React.FC<CommentsListProps> = ({
                 ) : (
                     <div className="text-center py-12">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                            <MdOutlineCategory className="w-8 h-8 text-gray-400" />
+                            <FaComment className="w-8 h-8 text-gray-400" />
                         </div>
                         <p className="text-sm font-medium text-gray-500">{emptyStateMessage}</p>
                         <p className="text-xs text-gray-400 mt-1">Jadilah yang pertama berkomentar!</p>
