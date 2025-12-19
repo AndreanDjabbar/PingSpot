@@ -25,6 +25,7 @@ func New() *FiberServer {
 	app.Static("/user", "./uploads/user")
 	app.Static("/main", "./uploads/main")
 
+	app.Use(middleware.RequestIDMiddleware())
 	app.Use(middleware.LoggingMiddleware())
 
 	return &FiberServer{
