@@ -8,11 +8,11 @@ import { compressImages, getErrorResponseMessage } from '@/utils';
 import { IReportComment } from '@/types/model/report';
 import { useReportCommentStore, useReportsStore, useUserProfileStore } from '@/stores';
 import ReportCard from './ReportCard';
-import { ICreateReportCommentRequest } from '@/types/api/report';
-import { useCreateReportCommentReport } from '@/hooks/main';
+import { ICreateReportCommentRequest, ICreateReportCommentResponse } from '@/types/api/report';
 import { ErrorSection } from '@/components/feedback';
 import { CommentsList } from '@/app/main/components/CommentsList';
 import { CommentInput } from '@/app/main/components/CommentInput';
+import { UseMutateFunction } from '@tanstack/react-query';
 
 interface ReportModalProps {
     isOpen: boolean;
@@ -25,12 +25,10 @@ interface ReportModalProps {
     onAddComment: (content: string, parentId?: number) => void;
     onStatusVote: (voteType: 'RESOLVED' | 'NOT_RESOLVED' | 'NEUTRAL') => void;
     onStatusUpdate?: (reportID: number, newStatus: string) => void;
-    commentsCount: number;
     commentsLoading?: boolean;
-    reportComments: IReportComment[];
     onLoadMoreComments?: () => void;
     hasMoreComments?: boolean;
-    onCreateReportComment: (formData: ICreateReportCommentRequest) => void;
+    createReportCommentMutation?: UseMutateFunction<ICreateReportCommentResponse, Error, { reportID: number; data: FormData; }, unknown>;
     isCreateReportCommentError: boolean;
     createReportCommentError?: Error;
 }
@@ -40,14 +38,12 @@ const ReportModal: React.FC<ReportModalProps> = ({
     onClose,
     onLike,
     onShare,
-    reportComments,
     reportID,
-    commentsCount,
     commentsLoading = false,
     hasMoreComments = false,
+    createReportCommentMutation,
     onLoadMoreComments,
     onAddComment,
-    onCreateReportComment,
     isCreateReportCommentError,
     createReportCommentError,
 }) => {
@@ -55,6 +51,90 @@ const ReportModal: React.FC<ReportModalProps> = ({
     const [commentContent, setCommentContent] = React.useState('');
     const [commentMediaImage, setCommentMediaImage] = React.useState<File | null>(null);
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+
+    const userProfile = useUserProfileStore((state) => state.userProfile);
+    const report = useReportsStore((state) => state.selectedReport)
+    const reportComments = useReportCommentStore((state) => state.reportComments);
+    const reportCommentCounts = useReportCommentStore((state) => state.reportCommentsCount);
+    const setReportCommentCounts = useReportCommentStore((state) => state.setReportCommentsCount);
+    const setReportComments = useReportCommentStore((state) => state.setReportComments);
+
+    const setOptimisticComment = (formData: ICreateReportCommentRequest) => {
+        if (formData.parentCommentID) {
+            setReportComments(
+                reportComments.map((comment) =>
+                    comment.commentID === formData.parentCommentID
+                ? {
+                        ...comment,
+                        replies: [
+                        ...(comment.replies ?? []),
+                        {
+                            commentID: 'temp-id-' + Date.now(),
+                            reportID: report?.id || 0,
+                            createdAt: Math.floor(Date.now() / 1000),
+                            content: formData.commentContent,
+                            media: formData.mediaFile
+                                ? {
+                                    url: URL.createObjectURL(formData.mediaFile),
+                                    type: 'IMAGE',
+                                    height: 100,
+                                    width: 100,
+                                }
+                                : undefined,
+                            userInformation: userProfile!,
+                            commentType: 'TEMP',
+                        } as IReportComment
+                        ],
+                        }
+                    : comment
+                )
+            );
+        } else {
+            setReportComments([...reportComments, {
+                commentID: 'temp-id-' + Date.now(),
+                reportID: report?.id || 0,
+                createdAt: Math.floor(Date.now() / 1000),
+                content: formData.commentContent,
+                media: formData.mediaFile
+                    ? {
+                        url: URL.createObjectURL(formData.mediaFile),
+                        type: 'IMAGE',
+                        height: 100,
+                        width: 100,
+                    }
+                    : undefined,
+                userInformation: userProfile!,
+                commentType: 'TEMP',
+            } as IReportComment]);
+        }
+    }
+
+    const prepareFormData = async(formData: ICreateReportCommentRequest): Promise<FormData> => {
+        const data = new FormData();
+        data.append('reportID', String(report?.id || 0));
+        data.append('content', formData.commentContent);
+        if (formData.parentCommentID) {
+            data.append('parrentCommentID', formData.parentCommentID.toString());
+        }
+        if (formData.mediaFile) {
+            const compressedFile = await compressImages(formData.mediaFile);
+            data.append('mediaFile', compressedFile);
+            data.append('mediaType', 'IMAGE');
+        }
+        return data;
+    };
+
+    const handleCreateReportComment = async (formData: ICreateReportCommentRequest) => {
+        if (!report?.id) return;
+        setOptimisticComment(formData);
+        setReportCommentCounts(reportCommentCounts + 1);
+        
+        const preparedData = await prepareFormData(formData);
+        createReportCommentMutation!({
+            reportID: report.id,
+            data: preparedData
+        });
+    };
 
     const handleReply = (content: string, parentId: number) => {
         onAddComment(content, parentId);
@@ -89,9 +169,9 @@ const ReportModal: React.FC<ReportModalProps> = ({
         };
         console.log('Submitting comment:', newCommentFormat);
         setCommentContent('');
+        handleCreateReportComment(newCommentFormat);
         setCommentMediaImage(null);
         setImagePreview(null);
-        onCreateReportComment(newCommentFormat);
     };
 
     if (!isOpen) return null;
@@ -143,7 +223,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
 
                         <CommentsList
                             comments={reportComments!}
-                            commentCount={commentsCount}
+                            commentCount={reportCommentCounts}
                             showCommentInput={false}
                             onReply={handleReply}
                             variant="compact"
