@@ -35,7 +35,7 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 }
 
 func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
-	ctx := c.Context()
+	ctx := c.UserContext()
 
 	var req dto.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -105,7 +105,7 @@ func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
-	ctx := c.Context()
+	ctx := c.UserContext()
 	code1 := c.Query("code1")
 	userId := c.Query("userId")
 	code2 := c.Query("code2")
@@ -165,7 +165,7 @@ func (h *AuthHandler) VerificationHandler(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
-	ctx := c.Context()
+	ctx := c.UserContext()
 	db := database.GetPostgresDB()
 	var req dto.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -328,7 +328,7 @@ func (h *AuthHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *AuthHandler) ForgotPasswordEmailVerificationHandler(c *fiber.Ctx) error {
-	ctx := c.Context()
+	ctx := c.UserContext()
 	var req dto.ForgotPasswordEmailVerificationRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -397,7 +397,7 @@ func (h *AuthHandler) ForgotPasswordLinkVerificationHandler(c *fiber.Ctx) error 
 }
 
 func (h *AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
-	ctx := c.Context()
+	ctx := c.UserContext()
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {
 		return response.ResponseError(c, 401, "Refresh token tidak ditemukan", "", "Anda harus login terlebih dahulu")
@@ -439,7 +439,7 @@ func (h *AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
-	ctx := c.Context()
+	ctx := c.UserContext()
 	var req dto.ForgotPasswordResetPasswordRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -486,7 +486,7 @@ func (h *AuthHandler) ForgotPasswordResetPasswordHandler(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandler) LogoutHandler(c *fiber.Ctx) error {
-	ctx := c.Context()
+	ctx := c.UserContext()
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {
 		return response.ResponseError(c, 401, "Refresh token tidak ditemukan", "", "Anda harus login terlebih dahulu")

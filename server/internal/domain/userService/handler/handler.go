@@ -27,7 +27,7 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 }
 
 func (h *UserHandler) SaveUserSecurityHandler(c *fiber.Ctx) error {
-	ctx := c.Context()
+	ctx := c.UserContext()
 	var req dto.SaveUserSecurityRequest
 	if err := c.BodyParser(&req); err != nil {
 		logger.Error("Failed to parse request body", zap.Error(err))
@@ -119,7 +119,7 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 401, "Token tidak valid", "", "Anda harus login terlebih dahulu")
 	}
 	userId := uint(claims["user_id"].(float64))
-	ctx := c.Context()
+	ctx := c.UserContext()
 	database := database.GetPostgresDB()
 	newProfile, err := h.userService.SaveProfile(ctx, database, userId, req)
 	if err != nil {
@@ -133,7 +133,7 @@ func (h *UserHandler) SaveUserProfileHandler(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
-	ctx := c.Context()
+	ctx := c.UserContext()
 	claims, err := tokenutils.GetJWTClaims(c)
 	if err != nil {
 		logger.Error("Failed to get JWT claims", zap.Error(err))
