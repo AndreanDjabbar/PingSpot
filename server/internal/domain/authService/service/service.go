@@ -12,6 +12,7 @@ import (
 	"server/internal/infrastructure/cache"
 	apperror "server/pkg/appError"
 	"server/pkg/logger"
+	contextutils "server/pkg/utils/contextUtils"
 	"server/pkg/utils/env"
 	tokenutils "server/pkg/utils/tokenutils"
 	"time"
@@ -40,8 +41,19 @@ func NewAuthService(
 }
 
 func (s *AuthService) Register(ctx context.Context, db *gorm.DB, req dto.RegisterRequest, isVerified bool) (*model.User, error) {
+	requestID := contextutils.GetRequestID(ctx)
+	logger.Info("Registering new user",
+		zap.String("request_id", requestID),
+		zap.String("email", req.Email),
+		zap.String("provider", req.Provider),
+	)
+
 	tx := db.Begin()
 	if tx.Error != nil {
+		logger.Error("Failed to start transaction",
+			zap.String("request_id", requestID),
+			zap.Error(tx.Error),
+		)
 		return nil, apperror.New(500, "TRANSACTION_START_FAILED", "Gagal memulai transaksi", tx.Error.Error())
 	}
 	defer func() {
@@ -93,13 +105,29 @@ func (s *AuthService) Register(ctx context.Context, db *gorm.DB, req dto.Registe
 	}
 
 	if err := tx.Commit().Error; err != nil {
+		logger.Error("Failed to commit transaction",
+			zap.String("request_id", requestID),
+			zap.Error(err),
+		)
 		return nil, apperror.New(500, "TRANSACTION_COMMIT_FAILED", "Gagal menyimpan perubahan", err.Error())
 	}
+
+	logger.Info("User registered successfully",
+		zap.String("request_id", requestID),
+		zap.Uint("user_id", createdUser.ID),
+		zap.String("email", createdUser.Email),
+	)
 
 	return createdUser, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, db *gorm.DB, req dto.LoginRequest) (*model.User, string, string, error) {
+	requestID := contextutils.GetRequestID(ctx)
+	logger.Info("User login attempt",
+		zap.String("request_id", requestID),
+		zap.String("email", req.Email),
+	)
+
 	user, err := s.userRepo.GetByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, "", "", apperror.New(401, "INVALID_CREDENTIALS", "Email atau password salah", err.Error())
@@ -114,12 +142,18 @@ func (s *AuthService) Login(ctx context.Context, db *gorm.DB, req dto.LoginReque
 	if !user.IsVerified {
 		randomCode1, err := tokenutils.GenerateRandomCode(150)
 		if err != nil {
-			logger.Error("Failed to generate random code", zap.Error(err))
+			logger.Error("Failed to generate random code",
+				zap.String("request_id", requestID),
+				zap.Error(err),
+			)
 			return nil, "", "", apperror.New(500, "CODE_GENERATION_FAILED", "Gagal membuat kode acak", err.Error())
 		}
 		randomCode2, err := tokenutils.GenerateRandomCode(150)
 		if err != nil {
-			logger.Error("Failed to generate random code", zap.Error(err))
+			logger.Error("Failed to generate random code",
+				zap.String("request_id", requestID),
+				zap.Error(err),
+			)
 			return nil, "", "", apperror.New(500, "CODE_GENERATION_FAILED", "Gagal membuat kode acak", err.Error())
 		}
 		verificationLink := fmt.Sprintf("%s/auth/verify-account/%s/%d/%s", env.ClientURL(), randomCode1, user.ID, randomCode2)
@@ -131,13 +165,19 @@ func (s *AuthService) Login(ctx context.Context, db *gorm.DB, req dto.LoginReque
 		}
 		linkJSON, err := json.Marshal(linkData)
 		if err != nil {
-			logger.Error("Failed to marshal verification link data", zap.Error(err))
+			logger.Error("Failed to marshal verification link data",
+				zap.String("request_id", requestID),
+				zap.Error(err),
+			)
 			return nil, "", "", apperror.New(500, "VERIFICATION_CODE_SAVE_FAILED", "Gagal menyimpan kode verifikasi", err.Error())
 		}
 		redisKey := fmt.Sprintf("link:%d", user.ID)
 		err = redisClient.Set(context.Background(), redisKey, linkJSON, 300*time.Second).Err()
 		if err != nil {
-			logger.Error("Failed to save verification link to Redis", zap.Error(err))
+			logger.Error("Failed to save verification link to Redis",
+				zap.String("request_id", requestID),
+				zap.Error(err),
+			)
 			return nil, "", "", apperror.New(500, "VERIFICATION_CODE_REDIS_FAILED", "Gagal menyimpan kode verifikasi ke Redis", err.Error())
 		}
 		go util.SendVerificationEmail(user.Email, user.Username, verificationLink)
@@ -160,12 +200,19 @@ func (s *AuthService) Login(ctx context.Context, db *gorm.DB, req dto.LoginReque
 	})
 	if err != nil {
 		tx.Rollback()
-		logger.Error("Failed to create user session", zap.Error(err))
+		logger.Error("Failed to create user session",
+			zap.String("request_id", requestID),
+			zap.Uint("user_id", user.ID),
+			zap.Error(err),
+		)
 		return nil, "", "", apperror.New(500, "USER_SESSION_CREATE_FAILED", "Gagal membuat sesi user", err.Error())
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		logger.Error("Failed to commit user session transaction", zap.Error(err))
+		logger.Error("Failed to commit user session transaction",
+			zap.String("request_id", requestID),
+			zap.Error(err),
+		)
 		return nil, "", "", apperror.New(500, "USER_SESSION_COMMIT_FAILED", "Gagal menyimpan sesi user", err.Error())
 	}
 
@@ -176,16 +223,29 @@ func (s *AuthService) Login(ctx context.Context, db *gorm.DB, req dto.LoginReque
 	refreshKey := fmt.Sprintf("refresh_token:%s", refreshTokenID)
 	err = redisClient.Set(context.Background(), refreshKey, hashedRefreshToken, 7*24*time.Hour).Err()
 	if err != nil {
-		logger.Error("Failed to save refresh token to Redis", zap.Error(err))
+		logger.Error("Failed to save refresh token to Redis",
+			zap.String("request_id", requestID),
+			zap.Error(err),
+		)
 		return nil, "", "", apperror.New(500, "REFRESH_TOKEN_SAVE_FAILED", "Gagal menyimpan refresh token", err.Error())
 	}
 
 	userSessionKey := fmt.Sprintf("user_session:%d", user.ID)
 	err = redisClient.SAdd(context.Background(), userSessionKey, userSession.ID).Err()
 	if err != nil {
-		logger.Error("Failed to save user session ID to Redis set", zap.Error(err))
+		logger.Error("Failed to save user session ID to Redis set",
+			zap.String("request_id", requestID),
+			zap.Error(err),
+		)
 		return nil, "", "", apperror.New(500, "USER_SESSION_SAVE_FAILED", "Gagal menyimpan sesi user", err.Error())
 	}
+
+	logger.Info("User logged in successfully",
+		zap.String("request_id", requestID),
+		zap.Uint("user_id", user.ID),
+		zap.String("email", user.Email),
+	)
+
 	return user, accessToken, refreshToken, nil
 }
 

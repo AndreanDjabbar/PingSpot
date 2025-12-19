@@ -11,11 +11,14 @@ import (
 	tasksService "server/internal/domain/taskService/service"
 	userRepository "server/internal/domain/userService/repository"
 	apperror "server/pkg/appError"
+	"server/pkg/logger"
+	contextutils "server/pkg/utils/contextUtils"
 	"server/pkg/utils/env"
 	mainutils "server/pkg/utils/mainUtils"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -59,8 +62,19 @@ func NewreportService(
 }
 
 func (s *ReportService) CreateReport(ctx context.Context, db *gorm.DB, userID uint, req dto.CreateReportRequest) (*dto.CreateReportResponse, error) {
+	requestID := contextutils.GetRequestID(ctx)
+	logger.Info("Creating report",
+		zap.String("request_id", requestID),
+		zap.Uint("user_id", userID),
+		zap.String("report_type", req.ReportType),
+	)
+
 	tx := db.Begin()
 	if tx.Error != nil {
+		logger.Error("Failed to start transaction",
+			zap.String("request_id", requestID),
+			zap.Error(tx.Error),
+		)
 		return nil, apperror.New(500, "TRANSACTION_START_FAILED", "Gagal memulai transaksi", tx.Error.Error())
 	}
 	defer func() {
@@ -135,6 +149,13 @@ func (s *ReportService) CreateReport(ctx context.Context, db *gorm.DB, userID ui
 		ReportLocation: reportLocationStruct,
 		ReportImages:   reportImages,
 	}
+
+	logger.Info("Report created successfully",
+		zap.String("request_id", requestID),
+		zap.Uint("report_id", reportStruct.ID),
+		zap.Uint("user_id", userID),
+	)
+
 	return reportResult, nil
 }
 

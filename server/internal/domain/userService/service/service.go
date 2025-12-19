@@ -7,8 +7,11 @@ import (
 	"server/internal/domain/userService/dto"
 	"server/internal/domain/userService/repository"
 	apperror "server/pkg/appError"
+	contextutils "server/pkg/utils/contextUtils"
+	"server/pkg/logger"
 	tokenutils "server/pkg/utils/tokenutils"
 
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -25,8 +28,18 @@ func NewUserService(userRepo repository.UserRepository, userProfileRepo reposito
 }
 
 func (s *UserService) SaveProfile(ctx context.Context, db *gorm.DB, userID uint, req dto.SaveUserProfileRequest) (*dto.SaveUserProfileResponse, error) {
+	requestID := contextutils.GetRequestID(ctx)
+	logger.Info("Saving user profile",
+		zap.String("request_id", requestID),
+		zap.Uint("user_id", userID),
+	)
+
 	tx := db.Begin()
 	if tx.Error != nil {
+		logger.Error("Failed to start transaction",
+			zap.String("request_id", requestID),
+			zap.Error(tx.Error),
+		)
 		return nil, apperror.New(500, "TRANSACTION_START_FAILED", "gagal memulai transaksi", tx.Error.Error())
 	}
 
@@ -60,6 +73,10 @@ func (s *UserService) SaveProfile(ctx context.Context, db *gorm.DB, userID uint,
 				Gender:         req.Gender,
 				FullName:       req.FullName,
 			}
+			logger.Info("User profile created successfully",
+				zap.String("request_id", requestID),
+				zap.Uint("user_id", userID),
+			)
 			return &newProfileResponse, nil
 		} else {
 			tx.Rollback()
@@ -90,6 +107,10 @@ func (s *UserService) SaveProfile(ctx context.Context, db *gorm.DB, userID uint,
 		FullName:       req.FullName,
 		Username:       *req.Username,
 	}
+	logger.Info("User profile updated successfully",
+		zap.String("request_id", requestID),
+		zap.Uint("user_id", userID),
+	)
 	return &profileResponse, nil
 }
 
