@@ -13,8 +13,10 @@ func LoggingMiddleware() fiber.Handler {
 		start := time.Now()
 		err := c.Next()
 		duration := time.Since(start)
+		requestID := c.Locals("RequestID").(string)
 
 		logger.Info("HTTP Request",
+			zap.String("request_id", requestID),
 			zap.String("method", c.Method()),
 			zap.String("path", c.Path()),
 			zap.Int("status", c.Response().StatusCode()),
@@ -25,6 +27,7 @@ func LoggingMiddleware() fiber.Handler {
 
 		if err != nil {
 			logger.Error("HTTP Request Error",
+				zap.String("request_id", requestID),
 				zap.String("method", c.Method()),
 				zap.String("path", c.Path()),
 				zap.Error(err),
