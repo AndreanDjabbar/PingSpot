@@ -18,6 +18,7 @@ import { UploadProgressReportSchema } from '../../../schema';
 import { ImageItem } from '@/types/global/type';
 import { DetailSection, GuideSection, ProgressSection, ResponseSection } from './components';
 import { HeaderSection } from '@/app/main/components';
+import { compressImages } from '@/utils';
 
 const UpdateProgressPage = () => {
     const params = useParams();
@@ -90,8 +91,9 @@ const UpdateProgressPage = () => {
             data.append('progressNotes', formData.progressNotes);
         }
         if (progressImages && progressImages.length > 0) {
-            progressImages.forEach((file) => {
-                data.append('progressAttachments', file.file);
+            progressImages.forEach(async(file) => {
+                const compressedFile = await compressImages(file.file);
+                data.append('progressAttachments', compressedFile);
             });
         }
         return data;

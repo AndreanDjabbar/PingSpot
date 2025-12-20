@@ -7,7 +7,7 @@ import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { FaUsers } from 'react-icons/fa';
 import { useReportsStore, useUserProfileStore, useConfirmationModalStore, useFormInformationModalStore } from '@/stores';
 import { useUploadProgressReport } from '@/hooks/main';
-import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
+import { compressImages, getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
 import { IUploadProgressReportRequest } from '@/types/api/report';
 import { ImageItem } from '@/types/global/type';
 import { useForm } from 'react-hook-form';
@@ -169,8 +169,9 @@ const ReportInformation: React.FC<ReportInformationProps> = ({
             data.append('progressNotes', formData.progressNotes);
         }
         if (progressImages && progressImages.length > 0 ) {
-            progressImages.forEach((file) => {
-                data.append('progressAttachments', file.file);
+            progressImages.forEach(async(file) => {
+                const compressedFile = await compressImages(file.file);
+                data.append('progressAttachments', compressedFile);
             });
         }
         return data;
