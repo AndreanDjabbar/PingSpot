@@ -135,7 +135,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
                     disabled={disabled}
                     className={cn(
                         "w-full flex items-center justify-between px-3 py-3 border border-gray-300 rounded-lg shadow-sm bg-white text-left transition-all duration-200",
-                        "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+                        "focus:outline-none focus:ring-2 focus:ring-sky-800 focus:border-sky-800",
                         disabled && "bg-gray-200 cursor-not-allowed",
                         error && "border-red-500 focus:ring-red-500 focus:border-red-500",
                         icon ? "pl-10" : "pl-3"
