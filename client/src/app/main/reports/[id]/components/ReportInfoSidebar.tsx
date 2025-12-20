@@ -159,9 +159,9 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                 )}
                 <div>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Dilaporkan</p>
-                    <p className="text-sm text-gray-900">
+                    <p className="text-sm text-gray-900"><span className='text-[11px] text-gray-500'>Pada: </span>
                         {formattedDate(report.reportCreatedAt, {
-                            formatStr: 'dd MMMM yyyy',
+                            formatStr: 'dd MMMM yyyy, HH:mm',
                         })}
                     </p>
                 </div>
@@ -177,7 +177,11 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                         <div className="flex items-center gap-3">
                             <div className="flex flex-col leading-tight">
                                 <span className='text-gray-500 text-[11px]'>Oleh: <span className="text-sm font-bold text-gray-700"> {getReportLastUpdatedBy(report.lastUpdatedBy) ?? '-'}</span></span>
-                                <span className="text-[11px] text-gray-500">pada: <span className="font-medium text-gray-700">{formattedDate(report?.lastUpdatedProgressAt || "", { formatStr: 'dd MMM yyyy, HH:mm' })}</span></span>
+                                <p className="text-sm text-gray-900"><span className='text-[11px] text-gray-500'>Pada: </span>
+                                    {formattedDate(report.lastUpdatedProgressAt || 0, {
+                                        formatStr: 'dd MMMM yyyy, HH:mm',
+                                    })}
+                                </p>
                             </div>
                             {report.lastUpdatedBy === 'OWNER' && (
                                 <button 
@@ -196,21 +200,31 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                         </div>
                     ) : (
                         <>
-                            <div>
-                                <span className="text-xs text-gray-600 font-medium">Tipe Laporan Tidak Menggunakan pembaruan status</span>
-                            </div>
-                            <div className="h-px bg-gray-200"></div>
+                            {report.hasProgress ? (
+                                <span className="text-sm text-gray-900">-</span>
+                            ): (
+                                <>
+                                    <div>
+                                        <span className="text-xs text-gray-600 font-medium">Tipe Laporan Tidak Menggunakan pembaruan status</span>
+                                    </div>
+                                    <div className="h-px bg-gray-200"></div>
+                                </>
+                            )}
                         </>
                     )}
                 </div>
                 <div className="h-px bg-gray-200"></div>
                 <div>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Laporan diperbarui oleh Pembuat</p>
-                    <p className="text-sm text-gray-900"><span className='text-[11px] text-gray-500'>Pada: </span>
-                        {formattedDate(report.reportUpdatedAt, {
-                            formatStr: 'dd MMMM yyyy, HH:mm',
-                        })}
-                    </p>
+                    {(report.reportUpdatedAt !== report.reportCreatedAt) && (report.reportUpdatedAt > report.reportCreatedAt) ? (
+                        <p className="text-sm text-gray-900"><span className='text-[11px] text-gray-500'>Pada: </span>
+                            {formattedDate(report.reportUpdatedAt, {
+                                formatStr: 'dd MMMM yyyy, HH:mm',
+                            })}
+                        </p>
+                    ) : (
+                        <span className="text-sm text-gray-900">-</span>
+                    )}
                 </div>
             </div>
         </div>
