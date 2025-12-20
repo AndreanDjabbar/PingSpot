@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UseFormRegister, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { InputField, TextAreaField, SelectField, CheckboxField } from '@/components/form';
 import { LuNotebookText } from "react-icons/lu";
@@ -21,6 +21,13 @@ const DetailStep: React.FC<DetailStepProps> = ({
     reportTypeValue, 
     hasProgressValue 
 }) => {
+    useEffect(() => {
+        const titleInput = document.getElementById('title');
+        if (titleInput) {
+            titleInput.focus();
+        }
+    }, []);
+    
     const issueTypes = [
         { value: 'infrastructure', label: 'Infrastruktur' },
         { value: 'environment', label: 'Lingkungan' },

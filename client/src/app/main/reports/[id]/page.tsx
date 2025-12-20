@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/immutability */
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
     getErrorResponseDetails, 
@@ -68,6 +68,7 @@ const ReportDetailPage = () => {
     const router = useRouter();
     const reportId = Number(params.id);
     const [animateButton, setAnimateButton] = useState<string | null>(null);
+    const commentsSectionRef = useRef<HTMLDivElement>(null);
 
     const openImagePreview = useImagePreviewModalStore((s) => s.openImagePreview);
     const selectedReport = useReportsStore((s) => s.selectedReport);
@@ -598,7 +599,12 @@ const ReportDetailPage = () => {
                                         onLike={handleLike}
                                         onDislike={() => console.log('Dislike')}
                                         onSave={() => console.log('Save')}
-                                        onComment={() => document.getElementById('comment-input')?.focus()}
+                                        onComment={() => {
+                                            commentsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            setTimeout(() => {
+                                                document.getElementById('commentContent')?.focus();
+                                            }, 300);
+                                        }}
                                         onShare={() => console.log('Share')}
                                     />
                                 </div>
@@ -609,7 +615,7 @@ const ReportDetailPage = () => {
                                     <p className="text-gray-500">Memuat komentar...</p>
                                 </div>
                             ): (
-                                <>
+                                <div ref={commentsSectionRef}>
                                     {isCreateReportCommentError && (
                                         <ErrorSection
                                         message={getErrorResponseMessage(createReportCommentError) || 'Terjadi kesalahan saat mengirim komentar'} 
@@ -620,7 +626,7 @@ const ReportDetailPage = () => {
                                     onCreateReportComment={handleCreateReportComment}
                                     comments={reportComments}
                                     />
-                                </>
+                                </div>
                             )}
                         </div>
 
