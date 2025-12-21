@@ -4,6 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { BiX } from 'react-icons/bi';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 interface ImagePreviewModalProps {
     imageUrl: string | null;
@@ -84,31 +85,39 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({ imageUrl, isOpen,
         >
             <div 
                 className={`relative max-w-4xl max-h-[90vh] w-[90vw] md:w-[60vw] 
-                            overflow-y-auto bg-white rounded-lg transition-all duration-300
+                            overflow-hidden bg-white rounded-lg transition-all duration-300
                             ${isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
                 onClick={(e) => e.stopPropagation()}
-                onWheel={(e) => e.stopPropagation()} 
-                onTouchMove={(e) => e.stopPropagation()}
-                onScroll={(e) => e.stopPropagation()}
-                style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
+                style={{ overscrollBehavior: 'contain' }}
             >
                 <button 
-                    className="sticky top-2 right-2 float-right bg-sky-700 rounded-full p-1 text-white hover:bg-sky-900 shadow-lg transition-colors z-10"
+                    className="absolute top-2 right-2 bg-sky-700 rounded-full p-1 text-white hover:bg-sky-900 shadow-lg transition-colors z-10"
                     onClick={onClose}
                 >
                     <BiX size={26} />
                 </button>
 
-                <div className="p-6">
-                    <div className="w-full h-[60vh] relative">
-                        <Image
-                            src={imageUrl}
-                            alt="Preview"
-                            fill
-                            className="object-contain"
-                            priority
-                        />
-                    </div>
+                <div className="p-6 flex items-center justify-center">
+                    <TransformWrapper
+                        initialScale={1}
+                        minScale={1}
+                        maxScale={4}
+                        centerOnInit
+                        wheel={{ step: 0.1 }}
+                        doubleClick={{ mode: 'toggle', step: 0.7 }}
+                        panning={{ disabled: false }}
+                    >
+                        <TransformComponent
+                            wrapperClass="w-full h-[60vh] bg-gray-900 flex items-center justify-center"
+                        >
+                            <img
+                                src={imageUrl}
+                                alt="Preview"
+                                style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }}
+                                draggable={false}
+                            />
+                        </TransformComponent>
+                    </TransformWrapper>
                 </div>
             </div>
         </div>
