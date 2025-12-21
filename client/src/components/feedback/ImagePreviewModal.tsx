@@ -2,9 +2,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
 import { BiX } from 'react-icons/bi';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { BiZoomIn, BiZoomOut, BiReset } from 'react-icons/bi';
 
 interface ImagePreviewModalProps {
     imageUrl: string | null;
@@ -107,16 +107,43 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({ imageUrl, isOpen,
                         doubleClick={{ mode: 'toggle', step: 0.7 }}
                         panning={{ disabled: false }}
                     >
-                        <TransformComponent
-                            wrapperClass="w-full h-[60vh] bg-gray-900 flex items-center justify-center"
-                        >
-                            <img
-                                src={imageUrl}
-                                alt="Preview"
-                                style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }}
-                                draggable={false}
-                            />
-                        </TransformComponent>
+                        {({ zoomIn, zoomOut, resetTransform }) => (
+                            <>
+                                <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-10">
+                                    <button
+                                        onClick={() => zoomIn()}
+                                        className="bg-sky-700 hover:bg-sky-900 text-white p-2 rounded-full shadow-lg transition-colors"
+                                        title="Zoom In"
+                                    >
+                                        <BiZoomIn size={24} />
+                                    </button>
+                                    <button
+                                        onClick={() => zoomOut()}
+                                        className="bg-sky-700 hover:bg-sky-900 text-white p-2 rounded-full shadow-lg transition-colors"
+                                        title="Zoom Out"
+                                    >
+                                        <BiZoomOut size={24} />
+                                    </button>
+                                    <button
+                                        onClick={() => resetTransform()}
+                                        className="bg-sky-700 hover:bg-sky-900 text-white p-2 rounded-full shadow-lg transition-colors"
+                                        title="Reset Zoom"
+                                    >
+                                        <BiReset size={24} />
+                                    </button>
+                                </div>
+                                <TransformComponent
+                                    wrapperClass="w-full h-[60vh] bg-gray-900 flex items-center justify-center"
+                                >
+                                    <img
+                                        src={imageUrl}
+                                        alt="Preview"
+                                        style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }}
+                                        draggable={false}
+                                    />
+                                </TransformComponent>
+                            </>
+                        )}
                     </TransformWrapper>
                 </div>
             </div>
