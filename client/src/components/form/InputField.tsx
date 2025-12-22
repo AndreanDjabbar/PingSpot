@@ -14,6 +14,7 @@ interface InputFieldProps {
     placeHolder?: string;
     showPasswordToggle?: boolean;
     value?: string;
+    isUseAutoComplete?: boolean;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     register?: unknown;
@@ -22,6 +23,7 @@ interface InputFieldProps {
 
 const InputField: React.FC<InputFieldProps> = ({
     id,
+    isUseAutoComplete=true,
     name,
     type = 'text',
     required = false,
@@ -53,6 +55,7 @@ const InputField: React.FC<InputFieldProps> = ({
                 </div>
                 <input
                     id={id}
+                    autoComplete={isUseAutoComplete ? 'on' : 'off'}
                     name={name}
                     type={inputType}
                     required={required}
