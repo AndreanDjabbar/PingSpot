@@ -9,6 +9,7 @@ interface BreadcrumbProps {
 const paths = [
     { id: 'home', label: '🏠 Beranda',},
     { id: 'map', label: 'Peta Interaktif', },
+    { id: 'explore', label: '🔍 Jelajahi', },
     { id: 'community', label: 'Komunitas', },
     { id: 'messages', label: 'Pesan', },
     { id: 'activity', label: 'Aktivitas', },

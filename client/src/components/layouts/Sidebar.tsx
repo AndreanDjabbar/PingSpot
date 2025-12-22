@@ -21,10 +21,11 @@ interface SidebarProps {
 
 const navigationItems = [
     { id: 'home', label: 'Beranda', icon: BiHome },
+    { id: 'explore', label: 'Jelajahi', icon: FaUsers },
     { id: 'reports', label: 'Laporan', icon: GoAlert, badge: '3' },
     { id: 'map', label: 'Peta Interaktif', icon: FaMap },
-    { id: 'community', label: 'Komunitas', icon: FaUsers },
-    { id: 'messages', label: 'Pesan', icon: LuMessageCircle, badge: '12' },
+    // { id: 'community', label: 'Komunitas', icon: FaUsers },
+    // { id: 'messages', label: 'Pesan', icon: LuMessageCircle, badge: '12' },
     { id: 'activity', label: 'Aktivitas', icon: LuActivity },
 ]
 
