@@ -65,6 +65,24 @@ func Migrate(db *gorm.DB) error {
 				return tx.Exec("ALTER TABLE report_locations DROP COLUMN map_zoom").Error
 			},
 		},
+		{
+			ID : "12232025_add_search_vectors_to_reports",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Exec("ALTER TABLE reports ADD COLUMN search_vector tsvector").Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Exec("ALTER TABLE reports DROP COLUMN search_vector").Error
+			},
+		},
+		{
+			ID : "12232025_add_search_vectors_to_users",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Exec("ALTER TABLE users ADD COLUMN search_vector tsvector").Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Exec("ALTER TABLE users DROP COLUMN search_vector").Error
+			}, 
+		},
 	})
 
 	err := m.Migrate()
