@@ -66,22 +66,61 @@ func Migrate(db *gorm.DB) error {
 			},
 		},
 		{
-			ID : "12232025_add_search_vectors_to_reports",
+			ID: "12232025_add_search_vector_to_reports",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.Exec("ALTER TABLE reports ADD COLUMN search_vector tsvector").Error
+				return tx.Exec(`
+					ALTER TABLE reports
+					ADD COLUMN IF NOT EXISTS search_vector tsvector
+					GENERATED ALWAYS AS (
+						to_tsvector(
+							'english',
+							coalesce(report_title, '') || ' ' || coalesce(report_description, '')
+						)
+					) STORED;
+
+				`).Error
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.Exec("ALTER TABLE reports DROP COLUMN search_vector").Error
 			},
 		},
 		{
-			ID : "12232025_add_search_vectors_to_users",
+			ID: "12232025_add_search_vector_to_users",
 			Migrate: func(tx *gorm.DB) error {
-				return tx.Exec("ALTER TABLE users ADD COLUMN search_vector tsvector").Error
+				return tx.Exec(`
+					ALTER TABLE users
+						ADD COLUMN IF NOT EXISTS search_vector tsvector
+						GENERATED ALWAYS AS (
+						to_tsvector(
+							'simple',
+							coalesce(username, '') || ' ' ||
+							coalesce(email, '') || ' ' ||
+							coalesce(full_name, '')
+						)
+					) STORED
+				`).Error
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.Exec("ALTER TABLE users DROP COLUMN search_vector").Error
-			}, 
+			},
+		},
+		{
+			ID: "add_gin_index_to_search_vector_reports",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Exec("CREATE INDEX idx_gin_search_vector_reports ON reports USING GIN(search_vector)").Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Exec("DROP INDEX idx_gin_search_vector_reports").Error
+			},
+		},
+		{
+			ID: "add_gin_index_to_search_vector_users",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Exec("CREATE INDEX idx_gin_search_vector_users ON users USING GIN(search_vector)").Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Exec("DROP INDEX idx_gin_search_vector_users").Error
+			},
 		},
 	})
 
