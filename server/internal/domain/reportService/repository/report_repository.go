@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+	"regexp"
 	"server/internal/domain/model"
 	"server/internal/domain/reportService/dto"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -21,6 +23,7 @@ type ReportRepository interface {
 	GetByIsDeletedPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance, isDeleted bool) (*[]model.Report, error)
 	GetPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error)
 	GetReportsCount(ctx context.Context) (*dto.TotalReportCount, error)
+	FullTextSearchReports(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error)
 }
 
 type reportRepository struct {
@@ -80,6 +83,30 @@ func (r *reportRepository) GetReportsCount(ctx context.Context) (*dto.TotalRepor
 	}
 
 	return &result, nil
+}
+
+func (r *reportRepository) FullTextSearchReports(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error) {
+	var reports []model.Report
+
+	if strings.TrimSpace(searchQuery) == "" {
+		return &reports, nil
+	}
+
+	searchQuery = strings.ToLower(searchQuery)
+    searchQuery = regexp.MustCompile(`[^a-z0-9\s]`).ReplaceAllString(searchQuery, "")
+    searchQuery = strings.TrimSpace(searchQuery)
+    searchQuery = regexp.MustCompile(`\s+`).ReplaceAllString(searchQuery, " & ")
+    searchQuery += ":*"
+
+	err := r.db.WithContext(ctx).Raw(`
+		SELECT *
+		FROM reports
+		WHERE search_vector @@ to_tsquery('simple', ?)
+		ORDER BY ts_rank(search_vector, to_tsquery('simple', ?)) DESC
+		LIMIT ?
+	`, searchQuery, searchQuery, limit).Scan(&reports).Error
+
+	return &reports, err
 }
 
 func (r *reportRepository) GetByReportStatus(ctx context.Context, status ...string) (*[]model.Report, error) {
