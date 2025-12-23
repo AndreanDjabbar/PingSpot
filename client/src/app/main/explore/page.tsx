@@ -8,7 +8,7 @@ import { ExploreSearch, ExploreSearchNonModal } from './components';
 const ExplorePage = () => {
     const currentPath = usePathname();
     const [searchTerm, setSearchTerm] = useState('');
-    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+    const [isSearchNonModalOpen, setIsSearchNonModalOpen] = useState(false);
 
     return (
         <div className=''>
@@ -23,14 +23,14 @@ const ExplorePage = () => {
                     <ExploreSearch 
                         onSearchChange={setSearchTerm}
                         searchTerm={searchTerm}
-                        onNonModalClose={() => setIsSearchModalOpen(false)}
-                        isNonModalOpen={isSearchModalOpen}
-                        onSearchClick={() => setIsSearchModalOpen(true)}
+                        onNonModalClose={() => setIsSearchNonModalOpen(false)}
+                        isNonModalOpen={isSearchNonModalOpen}
+                        onSearchClick={() => setIsSearchNonModalOpen(true)}
                     />
                     <ExploreSearchNonModal 
                         searchTerm={searchTerm}
-                        isOpen={isSearchModalOpen}
-                        onClose={() => setIsSearchModalOpen(false)}
+                        isOpen={isSearchNonModalOpen}
+                        onClose={() => setIsSearchNonModalOpen(false)}
                         onSearchChange={setSearchTerm}
                     />
                 </div>
