@@ -19,6 +19,7 @@ import {
 } from "@/types/api/report";
 import { IReverseLocationRequest } from "@/types/api/user";
 import { IReverseLocation } from "@/types/model/user";
+import { ISearchDataResponse } from "@/types/api/search";
 
 const REVERSE_LOCATION_API_URL = `${process.env.NEXT_PUBLIC_REVERSE_LOCATION_URL}`;
 
@@ -153,5 +154,10 @@ export const EditReportService = async (reportID: number, payload: FormData): Pr
 
 export const DeleteReportService = async (payload: IDeleteReportRequest): Promise<IDeleteReportResponse> => {
     const response = await axiosInstance.delete<IDeleteReportResponse>(`/report/${payload.reportID}`);
+    return response.data;
+}
+
+export const searchDataService = async (searchQuery: string): Promise<ISearchDataResponse> => {
+    const response = await axiosInstance.get<ISearchDataResponse>(`/search/?searchQuery=${searchQuery}`);
     return response.data;
 }
