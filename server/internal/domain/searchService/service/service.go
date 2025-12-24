@@ -58,8 +58,23 @@ func (s *SearchService) SearchData(ctx context.Context, searchQuery string, limi
 		return nil, apperror.New(500, "REPORT_SEARCH_FAILED", "Gagal mencari data laporan", err.Error())
 	}
 
+	resultUsers := make([]dto.UsersSearch, 0, len(*usersData))
+	for _, user := range *usersData {
+		userDTO := dto.UsersSearch{
+			UserID:         user.ID,
+			FullName:       user.FullName,
+			Email: 			user.Email,
+			Bio:            user.Profile.Bio,
+			ProfilePicture: user.Profile.ProfilePicture,
+			Username:	   user.Username,
+			Birthday:   	   user.Profile.Birthday,
+			Gender: user.Profile.Gender,	
+		}
+		resultUsers = append(resultUsers, userDTO)
+	}
+
 	searchResponse := dto.SearchResponse{
-		UsersData:   dto.UserSearchResult{Users: *usersData, Type: "users"},
+		UsersData:   dto.UserSearchResult{Users: resultUsers, Type: "users"},
 		ReportsData: dto.ReportSearchResult{Reports: *reportsData, Type: "reports"},
 	}
 
