@@ -46,18 +46,17 @@ func (r *userRepository) FullTextSearchUsers(ctx context.Context, searchQuery st
 	}
 
 	searchQuery = strings.ToLower(searchQuery)
-    searchQuery = regexp.MustCompile(`[^a-z0-9\s]`).ReplaceAllString(searchQuery, "")
-    searchQuery = strings.TrimSpace(searchQuery)
-    searchQuery = regexp.MustCompile(`\s+`).ReplaceAllString(searchQuery, " & ")
-    searchQuery += ":*"
+	searchQuery = regexp.MustCompile(`[^a-z0-9\s]`).ReplaceAllString(searchQuery, "")
+	searchQuery = strings.TrimSpace(searchQuery)
+	searchQuery = regexp.MustCompile(`\s+`).ReplaceAllString(searchQuery, " & ")
+	searchQuery += ":*"
 
-	err := r.db.WithContext(ctx).Raw(`
-		SELECT id, username, email, full_name, created_at, updated_at
-		FROM users
-		WHERE search_vector @@ to_tsquery('simple', ?)
-		ORDER BY ts_rank(search_vector, to_tsquery('simple', ?)) DESC
-		LIMIT ?
-	`, searchQuery, searchQuery, limit).Scan(&users).Error
+	err := r.db.WithContext(ctx).
+		Preload("Profile").
+		Where("search_vector @@ to_tsquery('simple', ?)", searchQuery).
+		Order(gorm.Expr("ts_rank(search_vector, to_tsquery('simple', ?)) DESC", searchQuery)).
+		Limit(limit).
+		Find(&users).Error
 
 	return &users, err
 }
