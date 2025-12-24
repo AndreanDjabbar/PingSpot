@@ -2,8 +2,19 @@ package dto
 
 import "server/internal/domain/model"
 
+type UsersSearch struct {
+	UserID          uint    `json:"userID"`
+	FullName        string  `json:"fullName"`
+	Bio             *string `json:"bio"`
+	ProfilePicture  *string `json:"profilePicture"`
+	Username		string  `json:"username"`
+	Birthday   		*string `json:"birthday"`
+	Gender 	   		*string `json:"gender"`
+	Email			string  `json:"email"`	
+}
+
 type UserSearchResult struct {
-	Users []model.User `json:"users"`
+	Users []UsersSearch `json:"users"`
 	Type  string       `json:"type"`
 }
 
