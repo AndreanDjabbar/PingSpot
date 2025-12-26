@@ -34,6 +34,24 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 	return &AuthHandler{authService: authService}
 }
 
+func getAccessTokenAge() int {
+	ageStr := env.AccessTokenAge()
+	age, err := strconv.Atoi(ageStr)
+	if err != nil || age <= 0 {
+		return 1200
+	}
+	return age
+}
+
+func getRefreshTokenAge() int {
+	ageStr := env.RefreshTokenAge()
+	age, err := strconv.Atoi(ageStr)
+	if err != nil || age <= 0 {
+		return 604800
+	}
+	return age
+}
+
 func (h *AuthHandler) RegisterHandler(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
@@ -201,7 +219,7 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 		Secure:   true,
 		SameSite: fiber.CookieSameSiteStrictMode,
 		Path:     "/",
-		MaxAge:   20 * 60,
+		MaxAge:   getAccessTokenAge(),
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -211,12 +229,12 @@ func (h *AuthHandler) LoginHandler(c *fiber.Ctx) error {
 		Secure:   true,
 		SameSite: fiber.CookieSameSiteStrictMode,
 		Path:     "/",
-		MaxAge:   7 * 24 * 3600,
+		MaxAge:   getRefreshTokenAge(),
 	})
 
 	return response.ResponseSuccess(c, 200, "Login berhasil", "data", dto.LoginResponse{
 		AccessToken: accessToken,
-		ExpiresIn:   1200,
+		ExpiresIn:   int64(getAccessTokenAge()),
 	})
 }
 
@@ -304,7 +322,7 @@ func (h *AuthHandler) OAuthCallbackHandler(provider string) http.HandlerFunc {
 			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
 			Path:     "/",
-			MaxAge:   20 * 60,
+			MaxAge:   getAccessTokenAge(),
 		}
 		http.SetCookie(w, cookieAccess)
 
@@ -315,7 +333,7 @@ func (h *AuthHandler) OAuthCallbackHandler(provider string) http.HandlerFunc {
 			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
 			Path:     "/",
-			MaxAge:   7 * 24 * 3600,
+			MaxAge:   getRefreshTokenAge(),
 		}
 		http.SetCookie(w, cookieRefresh)
 
@@ -419,7 +437,7 @@ func (h *AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
 		Secure:   true,
 		SameSite: fiber.CookieSameSiteStrictMode,
 		Path:     "/",
-		MaxAge:   20 * 60,
+		MaxAge:   getAccessTokenAge(),
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -429,12 +447,12 @@ func (h *AuthHandler) RefreshTokenHandler(c *fiber.Ctx) error {
 		Secure:   true,
 		SameSite: fiber.CookieSameSiteStrictMode,
 		Path:     "/",
-		MaxAge:   7 * 24 * 3600,
+		MaxAge:   getRefreshTokenAge(),
 	})
 
 	return response.ResponseSuccess(c, 200, "Token berhasil diperbarui", "data", dto.RefreshTokenResponse{
 		AccessToken: newAccessToken,
-		ExpiresIn:   1200,
+		ExpiresIn:   int64(getAccessTokenAge()),
 	})
 }
 
