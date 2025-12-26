@@ -11,6 +11,8 @@ export interface ISearchDataResponse {
         reportsData: {
             reports: IReport[];
             type: string;
-        }
+        },
+        nextCursorUsersData?: number | null;
+        nextCursorReportsData?: number | null;
     }
 }

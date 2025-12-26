@@ -157,7 +157,13 @@ export const DeleteReportService = async (payload: IDeleteReportRequest): Promis
     return response.data;
 }
 
-export const searchDataService = async (searchQuery: string): Promise<ISearchDataResponse> => {
-    const response = await axiosInstance.get<ISearchDataResponse>(`/search/?searchQuery=${searchQuery}`);
+export const searchDataService = async (searchQuery: string, usersDatacursorID?: number, reportsDataCursorID?: number): Promise<ISearchDataResponse> => {
+    const params = new URLSearchParams();
+
+    if (usersDatacursorID) params.append('usersDataCursorID', usersDatacursorID.toString());
+    if (reportsDataCursorID) params.append('reportsDataCursorID', reportsDataCursorID.toString());
+    params.append('searchQuery', searchQuery);
+    const queryString = params.toString() ? `&${params.toString()}` : '';
+    const response = await axiosInstance.get<ISearchDataResponse>(`/search/?${queryString}`);
     return response.data;
 }
