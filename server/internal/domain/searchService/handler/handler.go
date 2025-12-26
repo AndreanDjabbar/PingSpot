@@ -4,6 +4,7 @@ import (
 	"server/internal/domain/searchService/service"
 	"server/pkg/logger"
 	contextutils "server/pkg/utils/contextUtils"
+	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/response"
 
 	"github.com/gofiber/fiber/v2"
@@ -32,7 +33,21 @@ func (h *SearchHandler) HandleSearch(c *fiber.Ctx) error {
 		return response.ResponseError(c, 400, "Panjang search query minimal 3 karakter", "", nil)
 	}
 
-	searchData, err := h.searchService.SearchData(ctx, searchQuery, defaultLimit)
+	usersDataCursorID := c.Query("usersDataCursorID", "")
+	usersDatacursorIDUint, err := mainutils.StringToUint(usersDataCursorID)
+	if err != nil && usersDataCursorID != "" {
+		logger.Error("Invalid afterID format", zap.String("afterID", usersDataCursorID), zap.Error(err))
+		return response.ResponseError(c, 400, "Format afterID tidak valid", "", "afterID harus berupa angka")
+	}
+
+	reportsDataCursorID := c.Query("reportsDataCursorID", "")
+	reportsDatacursorIDUint, err := mainutils.StringToUint(reportsDataCursorID)
+	if err != nil && reportsDataCursorID != "" {
+		logger.Error("Invalid afterID format", zap.String("afterID", reportsDataCursorID), zap.Error(err))
+		return response.ResponseError(c, 400, "Format afterID tidak valid", "", "afterID harus berupa angka")
+	}
+
+	searchData, err := h.searchService.SearchData(ctx, searchQuery, usersDatacursorIDUint, reportsDatacursorIDUint, defaultLimit)
 	if err != nil {
 		logger.Error("Search failed",
 			zap.String("request_id", requestID),
@@ -47,5 +62,24 @@ func (h *SearchHandler) HandleSearch(c *fiber.Ctx) error {
 		zap.String("search_query", searchQuery),
 	)
 
-	return response.ResponseSuccess(c, 200, "Pencarian berhasil", "data", searchData)
+	var nextCursorUsersData *uint = nil
+	if len(searchData.UsersData.Users) > 0 {
+		lastUser := searchData.UsersData.Users[len(searchData.UsersData.Users)-1]
+		nextCursorUsersData = &lastUser.UserID
+	} 
+
+	var nextCursorReportsData *uint = nil
+	if len(searchData.ReportsData.Reports) > 0 {
+		lastReport := searchData.ReportsData.Reports[len(searchData.ReportsData.Reports)-1]
+		nextCursorReportsData = &lastReport.ID
+	}
+
+	finalResults := fiber.Map{
+		"usersData":   searchData.UsersData,
+		"nextCursorUsersData":   nextCursorUsersData,
+		"reportsData": searchData.ReportsData,
+		"nextCursorReportsData": nextCursorReportsData,
+	}
+
+	return response.ResponseSuccess(c, 200, "Pencarian berhasil", "data", finalResults)
 }
