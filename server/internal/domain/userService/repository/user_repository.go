@@ -18,6 +18,7 @@ type UserRepository interface {
 	Create(ctx context.Context, user *model.User) error
 	CreateTX(ctx context.Context, tx *gorm.DB, user *model.User) (*model.User, error)
 	FullTextSearchUsers(ctx context.Context, query string, limit int) (*[]model.User, error)
+	FullTextSearchUsersPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.User, error)
 	UpdateFullNameTX(ctx context.Context, tx *gorm.DB, userID uint, fullName string) error
 	Get(ctx context.Context) (*[]model.User, error)
 }
@@ -58,6 +59,33 @@ func (r *userRepository) FullTextSearchUsers(ctx context.Context, searchQuery st
 		Limit(limit).
 		Find(&users).Error
 
+	return &users, err
+}
+
+func (r *userRepository) FullTextSearchUsersPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.User, error) {
+	var users []model.User
+
+	if strings.TrimSpace(searchQuery) == "" {
+		return &users, nil
+	}
+	
+	searchQuery = strings.ToLower(searchQuery)
+	searchQuery = regexp.MustCompile(`[^a-z0-9\s]`).ReplaceAllString(searchQuery, "")
+	searchQuery = strings.TrimSpace(searchQuery)
+	searchQuery = regexp.MustCompile(`\s+`).ReplaceAllString(searchQuery, " & ")
+	searchQuery += ":*"
+	
+	query := r.db.WithContext(ctx).
+		Preload("Profile").
+		Where("search_vector @@ to_tsquery('simple', ?)", searchQuery).
+		Order(gorm.Expr("ts_rank(search_vector, to_tsquery('simple', ?)) DESC", searchQuery))
+
+	if cursorID != 0 {
+		query = query.Where("id > ?", cursorID)
+	}
+
+	err := query.Limit(limit).Find(&users).Error
+	
 	return &users, err
 }
 
