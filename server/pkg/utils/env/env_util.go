@@ -28,3 +28,5 @@ func MongoUser() string { return os.Getenv("MONGO_USER") }
 func MongoHost() string { return os.Getenv("MONGO_HOST") }
 func MongoPort() string { return os.Getenv("MONGO_PORT") }
 func MongoPassword() string { return os.Getenv("MONGO_PASSWORD") }
+func AccessTokenAge() string { return os.Getenv("ACCESS_TOKEN_AGE") }
+func RefreshTokenAge() string { return os.Getenv("REFRESH_TOKEN_AGE") }
