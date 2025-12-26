@@ -24,6 +24,7 @@ type ReportRepository interface {
 	GetPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error)
 	GetReportsCount(ctx context.Context) (*dto.TotalReportCount, error)
 	FullTextSearchReports(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error)
+	FullTextSearchReportsPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error)
 }
 
 type reportRepository struct {
@@ -105,6 +106,42 @@ func (r *reportRepository) FullTextSearchReports(ctx context.Context, searchQuer
 		ORDER BY ts_rank(search_vector, to_tsquery('simple', ?)) DESC
 		LIMIT ?
 	`, searchQuery, searchQuery, limit).Scan(&reports).Error
+
+	return &reports, err
+}
+
+func (r *reportRepository) FullTextSearchReportsPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error) {
+	var reports []model.Report
+
+	if strings.TrimSpace(searchQuery) == "" {
+		return &reports, nil
+	}
+
+	searchQuery = strings.ToLower(searchQuery)
+	searchQuery = regexp.MustCompile(`[^a-z0-9\s]`).ReplaceAllString(searchQuery, "")
+	searchQuery = strings.TrimSpace(searchQuery)
+	searchQuery = regexp.MustCompile(`\s+`).ReplaceAllString(searchQuery, " & ")
+	searchQuery += ":*"
+
+	query := `
+		SELECT *
+		FROM reports
+		WHERE search_vector @@ to_tsquery('simple', ?)
+	`
+	args := []any{searchQuery}
+
+	if cursorID != 0 {
+		query += " AND id > ?"
+		args = append(args, cursorID)
+	}
+
+	query += `
+		ORDER BY ts_rank(search_vector, to_tsquery('simple', ?)) DESC, id ASC
+		LIMIT ?
+	`
+	args = append(args, searchQuery, limit)
+
+	err := r.db.WithContext(ctx).Raw(query, args...).Scan(&reports).Error
 
 	return &reports, err
 }
