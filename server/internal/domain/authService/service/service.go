@@ -280,7 +280,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
 	if err != nil {
 		return "", "", apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data user", err.Error())
 	}
-	
+
 	userSession, err := s.userSessionRepo.GetByRefreshTokenID(ctx, refreshTokenID)
 	if err != nil {
 		return "", "", apperror.New(401, "USER_SESSION_NOT_FOUND", "Sesi user tidak ditemukan", err.Error())
@@ -305,6 +305,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
 
 	userSession.RefreshTokenID = newRefreshTokenID
 	userSession.HashedRefreshToken = newHashedRefreshToken
+	userSession.ExpiresAt = time.Now().Add(getRefreshTokenDuration()).Unix()
 
 	if err := s.userSessionRepo.Update(ctx, userSession); err != nil {
 		return "", "", apperror.New(500, "SESSION_UPDATE_FAILED", "Gagal memperbarui sesi", err.Error())
