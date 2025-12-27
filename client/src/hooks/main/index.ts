@@ -10,6 +10,7 @@ import { useEditReport } from "./useEditReport";
 import { useDeleteReport } from "./useDeleteReport";
 import { useGetReportComments } from "./useGetReportComment";
 import { useCreateReportCommentReport } from "./useCreateReportComment";
+import { useSearchData } from "./useSearchData";
 
 export {
     useCreateReport,
@@ -25,4 +26,5 @@ export {
     useDeleteReport,
     useGetReportComments,
     useCreateReportCommentReport,
+    useSearchData,
 }
