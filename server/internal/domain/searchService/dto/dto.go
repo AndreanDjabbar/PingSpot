@@ -1,7 +1,5 @@
 package dto
 
-import "server/internal/domain/model"
-
 type UsersSearch struct {
 	UserID          uint    `json:"userID"`
 	FullName        string  `json:"fullName"`
@@ -13,12 +11,23 @@ type UsersSearch struct {
 	Email			string  `json:"email"`	
 }
 
+type ReportsSearch struct {
+	ID		  uint    `json:"id"`
+	ReportTitle   string  `json:"reportTitle"`
+	ReportType    string  `json:"reportType"`
+	ReportDescription   string  `json:"reportDescription"`
+	ReportHasProgress	bool	`json:"hasProgress"`
+	ReportStatus  string  `json:"reportStatus"`
+	CreatedAt     int64  `json:"reportCreatedAt"`
+	UpdatedAt     int64  `json:"reportUpdatedAt"`
+}
+
 type UserSearchResult struct {
 	Users []UsersSearch `json:"users"`
 	Type  string       `json:"type"`
 }
 
 type ReportSearchResult struct {
-	Reports []model.Report `json:"reports"`
+	Reports []ReportsSearch `json:"reports"`
 	Type    string         `json:"type"`
 }
