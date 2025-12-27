@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaSpinner } from 'react-icons/fa';
 import { InputField } from '@/components/form';
 import { BiX } from 'react-icons/bi';
 
@@ -9,6 +9,7 @@ interface ExploreSearchProps {
     onNonModalClose: () => void;
     onSearchChange: (value: string) => void;
     onSearchClick: () => void;
+    isLoading?: boolean;
 }
 
 const ExploreSearch: React.FC<ExploreSearchProps> = ({
@@ -16,19 +17,20 @@ const ExploreSearch: React.FC<ExploreSearchProps> = ({
     onSearchChange,
     isNonModalOpen,
     onNonModalClose,
-    onSearchClick
+    onSearchClick,
+    isLoading = false
 }) => {
     return (
         <div className="">
             <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex w-full gap-2 " onClick={onSearchClick}>
-                    <div className='w-full'>
+                <div className="flex w-full gap-2" onClick={onSearchClick}>
+                    <div className='w-full relative'>
                         <InputField
                             id="search"
                             type='text'
                             isUseAutoComplete={false}
                             placeHolder='Cari pengguna, laporan, atau komunitas'
-                            icon={<FaSearch size={15} />}
+                            icon={(isLoading && searchTerm.length >= 3) ? <FaSpinner className="animate-spin" size={15} /> : <FaSearch size={15} />}
                             withLabel={false}
                             value={searchTerm}
                             onChange={(e) => onSearchChange(e.target.value)}
@@ -36,7 +38,10 @@ const ExploreSearch: React.FC<ExploreSearchProps> = ({
                     </div>
                     {isNonModalOpen && (
                         <button
-                            onClick={onNonModalClose}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onNonModalClose();
+                            }}
                             className="p-2 hover:bg-gray-100 border border-gray-300 rounded-lg transition-colors duration-200 group"
                             aria-label="Close search"
                         >

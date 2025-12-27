@@ -2,30 +2,45 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaUser, FaMap, FaUsers, FaSearch } from 'react-icons/fa';
+import { FaUser, FaUsers, FaSearch } from 'react-icons/fa';
 import { GoAlert } from 'react-icons/go';
 import SearchResultTabs, { TabType } from './SearchResultTabs';
+import { ISearchDataResponse } from '@/types/api/search';
+import { IUserProfile } from '@/types/model/user';
+import { IReport } from '@/types/model/report';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 interface SearchResult {
-    users: any[];
-    reports: any[];
+    users: IUserProfile[];
+    reports: IReport[];
     communities: any[];
 }
 
 interface ExploreSearchNonModalProps {
     searchTerm: string;
     isOpen: boolean;
+    searchData: ISearchDataResponse | null;
     onClose: () => void;
     onSearchChange: (value: string) => void;
+    isLoading?: boolean;
+    isError?: boolean;
+    error?: Error | null;
 }
 
 const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({ 
     searchTerm, 
     isOpen, 
     onClose,
-    onSearchChange 
+    onSearchChange,
+    searchData,
+    isLoading = false,
+    isError = false,
+    error = null
 }) => {
-    const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
+    const reportsData = searchData?.data?.reportsData?.reports || [];
+    const usersData = searchData?.data?.usersData?.users || [];
+    console.log('ExploreSearchNonModal searchData:', searchData);
+
     const [activeTab, setActiveTab] = useState<TabType>('users');
     const [searchResults, setSearchResults] = useState<SearchResult>({
         users: [],
@@ -36,46 +51,24 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
     const modalRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        setLocalSearchTerm(searchTerm);
-        
-        // TODO: Replace with actual API call
-        // Mock data for demonstration
-        if (searchTerm) {
-            setSearchResults({
-                users: [
-                    { id: 1, username: 'john_doe', fullName: 'John Doe', profilePicture: null },
-                    { id: 2, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 3, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 4, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 5, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 6, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 7, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 8, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 9, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 10, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 11, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 12, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 13, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                    { id: 14, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: null },
-                ],
-                reports: [
-                    { id: 1, title: 'Jalan Rusak', type: 'infrastructure', status: 'open' },
-                    { id: 2, title: 'Lampu Jalan Mati', type: 'infrastructure', status: 'progress' },
-                    { id: 3, title: 'Sampah Menumpuk', type: 'environment', status: 'open' }
-                ],
-                communities: [
-                    { id: 1, name: 'Komunitas Peduli Lingkungan', members: 150 },
-                    { id: 2, name: 'Komunitas Kucing Peduli', members: 80 }
-                ]
-            });
-        } else {
+        if (searchTerm.trim().length < 3) {
             setSearchResults({
                 users: [],
                 reports: [],
                 communities: []
             });
+            return;
         }
-    }, [searchTerm]);
+
+
+        if (!isLoading && searchData) {
+            setSearchResults({
+                users: usersData,
+                reports: reportsData,
+                communities: []
+            });
+        }
+    }, [searchTerm, reportsData, usersData, isLoading, searchData]);
 
     useEffect(() => {
         if (isOpen && inputRef.current) {
@@ -105,10 +98,68 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
         };
     }, [isOpen, onClose]);
 
+    const renderLoadingState = () => (
+        <div className="p-8 text-center border-t border-gray-200 bg-gradient-to-b from-white to-gray-50">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-sky-100 mb-4">
+                <AiOutlineLoading3Quarters className="w-7 h-7 text-sky-600 animate-spin" />
+            </div>
+            <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                Mencari...
+            </h4>
+            <p className="text-gray-600 text-sm max-w-xs mx-auto">
+                Sedang mencari {activeTab === 'users' ? 'pengguna' : activeTab === 'reports' ? 'laporan' : 'komunitas'}
+            </p>
+        </div>
+    );
+
+    const renderErrorState = () => (
+        <div className="p-8 text-center border-t border-gray-200 bg-gradient-to-b from-white to-gray-50">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+                <GoAlert className="w-7 h-7 text-red-600" />
+            </div>
+            <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                Terjadi Kesalahan
+            </h4>
+            <p className="text-gray-600 text-sm max-w-xs mx-auto mb-4">
+                {error?.message || 'Gagal memuat hasil pencarian. Silakan coba lagi.'}
+            </p>
+            <button
+                onClick={() => onSearchChange(searchTerm)}
+                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors text-sm font-medium"
+            >
+                Coba Lagi
+            </button>
+        </div>
+    );
+
     const renderResults = () => {
+        if (isLoading) {
+            return renderLoadingState();
+        }
+
+        if (isError) {
+            return renderErrorState();
+        }
+
         const results = searchResults[activeTab];
         
-        if (results.length === 0) {
+        if (searchTerm.length < 3) {
+            return (
+                <div className="p-8 text-center border-t border-gray-200 bg-gradient-to-b from-white to-gray-50">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 mb-4">
+                        <FaSearch className="w-7 h-7 text-gray-400" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                        Mulai Pencarian Anda
+                    </h4>
+                    <p className="text-gray-600 text-sm max-w-xs mx-auto">
+                        Ketik minimal 3 karakter untuk mencari {activeTab === 'users' ? 'pengguna' : activeTab === 'reports' ? 'laporan' : 'komunitas'}
+                    </p>
+                </div>
+            )
+        }
+
+        if (results.length === 0 && searchTerm.length >= 3) {
             return (
                 <div className="p-8 text-center border-t border-gray-200 bg-gradient-to-b from-white to-gray-50">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 mb-4">
@@ -126,8 +177,8 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
 
         return (
             <div className="divide-y divide-gray-200">
-                {activeTab === 'users' && results.map((user: any) => (
-                    <div key={user.id} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                {activeTab === 'users' && searchResults.users.map((user) => (
+                    <div key={user.userID} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
                                 <FaUser className="w-5 h-5 text-sky-600" />
@@ -139,27 +190,27 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
                         </div>
                     </div>
                 ))}
-                {activeTab === 'reports' && results.map((report: any) => (
+                {activeTab === 'reports' && searchResults.reports.map((report) => (
                     <div key={report.id} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                                 <GoAlert className="w-5 h-5 text-orange-600" />
                             </div>
                             <div className="flex-1">
-                                <p className="font-semibold text-gray-800">{report.title}</p>
+                                <p className="font-semibold text-gray-800">{report.reportTitle}</p>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">{report.type}</span>
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">{report.reportType}</span>
                                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                        report.status === 'open' ? 'bg-red-100 text-red-700' :
-                                        report.status === 'progress' ? 'bg-yellow-100 text-yellow-700' :
+                                        report.reportStatus === "WAITING" ? 'bg-red-100 text-red-700' :
+                                        report.reportStatus === 'ON_PROGRESS' ? 'bg-yellow-100 text-yellow-700' :
                                         'bg-green-100 text-green-700'
-                                    }`}>{report.status}</span>
+                                    }`}>{report.reportStatus}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 ))}
-                {activeTab === 'communities' && results.map((community: any) => (
+                {activeTab === 'communities' && searchResults.communities.map((community) => (
                     <div key={community.id} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
@@ -188,18 +239,25 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
                 >   
                     <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
                         <div className="max-h-[500px] overflow-y-auto">
-                            {localSearchTerm && (
+                            {searchTerm && searchTerm.length >= 3 && (
                                 <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                                    <h3 className="text-sm font-semibold text-gray-700">
-                                        Hasil Pencarian
-                                    </h3>
-                                    <p className="text-xs text-gray-600 mt-0.5">
-                                        Menampilkan hasil untuk <span className="font-semibold text-sky-700">&ldquo;{localSearchTerm}&rdquo;</span>
-                                    </p>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-sm font-semibold text-gray-700">
+                                                Hasil Pencarian
+                                            </h3>
+                                            <p className="text-xs text-gray-600 mt-0.5">
+                                                Menampilkan hasil untuk <span className="font-semibold text-sky-700">&ldquo;{searchTerm}&rdquo;</span>
+                                            </p>
+                                        </div>
+                                        {isLoading && (
+                                            <AiOutlineLoading3Quarters className="w-4 h-4 text-sky-600 animate-spin" />
+                                        )}
+                                    </div>
                                 </div>
                             )}
-
-                            {localSearchTerm && (
+            
+                            {searchTerm && (
                                 <SearchResultTabs
                                     activeTab={activeTab}
                                     onTabChange={setActiveTab}
@@ -210,7 +268,7 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
                             )}
 
                             
-                            {!localSearchTerm && (
+                            {!searchTerm && (
                                 <div className="p-8 text-center bg-gradient-to-b from-white to-gray-50">
                                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 mb-4">
                                         <FaSearch className="w-7 h-7 text-gray-400" />
@@ -224,16 +282,12 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
                                 </div>
                             )}
 
-                            {localSearchTerm && renderResults()}
+                            {searchTerm && renderResults()}
                         </div>
 
                         <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
                             <div className="flex items-center justify-between text-xs text-gray-500">
                                 <div className="flex items-center gap-4">
-                                    <span className="flex items-center gap-1">
-                                        <kbd className="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-mono">Enter</kbd>
-                                        untuk cari
-                                    </span>
                                     <span className="flex items-center gap-1">
                                         <kbd className="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-mono">Esc</kbd>
                                         untuk tutup
