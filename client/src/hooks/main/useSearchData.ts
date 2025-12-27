@@ -35,6 +35,6 @@ export const useSearchData = (searchQuery: string) => {
             };
         },
         initialPageParam: undefined,
-        enabled: debouncedSearchQuery.trim().length > 0,
+        enabled: debouncedSearchQuery.trim().length >= 3,
     });
 };
