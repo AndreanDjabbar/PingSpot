@@ -73,9 +73,24 @@ func (s *SearchService) SearchData(ctx context.Context, searchQuery string, user
 		resultUsers = append(resultUsers, userDTO)
 	}
 
+	resultReports := make([]dto.ReportsSearch, 0, len(*reportsData))
+	for _, report := range *reportsData {
+		reportDTO := dto.ReportsSearch{
+			ID:                 report.ID,
+			ReportTitle:       report.ReportTitle,
+			ReportType:        string(report.ReportType),
+			ReportDescription: report.ReportDescription,
+			ReportHasProgress: *report.HasProgress,
+			ReportStatus:      string(report.ReportStatus),
+			CreatedAt:         report.CreatedAt,
+			UpdatedAt:         report.UpdatedAt,
+		}
+		resultReports = append(resultReports, reportDTO)
+	}
+
 	searchResponse := dto.SearchResponse{
 		UsersData:   dto.UserSearchResult{Users: resultUsers, Type: "users"},
-		ReportsData: dto.ReportSearchResult{Reports: *reportsData, Type: "reports"},
+		ReportsData: dto.ReportSearchResult{Reports: resultReports, Type: "reports"},
 	}
 
 	logger.Info("Search completed successfully",
