@@ -20,7 +20,7 @@ func NewSearchHandler(searchService *service.SearchService) *SearchHandler {
 }
 
 func (h *SearchHandler) HandleSearch(c *fiber.Ctx) error {
-	const defaultLimit = 20
+	const defaultLimit = 10
 	ctx := c.UserContext()
 	requestID := contextutils.GetRequestID(ctx)
 
