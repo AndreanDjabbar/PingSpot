@@ -23,7 +23,22 @@ const ExplorePage = () => {
     } = useSearchData(searchTerm);
     const queryClient = useQueryClient();
 
-    const resultsSearchData = searchData?.pages[0] || null;
+    const resultsSearchData = searchData?.pages.flatMap(page => page) || null;
+
+    const reportsData = resultsSearchData?.flatMap(page => page.data?.reportsData.reports || []) || [];
+    const usersData = resultsSearchData?.flatMap(page => page.data?.usersData.users || []) || [];
+    
+
+    const flattenedSearchData = {
+        usersData: {
+            users: usersData,
+            type: "users"
+        },
+        reportsData: {
+            reports: reportsData,
+            type: "reports"
+        },
+    }
 
     const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -60,7 +75,10 @@ const ExplorePage = () => {
                     />
                     <ExploreSearchNonModal 
                         searchTerm={searchTerm}
-                        searchData={resultsSearchData}
+                        hasNextPage={hasNextSearchPage}
+                        isFetchingNextPage={isFetchingSearch}
+                        fetchNextPage={fetchNextSearchPage}
+                        searchData={flattenedSearchData || null}
                         isOpen={isSearchNonModalOpen}
                         onClose={() => setIsSearchNonModalOpen(false)}
                         onSearchChange={handleSearchChange}
