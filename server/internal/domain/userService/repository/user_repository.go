@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"server/internal/domain/model"
 	"strings"
@@ -63,30 +64,33 @@ func (r *userRepository) FullTextSearchUsers(ctx context.Context, searchQuery st
 }
 
 func (r *userRepository) FullTextSearchUsersPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.User, error) {
-	var users []model.User
+    var users []model.User
 
-	if strings.TrimSpace(searchQuery) == "" {
-		return &users, nil
-	}
+    if strings.TrimSpace(searchQuery) == "" {
+        return &users, nil
+    }
+    
+    searchQuery = strings.ToLower(searchQuery)
+    searchQuery = regexp.MustCompile(`[^a-z0-9\s]`).ReplaceAllString(searchQuery, "")
+    searchQuery = strings.TrimSpace(searchQuery)
+    searchQuery = regexp.MustCompile(`\s+`).ReplaceAllString(searchQuery, " & ")
+    searchQuery += ":*"
 	
-	searchQuery = strings.ToLower(searchQuery)
-	searchQuery = regexp.MustCompile(`[^a-z0-9\s]`).ReplaceAllString(searchQuery, "")
-	searchQuery = strings.TrimSpace(searchQuery)
-	searchQuery = regexp.MustCompile(`\s+`).ReplaceAllString(searchQuery, " & ")
-	searchQuery += ":*"
-	
-	query := r.db.WithContext(ctx).
-		Preload("Profile").
-		Where("search_vector @@ to_tsquery('simple', ?)", searchQuery).
-		Order(gorm.Expr("ts_rank(search_vector, to_tsquery('simple', ?)) DESC", searchQuery))
+    tx := r.db.WithContext(ctx).
+        Preload("Profile").
+        Where("search_vector @@ to_tsquery('simple', ?)", searchQuery)
 
-	if cursorID != 0 {
-		query = query.Where("id > ?", cursorID)
-	}
+    if cursorID != 0 {
+        tx = tx.Where("id > ?", cursorID)
+    }
 
-	err := query.Limit(limit).Find(&users).Error
-	
-	return &users, err
+    err := tx.
+		Order(fmt.Sprintf("ts_rank(search_vector, to_tsquery('simple', '%s')) DESC", searchQuery)).
+        Order("id ASC").
+        Limit(limit).
+        Find(&users).Error
+    
+    return &users, err
 }
 
 func (r *userRepository) GetByIDs(ctx context.Context, userIDs []uint) ([]model.User, error) {
