@@ -9,6 +9,8 @@ import { IUserProfile } from '@/types/model/user';
 import { IReport } from '@/types/model/report';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useInView } from 'react-intersection-observer';
+import { getImageURL } from '@/utils';
+import Image from 'next/image';
 
 interface SearchResult {
     users: IUserProfile[];
@@ -212,9 +214,21 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
                     {activeTab === 'users' && searchResults.users.map((user) => (
                         <div key={user.userID} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
-                                    <FaUser className="w-5 h-5 text-sky-600" />
-                                </div>
+                                {user.profilePicture ? (
+                                    <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
+                                        <Image
+                                            src={getImageURL(user.profilePicture, 'user')}
+                                            alt={user.fullName}
+                                            width={5}
+                                            height={5}
+                                            className="object-cover w-full h-full rounded-full"
+                                        />
+                                    </div>
+                                ): (
+                                    <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
+                                        <FaUser className="w-5 h-5 text-sky-600" />
+                                    </div>
+                                )}
                                 <div>
                                     <p className="font-semibold text-gray-800">{user.fullName}</p>
                                     <p className="text-sm text-gray-600">@{user.username}</p>
