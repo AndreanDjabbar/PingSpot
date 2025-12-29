@@ -19,7 +19,8 @@ const ExplorePage = () => {
         isFetching: isFetchingSearch, 
         isLoading: isLoadingSearch,
         isError: isErrorSearch,
-        error: errorSearch
+        error: errorSearch,
+        refetch: refetchSearch
     } = useSearchData(searchTerm);
     const queryClient = useQueryClient();
 
@@ -85,6 +86,7 @@ const ExplorePage = () => {
                         isLoading={isLoadingSearch}
                         isError={isErrorSearch}
                         error={errorSearch}
+                        refetch={refetchSearch}
                     />
                 </div>
             </div>

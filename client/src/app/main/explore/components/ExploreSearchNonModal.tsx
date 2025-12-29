@@ -37,6 +37,7 @@ interface ExploreSearchNonModalProps {
     isLoading?: boolean;
     isError?: boolean;
     error?: Error | null;
+    refetch?: () => void;
 }
 
 const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({ 
@@ -50,7 +51,8 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
     searchData,
     isLoading = false,
     isError = false,
-    error = null
+    error = null,
+    refetch
 }) => {
     const [activeTab, setActiveTab] = useState<TabType>('users');
     const [searchResults, setSearchResults] = useState<SearchResult>({
@@ -122,7 +124,7 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
     }, [inView, hasNextPage, fetchNextPage]);
 
     const renderLoadingState = () => (
-        <div className="p-8 text-center border-t border-gray-200 bg-gradient-to-b from-white to-gray-50">
+        <div className="p-8 text-center border-t bg-gray-200">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-sky-100 mb-4">
                 <AiOutlineLoading3Quarters className="w-7 h-7 text-sky-600 animate-spin" />
             </div>
@@ -136,7 +138,7 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
     );
 
     const renderErrorState = () => (
-        <div className="p-8 text-center border-t border-gray-200 bg-gradient-to-b from-white to-gray-50">
+        <div className="p-8 text-center border-t border-gray-200 bg-gray-200">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
                 <GoAlert className="w-7 h-7 text-red-600" />
             </div>
@@ -147,7 +149,13 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
                 {error?.message || 'Gagal memuat hasil pencarian. Silakan coba lagi.'}
             </p>
             <button
-                onClick={() => onSearchChange(searchTerm)}
+                onClick={() => {
+                    if (refetch) {
+                        refetch();
+                    } else {
+                        onSearchChange(searchTerm);
+                    }
+                }}
                 className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors text-sm font-medium"
             >
                 Coba Lagi
