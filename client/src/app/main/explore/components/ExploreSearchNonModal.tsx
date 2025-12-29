@@ -6,7 +6,7 @@ import { FaUser, FaUsers, FaSearch } from 'react-icons/fa';
 import { GoAlert } from 'react-icons/go';
 import SearchResultTabs, { TabType } from './SearchResultTabs';
 import { IUserProfile } from '@/types/model/user';
-import { IReport } from '@/types/model/report';
+import { IReport, ReportType } from '@/types/model/report';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useInView } from 'react-intersection-observer';
 import { getImageURL } from '@/utils';
@@ -16,6 +16,53 @@ interface SearchResult {
     users: IUserProfile[];
     reports: IReport[];
     communities: any[];
+}
+
+const getReportTypeLabel = (type: ReportType): string => {
+    const types = {
+        INFRASTRUCTURE: 'Infrastruktur',
+        ENVIRONMENT: 'Lingkungan',
+        SAFETY: 'Keamanan',
+        TRAFFIC: 'Lalu Lintas',
+        PUBLIC_FACILITY: 'Fasilitas Umum',
+        WASTE: 'Sampah',
+        WATER: 'Air',
+        ELECTRICITY: 'Listrik',
+        HEALTH: 'Kesehatan',
+        SOCIAL: 'Sosial',
+        EDUCATION: 'Pendidikan',	
+        ADMINISTRATIVE: 'Administratif',
+        DISASTER: 'Bencana Alam',
+        OTHER: 'Lainnya'
+    };
+    return types[type] || 'Lainnya';
+};
+
+const reportStatus = {
+    RESOLVED: {
+        label: 'Terselesaikan',
+        color: 'bg-green-700 border-green-700 text-white'
+    },
+    EXPIRED: {
+        label: 'Kadaluarsa',
+        color: 'bg-indigo-700 text-white'
+    },
+    POTENTIALLY_RESOLVED: {
+        label: 'Dalam Peninjauan',
+        color: 'bg-blue-700 text-white'
+    },
+    NOT_RESOLVED: {
+        label: 'Belum Terselesaikan',
+        color: 'bg-red-700 text-white'
+    },
+    ON_PROGRESS: {
+        label: 'Sedang Dikerjakan',
+        color: 'bg-yellow-500 text-white'
+    },
+    WAITING: {
+        label: 'Menunggu',
+        color: 'bg-gray-500 text-white'
+    }
 }
 
 interface ExploreSearchNonModalProps {
@@ -239,18 +286,16 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
                     {activeTab === 'reports' && searchResults.reports.map((report) => (
                         <div key={report.id} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                    <GoAlert className="w-5 h-5 text-orange-600" />
+                                <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
+                                    <GoAlert className="w-5 h-5 text-sky-700" />
                                 </div>
                                 <div className="flex-1">
                                     <p className="font-semibold text-gray-800">{report.reportTitle}</p>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">{report.reportType}</span>
-                                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                            report.reportStatus === "WAITING" ? 'bg-red-100 text-red-700' :
-                                            report.reportStatus === 'ON_PROGRESS' ? 'bg-yellow-100 text-yellow-700' :
-                                            'bg-green-100 text-green-700'
-                                        }`}>{report.reportStatus}</span>
+                                        <span className={`inline-flex items-center px-2.5 py-1 bg-blue-50 text-xs font-bold text-sky-800 rounded-full`}>
+                                            {getReportTypeLabel(report.reportType)}
+                                        </span>
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${reportStatus[report.reportStatus].color}`}>{reportStatus[report.reportStatus].label}</span>
                                     </div>
                                 </div>
                             </div>
