@@ -11,6 +11,7 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useInView } from 'react-intersection-observer';
 import { getImageURL } from '@/utils';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface SearchResult {
     users: IUserProfile[];
@@ -103,6 +104,7 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
     error = null,
     refetch
 }) => {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>('users');
     const [searchResults, setSearchResults] = useState<SearchResult>({
         users: [],
@@ -259,7 +261,13 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
             <>
                 <div className="divide-y divide-gray-200">
                     {activeTab === 'users' && searchResults.users.map((user) => (
-                        <div key={user.userID} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                        <div 
+                        key={user.userID} 
+                        className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => {
+                            router.push(`/main/profile/${user.username}`);
+                        }}
+                        >
                             <div className="flex items-center gap-3">
                                 {user.profilePicture ? (
                                     <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
@@ -284,7 +292,12 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
                         </div>
                     ))}
                     {activeTab === 'reports' && searchResults.reports.map((report) => (
-                        <div key={report.id} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                        <div 
+                        key={report.id} 
+                        className="p-4 hover:bg-gray-50 transition-colors cursor-pointer" 
+                        onClick={() => {
+                            router.push(`/main/reports/${report.id}`);
+                        }}>
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
                                     <GoAlert className="w-5 h-5 text-sky-700" />
