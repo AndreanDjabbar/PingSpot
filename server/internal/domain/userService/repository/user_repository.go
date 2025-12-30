@@ -15,6 +15,7 @@ type UserRepository interface {
 	GetByID(ctx context.Context, userID uint) (*model.User, error)
 	GetByIDs(ctx context.Context, userIDs []uint) ([]model.User, error)
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
+	GetByUsername(ctx context.Context, username string) (*model.User, error)
 	Save(ctx context.Context, user *model.User) error
 	Create(ctx context.Context, user *model.User) error
 	CreateTX(ctx context.Context, tx *gorm.DB, user *model.User) (*model.User, error)
@@ -106,6 +107,14 @@ func (r *userRepository) GetByIDs(ctx context.Context, userIDs []uint) ([]model.
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user model.User
 	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *userRepository) GetByUsername(ctx context.Context, username string) (*model.User, error) {
+	var user model.User
+	if err := r.db.WithContext(ctx).Preload("Profile").Where("username = ?", username).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
