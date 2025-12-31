@@ -150,3 +150,17 @@ func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
 	}
 	return response.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", userProfile)
 }
+
+func (h *UserHandler) GetProfileByUsernameHandler(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+	username := c.Params("username")
+	userProfile, err := h.userService.GetProfileByUsername(ctx, username)
+	if err != nil {
+		logger.Error("Failed to get user profile by username", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
+		return response.ResponseError(c, 500, "Gagal mendapatkan profil pengguna", "", err.Error())
+	}
+	return response.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", userProfile)
+}
