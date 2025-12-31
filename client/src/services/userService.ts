@@ -70,3 +70,8 @@ export const getMyProfileService = async (): Promise<IGetProfileResponse> => {
     const response = await axiosInstance.get<IGetProfileResponse>(`/user/profile/`);
     return response.data;
 }
+
+export const getProfileByUsernameService = async (username: string): Promise<IGetProfileResponse> => {
+    const response = await axiosInstance.get<IGetProfileResponse>(`/user/profile/${username}`);
+    return response.data;
+}
