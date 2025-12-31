@@ -114,6 +114,26 @@ func (s *UserService) SaveProfile(ctx context.Context, db *gorm.DB, userID uint,
 	return &profileResponse, nil
 }
 
+func (s *UserService) GetProfileByUsername(ctx context.Context, username string) (*dto.GetProfileResponse, error) {
+	user, err := s.userRepo.GetByUsername(ctx, username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.New(404, "USER_NOT_FOUND", "pengguna tidak ditemukan", "")
+		}
+		return nil, apperror.New(500, "USER_FETCH_FAILED", "gagal mendapatkan profil user", err.Error())
+	}
+	return &dto.GetProfileResponse{
+		UserID:         user.ID,
+		FullName:       user.FullName,
+		Bio:            user.Profile.Bio,
+		ProfilePicture: user.Profile.ProfilePicture,
+		Username:       user.Username,
+		Birthday:       user.Profile.Birthday,
+		Gender:		 	user.Profile.Gender,
+		Email:          user.Email,
+	}, nil
+}
+
 func (s *UserService) GetProfile(ctx context.Context, userID uint) (*dto.GetProfileResponse, error) {
 	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
