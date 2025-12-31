@@ -13,6 +13,11 @@ export interface ILogoutResponse {
     message: string;
 }
 
+export interface IGetProfileByUsernameResponse {
+    message: string;
+    data?: IUserProfile;
+}
+
 export interface IGetProfileResponse {
     message: string;
     data?: IUserProfile;
