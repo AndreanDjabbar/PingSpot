@@ -103,6 +103,7 @@ type Comment struct {
 	Media           *CommentMedia `json:"media,omitempty"`
 	Mentions        []userDTO.UserProfile   `json:"mentions,omitempty"`
 	ReplyTo 		*userDTO.UserProfile `json:"replyTo,omitempty"`
+	ThreadRootID 	*string       `json:"threadRootID,omitempty"`
 	ParentCommentID *string       `json:"parentCommentID,omitempty"`
 	Replies			[]Comment     `json:"replies,omitempty"`
 	CreatedAt       int64         `json:"createdAt"`
