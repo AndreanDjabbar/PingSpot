@@ -249,6 +249,14 @@ func (s *AuthService) Login(ctx context.Context, db *gorm.DB, req dto.LoginReque
 		return nil, "", "", apperror.New(500, "USER_SESSION_SAVE_FAILED", "Gagal menyimpan sesi user", err.Error())
 	}
 
+	err = redisClient.Expire(context.Background(), userSessionKey, getRefreshTokenDuration()).Err()
+	if err != nil {
+		logger.Warn("Failed to set TTL on user session set",
+			zap.String("request_id", requestID),
+			zap.Error(err),
+		)
+	}
+
 	logger.Info("User logged in successfully",
 		zap.String("request_id", requestID),
 		zap.Uint("user_id", user.ID),
@@ -263,17 +271,48 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
 	if err != nil {
 		return "", "", apperror.New(401, "INVALID_REFRESH_TOKEN", "Refresh token tidak valid", err.Error())
 	}
-
+	fmt.Println("CLAIMS: ", claims)
 	userID := uint(claims["user_id"].(float64))
 	refreshTokenID := claims["refresh_token_id"].(string)
 	hashedRefreshToken := tokenutils.HashSHA256String(refreshToken)
 
 	redisClient := cache.GetRedis()
 	refreshKey := fmt.Sprintf("refresh_token:%s", refreshTokenID)
-
+	fmt.Println("REFRESH KEY: ", refreshKey)
 	storedHashedRefreshToken, err := redisClient.Get(context.Background(), refreshKey).Result()
-	if err != nil || storedHashedRefreshToken != hashedRefreshToken {
-		return "", "", apperror.New(401, "REFRESH_TOKEN_INVALID", "Refresh token tidak cocok atau tidak ditemukan", "")
+
+	var userSession *model.UserSession
+	
+	if err != nil {
+		logger.Warn("Refresh token not found in Redis, checking PostgreSQL",
+			zap.String("refresh_token_id", refreshTokenID),
+			zap.Error(err),
+		)
+		
+		userSession, err = s.userSessionRepo.GetByRefreshTokenID(ctx, refreshTokenID)
+		if err != nil {
+			return "", "", apperror.New(401, "USER_SESSION_NOT_FOUND", "Sesi user tidak ditemukan", err.Error())
+		}
+		
+		if !userSession.IsActive || time.Now().Unix() > userSession.ExpiresAt {
+			return "", "", apperror.New(401, "SESSION_INVALID", "Sesi sudah tidak aktif atau kedaluwarsa", "")
+		}
+		
+		if userSession.HashedRefreshToken != hashedRefreshToken {
+			return "", "", apperror.New(401, "REFRESH_TOKEN_INVALID", "Refresh token tidak cocok", "")
+		}
+		
+		remainingDuration := time.Until(time.Unix(userSession.ExpiresAt, 0))
+		if remainingDuration > 0 {
+			err = redisClient.Set(context.Background(), refreshKey, hashedRefreshToken, remainingDuration).Err()
+			if err != nil {
+				logger.Warn("Failed to restore refresh token to Redis", zap.Error(err))
+			}
+		}
+		
+		storedHashedRefreshToken = userSession.HashedRefreshToken
+	} else if storedHashedRefreshToken != hashedRefreshToken {
+		return "", "", apperror.New(401, "REFRESH_TOKEN_INVALID", "Refresh token tidak cocok", "")
 	}
 
 	user, err := s.userRepo.GetByID(ctx, userID)
@@ -281,11 +320,13 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
 		return "", "", apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data user", err.Error())
 	}
 
-	userSession, err := s.userSessionRepo.GetByRefreshTokenID(ctx, refreshTokenID)
-	if err != nil {
-		return "", "", apperror.New(401, "USER_SESSION_NOT_FOUND", "Sesi user tidak ditemukan", err.Error())
+	if userSession == nil {
+		userSession, err = s.userSessionRepo.GetByRefreshTokenID(ctx, refreshTokenID)
+		if err != nil {
+			return "", "", apperror.New(401, "USER_SESSION_NOT_FOUND", "Sesi user tidak ditemukan", err.Error())
+		}
 	}
-
+	
 	if !userSession.IsActive || time.Now().Unix() > userSession.ExpiresAt {
 		return "", "", apperror.New(401, "SESSION_INVALID", "Sesi sudah tidak aktif atau kedaluwarsa", "")
 	}
