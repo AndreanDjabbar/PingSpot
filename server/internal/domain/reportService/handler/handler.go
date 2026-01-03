@@ -878,5 +878,32 @@ func (h *ReportHandler) GetReportCommentsHandler(c *fiber.Ctx) error {
 		"comments":   comments,
 		"nextCursor": nextCursor,
 	}
-	return response.ResponseSuccess(c, 200, "Get report comments success", "data", mappedData)
+	return response.ResponseSuccess(c, 200, "Berhasil mengambil komentar laporan", "data", mappedData)
+}
+
+func (h *ReportHandler) GetReportCommentRepliesHandler(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+	commentIDParam := c.Params("commentID")
+
+	cursorID := c.Query("cursorID")
+
+	replies, err := h.reportService.GetReportCommentReplies(ctx, commentIDParam, mainutils.StrPtrOrNil(cursorID))
+	if err != nil {
+		logger.Error("Failed to get report comment replies", zap.String("commentID", commentIDParam), zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
+		return response.ResponseError(c, 500, "Gagal mendapatkan balasan komentar laporan", "", err.Error())
+	}
+	var nextCursor *string = nil
+	
+	if replies.HasMore && len(replies.Replies) > 0 {
+		lastComment := replies.Replies[len(replies.Replies)-1]
+		nextCursor = mainutils.StrPtrOrNil(lastComment.CommentID)
+	}
+	mappedData := fiber.Map{
+		"replies":   replies,
+		"nextCursor": nextCursor,
+	}
+	return response.ResponseSuccess(c, 200, "Sukses mengambil balasan komentar laporan", "data", mappedData)
 }
