@@ -27,6 +27,7 @@ type ReportComment struct {
 	Mentions []UserProfile    `bson:"mentions,omitempty"`
 
 	ParentCommentID *primitive.ObjectID `bson:"parent_comment_id,omitempty"`
+	ThreadRootID    *primitive.ObjectID `bson:"thread_root_id,omitempty"`
 
 	CreatedAt int64 `bson:"created_at"`
 	UpdatedAt *int64 `bson:"updated_at,omitempty"`
