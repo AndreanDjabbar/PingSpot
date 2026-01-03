@@ -169,6 +169,7 @@ func convertToDTO(c *model.ReportComment, u *model.User) *reportDTO.Comment {
 			}
 			return nil
 		}(),
+		TotalReplies: 0,
 	}
 
 	if c.Media != nil {
@@ -182,10 +183,83 @@ func convertToDTO(c *model.ReportComment, u *model.User) *reportDTO.Comment {
 	return comment
 }
 
-func OrganizeComments(comments []*model.ReportComment, users map[uint]*model.User) []*reportDTO.Comment {
-	rootCommentMap := make(map[string]*reportDTO.Comment)
-	commentMap := make(map[string]*reportDTO.Comment)
-	organizedComments := make([]*reportDTO.Comment, 0)
+func convertToReplyDTO(c *model.ReportComment, u *model.User) *reportDTO.CommentReply {
+	reply := &reportDTO.CommentReply{
+		CommentID: c.ID.Hex(),
+		ReportID:  c.ReportID,
+		UserInformation: dto.UserProfile{
+			UserID:         c.UserID,
+			Username:       u.Username,
+			FullName:       u.FullName,
+			ProfilePicture: u.Profile.ProfilePicture,
+			Gender:         u.Profile.Gender,
+			Bio:            u.Profile.Bio,
+			Birthday:       u.Profile.Birthday,
+		},
+		Content: c.Content,
+		ParentCommentID: func() *string {
+			if c.ParentCommentID != nil {
+				id := c.ParentCommentID.Hex()
+				return &id
+			}
+			return nil
+		}(),
+		ThreadRootID: func() *string {
+			if c.ThreadRootID != nil {
+				id := c.ThreadRootID.Hex()
+				return &id
+			}
+			return nil
+		}(),
+		CreatedAt: c.CreatedAt,
+		UpdatedAt: func() *int64 {
+			if c.UpdatedAt != nil {
+				t := c.UpdatedAt
+				return t
+			}
+			return nil
+		}(),
+	}
+
+	if c.Media != nil {
+		reply.Media = &reportDTO.CommentMedia{
+			URL:    c.Media.URL,
+			Type:   string(c.Media.Type),
+			Width:  c.Media.Width,
+			Height: c.Media.Height,
+		}
+	}
+	return reply
+}
+
+func ConvertRootCommentsToDTO(comments []*model.ReportComment, users map[uint]*model.User, replyCounts map[string]int64) []*reportDTO.Comment {
+	rootComments := make([]*reportDTO.Comment, 0)
+
+	for _, comment := range comments {
+		user := users[comment.UserID]
+		if user == nil {
+			continue
+		}
+		commentDTO := convertToDTO(comment, user)
+
+		commentID := comment.ID.Hex()
+		if count, exists := replyCounts[commentID]; exists {
+			commentDTO.TotalReplies = count
+		}
+
+		rootComments = append(rootComments, commentDTO)
+	}
+
+	sort.Slice(rootComments, func(i, j int) bool {
+		return rootComments[i].CreatedAt < rootComments[j].CreatedAt
+	})
+
+	return rootComments
+}
+
+func ConvertRepliesToDTO(comments []*model.ReportComment, users map[uint]*model.User, rootUserMap map[string]*model.User) []*reportDTO.CommentReply {
+	replies := make([]*reportDTO.CommentReply, 0)
+	replyMap := make(map[string]*reportDTO.CommentReply)
 
 	for _, comment := range comments {
 		user := users[comment.UserID]
@@ -193,79 +267,50 @@ func OrganizeComments(comments []*model.ReportComment, users map[uint]*model.Use
 			continue
 		}
 		commentID := comment.ID.Hex()
-		commentDTO := convertToDTO(comment, user)
-		commentMap[commentID] = commentDTO
-
-		if comment.ParentCommentID == nil {
-			rootCommentMap[commentID] = commentDTO
-			organizedComments = append(organizedComments, commentDTO)
-		}
+		replyDTO := convertToReplyDTO(comment, user)
+		replyMap[commentID] = replyDTO
 	}
 
-	sort.Slice(organizedComments, func(i, j int) bool {
-		return organizedComments[i].CreatedAt < organizedComments[j].CreatedAt
-	})
+	for _, comment := range comments {
+		commentID := comment.ID.Hex()
+		replyDTO := replyMap[commentID]
 
-	for _, comment := range commentMap {
 		if comment.ParentCommentID != nil {
-			parentID := *comment.ParentCommentID
+			parentID := comment.ParentCommentID.Hex()
 
-			var parentComment *reportDTO.Comment
-			if parent, exists := rootCommentMap[parentID]; exists {
-				parentComment = parent
-			} else if parent, exists := commentMap[parentID]; exists {
-				parentComment = parent
-			}
-
-			if parentComment != nil {
-				if parentComment.ThreadRootID != nil {
-					comment.ThreadRootID = parentComment.ThreadRootID
-				} else {
-					comment.ThreadRootID = &parentComment.CommentID
-				}
-
-				if comment.UserInformation.UserID != parentComment.UserInformation.UserID {
-					comment.ReplyTo = &dto.UserProfile{
-						UserID:         parentComment.UserInformation.UserID,
-						Username:       parentComment.UserInformation.Username,
-						FullName:       parentComment.UserInformation.FullName,
-						ProfilePicture: parentComment.UserInformation.ProfilePicture,
-						Bio:            parentComment.UserInformation.Bio,
-						Gender:         parentComment.UserInformation.Gender,
-						Birthday:       parentComment.UserInformation.Birthday,
+			if parentReply, exists := replyMap[parentID]; exists {
+				if replyDTO.UserInformation.UserID != parentReply.UserInformation.UserID {
+					replyDTO.ReplyTo = &dto.UserProfile{
+						UserID:         parentReply.UserInformation.UserID,
+						Username:       parentReply.UserInformation.Username,
+						FullName:       parentReply.UserInformation.FullName,
+						ProfilePicture: parentReply.UserInformation.ProfilePicture,
+						Bio:            parentReply.UserInformation.Bio,
+						Gender:         parentReply.UserInformation.Gender,
+						Birthday:       parentReply.UserInformation.Birthday,
 					}
 				}
-
-				rootParent := findRootParent(parentComment, rootCommentMap, commentMap)
-				if rootParent != nil {
-					rootParent.Replies = append(rootParent.Replies, *comment)
+			} else if rootUser, exists := rootUserMap[parentID]; exists {
+				if replyDTO.UserInformation.UserID != rootUser.ID {
+					replyDTO.ReplyTo = &dto.UserProfile{
+						UserID:         rootUser.ID,
+						Username:       rootUser.Username,
+						FullName:       rootUser.FullName,
+						ProfilePicture: rootUser.Profile.ProfilePicture,
+						Bio:            rootUser.Profile.Bio,
+						Gender:         rootUser.Profile.Gender,
+						Birthday:       rootUser.Profile.Birthday,
+					}
 				}
 			}
 		}
+
+		replies = append(replies, replyDTO)
 	}
 
-	for _, rootComment := range organizedComments {
-		sort.Slice(rootComment.Replies, func(i, j int) bool {
-			return rootComment.Replies[i].CreatedAt < rootComment.Replies[j].CreatedAt
-		})
-	}
+	sort.Slice(replies, func(i, j int) bool {
+		return replies[i].CreatedAt < replies[j].CreatedAt
+	})
 
-	return organizedComments
-}
-
-func findRootParent(comment *reportDTO.Comment, rootCommentMap map[string]*reportDTO.Comment, commentMap map[string]*reportDTO.Comment) *reportDTO.Comment {
-	if comment.ParentCommentID == nil {
-		return comment
-	}
-
-	parentID := *comment.ParentCommentID
-	if rootParent, exists := rootCommentMap[parentID]; exists {
-		return rootParent
-	}
-
-	if parentComment, exists := commentMap[parentID]; exists {
-		return findRootParent(parentComment, rootCommentMap, commentMap)
-	}
-
-	return nil
+	return replies
 }
