@@ -144,6 +144,7 @@ export interface IReportComment {
     replyTo?: IUserProfile;
     media?: IReportCommentMedia;
     replies?: IReportComment[];
+    totalReplies?: number;
 }
 
 export interface IReportVote {
