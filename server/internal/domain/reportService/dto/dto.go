@@ -66,7 +66,7 @@ type ReportLocation struct {
 	Latitude       float64 `json:"latitude"`
 	Longitude      float64 `json:"longitude"`
 	DisplayName    *string `json:"displayName"`
-	MapZoom		   *int    `json:"mapZoom"`
+	MapZoom        *int    `json:"mapZoom"`
 	AddressType    *string `json:"addressType"`
 	Country        *string `json:"country"`
 	CountryCode    *string `json:"countryCode"`
@@ -96,16 +96,30 @@ type CommentMedia struct {
 }
 
 type Comment struct {
-	CommentID       string `json:"commentID"`
-	ReportID        uint   `json:"reportID"`
-	UserInformation userDTO.UserProfile `json:"userInformation"`
-	Content         *string       `json:"content,omitempty"`
-	Media           *CommentMedia `json:"media,omitempty"`
-	Mentions        []userDTO.UserProfile   `json:"mentions,omitempty"`
-	ReplyTo 		*userDTO.UserProfile `json:"replyTo,omitempty"`
-	ThreadRootID 	*string       `json:"threadRootID,omitempty"`
-	ParentCommentID *string       `json:"parentCommentID,omitempty"`
-	Replies			[]Comment     `json:"replies,omitempty"`
-	CreatedAt       int64         `json:"createdAt"`
-	UpdatedAt       *int64        `json:"updatedAt,omitempty"`
+	CommentID       string                `json:"commentID"`
+	ReportID        uint                  `json:"reportID"`
+	UserInformation userDTO.UserProfile   `json:"userInformation"`
+	Content         *string               `json:"content,omitempty"`
+	Media           *CommentMedia         `json:"media,omitempty"`
+	Mentions        []userDTO.UserProfile `json:"mentions,omitempty"`
+	ReplyTo         *userDTO.UserProfile  `json:"replyTo,omitempty"`
+	ThreadRootID    *string               `json:"threadRootID,omitempty"`
+	ParentCommentID *string               `json:"parentCommentID,omitempty"`
+	TotalReplies    int64                 `json:"totalReplies"`
+	CreatedAt       int64                 `json:"createdAt"`
+	UpdatedAt       *int64                `json:"updatedAt,omitempty"`
+}
+
+type CommentReply struct {
+	CommentID       string                `json:"commentID"`
+	ReportID        uint                  `json:"reportID"`
+	UserInformation userDTO.UserProfile   `json:"userInformation"`
+	Content         *string               `json:"content,omitempty"`
+	Media           *CommentMedia         `json:"media,omitempty"`
+	Mentions        []userDTO.UserProfile `json:"mentions,omitempty"`
+	ReplyTo         *userDTO.UserProfile  `json:"replyTo,omitempty"`
+	ThreadRootID    *string               `json:"threadRootID"`
+	ParentCommentID *string               `json:"parentCommentID"`
+	CreatedAt       int64                 `json:"createdAt"`
+	UpdatedAt       *int64                `json:"updatedAt,omitempty"`
 }

@@ -81,4 +81,11 @@ type CreateReportCommentResponse struct {
 type GetReportCommentsResponse struct {
 	Comments []*Comment `json:"comments"`
 	TotalCounts int64    `json:"totalCounts"`
+	HasMore     bool      `json:"hasMore"`
+}
+
+type GetReportCommentRepliesResponse struct {
+	Replies     []*CommentReply `json:"replies"`
+	TotalCounts int64           `json:"totalCounts"`	
+	HasMore     bool           `json:"hasMore"`
 }
