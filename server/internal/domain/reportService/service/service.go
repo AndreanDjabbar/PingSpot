@@ -1064,9 +1064,14 @@ func (s *ReportService) GetReportComments(ctx context.Context, reportID uint, cu
 		return nil, apperror.New(400, "INVALID_CURSOR_ID", "ID kursor tidak valid", err.Error())
 	}
 
-	commentsFromDB, err := s.reportCommentRepo.GetPaginatedByReportID(ctx, reportID, primitiveCursor, limit)
+	commentsFromDB, err := s.reportCommentRepo.GetPaginatedRootByReportID(ctx, reportID, primitiveCursor, (limit+1))
 	if err != nil {
-		return nil, apperror.New(500, "COMMENT_FETCH_FAILED", "Gagal mengambil komentar laporan", err.Error())
+		return nil, apperror.New(500, "COMMENT_FETCH_FAILED", "Gagal mengambil komentar", err.Error())
+	}
+
+	hasMore := len(commentsFromDB) > limit
+	if hasMore {
+		commentsFromDB = commentsFromDB[:limit]
 	}
 
 	userIDs := make([]uint, 0)
@@ -1074,14 +1079,14 @@ func (s *ReportService) GetReportComments(ctx context.Context, reportID uint, cu
 
 	for _, c := range commentsFromDB {
 		if _, exists := userIDMap[c.UserID]; !exists {
-			userIDMap[c.UserID] = struct{}{}
 			userIDs = append(userIDs, c.UserID)
+			userIDMap[c.UserID] = struct{}{}
 		}
 	}
 
 	users, err := s.userRepo.GetByIDs(ctx, userIDs)
 	if err != nil {
-		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data pengguna komentar", err.Error())
+		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data pengguna", err.Error())
 	}
 
 	userMap := make(map[uint]*model.User)
@@ -1089,13 +1094,92 @@ func (s *ReportService) GetReportComments(ctx context.Context, reportID uint, cu
 		userMap[users[i].ID] = &users[i]
 	}
 
-	comments := util.OrganizeComments(commentsFromDB, userMap)
+	replyCounts := make(map[string]int64)
+	for _, comment := range commentsFromDB {
+		commentID := comment.ID
+		count, err := s.reportCommentRepo.GetCountsByRootID(ctx, commentID)
+		if err == nil {
+			replyCounts[commentID.Hex()] = count
+		}
+	}
+
+	comments := util.ConvertRootCommentsToDTO(commentsFromDB, userMap, replyCounts)
 
 	resp := dto.GetReportCommentsResponse{
 		Comments: comments,
 	}
 
 	total, _ := s.reportCommentRepo.GetCountsByReportID(ctx, reportID)
+	resp.TotalCounts = total
+	resp.HasMore = hasMore
+
+	return &resp, nil
+}
+
+func (s *ReportService) GetReportCommentReplies(ctx context.Context, rootID string, cursorID *string) (*dto.GetReportCommentRepliesResponse, error) {
+	limit := 10
+
+	primitiveRootID, err := mainutils.StringPtrToObjectIDPtr(&rootID)
+	if err != nil {
+		return nil, apperror.New(400, "INVALID_ROOT_ID", "ID akar thread tidak valid", err.Error())
+	}
+
+	primitiveCursor, err := mainutils.StringPtrToObjectIDPtr(cursorID)
+	if err != nil {
+		return nil, apperror.New(400, "INVALID_CURSOR_ID", "ID kursor tidak valid", err.Error())
+	}
+
+	repliesFromDB, err := s.reportCommentRepo.GetPaginatedRepliesByRootID(ctx, *primitiveRootID, primitiveCursor, limit+1)
+	if err != nil {
+		return nil, apperror.New(500, "REPLY_FETCH_FAILED", "Gagal mengambil balasan", err.Error())
+	}
+
+	rootComment, err := s.reportCommentRepo.GetByID(ctx, *primitiveRootID)
+	if err != nil {
+		return nil, apperror.New(500, "ROOT_COMMENT_FETCH_FAILED", "Gagal mengambil komentar akar", err.Error())
+	}
+
+	userIDs := make([]uint, 0)
+	userIDMap := make(map[uint]struct{})
+
+	userIDs = append(userIDs, rootComment.UserID)
+	userIDMap[rootComment.UserID] = struct{}{}
+
+	for _, c := range repliesFromDB {
+		if _, exists := userIDMap[c.UserID]; !exists {
+			userIDs = append(userIDs, c.UserID)
+			userIDMap[c.UserID] = struct{}{}
+		}
+	}
+
+	users, err := s.userRepo.GetByIDs(ctx, userIDs)
+	if err != nil {
+		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data pengguna", err.Error())
+	}
+
+	userMap := make(map[uint]*model.User)
+	for i := range users {
+		userMap[users[i].ID] = &users[i]
+	}
+
+	rootUserMap := make(map[string]*model.User)
+	if rootUser, exists := userMap[rootComment.UserID]; exists {
+		rootUserMap[rootComment.ID.Hex()] = rootUser
+	}
+
+	hasMore := len(repliesFromDB) > limit
+	if hasMore {
+		repliesFromDB = repliesFromDB[:limit]
+	}
+
+	replies := util.ConvertRepliesToDTO(repliesFromDB, userMap, rootUserMap)
+
+	resp := dto.GetReportCommentRepliesResponse{
+		Replies: replies,
+		HasMore: hasMore,
+	}
+
+	total, _ := s.reportCommentRepo.GetCountsByRootID(ctx, *primitiveRootID)
 	resp.TotalCounts = total
 
 	return &resp, nil
