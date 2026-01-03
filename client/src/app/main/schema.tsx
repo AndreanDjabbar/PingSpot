@@ -141,6 +141,7 @@ export const CreateReportCommentSchema = z.object({
     commentContent: z.string()
         .min(1, "Komentar tidak boleh kosong")
         .max(500, "Komentar maksimal 500 karakter"),
+    threadRootID: z.string().optional().nullable(),
     parentCommentID: z.string().optional().nullable(),
     mediaType: z.enum(['IMAGE', 'GIF']).optional().nullable(),
     mediaURL: z.string().optional().nullable(),

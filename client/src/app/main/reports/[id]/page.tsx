@@ -193,6 +193,9 @@ const ReportDetailPage = () => {
         if (formData.parentCommentID) {
             data.append('parentCommentID', formData.parentCommentID.toString());
         }
+        if (formData.threadRootID) {
+            data.append('threadRootID', formData.threadRootID.toString());
+        }
         if (formData.mediaFile) {
             const compressedFile = await compressImages(formData.mediaFile);
             data.append('mediaFile', compressedFile);
@@ -202,7 +205,7 @@ const ReportDetailPage = () => {
     }
 
     const setOptimisticComment = (formData: ICreateReportCommentRequest) => {
-        if (formData.parentCommentID) {
+        if (formData.parentCommentID && formData.threadRootID) {
             setReportComments(
                 reportComments.map((comment) =>
                     comment.commentID === formData.parentCommentID
@@ -624,6 +627,7 @@ const ReportDetailPage = () => {
                                     )}
                                     <ReportCommentsSection
                                     onCreateReportComment={handleCreateReportComment}
+                                    commentsCount={reportCommentCounts}
                                     comments={reportComments}
                                     />
                                 </div>
