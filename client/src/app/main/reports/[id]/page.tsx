@@ -93,9 +93,9 @@ const ReportDetailPage = () => {
         isSuccess: isGetReportCommentsSuccess,
         isError: isGetReportCommentsError, 
         error: getReportCommentsError,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
+        fetchNextPage: fetchNextPageGetReportComments,
+        hasNextPage: hasNextPageGetReportComments,
+        isFetchingNextPage: isFetchingNextPageGetReportComments,
         refetch: refetchGetReportComments,
     } = useGetReportComments(reportId);
     
@@ -627,8 +627,10 @@ const ReportDetailPage = () => {
                                     )}
                                     <ReportCommentsSection
                                     onCreateReportComment={handleCreateReportComment}
-                                    commentsCount={reportCommentCounts}
                                     comments={reportComments}
+                                    hasMoreComments={hasNextPageGetReportComments}
+                                    isFetchingMoreComments={isFetchingNextPageGetReportComments}
+                                    onFetchingMoreComments={fetchNextPageGetReportComments}
                                     />
                                 </div>
                             )}

@@ -13,10 +13,16 @@ interface ReportCommentsSectionProps {
     setCommentContent?: React.Dispatch<React.SetStateAction<string>>;
     setCommentMediaImage?: React.Dispatch<React.SetStateAction<File | null>>;
     onCreateReportComment: (formData: ICreateReportCommentRequest) => void;
+    hasMoreComments?: boolean;
+    isFetchingMoreComments?: boolean;
+    onFetchingMoreComments?: () => void;
 }
 
 export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({ 
     comments,
+    hasMoreComments,
+    isFetchingMoreComments,
+    onFetchingMoreComments,
     onCreateReportComment,
 }) => {
     const [commentContent, setCommentContent] = React.useState('');
@@ -116,6 +122,9 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
             onReply={handleReplyComment}
             variant="full"
             showLikes={true}
+            hasMoreComments={hasMoreComments}
+            isFetchingMoreComments={isFetchingMoreComments}
+            onFetchingMoreComments={onFetchingMoreComments}
         />
     );
 };

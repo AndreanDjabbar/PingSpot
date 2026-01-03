@@ -499,7 +499,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             {comment.totalReplies !== undefined && comment.totalReplies > 0 && (
                                 <button
                                     onClick={handleToggleReplies}
-                                    className="flex items-center space-x-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                                    className="flex items-center space-x-1 text-xs font-semibold text-sky-700 hover:text-sky-800 transition-colors"
                                 >
                                     {showReplies ? (
                                         <FaChevronUp className="w-3 h-3" />

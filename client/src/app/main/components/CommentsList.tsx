@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BiSend } from 'react-icons/bi';
 import { IReportComment } from '@/types/model/report';
 import CommentItem from '../reports/components/CommentItem';
@@ -8,6 +8,8 @@ import { ImagePreview, InlineImageUpload, TextAreaField } from '@/components/for
 import { Button } from '@/components/UI';
 import { FaComment } from 'react-icons/fa';
 import { ICreateReportCommentRequest } from '@/types/api/report';
+import { useInView } from 'react-intersection-observer';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 interface CommentsListProps {
     comments: IReportComment[];
@@ -27,7 +29,8 @@ interface CommentsListProps {
     showLikes?: boolean;
     commentsLoading?: boolean;
     hasMoreComments?: boolean;
-    onLoadMoreComments?: () => void;
+    isFetchingMoreComments?: boolean;
+    onFetchingMoreComments?: () => void;
     emptyStateMessage?: string;
     className?: string;
 }
@@ -50,10 +53,15 @@ export const CommentsList: React.FC<CommentsListProps> = ({
     showLikes = true,
     commentsLoading = false,
     hasMoreComments = false,
-    onLoadMoreComments,
+    onFetchingMoreComments,
+    isFetchingMoreComments = false,
     emptyStateMessage = 'Belum ada komentar',
     className = '',
 }) => {
+    const { ref, inView } = useInView({
+        threshold: 0,
+    })
+
     const handleImageSelect = (file: File) => {
         if (onImageSelect) {
             onImageSelect(file);
@@ -74,6 +82,18 @@ export const CommentsList: React.FC<CommentsListProps> = ({
             }
         }
     };
+
+    const handleFetchMoreComments = () => {
+        if (onFetchingMoreComments) {
+            onFetchingMoreComments();
+        }
+    }
+
+    useEffect(() => {
+        if (inView && hasMoreComments && !isFetchingMoreComments) {
+            handleFetchMoreComments();
+        }
+    }, [inView, hasMoreComments, isFetchingMoreComments]);
 
     if (variant === 'compact') {
         return (
@@ -103,10 +123,10 @@ export const CommentsList: React.FC<CommentsListProps> = ({
                                 />
                             ))}
                             
-                            {hasMoreComments && onLoadMoreComments && (
+                            {hasMoreComments && onFetchingMoreComments && (
                                 <div className="text-center py-4">
                                     <button
-                                        onClick={onLoadMoreComments}
+                                        onClick={onFetchingMoreComments}
                                         className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
                                     >
                                         Muat lebih banyak komentar
@@ -228,14 +248,14 @@ export const CommentsList: React.FC<CommentsListProps> = ({
                             </div>
                         ))}
                         
-                        {hasMoreComments && onLoadMoreComments && (
-                            <div className="p-6 text-center border-t border-gray-200">
-                                <button
-                                    onClick={onLoadMoreComments}
-                                    className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-                                >
-                                    Muat lebih banyak komentar
-                                </button>
+                        {hasMoreComments && (
+                            <div ref={ref} className="p-6 text-center border-t border-gray-200">
+                                {isFetchingMoreComments && (
+                                    <div className="flex items-center space-x-2 text-sky-500 w-full justify-center">
+                                        <AiOutlineLoading3Quarters className="animate-spin h-5 w-5" />
+                                        <span className="text-sm">Memuat lebih banyak...</span>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </>
