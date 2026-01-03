@@ -13,6 +13,7 @@ export const useCreateReportCommentReport = () => {
         mutationFn: (data: ICreateReportCommentProps) => createReportCommentService(data.reportID, data.data),
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({queryKey: ['report', variables.reportID, 'comments']});
+            queryClient.invalidateQueries({queryKey: ['report', 'comment', data.data?.threadRootID, 'replies']});
         },
     })
 }
