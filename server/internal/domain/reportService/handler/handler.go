@@ -870,10 +870,11 @@ func (h *ReportHandler) GetReportCommentsHandler(c *fiber.Ctx) error {
 		return response.ResponseError(c, 500, "Gagal mendapatkan komentar laporan", "", err.Error())
 	}
 	var nextCursor *string = nil
-	if len(comments.Comments) > 0 {
+	if comments.HasMore && len(comments.Comments) > 0 {
 		lastComment := comments.Comments[len(comments.Comments)-1]
 		nextCursor = mainutils.StrPtrOrNil(lastComment.CommentID)
 	}
+	
 	mappedData := fiber.Map{
 		"comments":   comments,
 		"nextCursor": nextCursor,
