@@ -7,12 +7,17 @@ import { useReportCommentStore } from '@/stores';
 import { z } from 'zod';
 import { CreateReportCommentSchema } from '@/app/main/schema';
 import { CommentsList } from '@/app/main/components/CommentsList';
+import { ErrorSection } from '@/components/feedback';
+import { getErrorResponseDetails, getErrorResponseMessage, isInternalServerError } from '@/utils';
 
 interface ReportCommentsSectionProps {
     comments: IReportComment[];
     setCommentContent?: React.Dispatch<React.SetStateAction<string>>;
     setCommentMediaImage?: React.Dispatch<React.SetStateAction<File | null>>;
     onCreateReportComment: (formData: ICreateReportCommentRequest) => void;
+    isFetchingCommentsError?: boolean;
+    errorFetchingComments?: Error;
+    onRetryFetchComments?: () => void;
     hasMoreComments?: boolean;
     isFetchingMoreComments?: boolean;
     onFetchingMoreComments?: () => void;
@@ -22,6 +27,9 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
     comments,
     hasMoreComments,
     isFetchingMoreComments,
+    errorFetchingComments = null,
+    isFetchingCommentsError,
+    onRetryFetchComments,
     onFetchingMoreComments,
     onCreateReportComment,
 }) => {
@@ -104,6 +112,22 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
                 setValidationErrors(errors);
             }
         }
+    }
+
+    if (isFetchingCommentsError) {
+        const isServerError = isInternalServerError(errorFetchingComments);
+        return (
+            <div className="min-h-screen">
+                <div className='mt-4'>
+                    <ErrorSection
+                    message={getErrorResponseMessage(errorFetchingComments || "Gagal memuat komentar.")}
+                    onRetry={onRetryFetchComments}
+                    showRetryButton={isServerError}
+                    errors={getErrorResponseDetails(errorFetchingComments) || "Gagal memuat komentar."}
+                    />
+                </div>
+            </div>
+        )
     }
 
     return (

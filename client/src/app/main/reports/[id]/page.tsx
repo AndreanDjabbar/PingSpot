@@ -547,23 +547,6 @@ const ReportDetailPage = () => {
         ) 
     }
 
-    if (isGetReportCommentsError) {
-        return (
-            <div className="min-h-screen">
-                <HeaderSection
-                currentPath={customCurrentPath}
-                message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.' 
-                />
-                <div className='mt-4'>
-                    <ErrorSection
-                    message={getErrorResponseMessage(getReportCommentsError)}
-                    errors={getErrorResponseDetails(getReportCommentsError)}
-                    />
-                </div>
-            </div>
-        )
-    }
-
     if (!report || !freshReportData?.data?.report.report) {
         return (
             <div className="min-h-screen">
@@ -628,6 +611,9 @@ const ReportDetailPage = () => {
                                     <ReportCommentsSection
                                     onCreateReportComment={handleCreateReportComment}
                                     comments={reportComments}
+                                    errorFetchingComments={getReportCommentsError || undefined}
+                                    isFetchingCommentsError={isGetReportCommentsError}
+                                    onRetryFetchComments={() => refetchGetReportComments()}
                                     hasMoreComments={hasNextPageGetReportComments}
                                     isFetchingMoreComments={isFetchingNextPageGetReportComments}
                                     onFetchingMoreComments={fetchNextPageGetReportComments}
