@@ -31,6 +31,17 @@ export interface IGetReportCommentsResponse {
     }
 }
 
+export interface IGetReportCommentRepliesResponse {
+    message: string;
+    data?: {
+        replies: {
+            replies: IReportComment[];
+            totalCounts: number;
+        };
+        nextCursor?: number | null;
+    }
+}
+
 export interface IGetReportByIDResponse {
     message: string;
     data?: {
