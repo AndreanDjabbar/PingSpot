@@ -8,6 +8,7 @@ import {
     IEditReportResponse,
     IGetProgressReportResponse,
     IGetReportByIDResponse,
+    IGetReportCommentRepliesResponse,
     IGetReportCommentsResponse,
     IGetReportResponse,
     IReactReportRequest,
@@ -86,6 +87,20 @@ export const getReportCommentsService = async (
     const queryString = params.toString() ? `?${params.toString()}` : '';
     
     const response = await axiosInstance.get<IGetReportCommentsResponse>(`/report/${reportID}/comment/${queryString}`);
+    return response.data;
+}
+
+export const getReportCommentRepliesService = async (
+    cursorID?: number,
+    rootID?: string,
+): Promise<IGetReportCommentRepliesResponse> => {
+    const params = new URLSearchParams();
+
+    if (cursorID) params.append('cursorID', cursorID.toString());
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    
+    const response = await axiosInstance.get<IGetReportCommentRepliesResponse>(`/report/comment/replies/${rootID}${queryString}`);
     return response.data;
 }
 
