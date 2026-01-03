@@ -3,11 +3,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { FaReply, FaEllipsisV, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaReply, FaEllipsisV, FaHeart, FaRegHeart, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { BiSend } from 'react-icons/bi';
 import { motion } from 'framer-motion';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { useUserProfileStore, useImagePreviewModalStore } from '@/stores';
+import { useGetReportCommentReplies } from '@/hooks/main';
 import MentionInput, { MentionUser } from './MentionInput';
 import MentionText from './MentionText';
 import { Button } from '@/components/UI';
@@ -17,6 +18,8 @@ import { ImagePreview, InlineImageUpload } from '@/components/form';
 
 interface CommentItemProps {
     comment: IReportComment;
+    commentReplies?: IReportComment[];
+    onChangeCommentReplies?: (replies: IReportComment[]) => void;
     level?: number;
     variant: 'full' | 'compact';
     showLikes: boolean;
@@ -46,11 +49,25 @@ const CommentItem: React.FC<CommentItemProps> = ({
     const [editMentions, setEditMentions] = useState<number[]>(comment.mentions || []);
     const [showMenu, setShowMenu] = useState(false);
     const [liked, setLiked] = useState(false);
+    const [showReplies, setShowReplies] = useState(false);
+    const [replies, setReplies] = useState<IReportComment[]>([]);
+    
     const replyInputRef = useRef<HTMLTextAreaElement>(null);
     const editInputRef = useRef<HTMLTextAreaElement>(null); 
     const userProfile = useUserProfileStore((s) => s.userProfile);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const openPreviewModal = useImagePreviewModalStore((s) => s.openImagePreview);
+
+    const { 
+        data: repliesData,
+        isLoading: repliesLoading,
+        fetchNextPage: fetchMoreReplies,
+        hasNextPage: hasMoreReplies,
+        isFetchingNextPage: isFetchingMoreReplies,
+    } = useGetReportCommentReplies(
+        comment.commentID,
+        showReplies && !comment.parentCommentID
+    );
 
     useEffect(() => {
         if (isReplying && replyInputRef.current) {
@@ -62,12 +79,25 @@ const CommentItem: React.FC<CommentItemProps> = ({
         }
     }, [isReplying, isEditing, comment.userInformation.username]);
 
+    useEffect(() => {
+        if (repliesData) {
+            const allReplies = repliesData.pages.flatMap(page => page.data?.replies.replies || []);
+            console.log("Loaded replies for commentID:", comment.commentID, allReplies);
+            setReplies(allReplies);
+        }
+    }, [repliesData]);
+
+    const handleToggleReplies = () => {
+        setShowReplies(!showReplies);
+    };
+
     const handleReply = () => {
         if (replyContent.trim() || replyMediaImage) {
             onReply({
                 commentContent: replyContent,
                 mediaFile: replyMediaImage || undefined,
                 mediaType: replyMediaImage ? 'IMAGE' : undefined,
+                threadRootID: comment.threadRootID || comment.commentID,
                 parentCommentID: comment.commentID,
             });
             setReplyContent('');
@@ -155,12 +185,25 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             <span className="text-xs text-gray-400">
                                 {formattedDate(comment.createdAt, { formatStr: 'dd MMM yyyy, HH:mm' })}
                             </span>
-                            {currentUserId && Number(comment.userInformation.userID) !== currentUserId && (
+                            <button
+                                onClick={() => setIsReplying(true)}
+                                className="text-xs text-gray-400 hover:text-gray-600 font-medium"
+                            >
+                                Balas
+                            </button>
+                            {comment.totalReplies !== undefined && comment.totalReplies > 0 && (
                                 <button
-                                    onClick={() => setIsReplying(true)}
-                                    className="text-xs text-gray-400 hover:text-gray-600 font-medium"
+                                    onClick={handleToggleReplies}
+                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
                                 >
-                                    Balas
+                                    {showReplies ? (
+                                        <FaChevronUp className="w-3 h-3" />
+                                    ) : (
+                                        <FaReply className="w-3 h-3" />
+                                    )}
+                                    <span>
+                                        {showReplies ? 'Sembunyikan' : `${comment.totalReplies} ${comment.totalReplies === 1 ? 'balasan' : 'balasan'}`}
+                                    </span>
                                 </button>
                             )}
                             <button
@@ -257,9 +300,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             </motion.div>
                         )}
                         
-                        {comment.replies && comment.replies.length > 0 && (
+                        {showReplies && (
                             <div className="mt-4">
-                                {comment.replies.map((reply) => (
+                                {repliesLoading && (
+                                    <div className="text-sm text-gray-500 ml-4">
+                                        Memuat balasan...
+                                    </div>
+                                )}
+                                {replies.map((reply) => (
                                     <CommentItem
                                         key={reply.commentID}
                                         comment={reply}
@@ -272,6 +320,15 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                         onDelete={onDelete}
                                     />
                                 ))}
+                                {hasMoreReplies && !repliesLoading && (
+                                    <button
+                                        onClick={() => fetchMoreReplies()}
+                                        disabled={isFetchingMoreReplies}
+                                        className="ml-4 mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
+                                    >
+                                        {isFetchingMoreReplies ? 'Memuat...' : 'Muat lebih banyak'}
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -415,7 +472,6 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             </>
                         )}
                     </div>
-                    
                     {!isEditing && (
                         <div className="flex items-center space-x-4 mt-2 ml-2">
                             {showLikes && (
@@ -429,16 +485,30 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                     <span>Suka</span>
                                 </button>
                             )}
-                            {Number(comment.userInformation.userID) !== currentUserId && (
+                            <button
+                                onClick={() => {
+                                    console.log("REPLY TO COMMENTID:", comment.commentID);
+                                    console.log("REPLY TO THREADROOTID:", comment.commentID);
+                                    setIsReplying(true)
+                                }} 
+                                className="flex items-center space-x-1 text-xs font-medium text-gray-500 hover:text-sky-600 transition-colors"
+                            >
+                                <FaReply className="w-3 h-3" />
+                                <span>Balas</span>
+                            </button>
+                            {comment.totalReplies !== undefined && comment.totalReplies > 0 && (
                                 <button
-                                    onClick={() => {
-                                        console.log("REPLY TO COMMENTID:", comment.commentID);
-                                        setIsReplying(true)
-                                    }} 
-                                    className="flex items-center space-x-1 text-xs font-medium text-gray-500 hover:text-sky-600 transition-colors"
+                                    onClick={handleToggleReplies}
+                                    className="flex items-center space-x-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
                                 >
-                                    <FaReply className="w-3 h-3" />
-                                    <span>Balas</span>
+                                    {showReplies ? (
+                                        <FaChevronUp className="w-3 h-3" />
+                                    ) : (
+                                        <FaReply className="w-3 h-3" />
+                                    )}
+                                    <span>
+                                        {showReplies ? 'Sembunyikan balasan' : `Lihat ${comment.totalReplies} ${comment.totalReplies === 1 ? 'balasan' : 'balasan'}`}
+                                    </span>
                                 </button>
                             )}
                         </div>
@@ -531,9 +601,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 </motion.div>
             )}
             
-            {comment.replies && comment.replies.length > 0 && (
+            {showReplies && (
                 <div className="mt-3 pl-6">
-                    {comment.replies.map((reply) => (
+                    {repliesLoading && (
+                        <div className="text-sm text-gray-500">
+                            Memuat balasan...
+                        </div>
+                    )}
+                    {replies.map((reply) => (
                         <CommentItem
                             key={reply.commentID}
                             comment={reply}
@@ -546,6 +621,15 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             onDelete={onDelete}
                         />
                     ))}
+                    {hasMoreReplies && !repliesLoading && (
+                        <button
+                            onClick={() => fetchMoreReplies()}
+                            disabled={isFetchingMoreReplies}
+                            className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
+                        >
+                            {isFetchingMoreReplies ? 'Memuat...' : 'Muat lebih banyak'}
+                        </button>
+                    )}
                 </div>
             )}
         </motion.div>
