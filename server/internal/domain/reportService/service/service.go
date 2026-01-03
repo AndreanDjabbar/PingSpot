@@ -987,6 +987,11 @@ func (s *ReportService) CreateReportComment(ctx context.Context, db *mongo.Clien
 		return nil, apperror.New(400, "INVALID_PARENT_COMMENT_ID", "ID komentar induk tidak valid", err.Error())
 	}
 
+	threadRootIDObj, err := mainutils.StringPtrToObjectIDPtr(req.ThreadRootID)
+	if err != nil {
+		return nil, apperror.New(400, "INVALID_THREAD_ROOT_ID", "ID akar thread tidak valid", err.Error())
+	}
+
 	var commentMedia model.CommentMedia
 
 	if req.MediaType != nil {
@@ -1022,6 +1027,7 @@ func (s *ReportService) CreateReportComment(ctx context.Context, db *mongo.Clien
 		Media:           &commentMedia,
 		UpdatedAt:       mainutils.Int64PtrOrNil(time.Now().Unix()),
 		ParentCommentID: parentCommentIDObj,
+		ThreadRootID:    threadRootIDObj,
 	}
 
 	reportCommentCreated, err := s.reportCommentRepo.Create(ctx, &reportComment)
@@ -1030,10 +1036,14 @@ func (s *ReportService) CreateReportComment(ctx context.Context, db *mongo.Clien
 	}
 	newCommentID := reportCommentCreated.ID.Hex()
 
-	var parentCommentIDStr *string
+	var parentCommentIDStr, threadRootIDStr *string
 	if reportCommentCreated.ParentCommentID != nil {
 		hexValue := reportCommentCreated.ParentCommentID.Hex()
 		parentCommentIDStr = &hexValue
+	}
+	if reportCommentCreated.ThreadRootID != nil {
+		hexValue := reportCommentCreated.ThreadRootID.Hex()
+		threadRootIDStr = &hexValue
 	}
 	return &dto.CreateReportCommentResponse{
 		CommentID:       newCommentID,
@@ -1042,6 +1052,7 @@ func (s *ReportService) CreateReportComment(ctx context.Context, db *mongo.Clien
 		CreatedAt:       reportComment.CreatedAt,
 		Content:         reportComment.Content,
 		ParentCommentID: parentCommentIDStr,
+		ThreadRootID:	  threadRootIDStr,
 	}, nil
 }
 

@@ -735,6 +735,7 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 	mediaWidthStr := c.FormValue("mediaWidth")
 	mediaHeightStr := c.FormValue("mediaHeight")
 	parentCommentIDStr := c.FormValue("parentCommentID")
+	threadRootIDStr := c.FormValue("threadRootID")
 	mentionsSTR := c.FormValue("mentions")
 	files := form.File["mediaFile"]
 
@@ -829,6 +830,7 @@ func (h *ReportHandler) CreateReportCommentHandler(c *fiber.Ctx) error {
 		MediaWidth:      mediaWidth,
 		MediaHeight:     mediaHeight,
 		ParentCommentID: mainutils.StrPtrOrNil(parentCommentIDStr),
+		ThreadRootID:    mainutils.StrPtrOrNil(threadRootIDStr),
 	}
 
 	if err := validation.Validate.Struct(req); err != nil {
