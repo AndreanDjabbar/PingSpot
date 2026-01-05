@@ -205,36 +205,7 @@ const ReportDetailPage = () => {
     }
 
     const setOptimisticComment = (formData: ICreateReportCommentRequest) => {
-        if (formData.parentCommentID && formData.threadRootID) {
-            setReportComments(
-                reportComments.map((comment) =>
-                    comment.commentID === formData.parentCommentID
-                ? {
-                        ...comment,
-                        replies: [
-                        ...(comment.replies ?? []),
-                        {
-                            commentID: 'temp-id-' + Date.now(),
-                            reportID: report?.id || 0,
-                            createdAt: Math.floor(Date.now() / 1000),
-                            content: formData.commentContent,
-                            media: formData.mediaFile
-                                ? {
-                                    url: URL.createObjectURL(formData.mediaFile),
-                                    type: 'IMAGE',
-                                    height: 100,
-                                    width: 100,
-                                }
-                                : undefined,
-                            userInformation: userProfile!,
-                            commentType: 'TEMP',
-                        } as IReportComment
-                        ],
-                        }
-                    : comment
-                )
-            );
-        } else {
+        if (!formData.parentCommentID && !formData.threadRootID) {
             setReportComments([...reportComments, {
                 commentID: 'temp-id-' + Date.now(),
                 reportID: report?.id || 0,
