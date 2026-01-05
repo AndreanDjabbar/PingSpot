@@ -1057,7 +1057,7 @@ func (s *ReportService) CreateReportComment(ctx context.Context, db *mongo.Clien
 }
 
 func (s *ReportService) GetReportComments(ctx context.Context, reportID uint, cursorID *string) (*dto.GetReportCommentsResponse, error) {
-	limit := 10
+	limit := 50
 
 	primitiveCursor, err := mainutils.StringPtrToObjectIDPtr(cursorID)
 	if err != nil {
@@ -1117,7 +1117,7 @@ func (s *ReportService) GetReportComments(ctx context.Context, reportID uint, cu
 }
 
 func (s *ReportService) GetReportCommentReplies(ctx context.Context, rootID string, cursorID *string) (*dto.GetReportCommentRepliesResponse, error) {
-	limit := 10
+	limit := 100
 
 	primitiveRootID, err := mainutils.StringPtrToObjectIDPtr(&rootID)
 	if err != nil {
