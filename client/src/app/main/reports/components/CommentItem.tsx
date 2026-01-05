@@ -39,6 +39,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
     onEdit,
     onDelete 
 }) => {
+    
     const [isReplying, setIsReplying] = useState(false);
     const [replyContent, setReplyContent] = useState('');
     const [replyMentions, setReplyMentions] = useState<number[]>([]);
@@ -53,7 +54,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
     const [replies, setReplies] = useState<IReportComment[]>([]);
     
     const replyInputRef = useRef<HTMLTextAreaElement>(null);
-    const editInputRef = useRef<HTMLTextAreaElement>(null); 
+    const editInputRef = useRef<HTMLTextAreaElement>(null);
+    const loadMoreButtonRef = useRef<HTMLDivElement>(null);
     const userProfile = useUserProfileStore((s) => s.userProfile);
     const currentUserId = userProfile ? Number(userProfile.userID) : null;
     const openPreviewModal = useImagePreviewModalStore((s) => s.openImagePreview);
@@ -72,17 +74,16 @@ const CommentItem: React.FC<CommentItemProps> = ({
     useEffect(() => {
         if (isReplying && replyInputRef.current) {
             replyInputRef.current.focus();
-            setReplyContent(`@${comment.userInformation.username} `);
+            setReplyContent(`@${comment.userInformation?.username || ''} `);
         }
         if (isEditing && editInputRef.current) {
             editInputRef.current.focus();
         }
-    }, [isReplying, isEditing, comment.userInformation.username]);
+    }, [isReplying, isEditing, comment.userInformation?.username]);
 
     useEffect(() => {
         if (repliesData) {
             const allReplies = repliesData.pages.flatMap(page => page.data?.replies.replies || []);
-            console.log("Loaded replies for commentID:", comment.commentID, allReplies);
             setReplies(allReplies);
         }
     }, [repliesData]);
@@ -105,6 +106,16 @@ const CommentItem: React.FC<CommentItemProps> = ({
             setReplyMediaImage(null);
             setReplyImagePreview(null);
             setIsReplying(false);
+            setShowReplies(true);
+            
+            if (hasMoreReplies) {
+                setTimeout(() => {
+                    loadMoreButtonRef.current?.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'nearest' 
+                    });
+                }, 100);
+            }
         }
     };
 
@@ -143,8 +154,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
                     <div className="flex-shrink-0">
                         <div className={`w-6 h-6 rounded-full overflow-hidden border border-gray-200`}>
                             <Image 
-                                src={getImageURL(comment.userInformation.profilePicture || '', "user")}
-                                alt={comment.userInformation.fullName}
+                                src={getImageURL(comment.userInformation?.profilePicture || '', "user")}
+                                alt={comment.userInformation?.fullName || 'User'}
                                 width={24}
                                 height={24}
                                 className="object-cover h-full w-full"
@@ -155,11 +166,11 @@ const CommentItem: React.FC<CommentItemProps> = ({
                     <div className="flex-1 min-w-0">
                         <div className="flex items-start space-x-2">
                             <span className="font-semibold text-sm text-gray-900 shrink-0">
-                                {comment.userInformation.username}
+                                {comment.userInformation?.username || 'User'}
                             </span>
                             <span className="text-sm text-gray-800 break-words">
                                 <MentionText 
-                                commentUserID={Number(comment.userInformation.userID)}
+                                commentUserID={Number(comment.userInformation?.userID || 0)}
                                 text={comment.content || ""}
                                 userMentioned={comment.replyTo || null} 
                                 />
@@ -250,7 +261,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                                 value={replyContent}
                                                 onChange={setReplyContent}
                                                 onMentionsChange={setReplyMentions}
-                                                placeholder={`Balas ${comment.userInformation.username}...`}
+                                                placeholder={`Balas ${comment.userInformation?.username || 'pengguna'}...`}
                                                 rows={2}
                                                 users={availableUsers}
                                                 autoFocus
@@ -448,7 +459,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 <p className="text-gray-800 text-sm leading-relaxed">
                                     <MentionText 
                                     text={comment.content || ''} 
-                                    commentUserID={Number(comment.userInformation.userID)}
+                                    commentUserID={Number(comment.userInformation?.userID || 0)}
                                     userMentioned={comment.replyTo || null}
                                     />
                                 </p>
@@ -487,9 +498,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             )}
                             <button
                                 onClick={() => {
-                                    console.log("REPLY TO COMMENTID:", comment.commentID);
-                                    console.log("REPLY TO THREADROOTID:", comment.commentID);
                                     setIsReplying(true)
+                                    setShowReplies(true);
                                 }} 
                                 className="flex items-center space-x-1 text-xs font-medium text-gray-500 hover:text-sky-600 transition-colors"
                             >
@@ -551,7 +561,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                     value={replyContent}
                                     onChange={setReplyContent}
                                     onMentionsChange={setReplyMentions}
-                                    placeholder={`Balas ${comment.userInformation.username}...`}
+                                    placeholder={`Balas ${comment.userInformation?.username || 'pengguna'}...`}
                                     rows={2}
                                     users={availableUsers}
                                     autoFocus
@@ -621,7 +631,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             onDelete={onDelete}
                         />
                     ))}
-                    {hasMoreReplies && !repliesLoading && (
+                        {hasMoreReplies && !repliesLoading && (
+                    <div ref={loadMoreButtonRef}>
                         <button
                             onClick={() => fetchMoreReplies()}
                             disabled={isFetchingMoreReplies}
@@ -629,7 +640,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
                         >
                             {isFetchingMoreReplies ? 'Memuat...' : 'Muat lebih banyak'}
                         </button>
-                    )}
+                    </div>
+                        )}
                 </div>
             )}
         </motion.div>
