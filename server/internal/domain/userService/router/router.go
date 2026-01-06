@@ -18,6 +18,9 @@ func RegisterUserRoutes(app *fiber.App) {
 	userService := service.NewUserService(userRepo, userProfileRepo)
 	userHandler := handler.NewUserHandler(userService)
 
+	userRoute := app.Group("/pingspot/api/user", middleware.ValidateAccessToken())
+	userRoute.Get("/statistics", middleware.TimeoutMiddleware(15*time.Second), userHandler.GetUserStatistics)
+
 	profileRoute := app.Group("/pingspot/api/user/profile", middleware.ValidateAccessToken())
 	profileRoute.Get("/", middleware.TimeoutMiddleware(5*time.Second), userHandler.GetProfileHandler)
 	profileRoute.Get("/:username", middleware.TimeoutMiddleware(5*time.Second), userHandler.GetProfileByUsernameHandler)
