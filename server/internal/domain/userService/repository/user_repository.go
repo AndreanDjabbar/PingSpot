@@ -24,6 +24,7 @@ type UserRepository interface {
 	UpdateFullNameTX(ctx context.Context, tx *gorm.DB, userID uint, fullName string) error
 	Get(ctx context.Context) (*[]model.User, error)
 	GetByUserGenderCount(ctx context.Context) (map[string]int64, error)
+	GetMonthlyUserCounts(ctx context.Context) (map[string]int64, error)
 	GetUsersCount(ctx context.Context) (int64, error)
 }
 
@@ -73,6 +74,27 @@ func (r * userRepository) GetByUserGenderCount(ctx context.Context) (map[string]
 		genderCountMap[result.Gender] = result.Count
 	}
 	return genderCountMap, nil
+}
+
+func (r * userRepository) GetMonthlyUserCounts(ctx context.Context) (map[string]int64, error) {
+	var results []struct {
+		Month string
+		Count int64
+	}
+	err := r.db.WithContext(ctx).
+		Model(&model.User{}).
+		Select("to_char(created_at, 'YYYY-MM') as month, COUNT(*) as count").
+		Group("month").
+		Order("month").
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+	monthlyCountMap := make(map[string]int64)
+	for _, result := range results {
+		monthlyCountMap[result.Month] = result.Count
+	}
+	return monthlyCountMap, nil
 }
 
 func (r *userRepository) FullTextSearchUsers(ctx context.Context, searchQuery string, limit int) (*[]model.User, error) {
