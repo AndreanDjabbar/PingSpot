@@ -151,6 +151,19 @@ func (h *UserHandler) GetProfileHandler(c *fiber.Ctx) error {
 	return response.ResponseSuccess(c, 200, "Berhasil mendapatkan profil pengguna", "data", userProfile)
 }
 
+func (h *UserHandler) GetUserStatistics(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+	userStatistics, err := h.userService.GetUserStatistics(ctx)
+	if err != nil {
+		logger.Error("Failed to get user statistics", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
+		return response.ResponseError(c, 500, "Gagal mendapatkan statistik pengguna", "", err.Error())
+	}
+	return response.ResponseSuccess(c, 200, "Berhasil mendapatkan statistik pengguna", "data", userStatistics)
+}
+
 func (h *UserHandler) GetProfileByUsernameHandler(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 	username := c.Params("username")
