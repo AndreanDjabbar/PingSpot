@@ -114,6 +114,34 @@ func (s *UserService) SaveProfile(ctx context.Context, db *gorm.DB, userID uint,
 	return &profileResponse, nil
 }
 
+func (s *UserService) GetUserStatistics(ctx context.Context) (*dto.GetUserStatisticsResponse, error) {
+	totalUsers, err := s.userRepo.GetUsersCount(ctx)
+	if err != nil {
+		return nil, apperror.New(500, "USER_COUNT_FETCH_FAILED", "gagal mendapatkan jumlah pengguna", err.Error())
+	}
+
+	usersByGender, err := s.userRepo.GetByUserGenderCount(ctx)
+	if err != nil {
+		return nil, apperror.New(500, "USER_GENDER_COUNT_FETCH_FAILED", "gagal mendapatkan jumlah pengguna berdasarkan gender", err.Error())
+	}
+	totalKnownGender := usersByGender["male"] + usersByGender["female"]
+
+	if totalKnownGender < totalUsers {
+		usersByGender["unknown"] = totalUsers - totalKnownGender
+	}
+
+	monthlyUserCounts, err := s.userRepo.GetMonthlyUserCounts(ctx)
+	if err != nil {
+		return nil, apperror.New(500, "MONTHLY_USER_COUNT_FETCH_FAILED", "gagal mendapatkan jumlah pengguna bulanan", err.Error())
+	}
+
+	return &dto.GetUserStatisticsResponse{
+		TotalUsers:        totalUsers,
+		UsersByGender:     usersByGender,
+		MonthlyUserCounts: monthlyUserCounts,
+	}, nil
+}
+
 func (s *UserService) GetProfileByUsername(ctx context.Context, username string) (*dto.GetProfileResponse, error) {
 	user, err := s.userRepo.GetByUsername(ctx, username)
 	if err != nil {
