@@ -892,7 +892,7 @@ func (h *ReportHandler) GetReportStatisticsHandler(c *fiber.Ctx) error {
 			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
 		}
 	}
-	return response.ResponseSuccess(c, 200, "Berhasil mengambil komentar laporan", "data", reportStatistics)
+	return response.ResponseSuccess(c, 200, "Berhasil mengambil statistik laporan", "data", reportStatistics)
 }
 
 func (h *ReportHandler) GetReportCommentRepliesHandler(c *fiber.Ctx) error {
