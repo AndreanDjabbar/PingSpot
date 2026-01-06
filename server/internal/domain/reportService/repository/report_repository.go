@@ -23,6 +23,7 @@ type ReportRepository interface {
 	GetByIsDeletedPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance, isDeleted bool) (*[]model.Report, error)
 	GetPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error)
 	GetReportsCount(ctx context.Context) (*dto.TotalReportCount, error)
+	GetMonthlyReportCounts(ctx context.Context) (map[string]int64, error)
 	FullTextSearchReports(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error)
 	FullTextSearchReportsPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error)
 }
@@ -108,6 +109,25 @@ func (r *reportRepository) FullTextSearchReports(ctx context.Context, searchQuer
 	`, searchQuery, searchQuery, limit).Scan(&reports).Error
 
 	return &reports, err
+}
+
+func (r *reportRepository) GetMonthlyReportCounts(ctx context.Context) (map[string]int64, error) {
+	var results []struct {
+		Month string
+		Count int64
+	}
+	if err := r.db.WithContext(ctx).Model(&model.Report{}).
+		Select("to_char(created_at, 'YYYY-MM') AS month, COUNT(*) AS count").
+		Group("month").
+		Order("month").
+		Scan(&results).Error; err != nil {
+		return nil, err
+	}
+	monthlyCounts := make(map[string]int64)
+	for _, result := range results {
+		monthlyCounts[result.Month] = result.Count
+	}
+	return monthlyCounts, nil
 }
 
 func (r *reportRepository) FullTextSearchReportsPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error) {
