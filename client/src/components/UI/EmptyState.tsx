@@ -36,7 +36,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 
         {showCommandButton && onCommandButton && (
             <button
-            className="bg-pingspot-hoverable text-white px-6 py-3 rounded-lg font-semibold transition-all flex items-center space-x-2 mx-auto"
+            className="bg-pingspot-hoverable text-white px-6 py-3 rounded-lg font-semibold transition-all flex items-center space-x-2 mx-auto cursor-pointer"
             onClick={onCommandButton}
             disabled={commandLoading}
             >

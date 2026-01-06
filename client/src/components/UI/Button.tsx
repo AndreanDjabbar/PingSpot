@@ -84,7 +84,7 @@ const Button: React.FC<ButtonProps> = ({
     return (
         <button
             type="button"
-            className={combinedClassName}
+            className={`${combinedClassName} cursor-pointer`}
             disabled={disabled || isLoading}
             {...props}
         >
