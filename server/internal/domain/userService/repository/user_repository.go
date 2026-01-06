@@ -23,6 +23,7 @@ type UserRepository interface {
 	FullTextSearchUsersPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.User, error)
 	UpdateFullNameTX(ctx context.Context, tx *gorm.DB, userID uint, fullName string) error
 	Get(ctx context.Context) (*[]model.User, error)
+	GetByUserGenderCount(ctx context.Context) (map[string]int64, error)
 	GetUsersCount(ctx context.Context) (int64, error)
 }
 
@@ -51,6 +52,27 @@ func (r *userRepository) GetUsersCount(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 	return count, nil
+}
+
+func (r * userRepository) GetByUserGenderCount(ctx context.Context) (map[string]int64, error) {
+	var results []struct {
+		Gender string
+		Count  int64
+	}
+	err := r.db.WithContext(ctx).
+		Model(&model.UserProfile{}).
+		Select("gender, COUNT(*) as count").
+		Group("gender").
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+	genderCountMap := make(map[string]int64)
+	for _, result := range results {
+		genderCountMap[result.Gender] = result.Count
+	}
+	return genderCountMap, nil
 }
 
 func (r *userRepository) FullTextSearchUsers(ctx context.Context, searchQuery string, limit int) (*[]model.User, error) {
