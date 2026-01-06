@@ -8,24 +8,37 @@ import { FaMap, FaUsers } from 'react-icons/fa'
 import { GoAlert } from 'react-icons/go'
 import { LuActivity } from 'react-icons/lu'
 import HeaderSection from '../components/HeaderSection';
+import { useLocationStore } from '@/stores';
+import { Button, EmptyState } from '@/components/UI';
+import { RxCrossCircled } from 'react-icons/rx';
+import { FaLocationDot } from 'react-icons/fa6';
+import { useCurrentLocation } from '@/hooks/main';
+import { useErrorToast } from '@/hooks/toast';
+import { getRelativeTime } from '@/utils';
 
-const Map = dynamic(() => import("../components/Map"), {
+const Map = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,
+    loading: () => <div className="w-full h-[200px] bg-gray-200 animate-pulse rounded-lg"></div>
 });
 
 const Homepage = () => {
     const currentPath = usePathname();
     const router = useRouter();
+    const location = useLocationStore((state) => state.location);
+    const { requestLocation, loading: loadingRequestLocation, permissionDenied, isPermissionDenied, } = useCurrentLocation();
+
+    useErrorToast(isPermissionDenied, permissionDenied);
+
     return (
         <div className="space-y-8">
             <HeaderSection 
             currentPath={currentPath}
             message='Kelola laporan dan pantau kondisi lingkungan sekitar Anda secara real-time.'>
                 <button 
-                className="bg-pingspot-hoverable text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-sky-500/25 transition-all flex items-center space-x-2"
-                onClick={() => router.push('/main/reports/create-report')}>
+                    className="bg-sky-700 hover:bg-sky-800 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-all flex items-center justify-center space-x-2 whitespace-nowrap cursor-pointer"
+                    onClick={() => router.push('/main/reports/create-report')}>
                     <BiPlus className="w-5 h-5" />
-                    <span>Buat Laporan Baru</span>
+                    <span>Buat Laporan</span>
                 </button>
             </HeaderSection>
 
@@ -36,7 +49,7 @@ const Homepage = () => {
                 { title: 'Komunitas', value: '567', change: '+8%', color: 'from-green-500 to-green-600', icon: FaUsers },
                 { title: 'Area Terpantau', value: '23', change: '+2%', color: 'from-purple-500 to-purple-600', icon: FaMap },
                 ].map((stat, index) => (
-                <div key={index} className="bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-lg p-6">
+                <div key={index} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-md p-6">
                     <div className="flex items-center justify-between">
                     <div>
                         <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
@@ -52,9 +65,59 @@ const Homepage = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-lg p-6">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-md p-6">
+                    <div className='flex justify-between items-center mb-4'>
+                        <div className='flex flex-col'>
+                            <h2 className="text-xl font-semibold text-gray-900">
+                                Lokasi Anda
+                            </h2>
+                            {location?.lastUpdated && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Diperbarui {getRelativeTime(location.lastUpdated)}
+                                </p>
+                            )}
+                        </div>
+                        <Button 
+                        size='sm'
+                        isLoading={loadingRequestLocation}
+                        loadingText='Memperbarui...'
+                        onClick={() => {
+                            requestLocation(true)
+                        }}>
+                            Perbarui Lokasi
+                        </Button>
+                    </div>
+                    {location !== null ? (
+                        <div className="space-y-4 h-full">
+                            <div className='h-full'>
+                                <Map 
+                                latitude={Number(location?.lat)}
+                                height={400}
+                                longitude={Number(location?.lng)}
+                                />
+                            </div>
+                        </div>
+
+                    ) : (
+                        <div className="space-y-4 h-full">
+                            <div className='h-full'>
+                                <EmptyState
+                                    emptyTitle='Lokasi tidak tersedia'
+                                    emptyMessage='Untuk menampilkan laporan di sekitar Anda, izinkan aplikasi mengakses lokasi Anda.'
+                                    emptyIcon={<RxCrossCircled />}
+                                    showCommandButton={true}
+                                    commandLabel='Deteksi Lokasi'
+                                    commandLoading={loadingRequestLocation}
+                                    commandIcon={<FaLocationDot/>}
+                                    commandLoadingMessage='Mendeteksi...'
+                                    onCommandButton={() => {requestLocation()}}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-md p-6">
                     <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                        <LuActivity className="w-6 h-6 text-sky-600 mr-2" />
                         Aktivitas Terbaru
                     </h2>
                     <div className="space-y-4">
@@ -77,7 +140,7 @@ const Homepage = () => {
                         ))}
                     </div>
                 </div>
-                <Map/>
+                {/* <Map/> */}
             </div>
         </div>
     )
