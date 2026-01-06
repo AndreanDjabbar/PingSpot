@@ -882,6 +882,19 @@ func (h *ReportHandler) GetReportCommentsHandler(c *fiber.Ctx) error {
 	return response.ResponseSuccess(c, 200, "Berhasil mengambil komentar laporan", "data", mappedData)
 }
 
+func (h *ReportHandler) GetReportStatisticsHandler(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	reportStatistics, err := h.reportService.GetReportStatistics(ctx)
+	if err != nil {
+		logger.Error("Failed to get report statistics", zap.Error(err))
+		if appErr, ok := err.(*apperror.AppError); ok {
+			return response.ResponseError(c, appErr.StatusCode, appErr.Message, "error_code", appErr.Code)
+		}
+	}
+	return response.ResponseSuccess(c, 200, "Berhasil mengambil komentar laporan", "data", reportStatistics)
+}
+
 func (h *ReportHandler) GetReportCommentRepliesHandler(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 	commentIDParam := c.Params("commentID")
