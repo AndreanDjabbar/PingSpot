@@ -1116,6 +1116,29 @@ func (s *ReportService) GetReportComments(ctx context.Context, reportID uint, cu
 	return &resp, nil
 }
 
+func (s *ReportService) GetReportStatistics(ctx context.Context) (*dto.GetReportStatisticsResponse, error) {
+	totalReports, err := s.reportRepo.GetReportsCount(ctx)	
+	if err != nil {
+		return nil, apperror.New(500, "TOTAL_REPORTS_FETCH_FAILED", "Gagal mengambil total laporan", err.Error())
+	}
+
+	reportsByStatus, err := s.reportRepo.GetByReportStatusCount(ctx, string(model.WAITING), string(model.ON_PROGRESS), string(model.NOT_RESOLVED), string(model.POTENTIALLY_RESOLVED), string(model.RESOLVED), string(model.EXPIRED))
+	if err != nil {
+		return nil, apperror.New(500, "RESOLVED_REPORTS_FETCH_FAILED", "Gagal mengambil laporan yang diselesaikan", err.Error())
+	}
+
+	monthlyReports, err := s.reportRepo.GetMonthlyReportCounts(ctx)
+	if err != nil {
+		return nil, apperror.New(500, "MONTHLY_REPORTS_FETCH_FAILED", "Gagal mengambil laporan bulanan", err.Error())
+	}
+
+	return &dto.GetReportStatisticsResponse{
+		TotalReports:    totalReports.TotalReports,
+		ReportsByStatus: reportsByStatus,
+		MonthlyReportCounts:  monthlyReports,
+	}, nil
+}
+
 func (s *ReportService) GetReportCommentReplies(ctx context.Context, rootID string, cursorID *string) (*dto.GetReportCommentRepliesResponse, error) {
 	limit := 100
 
