@@ -18,6 +18,7 @@ type ReportRepository interface {
 	GetByIDTX(ctx context.Context, tx *gorm.DB, reportID uint) (*model.Report, error)
 	Get(ctx context.Context) (*[]model.Report, error)
 	GetByReportStatus(ctx context.Context, status ...string) (*[]model.Report, error)
+	GetByReportStatusCount(ctx context.Context, status ...string) (map[string]int64, error)
 	GetByIDIsDeleted(ctx context.Context, reportID uint, isDeleted bool) (*model.Report, error)
 	GetByIsDeleted(ctx context.Context, isDeleted bool) ([]*model.Report, error)
 	GetByIsDeletedPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance, isDeleted bool) (*[]model.Report, error)
@@ -87,6 +88,25 @@ func (r *reportRepository) GetReportsCount(ctx context.Context) (*dto.TotalRepor
 	return &result, nil
 }
 
+func (r *reportRepository) GetByReportStatusCount(ctx context.Context, status ...string) (map[string]int64, error) {
+	var results []struct {
+		ReportStatus string
+		Count        int64
+	}
+	if err := r.db.WithContext(ctx).Model(&model.Report{}).
+		Select("report_status, COUNT(*) AS count").
+		Where("report_status IN ?", status).
+		Group("report_status").
+		Scan(&results).Error; err != nil {
+		return nil, err
+	}
+	statusCounts := make(map[string]int64)
+	for _, result := range results {
+		statusCounts[result.ReportStatus] = result.Count
+	}
+	return statusCounts, nil
+}
+
 func (r *reportRepository) FullTextSearchReports(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error) {
 	var reports []model.Report
 
@@ -95,10 +115,10 @@ func (r *reportRepository) FullTextSearchReports(ctx context.Context, searchQuer
 	}
 
 	searchQuery = strings.ToLower(searchQuery)
-    searchQuery = regexp.MustCompile(`[^a-z0-9\s]`).ReplaceAllString(searchQuery, "")
-    searchQuery = strings.TrimSpace(searchQuery)
-    searchQuery = regexp.MustCompile(`\s+`).ReplaceAllString(searchQuery, " & ")
-    searchQuery += ":*"
+	searchQuery = regexp.MustCompile(`[^a-z0-9\s]`).ReplaceAllString(searchQuery, "")
+	searchQuery = strings.TrimSpace(searchQuery)
+	searchQuery = regexp.MustCompile(`\s+`).ReplaceAllString(searchQuery, " & ")
+	searchQuery += ":*"
 
 	err := r.db.WithContext(ctx).Raw(`
 		SELECT *
@@ -111,22 +131,31 @@ func (r *reportRepository) FullTextSearchReports(ctx context.Context, searchQuer
 	return &reports, err
 }
 
-func (r *reportRepository) GetMonthlyReportCounts(ctx context.Context) (map[string]int64, error) {
+func (r *reportRepository) GetMonthlyReportCounts(
+	ctx context.Context,
+) (map[string]int64, error) {
+
 	var results []struct {
 		Month string
 		Count int64
 	}
-	if err := r.db.WithContext(ctx).Model(&model.Report{}).
-		Select("to_char(created_at, 'YYYY-MM') AS month, COUNT(*) AS count").
+
+	err := r.db.WithContext(ctx).
+		Model(&model.Report{}).
+		Select("to_char(to_timestamp(created_at), 'YYYY-MM') AS month, COUNT(*) AS count").
 		Group("month").
-		Order("month").
-		Scan(&results).Error; err != nil {
+		Order("month DESC").
+		Scan(&results).Error
+
+	if err != nil {
 		return nil, err
 	}
+
 	monthlyCounts := make(map[string]int64)
 	for _, result := range results {
 		monthlyCounts[result.Month] = result.Count
 	}
+
 	return monthlyCounts, nil
 }
 
