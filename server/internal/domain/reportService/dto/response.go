@@ -89,3 +89,9 @@ type GetReportCommentRepliesResponse struct {
 	TotalCounts int64           `json:"totalCounts"`	
 	HasMore     bool           `json:"hasMore"`
 }
+
+type GetReportStatisticsResponse struct {
+	TotalReports 	  int64 `json:"totalReports"`
+	ReportsByStatus   map[string]int64 `json:"reportsByStatus"`
+	MonthlyReportCounts map[string]int64 `json:"monthlyReportCounts"`
+}
