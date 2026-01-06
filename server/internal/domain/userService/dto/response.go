@@ -20,3 +20,9 @@ type GetProfileResponse struct {
 	Gender 	   		*string `json:"gender"`
 	Email			string  `json:"email"`	
 }
+
+type GetUserStatisticsResponse struct {
+	TotalUsers         int64            `json:"totalUsers"`
+	UsersByGender      map[string]int64 `json:"usersByGender"`
+	MonthlyUserCounts  map[string]int64 `json:"monthlyUserCounts"`
+}
