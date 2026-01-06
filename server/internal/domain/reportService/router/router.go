@@ -50,4 +50,5 @@ func RegisterReportRoutes(app *fiber.App) {
 	reportRoute.Post("/:reportID/comment", middleware.TimeoutMiddleware(8*time.Second), reportHandler.CreateReportCommentHandler)
 	reportRoute.Get("/:reportID/comment", middleware.TimeoutMiddleware(15*time.Second), reportHandler.GetReportCommentsHandler)
 	reportRoute.Get("/comment/replies/:commentID", middleware.TimeoutMiddleware(15*time.Second), reportHandler.GetReportCommentRepliesHandler)
+	reportRoute.Get("/statistics", middleware.TimeoutMiddleware(15 * time.Second), reportHandler.GetReportStatisticsHandler)
 }
