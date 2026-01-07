@@ -13,6 +13,7 @@ import (
 type ReportCommentRepository interface {
 	Create(ctx context.Context, report *model.ReportComment) (*model.ReportComment, error)
 	GetByID(ctx context.Context, commentID primitive.ObjectID) (*model.ReportComment, error)
+	GetByIDs(ctx context.Context, commentIDs []primitive.ObjectID) ([]*model.ReportComment, error)
 	GetByReportID(ctx context.Context, reportID uint) ([]*model.ReportComment, error)
 	GetCountsByReportID(ctx context.Context, reportID uint) (int64, error)
 	GetCountsByRootID(ctx context.Context, rootID primitive.ObjectID) (int64, error)
@@ -53,6 +54,23 @@ func (r *reportCommentRepository) GetByID(ctx context.Context, commentID primiti
 		return nil, err
 	}
 	return &comment, nil
+}
+
+func (r *reportCommentRepository) GetByIDs(ctx context.Context, commentIDs []primitive.ObjectID) ([]*model.ReportComment, error) {
+	filter := bson.M{
+		"_id": bson.M{
+			"$in": commentIDs,
+		},
+	}
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	var comments []*model.ReportComment
+	if err := cursor.All(ctx, &comments); err != nil {
+		return nil, err
+	}
+	return comments, nil
 }
 
 func (r *reportCommentRepository) GetCountsByReportID(ctx context.Context, reportID uint) (int64, error) {
