@@ -257,60 +257,46 @@ func ConvertRootCommentsToDTO(comments []*model.ReportComment, users map[uint]*m
 	return rootComments
 }
 
-func ConvertRepliesToDTO(comments []*model.ReportComment, users map[uint]*model.User, rootUserMap map[string]*model.User) []*reportDTO.CommentReply {
-	replies := make([]*reportDTO.CommentReply, 0)
-	replyMap := make(map[string]*reportDTO.CommentReply)
-
-	for _, comment := range comments {
-		user := users[comment.UserID]
-		if user == nil {
-			continue
-		}
-		commentID := comment.ID.Hex()
-		replyDTO := convertToReplyDTO(comment, user)
-		replyMap[commentID] = replyDTO
+func convertUserToProfile(u *model.User) *dto.UserProfile {
+	return &dto.UserProfile{
+		UserID:         u.ID,
+		Username:       u.Username,
+		FullName:       u.FullName,
+		ProfilePicture: u.Profile.ProfilePicture,
+		Gender:		 u.Profile.Gender,
+		Bio:            u.Profile.Bio,
+		Birthday:       u.Profile.Birthday,
 	}
+}
 
-	for _, comment := range comments {
-		commentID := comment.ID.Hex()
-		replyDTO := replyMap[commentID]
-
-		if comment.ParentCommentID != nil {
-			parentID := comment.ParentCommentID.Hex()
-
-			if parentReply, exists := replyMap[parentID]; exists {
-				if replyDTO.UserInformation.UserID != parentReply.UserInformation.UserID {
-					replyDTO.ReplyTo = &dto.UserProfile{
-						UserID:         parentReply.UserInformation.UserID,
-						Username:       parentReply.UserInformation.Username,
-						FullName:       parentReply.UserInformation.FullName,
-						ProfilePicture: parentReply.UserInformation.ProfilePicture,
-						Bio:            parentReply.UserInformation.Bio,
-						Gender:         parentReply.UserInformation.Gender,
-						Birthday:       parentReply.UserInformation.Birthday,
-					}
-				}
-			} else if rootUser, exists := rootUserMap[parentID]; exists {
-				if replyDTO.UserInformation.UserID != rootUser.ID {
-					replyDTO.ReplyTo = &dto.UserProfile{
-						UserID:         rootUser.ID,
-						Username:       rootUser.Username,
-						FullName:       rootUser.FullName,
-						ProfilePicture: rootUser.Profile.ProfilePicture,
-						Bio:            rootUser.Profile.Bio,
-						Gender:         rootUser.Profile.Gender,
-						Birthday:       rootUser.Profile.Birthday,
-					}
-				}
-			}
-		}
-
-		replies = append(replies, replyDTO)
-	}
-
-	sort.Slice(replies, func(i, j int) bool {
-		return replies[i].CreatedAt < replies[j].CreatedAt
-	})
-
-	return replies
+func ConvertRepliesToDTO(comments []*model.ReportComment, users map[uint]*model.User, parentsComment map[string]*model.ReportComment) []*reportDTO.CommentReply {
+    replies := make([]*reportDTO.CommentReply, 0, len(comments))
+    
+    for _, comment := range comments {
+        user := users[comment.UserID]
+        if user == nil {
+            continue
+        }
+        
+        replyDTO := convertToReplyDTO(comment, user)
+        
+        if comment.ParentCommentID != nil {
+            parentID := comment.ParentCommentID.Hex()
+            if parentComment, exists := parentsComment[parentID]; exists {
+                if parentUser, userExists := users[parentComment.UserID]; userExists {
+                    if replyDTO.UserInformation.UserID != parentUser.ID {
+                        replyDTO.ReplyTo = convertUserToProfile(parentUser)
+                    }
+                }
+            }
+        }
+        
+        replies = append(replies, replyDTO)
+    }
+    
+    sort.Slice(replies, func(i, j int) bool {
+        return replies[i].CreatedAt < replies[j].CreatedAt
+    })
+    
+    return replies
 }
