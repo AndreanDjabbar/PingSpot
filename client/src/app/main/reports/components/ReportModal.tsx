@@ -124,6 +124,9 @@ const ReportModal: React.FC<ReportModalProps> = ({
         if (formData.parentCommentID) {
             data.append('parentCommentID', formData.parentCommentID.toString());
         }
+        if (formData.threadRootID) {
+            data.append('threadRootID', formData.threadRootID.toString());
+        }
         if (formData.mediaFile) {
             const compressedFile = await compressImages(formData.mediaFile);
             data.append('mediaFile', compressedFile);
@@ -136,6 +139,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
         if (!report?.id) return;
         setOptimisticComment(formData);
         setReportCommentCounts(reportCommentCounts + 1);
+        
         
         const preparedData = await prepareFormData(formData);
         createReportCommentMutation!({
@@ -183,6 +187,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
             CreateReportCommentSchema.parse(formData);
             setValidationErrors({});
             handleCreateReportComment(formData);
+
             setCommentContent('');
             setCommentMediaImage(null);
             setImagePreview(null);
