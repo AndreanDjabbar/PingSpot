@@ -29,6 +29,7 @@ interface ReportModalProps {
     commentsLoading?: boolean;
     onLoadMoreComments?: () => void;
     hasMoreComments?: boolean;
+    isFetchingMoreComments?: boolean;
     createReportCommentMutation?: UseMutateFunction<ICreateReportCommentResponse, Error, { reportID: number; data: FormData; }, unknown>;
     isCreateReportCommentError: boolean;
     createReportCommentError?: Error;
@@ -44,6 +45,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
     hasMoreComments = false,
     createReportCommentMutation,
     onLoadMoreComments,
+    isFetchingMoreComments = false,
     isCreateReportCommentError,
     createReportCommentError,
 }) => {
@@ -58,6 +60,12 @@ const ReportModal: React.FC<ReportModalProps> = ({
     const reportCommentCounts = useReportCommentStore((state) => state.reportCommentsCount);
     const setReportCommentCounts = useReportCommentStore((state) => state.setReportCommentsCount);
     const setReportComments = useReportCommentStore((state) => state.setReportComments);
+
+    const handleLoadMoreComments = () => {
+        if (onLoadMoreComments) {
+            onLoadMoreComments();
+        }
+    }
 
     const setOptimisticComment = (formData: ICreateReportCommentRequest) => {
         if (formData.parentCommentID) {
@@ -247,7 +255,8 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             showLikes={false}
                             commentsLoading={commentsLoading}
                             hasMoreComments={hasMoreComments}
-                            onLoadMoreComments={onLoadMoreComments}
+                            onFetchingMoreComments={handleLoadMoreComments}
+                            isFetchingMoreComments={isFetchingMoreComments}
                         />
                     </div>
 
