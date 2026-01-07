@@ -107,7 +107,6 @@ const CommentItem: React.FC<CommentItemProps> = ({
             setReplyImagePreview(null);
             setIsReplying(false);
             setShowReplies(true);
-            
             if (hasMoreReplies) {
                 setTimeout(() => {
                     loadMoreButtonRef.current?.scrollIntoView({ 
@@ -197,7 +196,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 {formattedDate(comment.createdAt, { formatStr: 'dd MMM yyyy, HH:mm' })}
                             </span>
                             <button
-                                onClick={() => setIsReplying(true)}
+                                onClick={() => {
+                                    setIsReplying(true)
+                                    setShowReplies(true);
+                                }}
                                 className="text-xs text-gray-400 hover:text-gray-600 font-medium"
                             >
                                 Balas
@@ -331,15 +333,17 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                         onDelete={onDelete}
                                     />
                                 ))}
-                                {hasMoreReplies && !repliesLoading && (
-                                    <button
-                                        onClick={() => fetchMoreReplies()}
-                                        disabled={isFetchingMoreReplies}
-                                        className="ml-4 mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
-                                    >
-                                        {isFetchingMoreReplies ? 'Memuat...' : 'Muat lebih banyak'}
-                                    </button>
-                                )}
+                                <div ref={loadMoreButtonRef}>
+                                    {hasMoreReplies && !repliesLoading && (
+                                        <button
+                                            onClick={() => fetchMoreReplies()}
+                                            disabled={isFetchingMoreReplies}
+                                            className="ml-4 mt-2 text-xs text-sky-700 hover:text-sky-800 font-medium disabled:opacity-50"
+                                        >
+                                            {isFetchingMoreReplies ? 'Memuat...' : 'Muat lebih banyak'}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -631,17 +635,17 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             onDelete={onDelete}
                         />
                     ))}
-                        {hasMoreReplies && !repliesLoading && (
                     <div ref={loadMoreButtonRef}>
-                        <button
-                            onClick={() => fetchMoreReplies()}
-                            disabled={isFetchingMoreReplies}
-                            className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
-                        >
-                            {isFetchingMoreReplies ? 'Memuat...' : 'Muat lebih banyak'}
-                        </button>
-                    </div>
+                        {hasMoreReplies && !repliesLoading && (
+                            <button
+                                onClick={() => fetchMoreReplies()}
+                                disabled={isFetchingMoreReplies}
+                                className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
+                            >
+                                {isFetchingMoreReplies ? 'Memuat...' : 'Muat lebih banyak'}
+                            </button>
                         )}
+                    </div>
                 </div>
             )}
         </motion.div>
