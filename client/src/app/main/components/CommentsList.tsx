@@ -122,15 +122,14 @@ export const CommentsList: React.FC<CommentsListProps> = ({
                                     onReply={onReply || (() => {})}
                                 />
                             ))}
-                            
-                            {hasMoreComments && onFetchingMoreComments && (
-                                <div className="text-center py-4">
-                                    <button
-                                        onClick={onFetchingMoreComments}
-                                        className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-                                    >
-                                        Muat lebih banyak komentar
-                                    </button>
+                            {hasMoreComments && (
+                                <div ref={ref} className="p-6 text-center border-t border-gray-200">
+                                    {isFetchingMoreComments && (
+                                        <div className="flex items-center space-x-2 text-sky-500 w-full justify-center">
+                                            <AiOutlineLoading3Quarters className="animate-spin h-5 w-5" />
+                                            <span className="text-sm">Memuat lebih banyak...</span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
