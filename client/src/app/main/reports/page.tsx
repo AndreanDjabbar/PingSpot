@@ -727,9 +727,10 @@ const ReportsPage = () => {
                             onStatusVote={(voteType) => handleStatusVote(selectedReport.id, voteType)}
                             commentsLoading={commentsLoading}
                             onLoadMoreComments={fetchNextComments}
-                            hasMoreComments={false}
+                            hasMoreComments={hasNextComments}
                             isCreateReportCommentError={isCreateReportCommentError}
                             createReportCommentError={createReportCommentError!}
+                            isFetchingMoreComments={isFetchingNextComments}
                         />
                     )}
 
