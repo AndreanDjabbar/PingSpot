@@ -141,6 +141,11 @@ export const uploadProgressReportService = async (reportID: number, payload: For
     return response.data;
 }
 
+export const getReportStatisticsService = async() => {
+    const response = await axiosInstance.get(`/report/statistics`);
+    return response.data;
+}
+
 export const createReportCommentService = async (reportID: number, payload: FormData): Promise<ICreateReportCommentResponse> => {
     const response = await axiosInstance.post<ICreateReportCommentResponse>(`/report/${reportID}/comment`, payload, {
         headers: {
