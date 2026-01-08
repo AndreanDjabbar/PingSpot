@@ -117,3 +117,9 @@ export interface IUpdateReportStatusResponse {
         updatedAt: number;
     };
 }
+
+export interface IGetReportStatisticsResponse {
+    totalReports: number;
+    reportsByStatus: Record<string, number>;
+    monthlyReportCounts: Record<string, number>;
+}
