@@ -119,7 +119,10 @@ export interface IUpdateReportStatusResponse {
 }
 
 export interface IGetReportStatisticsResponse {
-    totalReports: number;
-    reportsByStatus: Record<string, number>;
-    monthlyReportCounts: Record<string, number>;
+    message: string;
+    data?: {
+        totalReports: number;
+        reportsByStatus: Record<string, number>;
+        monthlyReportCounts: Record<string, number>;
+    }
 }
