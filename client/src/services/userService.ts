@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ISaveSecurityRequest, ISaveSecurityResponse } from "@/types/api/user";
+import { IGetUserStatisticsResponse, ISaveSecurityRequest, ISaveSecurityResponse } from "@/types/api/user";
 import { IForgotPasswordEmailVerificationRequest, IForgotPasswordEmailVerificationResponse, IForgotPasswordLinkVerificationRequest, IForgotPasswordLinkVerificationResponse, IForgotPasswordResetPasswordRequest, IForgotPasswordResetPasswordResponse, ILoginRequest, ILoginResponse, IRegisterRequest, IRegisterResponse, IVerificationRequest, IVerificationResponse } from "@/types/api/auth";
 import { IGetProfileResponse, ISaveProfileResponse } from "@/types/api/user";
 import axios from "axios";
@@ -63,6 +63,11 @@ export const saveProfileService = async (payload: FormData): Promise<ISaveProfil
 
 export const saveSecurityService = async (payload: ISaveSecurityRequest): Promise<ISaveSecurityResponse> => {
     const response = await axiosInstance.post<ISaveSecurityResponse>(`/user/security`, payload);
+    return response.data;
+}
+
+export const getUserStatisticsService = async (): Promise<IGetUserStatisticsResponse> => {
+    const response = await axiosInstance.get<IGetUserStatisticsResponse>(`/user/statistics/`);
     return response.data;
 }
 
