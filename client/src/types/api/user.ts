@@ -41,6 +41,15 @@ export interface IReverseLocationResponse {
     data?: IReverseLocation;
 }
 
+export interface IGetUserStatisticsResponse {
+    message: string;
+    data?: {
+        totalUsers: number;
+        usersByGender: Record<string, number>;
+        monthlyUserCounts: Record<string, number>;
+    }
+}
+
 export interface IReverseLocationRequest {
     latitude: string;
     longitude: string;
