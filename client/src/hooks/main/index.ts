@@ -12,6 +12,7 @@ import { useGetReportComments } from "./useGetReportComment";
 import { useGetReportCommentReplies } from "./useGetReportCommentReplies";
 import { useCreateReportCommentReport } from "./useCreateReportComment";
 import { useSearchData } from "./useSearchData";
+import { useGetReportStatistics } from "./useGetReportStatistics";
 
 export {
     useCreateReport,
@@ -19,6 +20,7 @@ export {
     useGetProgressReport,
     useGetReport,
     useGetReportByID,
+    useGetReportStatistics,
     useUploadProgressReport,
     useReverseCurrentLocation,
     useReactReport,
