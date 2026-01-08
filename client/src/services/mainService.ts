@@ -11,6 +11,7 @@ import {
     IGetReportCommentRepliesResponse,
     IGetReportCommentsResponse,
     IGetReportResponse,
+    IGetReportStatisticsResponse,
     IReactReportRequest,
     IReactReportResponse,
     IUpdateReportStatusResponse,
@@ -142,7 +143,7 @@ export const uploadProgressReportService = async (reportID: number, payload: For
 }
 
 export const getReportStatisticsService = async() => {
-    const response = await axiosInstance.get(`/report/statistics`);
+    const response = await axiosInstance.get<IGetReportStatisticsResponse>(`/report/statistics`);
     return response.data;
 }
 
