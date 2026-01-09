@@ -139,7 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false, 
                                     w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
                                     text-gray-200 hover:bg-gray-700/50 hover:text-gray-300 transition-colors
                                     ${item.id === currentPath
-                                            ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/25' 
+                                            ? 'bg-white/20 text-gray-200' 
                                             : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
                                     }`}
                                 >
