@@ -160,6 +160,7 @@ const ProfilePage = () => {
                                         id="profilePicture"
                                         withLabel={true}
                                         labelTitle="Foto Profil"
+                                        usingCrop
                                         buttonTitle="Pilih Foto"
                                         currentImage={getImageURL(user?.profilePicture || '', "user")}
                                         onChange={(file) => {
