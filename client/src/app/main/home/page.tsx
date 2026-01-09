@@ -1,20 +1,23 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
+import React from 'react'
 import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
-import React from 'react'
 import { BiPlus } from 'react-icons/bi'
-import { FaMap, FaUsers } from 'react-icons/fa'
+import { FaUser } from 'react-icons/fa'
 import { GoAlert } from 'react-icons/go'
-import { LuActivity } from 'react-icons/lu'
 import HeaderSection from '../components/HeaderSection';
 import { useLocationStore } from '@/stores';
-import { Button, EmptyState } from '@/components/UI';
+import { Button, EmptyState, Loading } from '@/components/UI';
 import { RxCrossCircled } from 'react-icons/rx';
 import { FaLocationDot } from 'react-icons/fa6';
-import { useCurrentLocation } from '@/hooks/main';
+import { useCurrentLocation, useGetReportStatistics } from '@/hooks/main';
 import { useErrorToast } from '@/hooks/toast';
-import { getRelativeTime } from '@/utils';
+import { getErrorResponseMessage, getFormattedDate, getRelativeTime, isInternalServerError } from '@/utils';
+import { ErrorSection } from '@/components/feedback';
+import { useGetUserStatistics } from '@/hooks/user';
+import { IoMdPulse } from 'react-icons/io';
+import { MdCalendarMonth } from 'react-icons/md';
 
 const Map = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,
@@ -25,9 +28,60 @@ const Homepage = () => {
     const currentPath = usePathname();
     const router = useRouter();
     const location = useLocationStore((state) => state.location);
-    const { requestLocation, loading: loadingRequestLocation, permissionDenied, isPermissionDenied, } = useCurrentLocation();
+    const { 
+        requestLocation, 
+        loading: loadingRequestLocation, 
+        permissionDenied, 
+        isPermissionDenied, 
+    } = useCurrentLocation();
+
+    const {
+        data: reportStatisticsData,
+        isLoading: loadingReportStatistics,
+        isError: isErrorReportStatistics,
+        refetch: refetchReportStatistics,
+        error: errorReportStatistics
+    } = useGetReportStatistics();
+
+    const {
+        data: userStatisticsData,
+        isLoading: loadingUserStatistics,
+        refetch: refetchUserStatistics,
+        isError: isErrorUserStatistics,
+        error: errorUserStatistics
+    } = useGetUserStatistics();
 
     useErrorToast(isPermissionDenied, permissionDenied);
+
+    const isReportStatisticServerError = isInternalServerError(errorReportStatistics);
+    const isUserStatisticServerError = isInternalServerError(errorUserStatistics);
+
+    const totalReports = reportStatisticsData?.data?.totalReports || 0;
+    const totalActiveReports = (reportStatisticsData?.data?.reportsByStatus["ON_PROGRESS"] || 0) + (reportStatisticsData?.data?.reportsByStatus["WAITING"] || 0);
+    const today = Date.now();
+    const thisMonth = getFormattedDate(today, {
+        formatStr: 'yyyy-MM',
+    });
+    const totalReportsThisMonth = reportStatisticsData?.data?.monthlyReportCounts[thisMonth] || 0;
+    const totalUsers = userStatisticsData?.data?.totalUsers || 0;
+    
+    const reportErrorSection = (
+        <ErrorSection 
+        errors={errorReportStatistics}
+        message={getErrorResponseMessage(errorReportStatistics)}
+        onRetry={() => refetchReportStatistics}
+        showRetryButton={isReportStatisticServerError}
+        />
+    ) 
+
+    const userErrorSection = (
+        <ErrorSection 
+        errors={errorUserStatistics}
+        message={getErrorResponseMessage(errorUserStatistics)}
+        onRetry={() => refetchUserStatistics}
+        showRetryButton={isUserStatisticServerError}
+        />
+    ) 
 
     return (
         <div className="space-y-8">
@@ -42,26 +96,92 @@ const Homepage = () => {
                 </button>
             </HeaderSection>
 
+            <div className='flex w-full justify-between gap-10'>
+                {isErrorReportStatistics && (
+                    <div className='w-1/2'>
+                        {reportErrorSection}
+                    </div>
+                )}
+                {isErrorUserStatistics && (
+                    <div className='w-1/2'>
+                        {userErrorSection}
+                    </div>
+                )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                { title: 'Total Laporan', value: '1,234', change: '+12%', color: 'from-blue-500 to-blue-600', icon: GoAlert },
-                { title: 'Laporan Aktif', value: '89', change: '+5%', color: 'from-orange-500 to-orange-600', icon: LuActivity },
-                { title: 'Komunitas', value: '567', change: '+8%', color: 'from-green-500 to-green-600', icon: FaUsers },
-                { title: 'Area Terpantau', value: '23', change: '+2%', color: 'from-purple-500 to-purple-600', icon: FaMap },
-                ].map((stat, index) => (
-                <div key={index} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-md p-6">
-                    <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
-                        <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                        <p className="text-sm text-green-600 font-medium">{stat.change} dari bulan lalu</p>
-                    </div>
-                    <div className={`p-3 rounded-lg bg-gradient-to-br ${stat.color}`}>
-                        <stat.icon className="w-6 h-6 text-white" />
-                    </div>
-                    </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-md p-6">
+                    {loadingReportStatistics ? (
+                        <div className='pt-3'>
+                            <Loading type='dots'text='Memuat...'/>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600 mb-1">Total Laporan</p>
+                                <p className="text-2xl font-bold text-gray-900">{totalReports} Laporan</p>
+                                <p className="text-sm text-green-600 font-medium"></p>
+                            </div>
+                            <div className={`p-3 rounded-lg bg-sky-800`}>
+                                <GoAlert className="w-6 h-6 text-white" />
+                            </div>
+                        </div>
+                    )}
                 </div>
-                ))}
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-md p-6">
+                        {loadingReportStatistics ? (
+                            <div className='pt-3'>
+                                <Loading type='dots'text='Memuat...'/>
+                            </div>
+                        ) : (
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600 mb-1">Total Laporan Aktif</p>
+                                <p className="text-2xl font-bold text-gray-900">{totalActiveReports} Laporan</p>
+                                <p className="text-sm text-green-600 font-medium"></p>
+                            </div>
+                            <div className={`p-3 rounded-lg bg-sky-800`}>
+                                <IoMdPulse className="w-6 h-6 text-white" />
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-md p-6">
+                    {loadingReportStatistics ? (
+                        <div className='pt-3'>
+                            <Loading type='dots'text='Memuat...'/>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600 mb-1">Total Laporan Bulan Ini</p>
+                                <p className="text-2xl font-bold text-gray-900">{totalReportsThisMonth} Laporan</p>
+                                <p className="text-sm text-green-600 font-medium"></p>
+                            </div>
+                            <div className={`p-3 rounded-lg bg-sky-800`}>
+                                <MdCalendarMonth className="w-6 h-6 text-white" />
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-md p-6">
+                {loadingUserStatistics ? (
+                        <div className='pt-3'>
+                            <Loading type='dots'text='Memuat...'/>
+                        </div>
+                ) : (
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600 mb-1">Total Pengguna Aktif</p>
+                            <p className="text-2xl font-bold text-gray-900">{totalUsers} Pengguna</p>
+                            <p className="text-sm text-green-600 font-medium"></p>
+                        </div>
+                        <div className={`p-3 rounded-lg bg-sky-800`}>
+                            <FaUser className="w-6 h-6 text-white" />
+                        </div>
+                    </div>
+                )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
