@@ -26,12 +26,35 @@ run-test:
 	@set APP_ENV=test && go run cmd/main.go
 
 test:
-	@echo "Testing..."
+	@echo "Running all tests..."
 	@go test ./... -v
+
+test-unit:
+	@echo "Running unit tests..."
+	@go test ./pkg/... ./internal/domain/userService/service/... ./internal/domain/authService/service/... -v
+
+test-coverage:
+	@echo "Running tests with coverage..."
+	@go test ./... -coverprofile=coverage.out
+	@go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
+
+test-short:
+	@echo "Running short tests (excluding integration tests)..."
+	@go test ./... -short -v
+
+test-benchmark:
+	@echo "Running benchmark tests..."
+	@go test ./... -bench=. -benchmem
+
+test-verbose:
+	@echo "Running tests with verbose output..."
+	@go test ./... -v -count=1
 
 clean:
 	@echo "Cleaning..."
 	@rm -f main
+	@rm -f coverage.out coverage.html
 
 generate-key:
 	@go run scripts/keys.go
