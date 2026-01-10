@@ -392,3 +392,98 @@ func TestUserService_SaveProfile(t *testing.T) {
 		mockProfileRepo.AssertExpectations(t)
 	})
 }
+
+func TestUserService_GetUserStatistics(t *testing.T) {
+	t.Run("should get user statistics successfully", func(t *testing.T) {
+		mockUserRepo := new(mocks.MockUserRepository)
+		mockProfileRepo := new(mocks.MockUserProfileRepository)
+		service := NewUserService(mockUserRepo, mockProfileRepo)
+
+		ctx := context.Background()
+		expectedStats := dto.GetUserStatisticsResponse{
+			TotalUsers: 100,
+			MonthlyUserCounts: map[string]int64{
+				"2024-01": 20,
+				"2024-02": 30,
+				"2024-03": 50,
+			},
+			UsersByGender: map[string]int64{
+				"male": 40,
+				"female": 50,
+				"unknown": 10,
+			},
+		}
+
+		mockUserRepo.On("GetUsersCount", ctx).Return(int64(100), nil)
+
+		mockUserRepo.On("GetByUserGenderCount", ctx).Return(map[string]int64{
+			"male": 40,
+			"female": 50,
+			"unknown": 10,
+		}, nil)
+
+		mockUserRepo.On("GetMonthlyUserCounts", ctx).Return(map[string]int64{
+			"2024-01": 20,
+			"2024-02": 30,
+			"2024-03": 50,
+		}, nil)
+
+		result, err := service.GetUserStatistics(ctx)
+
+		require.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, expectedStats.TotalUsers, result.TotalUsers)
+		assert.Equal(t, expectedStats.MonthlyUserCounts, result.MonthlyUserCounts)
+		assert.Equal(t, expectedStats.UsersByGender, result.UsersByGender)
+		mockUserRepo.AssertExpectations(t)
+	})
+
+	t.Run("should return error on user count fetch failure", func(t *testing.T) {
+		mockUserRepo := new(mocks.MockUserRepository)
+		mockProfileRepo := new(mocks.MockUserProfileRepository)
+		service := NewUserService(mockUserRepo, mockProfileRepo)
+		ctx := context.Background()
+
+		mockUserRepo.On("GetUsersCount", ctx).Return(int64(0), errors.New("database error"))
+		result, err := service.GetUserStatistics(ctx)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "gagal mendapatkan jumlah pengguna")
+		mockUserRepo.AssertExpectations(t)
+	})
+
+	t.Run("should return error on gender count fetch failure", func(t *testing.T) {
+		mockUserRepo := new(mocks.MockUserRepository)
+		mockProfileRepo := new(mocks.MockUserProfileRepository)
+		service := NewUserService(mockUserRepo, mockProfileRepo)
+		ctx := context.Background()
+		mockUserRepo.On("GetUsersCount", ctx).Return(int64(100), nil)
+		mockUserRepo.On("GetByUserGenderCount", ctx).Return(nil, errors.New("database error"))
+		result, err := service.GetUserStatistics(ctx)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "gagal mendapatkan jumlah pengguna berdasarkan gender")
+		mockUserRepo.AssertExpectations(t)
+	})
+
+	t.Run("should return error on monthly user count fetch failure", func(t *testing.T) {
+		mockUserRepo := new(mocks.MockUserRepository)
+		mockProfileRepo := new(mocks.MockUserProfileRepository)
+		service := NewUserService(mockUserRepo, mockProfileRepo)
+		ctx := context.Background()
+		mockUserRepo.On("GetUsersCount", ctx).Return(int64(100), nil)
+		mockUserRepo.On("GetByUserGenderCount", ctx).Return(map[string]int64{
+			"male": 40,
+			"female": 50,
+			"unknown": 10,
+		}, nil)
+		mockUserRepo.On("GetMonthlyUserCounts", ctx).Return(nil, errors.New("database error"))
+		result, err := service.GetUserStatistics(ctx)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "gagal mendapatkan jumlah pengguna bulanan")
+		mockUserRepo.AssertExpectations(t)
+	})
+}
