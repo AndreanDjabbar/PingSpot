@@ -214,6 +214,13 @@ func BoolPtrOrNil(b bool) *bool {
 	return &b
 }
 
+func IntPtrOrNil(i int) *int {
+	if i == 0 {
+		return nil
+	}
+	return &i
+}
+
 func Int64PtrOrNil(i int64) *int64 {
 	if i == 0 {
 		return nil
