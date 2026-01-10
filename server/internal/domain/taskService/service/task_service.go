@@ -13,19 +13,23 @@ import (
 	"go.uber.org/zap"
 )
 
-type TaskService struct {
+type TaskService interface {
+	AutoResolveReportTask(reportID uint) error
+}
+
+type taskService struct {
 	client     *asynq.Client
 	ReportRepo repository.ReportRepository
 }
 
-func NewTaskService(client *asynq.Client, reportRepo repository.ReportRepository) *TaskService {
-	return &TaskService{
+func NewTaskService(client *asynq.Client, reportRepo repository.ReportRepository) TaskService {
+	return &taskService{
 		client:     client,
 		ReportRepo: reportRepo,
 	}
 }
 
-func (s *TaskService) AutoResolveReportTask(reportID uint) error {
+func (s *taskService) AutoResolveReportTask(reportID uint) error {
 	payload, _ := json.Marshal(payload.UpdateProgressPayload{ReportID: reportID})
 	task := asynq.NewTask(tasks.TaskAutoResolveReport, payload)
 	_, err := s.client.Enqueue(task, asynq.ProcessIn(20*time.Minute))

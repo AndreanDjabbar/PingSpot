@@ -17,10 +17,10 @@ import (
 type CronHandler struct {
 	db           *gorm.DB
 	reportRepo   repository.ReportRepository
-	tasksService *service.TaskService
+	tasksService service.TaskService
 }
 
-func NewCronHandler(db *gorm.DB, reportRepo repository.ReportRepository, tasksService *service.TaskService) *CronHandler {
+func NewCronHandler(db *gorm.DB, reportRepo repository.ReportRepository, tasksService service.TaskService) *CronHandler {
 	return &CronHandler{
 		db:           db,
 		reportRepo:   reportRepo,
