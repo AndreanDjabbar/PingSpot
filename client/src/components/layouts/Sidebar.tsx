@@ -19,10 +19,17 @@ interface SidebarProps {
     onBottomNavHeightChange?: (position: number) => void;
 }
 
-const navigationItems = [
+interface NavigationItem {
+    id: string;
+    label: string;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    badge?: string;
+}
+
+const navigationItems: NavigationItem[] = [
     { id: 'home', label: 'Beranda', icon: BiHome },
     { id: 'explore', label: 'Jelajahi', icon: FaUsers },
-    { id: 'reports', label: 'Laporan', icon: GoAlert, badge: '3' },
+    { id: 'reports', label: 'Laporan', icon: GoAlert,  },
     { id: 'map', label: 'Peta Interaktif', icon: FaMap },
     // { id: 'community', label: 'Komunitas', icon: FaUsers },
     // { id: 'messages', label: 'Pesan', icon: LuMessageCircle, badge: '12' },
@@ -97,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false, 
                                         }}
                                         className={`
                                         w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
-                                        transition-all duration-200 group relative
+                                        transition-all duration-200 group relative cursor-pointer
                                         ${item.id === currentPath
                                             ? 'bg-white/20 text-gray-200' 
                                             : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'
@@ -137,7 +144,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, collapsed = false, 
                                     }}
                                     className={`
                                     w-full flex items-center ${collapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl
-                                    text-gray-200 hover:bg-gray-700/50 hover:text-gray-300 transition-colors
+                                    text-gray-200 hover:bg-gray-700/50 hover:text-gray-300 transition-colors cursor-pointer
                                     ${item.id === currentPath
                                             ? 'bg-white/20 text-gray-200' 
                                             : 'text-gray-200 hover:bg-gray-700/50 hover:text-white'

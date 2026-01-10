@@ -240,11 +240,12 @@ const Homepage = () => {
                     <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
                         Aktivitas Terbaru
                     </h2>
-                    <div className="space-y-4">
+                    <h4 className='text-gray-500'>
+                        Fitur ini akan segera hadir. Nantikan pembaruan selanjutnya!
+                    </h4>
+                    {/* <div className="space-y-4">
                         {[
                         { action: 'Laporan baru', desc: 'Jalan rusak di Jl. Sudirman', time: '5 menit lalu', status: 'new' },
-                        { action: 'Status update', desc: 'Perbaikan lampu jalan selesai', time: '1 jam lalu', status: 'resolved' },
-                        { action: 'Komentar baru', desc: 'Warga merespon laporan Anda', time: '2 jam lalu', status: 'comment' },
                         ].map((activity, index) => (
                         <div key={index} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50/50 transition-colors">
                             <div className={`w-2 h-2 rounded-full mt-2 ${
@@ -258,7 +259,7 @@ const Homepage = () => {
                             </div>
                         </div>
                         ))}
-                    </div>
+                    </div> */}
                 </div>
                 {/* <Map/> */}
             </div>
