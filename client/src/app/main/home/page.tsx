@@ -119,7 +119,7 @@ const Homepage = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-gray-600 mb-1">Total Laporan</p>
-                                <p className="text-2xl font-bold text-gray-900">{totalReports} Laporan</p>
+                                <p className="text-xl font-bold text-gray-900">{totalReports} Laporan</p>
                                 <p className="text-sm text-green-600 font-medium"></p>
                             </div>
                             <div className={`p-3 rounded-lg bg-sky-800`}>
@@ -137,7 +137,7 @@ const Homepage = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-gray-600 mb-1">Total Laporan Aktif</p>
-                                <p className="text-2xl font-bold text-gray-900">{totalActiveReports} Laporan</p>
+                                <p className="text-xl font-bold text-gray-900">{totalActiveReports} Laporan</p>
                                 <p className="text-sm text-green-600 font-medium"></p>
                             </div>
                             <div className={`p-3 rounded-lg bg-sky-800`}>
@@ -155,7 +155,7 @@ const Homepage = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-gray-600 mb-1">Total Laporan Bulan Ini</p>
-                                <p className="text-2xl font-bold text-gray-900">{totalReportsThisMonth} Laporan</p>
+                                <p className="text-xl font-bold text-gray-900">{totalReportsThisMonth} Laporan</p>
                                 <p className="text-sm text-green-600 font-medium"></p>
                             </div>
                             <div className={`p-3 rounded-lg bg-sky-800`}>
@@ -173,7 +173,7 @@ const Homepage = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-600 mb-1">Total Pengguna Aktif</p>
-                            <p className="text-2xl font-bold text-gray-900">{totalUsers} Pengguna</p>
+                            <p className="text-xl font-bold text-gray-900">{totalUsers} Pengguna</p>
                             <p className="text-sm text-green-600 font-medium"></p>
                         </div>
                         <div className={`p-3 rounded-lg bg-sky-800`}>
