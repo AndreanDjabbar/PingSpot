@@ -48,7 +48,7 @@ func (s *SearchService) SearchData(ctx context.Context, searchQuery string, user
 		return nil, apperror.New(500, "USER_SEARCH_FAILED", "Gagal mencari data pengguna", err.Error())
 	}
 
-	reportsData, err := s.reportRepo.FullTextSearchReportsPaginated(ctx, strings.ToLower(searchQuery), limit, reportsDataNextCursor)
+	reportsData, err := s.reportRepo.FullTextSearchReportPaginated(ctx, strings.ToLower(searchQuery), limit, reportsDataNextCursor)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Error("Failed to search reports",
 			zap.String("request_id", requestID),

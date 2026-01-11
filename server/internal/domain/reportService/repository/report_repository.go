@@ -25,8 +25,8 @@ type ReportRepository interface {
 	GetPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error)
 	GetByReportTypeCount(ctx context.Context) (*dto.TotalReportCount, error)
 	GetMonthlyReportCount(ctx context.Context) (map[string]int64, error)
-	FullTextSearchReports(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error)
-	FullTextSearchReportsPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error)
+	FullTextSearchReport(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error)
+	FullTextSearchReportPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error)
 }
 
 type reportRepository struct {
@@ -107,7 +107,7 @@ func (r *reportRepository) GetByReportStatusCount(ctx context.Context, status ..
 	return statusCounts, nil
 }
 
-func (r *reportRepository) FullTextSearchReports(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error) {
+func (r *reportRepository) FullTextSearchReport(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error) {
 	var reports []model.Report
 
 	if strings.TrimSpace(searchQuery) == "" {
@@ -159,7 +159,7 @@ func (r *reportRepository) GetMonthlyReportCount(
 	return monthlyCounts, nil
 }
 
-func (r *reportRepository) FullTextSearchReportsPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error) {
+func (r *reportRepository) FullTextSearchReportPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error) {
 	var reports []model.Report
 
 	if strings.TrimSpace(searchQuery) == "" {

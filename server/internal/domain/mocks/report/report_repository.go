@@ -122,7 +122,7 @@ func (m *MockReportRepository) GetMonthlyReportCount(ctx context.Context) (map[s
 	return args.Get(0).(map[string]int64), args.Error(1)
 }
 
-func (m *MockReportRepository) FullTextSearchReports(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error) {
+func (m *MockReportRepository) FullTextSearchReport(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error) {
 	args := m.Called(ctx, searchQuery, limit)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -130,7 +130,7 @@ func (m *MockReportRepository) FullTextSearchReports(ctx context.Context, search
 	return args.Get(0).(*[]model.Report), args.Error(1)
 }
 
-func (m *MockReportRepository) FullTextSearchReportsPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error) {
+func (m *MockReportRepository) FullTextSearchReportPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error) {
 	args := m.Called(ctx, searchQuery, limit, cursorID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
