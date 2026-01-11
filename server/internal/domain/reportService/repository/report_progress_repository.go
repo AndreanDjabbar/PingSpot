@@ -8,7 +8,8 @@ import (
 )
 
 type ReportProgressRepository interface {
-	Create(ctx context.Context, progress *model.ReportProgress, tx *gorm.DB) (*model.ReportProgress, error)
+	Create(ctx context.Context, progress *model.ReportProgress) (*model.ReportProgress, error)
+	CreateTX(ctx context.Context, tx *gorm.DB, progress *model.ReportProgress) (*model.ReportProgress, error)
 	GetByReportID(ctx context.Context, reportID uint) ([]model.ReportProgress, error)
 }
 
@@ -20,8 +21,15 @@ func NewReportProgressRepository(db *gorm.DB) ReportProgressRepository {
 	return &reporProgressRepository{db: db}
 }
 
-func (r *reporProgressRepository) Create(ctx context.Context, progress *model.ReportProgress, tx *gorm.DB) (*model.ReportProgress, error) {
+func (r *reporProgressRepository) Create(ctx context.Context, progress *model.ReportProgress) (*model.ReportProgress, error) {
 	if err := r.db.WithContext(ctx).Create(progress).Error; err != nil {
+		return nil, err
+	}
+	return progress, nil
+}
+
+func (r *reporProgressRepository) CreateTX(ctx context.Context, tx *gorm.DB, progress *model.ReportProgress) (*model.ReportProgress, error) {
+	if err := tx.WithContext(ctx).Create(progress).Error; err != nil {
 		return nil, err
 	}
 	return progress, nil
