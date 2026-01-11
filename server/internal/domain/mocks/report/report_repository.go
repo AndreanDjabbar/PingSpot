@@ -114,7 +114,7 @@ func (m *MockReportRepository) GetReportsCount(ctx context.Context) (*dto.TotalR
 	return args.Get(0).(*dto.TotalReportCount), args.Error(1)
 }
 
-func (m *MockReportRepository) GetMonthlyReportCounts(ctx context.Context) (map[string]int64, error) {
+func (m *MockReportRepository) GetMonthlyReportCount(ctx context.Context) (map[string]int64, error) {
 	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)

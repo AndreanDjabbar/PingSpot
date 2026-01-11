@@ -1132,7 +1132,7 @@ func (s *ReportService) GetReportStatistics(ctx context.Context) (*dto.GetReport
 		return nil, apperror.New(500, "RESOLVED_REPORTS_FETCH_FAILED", "Gagal mengambil laporan yang diselesaikan", err.Error())
 	}
 
-	monthlyReports, err := s.reportRepo.GetMonthlyReportCounts(ctx)
+	monthlyReports, err := s.reportRepo.GetMonthlyReportCount(ctx)
 	if err != nil {
 		return nil, apperror.New(500, "MONTHLY_REPORTS_FETCH_FAILED", "Gagal mengambil laporan bulanan", err.Error())
 	}
