@@ -725,12 +725,12 @@ func (s *ReportService) VoteToReport(ctx context.Context, db *gorm.DB, userID ui
 
 	if report.UserID == userID {
 		tx.Rollback()
-		return nil, apperror.New(400, "CANNOT_VOTE_OWN_REPORT", "Anda tidak dapat memberikan suara pada laporan Anda sendiri", "")
+		return nil, apperror.New(400, "CANNOT_VOTE_OWN_REPORT", "Anda tidak dapat memberikan suara pada laporan anda sendiri", "")
 	}
 
 	if report.ReportStatus == model.RESOLVED {
 		tx.Rollback()
-		return nil, apperror.New(400, "REPORT_ALREADY_RESOLVED", "Anda tidak dapat memberikan suara pada laporan yang sudah diselesaikan", "")
+		return nil, apperror.New(400, "REPORT_ALREADY_RESOLVED", "Anda tidak dapat memberikan suara pada laporan yang sudah selesai", "")
 	}
 
 	if report.ReportStatus == model.EXPIRED {
