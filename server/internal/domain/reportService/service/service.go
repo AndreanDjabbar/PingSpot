@@ -915,8 +915,7 @@ func (s *ReportService) UploadProgressReport(ctx context.Context, db *gorm.DB, u
 		Attachment2: req.Attachment2,
 		CreatedAt:   time.Now().Unix(),
 	}
-
-	newProgress, err := s.reportProgressRepo.Create(ctx, reportProgress, tx)
+	newProgress, err := s.reportProgressRepo.CreateTX(ctx, tx, reportProgress)
 	if err != nil {
 		tx.Rollback()
 		return nil, apperror.New(500, "PROGRESS_CREATE_FAILED", "gagal mengunggah progres laporan", err.Error())
