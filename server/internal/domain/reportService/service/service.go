@@ -689,13 +689,18 @@ func (s *ReportService) ReactToReport(ctx context.Context, db *gorm.DB, userID u
 		return nil, apperror.New(500, "TRANSACTION_COMMIT_FAILED", "Gagal menyimpan perubahan", err.Error())
 	}
 
-	return &dto.ReactReportResponse{
-		ReportID:     reportID,
-		UserID:       userID,
-		ReactionType: string(resultReaction.Type),
-		CreatedAt:    resultReaction.CreatedAt,
-		UpdatedAt:    resultReaction.UpdatedAt,
-	}, nil
+	response := &dto.ReactReportResponse{
+		ReportID: reportID,
+		UserID:   userID,
+	}
+
+	if resultReaction != nil {
+		response.ReactionType = string(resultReaction.Type)
+		response.CreatedAt = resultReaction.CreatedAt
+		response.UpdatedAt = resultReaction.UpdatedAt
+	}
+
+	return response, nil
 }
 
 func (s *ReportService) VoteToReport(ctx context.Context, db *gorm.DB, userID uint, reportID uint, voteType string) (*dto.GetVoteReportResponse, error) {
@@ -1053,7 +1058,7 @@ func (s *ReportService) CreateReportComment(ctx context.Context, db *mongo.Clien
 		CreatedAt:       reportComment.CreatedAt,
 		Content:         reportComment.Content,
 		ParentCommentID: parentCommentIDStr,
-		ThreadRootID:	  threadRootIDStr,
+		ThreadRootID:    threadRootIDStr,
 	}, nil
 }
 
@@ -1065,7 +1070,7 @@ func (s *ReportService) GetReportComments(ctx context.Context, reportID uint, cu
 		return nil, apperror.New(400, "INVALID_CURSOR_ID", "ID kursor tidak valid", err.Error())
 	}
 
-	commentsFromDB, err := s.reportCommentRepo.GetPaginatedRootByReportID(ctx, reportID, primitiveCursor, (limit+1))
+	commentsFromDB, err := s.reportCommentRepo.GetPaginatedRootByReportID(ctx, reportID, primitiveCursor, (limit + 1))
 	if err != nil {
 		return nil, apperror.New(500, "COMMENT_FETCH_FAILED", "Gagal mengambil komentar", err.Error())
 	}
@@ -1118,7 +1123,7 @@ func (s *ReportService) GetReportComments(ctx context.Context, reportID uint, cu
 }
 
 func (s *ReportService) GetReportStatistics(ctx context.Context) (*dto.GetReportStatisticsResponse, error) {
-	totalReports, err := s.reportRepo.GetReportsCount(ctx)	
+	totalReports, err := s.reportRepo.GetReportsCount(ctx)
 	if err != nil {
 		return nil, apperror.New(500, "TOTAL_REPORTS_FETCH_FAILED", "Gagal mengambil total laporan", err.Error())
 	}
@@ -1134,97 +1139,97 @@ func (s *ReportService) GetReportStatistics(ctx context.Context) (*dto.GetReport
 	}
 
 	return &dto.GetReportStatisticsResponse{
-		TotalReports:    totalReports.TotalReports,
-		ReportsByStatus: reportsByStatus,
-		MonthlyReportCounts:  monthlyReports,
+		TotalReports:        totalReports.TotalReports,
+		ReportsByStatus:     reportsByStatus,
+		MonthlyReportCounts: monthlyReports,
 	}, nil
 }
 
 func (s *ReportService) GetReportCommentReplies(ctx context.Context, rootID string, cursorID *string) (*dto.GetReportCommentRepliesResponse, error) {
-    const limit = 60
-    
-    primitiveRootID, err := mainutils.StringPtrToObjectIDPtr(&rootID)
-    if err != nil {
-        return nil, apperror.New(400, "INVALID_ROOT_ID", "ID akar thread tidak valid", err.Error())
-    }
-    
-    primitiveCursor, err := mainutils.StringPtrToObjectIDPtr(cursorID)
-    if err != nil {
-        return nil, apperror.New(400, "INVALID_CURSOR_ID", "ID kursor tidak valid", err.Error())
-    }
-    
-    repliesFromDB, err := s.reportCommentRepo.GetPaginatedRepliesByRootID(ctx, *primitiveRootID, primitiveCursor, limit+1)
-    if err != nil {
-        return nil, apperror.New(500, "REPLY_FETCH_FAILED", "Gagal mengambil balasan", err.Error())
-    }
-    
-    rootComment, err := s.reportCommentRepo.GetByID(ctx, *primitiveRootID)
-    if err != nil {
-        return nil, apperror.New(500, "ROOT_COMMENT_FETCH_FAILED", "Gagal mengambil komentar akar", err.Error())
-    }
-    
-    userIDSet := make(map[uint]struct{})
-    parentIDSet := make(map[primitive.ObjectID]struct{})
-    
-    userIDSet[rootComment.UserID] = struct{}{}
-    
-    for _, reply := range repliesFromDB {
-        userIDSet[reply.UserID] = struct{}{}
-        if reply.ParentCommentID != nil {
-            parentIDSet[*reply.ParentCommentID] = struct{}{}
-        }
-    }
-    
-    parentIDs := make([]primitive.ObjectID, 0, len(parentIDSet))
-    for id := range parentIDSet {
-        parentIDs = append(parentIDs, id)
-    }
-    
-    parentsData := make(map[string]*model.ReportComment)
-    if len(parentIDs) > 0 {
-        parents, err := s.reportCommentRepo.GetByIDs(ctx, parentIDs)
-        if err != nil {
-            return nil, apperror.New(500, "PARENT_FETCH_FAILED", "Gagal mengambil parent comments", err.Error())
-        }
-        
-        for i := range parents {
-            parentsData[parents[i].ID.Hex()] = parents[i]
-            userIDSet[parents[i].UserID] = struct{}{}
-        }
-    }
-    
-    parentsData[rootComment.ID.Hex()] = rootComment
-    
-    userIDs := make([]uint, 0, len(userIDSet))
-    for id := range userIDSet {
-        userIDs = append(userIDs, id)
-    }
-    
-    users, err := s.userRepo.GetByIDs(ctx, userIDs)
-    if err != nil {
-        return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data pengguna", err.Error())
-    }
-    
-    userMap := make(map[uint]*model.User, len(users))
-    for i := range users {
-        userMap[users[i].ID] = &users[i]
-    }
-    
-    hasMore := len(repliesFromDB) > limit
-    if hasMore {
-        repliesFromDB = repliesFromDB[:limit]
-    }
-    
-    replies := util.ConvertRepliesToDTO(repliesFromDB, userMap, parentsData)
-    
-    total, err := s.reportCommentRepo.GetCountsByRootID(ctx, *primitiveRootID)
-    if err != nil {
-        return nil, apperror.New(500, "COUNT_FETCH_FAILED", "Gagal menghitung total balasan", err.Error())
-    }
-    
-    return &dto.GetReportCommentRepliesResponse{
-        Replies:     replies,
-        HasMore:     hasMore,
-        TotalCounts: total,
-    }, nil
+	const limit = 60
+
+	primitiveRootID, err := mainutils.StringPtrToObjectIDPtr(&rootID)
+	if err != nil {
+		return nil, apperror.New(400, "INVALID_ROOT_ID", "ID akar thread tidak valid", err.Error())
+	}
+
+	primitiveCursor, err := mainutils.StringPtrToObjectIDPtr(cursorID)
+	if err != nil {
+		return nil, apperror.New(400, "INVALID_CURSOR_ID", "ID kursor tidak valid", err.Error())
+	}
+
+	repliesFromDB, err := s.reportCommentRepo.GetPaginatedRepliesByRootID(ctx, *primitiveRootID, primitiveCursor, limit+1)
+	if err != nil {
+		return nil, apperror.New(500, "REPLY_FETCH_FAILED", "Gagal mengambil balasan", err.Error())
+	}
+
+	rootComment, err := s.reportCommentRepo.GetByID(ctx, *primitiveRootID)
+	if err != nil {
+		return nil, apperror.New(500, "ROOT_COMMENT_FETCH_FAILED", "Gagal mengambil komentar akar", err.Error())
+	}
+
+	userIDSet := make(map[uint]struct{})
+	parentIDSet := make(map[primitive.ObjectID]struct{})
+
+	userIDSet[rootComment.UserID] = struct{}{}
+
+	for _, reply := range repliesFromDB {
+		userIDSet[reply.UserID] = struct{}{}
+		if reply.ParentCommentID != nil {
+			parentIDSet[*reply.ParentCommentID] = struct{}{}
+		}
+	}
+
+	parentIDs := make([]primitive.ObjectID, 0, len(parentIDSet))
+	for id := range parentIDSet {
+		parentIDs = append(parentIDs, id)
+	}
+
+	parentsData := make(map[string]*model.ReportComment)
+	if len(parentIDs) > 0 {
+		parents, err := s.reportCommentRepo.GetByIDs(ctx, parentIDs)
+		if err != nil {
+			return nil, apperror.New(500, "PARENT_FETCH_FAILED", "Gagal mengambil parent comments", err.Error())
+		}
+
+		for i := range parents {
+			parentsData[parents[i].ID.Hex()] = parents[i]
+			userIDSet[parents[i].UserID] = struct{}{}
+		}
+	}
+
+	parentsData[rootComment.ID.Hex()] = rootComment
+
+	userIDs := make([]uint, 0, len(userIDSet))
+	for id := range userIDSet {
+		userIDs = append(userIDs, id)
+	}
+
+	users, err := s.userRepo.GetByIDs(ctx, userIDs)
+	if err != nil {
+		return nil, apperror.New(500, "USER_FETCH_FAILED", "Gagal mengambil data pengguna", err.Error())
+	}
+
+	userMap := make(map[uint]*model.User, len(users))
+	for i := range users {
+		userMap[users[i].ID] = &users[i]
+	}
+
+	hasMore := len(repliesFromDB) > limit
+	if hasMore {
+		repliesFromDB = repliesFromDB[:limit]
+	}
+
+	replies := util.ConvertRepliesToDTO(repliesFromDB, userMap, parentsData)
+
+	total, err := s.reportCommentRepo.GetCountsByRootID(ctx, *primitiveRootID)
+	if err != nil {
+		return nil, apperror.New(500, "COUNT_FETCH_FAILED", "Gagal menghitung total balasan", err.Error())
+	}
+
+	return &dto.GetReportCommentRepliesResponse{
+		Replies:     replies,
+		HasMore:     hasMore,
+		TotalCounts: total,
+	}, nil
 }
