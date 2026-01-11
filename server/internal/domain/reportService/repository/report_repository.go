@@ -23,7 +23,7 @@ type ReportRepository interface {
 	GetByIsDeleted(ctx context.Context, isDeleted bool) ([]*model.Report, error)
 	GetByIsDeletedPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance, isDeleted bool) (*[]model.Report, error)
 	GetPaginated(ctx context.Context, limit, cursorID uint, reportType, status, sortBy, hasProgress string, distance dto.Distance) (*[]model.Report, error)
-	GetReportsCount(ctx context.Context) (*dto.TotalReportCount, error)
+	GetByReportTypeCount(ctx context.Context) (*dto.TotalReportCount, error)
 	GetMonthlyReportCount(ctx context.Context) (map[string]int64, error)
 	FullTextSearchReports(ctx context.Context, searchQuery string, limit int) (*[]model.Report, error)
 	FullTextSearchReportsPaginated(ctx context.Context, searchQuery string, limit int, cursorID uint) (*[]model.Report, error)
@@ -37,7 +37,7 @@ func NewReportRepository(db *gorm.DB) ReportRepository {
 	return &reportRepository{db: db}
 }
 
-func (r *reportRepository) GetReportsCount(ctx context.Context) (*dto.TotalReportCount, error) {
+func (r *reportRepository) GetByReportTypeCount(ctx context.Context) (*dto.TotalReportCount, error) {
 	var grouped []struct {
 		ReportType string
 		Total      int64

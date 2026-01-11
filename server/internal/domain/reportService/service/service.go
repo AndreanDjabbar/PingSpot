@@ -323,7 +323,7 @@ func (s *ReportService) GetAllReport(ctx context.Context, userID, cursorID uint,
 		return nil, apperror.New(500, "REPORT_FETCH_FAILED", "Gagal mengambil laporan", err.Error())
 	}
 
-	reportsCount, err := s.reportRepo.GetReportsCount(ctx)
+	reportsCount, err := s.reportRepo.GetByReportTypeCount(ctx)
 	if err != nil {
 		return nil, apperror.New(500, "REPORT_COUNT_FAILED", "Gagal mendapatkan total laporan", err.Error())
 	}
@@ -1122,7 +1122,7 @@ func (s *ReportService) GetReportComments(ctx context.Context, reportID uint, cu
 }
 
 func (s *ReportService) GetReportStatistics(ctx context.Context) (*dto.GetReportStatisticsResponse, error) {
-	totalReports, err := s.reportRepo.GetReportsCount(ctx)
+	totalReports, err := s.reportRepo.GetByReportTypeCount(ctx)
 	if err != nil {
 		return nil, apperror.New(500, "TOTAL_REPORTS_FETCH_FAILED", "Gagal mengambil total laporan", err.Error())
 	}

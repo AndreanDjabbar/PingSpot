@@ -106,7 +106,7 @@ func (m *MockReportRepository) GetPaginated(ctx context.Context, limit, cursorID
 	return args.Get(0).(*[]model.Report), args.Error(1)
 }
 
-func (m *MockReportRepository) GetReportsCount(ctx context.Context) (*dto.TotalReportCount, error) {
+func (m *MockReportRepository) GetByReportTypeCount(ctx context.Context) (*dto.TotalReportCount, error) {
 	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
