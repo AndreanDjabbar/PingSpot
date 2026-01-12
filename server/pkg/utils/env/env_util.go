@@ -30,3 +30,9 @@ func MongoPort() string { return os.Getenv("MONGO_PORT") }
 func MongoPassword() string { return os.Getenv("MONGO_PASSWORD") }
 func AccessTokenAge() string { return os.Getenv("ACCESS_TOKEN_AGE") }
 func RefreshTokenAge() string { return os.Getenv("REFRESH_TOKEN_AGE") }
+func GlobalRateLimiterMaxRequests() string {
+	return os.Getenv("GLOBAL_RATE_LIMITER_MAX_REQUESTS")
+}
+func GlobalRateLimiterWindowSeconds() string {
+	return os.Getenv("GLOBAL_RATE_LIMITER_WINDOW_SECONDS")
+}
