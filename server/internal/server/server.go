@@ -27,6 +27,7 @@ func New() *FiberServer {
 
 	app.Use(middleware.RequestIDMiddleware())
 	app.Use(middleware.LoggingMiddleware())
+	app.Use(middleware.GlobalRateLimiterMiddleware())
 
 	return &FiberServer{
 		App: app,
