@@ -19,13 +19,51 @@ func RegisterUserRoutes(app *fiber.App) {
 	userHandler := handler.NewUserHandler(userService)
 
 	userRoute := app.Group("/pingspot/api/user", middleware.ValidateAccessToken())
-	userRoute.Get("/statistics", middleware.TimeoutMiddleware(15*time.Second), userHandler.GetUserStatistics)
+
+	userRoute.Get("/statistics", 
+	middleware.TimeoutMiddleware(15*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 100,
+	})),  
+	userHandler.GetUserStatistics,
+	)
 
 	profileRoute := app.Group("/pingspot/api/user/profile", middleware.ValidateAccessToken())
-	profileRoute.Get("/", middleware.TimeoutMiddleware(5*time.Second), userHandler.GetProfileHandler)
-	profileRoute.Get("/:username", middleware.TimeoutMiddleware(5*time.Second), userHandler.GetProfileByUsernameHandler)
-	profileRoute.Post("/", middleware.TimeoutMiddleware(10*time.Second), userHandler.SaveUserProfileHandler)
+
+	profileRoute.Get("/", 
+	middleware.TimeoutMiddleware(5*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 50,
+	})), 
+	userHandler.GetProfileHandler,
+	)
+	profileRoute.Get("/:username", 
+	middleware.TimeoutMiddleware(5*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 100,
+	})), 
+	userHandler.GetProfileByUsernameHandler,
+	)
+	profileRoute.Post("/", 
+	middleware.TimeoutMiddleware(10*time.Second), 
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 100,
+	})), 
+	userHandler.SaveUserProfileHandler,
+	)
 
 	securityRoute := app.Group("/pingspot/api/user/security", middleware.ValidateAccessToken())
-	securityRoute.Post("/", middleware.TimeoutMiddleware(10*time.Second), userHandler.SaveUserSecurityHandler)
+	
+	securityRoute.Post("/", 
+	middleware.TimeoutMiddleware(10*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 50,
+	})),  
+	userHandler.SaveUserSecurityHandler,
+	)
 }
