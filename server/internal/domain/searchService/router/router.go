@@ -21,5 +21,12 @@ func RegisterSearchRoutes(app *fiber.App) {
 	searchHandler := handler.NewSearchHandler(searchService)
 
 	searchRoute := app.Group("/pingspot/api/search", middleware.ValidateAccessToken())
-	searchRoute.Get("/", middleware.TimeoutMiddleware(40*time.Second), searchHandler.HandleSearch)
+	searchRoute.Get("/", 
+	middleware.TimeoutMiddleware(40*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 150,
+	})), 
+	searchHandler.HandleSearch,
+	)
 }
