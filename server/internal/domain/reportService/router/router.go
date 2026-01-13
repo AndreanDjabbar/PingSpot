@@ -39,16 +39,107 @@ func RegisterReportRoutes(app *fiber.App) {
 	reportHandler := handler.NewReportHandler(reportService)
 
 	reportRoute := app.Group("/pingspot/api/report", middleware.ValidateAccessToken())
-	reportRoute.Post("/", middleware.TimeoutMiddleware(20*time.Second), reportHandler.CreateReportHandler)
-	reportRoute.Put("/:reportID", middleware.TimeoutMiddleware(20*time.Second), reportHandler.EditReportHandler)
-	reportRoute.Get("/", middleware.TimeoutMiddleware(15*time.Second), reportHandler.GetReportHandler)
-	reportRoute.Post("/:reportID/reaction", middleware.TimeoutMiddleware(5*time.Second), reportHandler.ReactionReportHandler)
-	reportRoute.Post("/:reportID/vote", middleware.TimeoutMiddleware(5*time.Second), reportHandler.VoteReportHandler)
-	reportRoute.Post("/:reportID/progress", middleware.TimeoutMiddleware(15*time.Second), reportHandler.UploadProgressReportHandler)
-	reportRoute.Get("/:reportID/progress", middleware.TimeoutMiddleware(10*time.Second), reportHandler.GetProgressReportHandler)
-	reportRoute.Delete("/:reportID", middleware.TimeoutMiddleware(10*time.Second), reportHandler.DeleteReportHandler)
-	reportRoute.Post("/:reportID/comment", middleware.TimeoutMiddleware(8*time.Second), reportHandler.CreateReportCommentHandler)
-	reportRoute.Get("/:reportID/comment", middleware.TimeoutMiddleware(15*time.Second), reportHandler.GetReportCommentsHandler)
-	reportRoute.Get("/comment/replies/:commentID", middleware.TimeoutMiddleware(15*time.Second), reportHandler.GetReportCommentRepliesHandler)
-	reportRoute.Get("/statistics", middleware.TimeoutMiddleware(15 * time.Second), reportHandler.GetReportStatisticsHandler)
+
+	reportRoute.Post("/", 
+	middleware.TimeoutMiddleware(20*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      10 * time.Minute,
+		MaxRequests: 8,
+	})), 
+	reportHandler.CreateReportHandler,
+	)
+
+	reportRoute.Put("/:reportID", 
+	middleware.TimeoutMiddleware(20*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      10 * time.Minute,
+		MaxRequests: 15,
+	})), 
+	reportHandler.EditReportHandler,
+	)
+
+	reportRoute.Get("/", 
+	middleware.TimeoutMiddleware(15*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 100,
+	})),  
+	reportHandler.GetReportHandler,
+	)
+
+	reportRoute.Post("/:reportID/reaction", middleware.TimeoutMiddleware(5*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 30,
+	})), 
+	reportHandler.ReactionReportHandler,
+	)
+
+	reportRoute.Post("/:reportID/vote", 
+	middleware.TimeoutMiddleware(5*time.Second), 
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 30,
+	})), 
+	reportHandler.VoteReportHandler,
+	)
+
+	reportRoute.Post("/:reportID/progress", middleware.TimeoutMiddleware(15*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 30,
+	})), 
+	reportHandler.UploadProgressReportHandler,
+	)
+
+	reportRoute.Get("/:reportID/progress", middleware.TimeoutMiddleware(10*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 100,
+	})),  
+	reportHandler.GetProgressReportHandler,
+	)
+
+	reportRoute.Delete("/:reportID", 
+	middleware.TimeoutMiddleware(10*time.Second), 
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 30,
+	})), 
+	reportHandler.DeleteReportHandler,
+	)
+
+	reportRoute.Post("/:reportID/comment", middleware.TimeoutMiddleware(8*time.Second), 
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 50,
+	})), 
+	reportHandler.CreateReportCommentHandler,
+	)
+
+	reportRoute.Get("/:reportID/comment", 
+	middleware.TimeoutMiddleware(15*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 100,
+	})),  
+	reportHandler.GetReportCommentsHandler,
+	)
+
+	reportRoute.Get("/comment/replies/:commentID", middleware.TimeoutMiddleware(15*time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 100,
+	})),  
+	reportHandler.GetReportCommentRepliesHandler,
+	)
+
+	reportRoute.Get("/statistics", 
+	middleware.TimeoutMiddleware(15 * time.Second),
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      1 * time.Minute,
+		MaxRequests: 100,
+	})),  
+	reportHandler.GetReportStatisticsHandler,
+	)
 }
