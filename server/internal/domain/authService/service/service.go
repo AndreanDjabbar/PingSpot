@@ -10,7 +10,7 @@ import (
 	"server/internal/domain/model"
 	"server/internal/domain/userService/repository"
 	"server/internal/infrastructure/cache"
-	apperror "server/pkg/appError"
+	apperror "server/pkg/apperror"
 	"server/pkg/logger"
 	contextutils "server/pkg/utils/contextUtils"
 	"server/pkg/utils/env"

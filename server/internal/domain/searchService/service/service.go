@@ -6,7 +6,7 @@ import (
 	reportRepository "server/internal/domain/reportService/repository"
 	"server/internal/domain/searchService/dto"
 	userRepository "server/internal/domain/userService/repository"
-	apperror "server/pkg/appError"
+	apperror "server/pkg/apperror"
 	"server/pkg/logger"
 	contextutils "server/pkg/utils/contextUtils"
 	"strings"

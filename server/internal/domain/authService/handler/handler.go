@@ -11,7 +11,7 @@ import (
 	"server/internal/domain/authService/validation"
 	"server/internal/infrastructure/cache"
 	"server/internal/infrastructure/database"
-	apperror "server/pkg/appError"
+	apperror "server/pkg/apperror"
 	"server/pkg/logger"
 	"server/pkg/utils/env"
 	mainutils "server/pkg/utils/mainUtils"

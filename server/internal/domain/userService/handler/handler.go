@@ -7,7 +7,7 @@ import (
 	"server/internal/domain/userService/service"
 	"server/internal/domain/userService/validation"
 	"server/internal/infrastructure/database"
-	apperror "server/pkg/appError"
+	apperror "server/pkg/apperror"
 	"server/pkg/logger"
 	mainutils "server/pkg/utils/mainUtils"
 	"server/pkg/utils/response"

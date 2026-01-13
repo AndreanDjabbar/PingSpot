@@ -10,7 +10,7 @@ import (
 	"server/internal/domain/reportService/util"
 	tasksService "server/internal/domain/taskService/service"
 	userRepository "server/internal/domain/userService/repository"
-	apperror "server/pkg/appError"
+	apperror "server/pkg/apperror"
 	"server/pkg/logger"
 	contextutils "server/pkg/utils/contextUtils"
 	"server/pkg/utils/env"

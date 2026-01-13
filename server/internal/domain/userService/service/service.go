@@ -6,7 +6,7 @@ import (
 	"server/internal/domain/model"
 	"server/internal/domain/userService/dto"
 	"server/internal/domain/userService/repository"
-	apperror "server/pkg/appError"
+	apperror "server/pkg/apperror"
 	contextutils "server/pkg/utils/contextUtils"
 	"server/pkg/logger"
 	tokenutils "server/pkg/utils/tokenutils"
