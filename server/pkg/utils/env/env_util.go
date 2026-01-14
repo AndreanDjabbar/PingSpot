@@ -36,3 +36,5 @@ func GlobalRateLimiterMaxRequests() string {
 func GlobalRateLimiterWindowSeconds() string {
 	return os.Getenv("GLOBAL_RATE_LIMITER_WINDOW_SECONDS")
 }
+func RedisUsername() string { return os.Getenv("REDIS_USERNAME") }
+func RedisPassword() string { return os.Getenv("REDIS_PASSWORD") }
