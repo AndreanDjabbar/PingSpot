@@ -2,11 +2,13 @@ package cache
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"time"
 
 	"server/internal/config"
 	"server/pkg/logger"
+	"server/pkg/utils/env"
 
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
@@ -16,11 +18,23 @@ var redisInstance *redis.Client
 
 func InitRedis(cfg config.RedisConfig) error {
 	addr := fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
-
-	client := redis.NewClient(&redis.Options{
-		Addr: addr,
-		DB:   cfg.DB,
-	})
+	var client *redis.Client
+	if env.RedisHost() != "localhost" {
+		client = redis.NewClient(&redis.Options{
+			Addr:     addr,
+			Username: cfg.Username,
+			Password: cfg.Password,
+			DB:       cfg.DB,
+			TLSConfig: &tls.Config{
+				MinVersion: tls.VersionTLS12,
+			},
+		})
+	} else {
+		client = redis.NewClient(&redis.Options{
+			Addr: addr,
+			DB:   cfg.DB,
+		})
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
