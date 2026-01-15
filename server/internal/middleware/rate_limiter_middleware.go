@@ -25,7 +25,7 @@ type RateLimiterConfig struct {
 }
 
 type RateLimiter struct {
-	redis  *redis.Client
+	redis  redis.UniversalClient
 	config RateLimiterConfig
 }
 
@@ -37,7 +37,7 @@ func NewRateLimiter(config RateLimiterConfig) *RateLimiter {
 }
 
 func (rl *RateLimiter) Allow(ctx context.Context, identifier string) (bool, int, error) {
-	key := fmt.Sprintf("%s:%s", rl.config.KeyPrefix, identifier)
+	key := fmt.Sprintf("%s:%s", identifier, rl.config.KeyPrefix,)
 	now := time.Now().UnixNano()
 	windowStart := now - int64(rl.config.Window.Nanoseconds())
 
@@ -110,11 +110,11 @@ func GlobalRateLimiterMiddleware() fiber.Handler {
 	limiter := NewRateLimiter(RateLimiterConfig{
 		MaxRequests: maxRequest,
 		Window:      time.Duration(windowSeconds) * time.Second,
-		KeyPrefix:   "rate_limit:global",
+		KeyPrefix:   "global",
 	})
 
 	return func(c *fiber.Ctx) error {
-		allowed, count, err := limiter.Allow(c.Context(), "global")
+		allowed, count, err := limiter.Allow(c.Context(), "rate_limit:global")
 		if err != nil {
 			logger.Error("Rate limiter error", zap.Error(err))
 			return c.Next()
@@ -154,7 +154,7 @@ func UserRateLimiterMiddleware(limiter *RateLimiter) fiber.Handler {
 			userID = mainutils.GetClientIP(c)
 		}
 
-		identifier := fmt.Sprintf("user:%v", userID)
+		identifier := fmt.Sprintf("rate_limit:user:%v", userID)
 
 		allowed, count, err := limiter.Allow(c.Context(), identifier)
 		if err != nil {
