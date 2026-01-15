@@ -1,21 +1,43 @@
 package asynqWorker
 
 import (
+	"crypto/tls"
+	"fmt"
+	"server/internal/config"
 	"server/internal/worker/asynqWorker/handler"
 	"server/pkg/logger"
+	"server/pkg/utils/env"
 
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"
 )
 
 type WorkerServer struct {
-	server     *asynq.Server
-	client     *asynq.Client
-	redisAddr  string
+	server    *asynq.Server
+	client    *asynq.Client
+	redisAddr string
 }
 
-func NewWorkerServer(redisAddr string) *WorkerServer {
-	opt := asynq.RedisClientOpt{Addr: redisAddr}
+func NewWorkerServer(cfg config.RedisConfig) *WorkerServer {
+	addr := fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
+	var opt asynq.RedisConnOpt
+
+	if env.RedisHost() != "localhost" {
+		opt = asynq.RedisClusterClientOpt{
+			Addrs:    []string{addr},
+            Username: cfg.Username,
+            Password: cfg.Password,
+            TLSConfig: &tls.Config{
+                MinVersion:         tls.VersionTLS12,
+                InsecureSkipVerify: true, 
+            },
+		}
+	} else {
+		opt = asynq.RedisClientOpt{
+			Addr: addr,
+			DB:   cfg.DB,
+		}
+	}
 
 	return &WorkerServer{
 		server: asynq.NewServer(
@@ -29,7 +51,7 @@ func NewWorkerServer(redisAddr string) *WorkerServer {
 			},
 		),
 		client:    asynq.NewClient(opt),
-		redisAddr: redisAddr,
+		redisAddr: addr,
 	}
 }
 
@@ -43,4 +65,13 @@ func (w *WorkerServer) Run() error {
 	}
 
 	return nil
+}
+
+func (w *WorkerServer) GetClient() *asynq.Client {
+	return w.client
+}
+
+func (w *WorkerServer) Stop() {
+	w.server.Stop()
+	w.server.Shutdown()
 }

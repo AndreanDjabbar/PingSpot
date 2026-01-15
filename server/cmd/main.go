@@ -15,8 +15,6 @@ import (
 	"strconv"
 
 	"go.uber.org/zap"
-
-	"github.com/hibiken/asynq"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -78,19 +76,17 @@ func main() {
 		}
 	}
 
-	redisAddr := fmt.Sprintf("%s:%s", redisConfig.Host, redisConfig.Port)
-	
-	client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
+	workerServer := asynqWorker.NewWorkerServer(redisConfig)
+	client := workerServer.GetClient()
 	defer client.Close()
 	
 	go func() {
-		logger.Info("Starting cron jobs", zap.String("redis", redisAddr))
+		logger.Info("Starting cron jobs")
 		cronWorker.StartCron(client)
 	}()
 
-	workerServer := asynqWorker.NewWorkerServer(redisAddr)
 	go func() {
-		logger.Info("Starting Asynq worker server", zap.String("redis", redisAddr))
+		logger.Info("Starting Asynq worker server")
 		if err := workerServer.Run(); err != nil {
 			logger.Error("Asynq worker server error", zap.Error(err))
 		}
