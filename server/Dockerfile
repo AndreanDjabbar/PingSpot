@@ -2,11 +2,12 @@ FROM golang:1.24.5-alpine AS builder
 
 WORKDIR /app
 
-COPY server/ .
-
+COPY go.mod go.sum ./
 RUN go mod download
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o pingspot ./cmd
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o pingspot cmd/main.go
 
 FROM alpine:3.20
 WORKDIR /app
