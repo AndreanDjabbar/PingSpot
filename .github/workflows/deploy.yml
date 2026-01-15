@@ -20,7 +20,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          # Build the image using the Dockerfile in your root
-          docker build ./server -t ${{ secrets.ACR_LOGIN_SERVER }}/pingspot-server:latest
+          # Build the image from the server directory
+          docker build -f server/Dockerfile ./server -t ${{ secrets.ACR_LOGIN_SERVER }}/pingspot-server:latest
           # Push the image to your private registry
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/pingspot-server:latest
