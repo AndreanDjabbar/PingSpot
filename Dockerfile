@@ -5,9 +5,9 @@ WORKDIR /app
 COPY server/go.mod server/go.sum ./
 RUN go mod download
 
-COPY . .
+COPY server/ .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o pingspot server/cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o pingspot cmd/main.go
 
 FROM alpine:3.20
 WORKDIR /app
