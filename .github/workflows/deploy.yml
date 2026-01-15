@@ -23,6 +23,6 @@ jobs:
           docker build \
             -f server/Dockerfile \
             -t ${{ secrets.ACR_LOGIN_SERVER }}/pingspot-server:latest \
-            server
+            .
 
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/pingspot-server:latest
