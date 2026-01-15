@@ -6,7 +6,7 @@ COPY server/ .
 
 RUN go mod download
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o pingspot ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o pingspot ./cmd
 
 FROM alpine:3.20
 WORKDIR /app
