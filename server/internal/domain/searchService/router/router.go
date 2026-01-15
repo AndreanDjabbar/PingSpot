@@ -26,6 +26,7 @@ func RegisterSearchRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 150,
+		KeyPrefix: "search_requests",
 	})), 
 	searchHandler.HandleSearch,
 	)

@@ -45,6 +45,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      10 * time.Minute,
 		MaxRequests: 8,
+		KeyPrefix: "create_report",
 	})), 
 	reportHandler.CreateReportHandler,
 	)
@@ -54,6 +55,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      10 * time.Minute,
 		MaxRequests: 15,
+		KeyPrefix: "edit_report",
 	})), 
 	reportHandler.EditReportHandler,
 	)
@@ -63,6 +65,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 100,
+		KeyPrefix: "get_reports",
 	})),  
 	reportHandler.GetReportHandler,
 	)
@@ -71,6 +74,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 30,
+		KeyPrefix: "create_report_reaction",
 	})), 
 	reportHandler.ReactionReportHandler,
 	)
@@ -80,6 +84,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 30,
+		KeyPrefix: "create_report_vote",
 	})), 
 	reportHandler.VoteReportHandler,
 	)
@@ -88,6 +93,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 30,
+		KeyPrefix: "upload_progress_report",
 	})), 
 	reportHandler.UploadProgressReportHandler,
 	)
@@ -96,6 +102,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 100,
+		KeyPrefix: "get_progress_report",
 	})),  
 	reportHandler.GetProgressReportHandler,
 	)
@@ -105,6 +112,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 30,
+		KeyPrefix: "delete_report",
 	})), 
 	reportHandler.DeleteReportHandler,
 	)
@@ -113,6 +121,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 50,
+		KeyPrefix: "create_report_comment",
 	})), 
 	reportHandler.CreateReportCommentHandler,
 	)
@@ -122,6 +131,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 100,
+		KeyPrefix: "get_report_comments",
 	})),  
 	reportHandler.GetReportCommentsHandler,
 	)
@@ -130,6 +140,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 100,
+		KeyPrefix: "get_report_comment_replies",
 	})),  
 	reportHandler.GetReportCommentRepliesHandler,
 	)
@@ -139,6 +150,7 @@ func RegisterReportRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 100,
+		KeyPrefix: "report_statistics",
 	})),  
 	reportHandler.GetReportStatisticsHandler,
 	)

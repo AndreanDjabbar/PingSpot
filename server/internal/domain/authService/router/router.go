@@ -24,6 +24,11 @@ func RegisterAuthRoutes(app *fiber.App) {
 
 	authRoute.Post("/verification", 
 	middleware.TimeoutMiddleware(10*time.Second), 
+	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Window:      10 * time.Minute,
+		MaxRequests: 6,
+		KeyPrefix: "email_verification",
+	})),
 	authHandler.VerificationHandler,
 	)
 
@@ -32,6 +37,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      10 * time.Minute,
 		MaxRequests: 6,
+		KeyPrefix: "register",
 	})),
 	authHandler.RegisterHandler,
 	)
@@ -41,6 +47,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      10 * time.Minute,
 		MaxRequests: 6,
+		KeyPrefix: "login",
 	})),
 	authHandler.LoginHandler,
 	)
@@ -50,6 +57,8 @@ func RegisterAuthRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      10 * time.Minute,
 		MaxRequests: 5,
+		KeyPrefix: "logout",
+
 	})), 
 	authHandler.LogoutHandler,
 	)
@@ -58,6 +67,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      10 * time.Minute,
 		MaxRequests: 6,
+		KeyPrefix: "forgot_password_email_verification",
 	})),
 	middleware.TimeoutMiddleware(10*time.Second), 
 	authHandler.ForgotPasswordEmailVerificationHandler,
@@ -68,6 +78,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      10 * time.Minute,
 		MaxRequests: 6,
+		KeyPrefix: "forgot_password_link_verification",
 	})),
 	authHandler.ForgotPasswordLinkVerificationHandler,
 	)
@@ -77,6 +88,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      10 * time.Minute,
 		MaxRequests: 6,
+		KeyPrefix: "forgot_password_reset_password",
 	})),
 	authHandler.ForgotPasswordResetPasswordHandler,
 	)
@@ -86,6 +98,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 20,
+		KeyPrefix: "refresh_token",
 	})),
 	authHandler.RefreshTokenHandler,
 	)
@@ -95,6 +108,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 10,
+		KeyPrefix: "google_auth",
 	})),
 	adaptor.HTTPHandlerFunc(authHandler.GoogleLoginHandler),
 	)
@@ -104,6 +118,7 @@ func RegisterAuthRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 10,
+		KeyPrefix: "google_callback",
 	})),
 	adaptor.HTTPHandlerFunc(authHandler.GoogleCallbackHandler),
 	)

@@ -25,6 +25,7 @@ func RegisterUserRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 100,
+		KeyPrefix: "user_statistics",
 	})),  
 	userHandler.GetUserStatistics,
 	)
@@ -36,6 +37,7 @@ func RegisterUserRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 50,
+		KeyPrefix: "get_user_profile",
 	})), 
 	userHandler.GetProfileHandler,
 	)
@@ -44,6 +46,7 @@ func RegisterUserRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 100,
+		KeyPrefix: "get_profile_by_username",
 	})), 
 	userHandler.GetProfileByUsernameHandler,
 	)
@@ -52,6 +55,7 @@ func RegisterUserRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 100,
+		KeyPrefix: "save_user_profile",
 	})), 
 	userHandler.SaveUserProfileHandler,
 	)
@@ -63,6 +67,7 @@ func RegisterUserRoutes(app *fiber.App) {
 	middleware.UserRateLimiterMiddleware(middleware.NewRateLimiter(middleware.RateLimiterConfig{
 		Window:      1 * time.Minute,
 		MaxRequests: 50,
+		KeyPrefix: "save_user_security",
 	})),  
 	userHandler.SaveUserSecurityHandler,
 	)
