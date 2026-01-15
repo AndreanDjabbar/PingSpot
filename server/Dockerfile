@@ -2,33 +2,36 @@ FROM golang:1.24.5-alpine AS builder
 
 WORKDIR /app
 
-# 1. Copy everything from your server folder into /app
-# Context is root, so we pull from server/
-COPY server/ .
+# 1. Create a folder named 'pingspot' inside the container
+# This is the secret! It makes the path /app/pingspot/pkg/apperror exist.
+RUN mkdir pingspot
 
-# 2. Download dependencies
-# Now go.mod is at /app/go.mod
+# 2. Copy the contents of your local 'server' folder into '/app/pingspot'
+COPY server/ ./pingspot/
+
+# 3. Move into the pingspot directory
+WORKDIR /app/pingspot
+
+# 4. Download dependencies
+# Now go.mod is at /app/pingspot/go.mod
 RUN go mod download
 
-# 3. BUILD FIX:
-# Instead of building ./cmd/main.go (which makes Go look for a 'pingspot' folder),
-# we build using the module's absolute path logic or simply current dir logic.
-# Because your go.mod is 'module pingspot', running build here 
-# allows Go to map the module name to the current directory.
+# 5. Build the binary
+# Go will now find "pingspot/pkg/apperror" because it's looking in the current module
 RUN CGO_ENABLED=0 GOOS=linux go build -o /app/pingspot-binary ./cmd/main.go
 
 # --- Final Stage ---
 FROM alpine:3.20
 WORKDIR /app
 
-# Copy binary from builder
+# Copy the binary from the builder
 COPY --from=builder /app/pingspot-binary ./pingspot
 
 # Create necessary directories
 RUN mkdir -p /app/uploads/main /app/uploads/user
 
-# Copy the .env from the server folder context
-COPY --from=builder /app/.env . 
+# Copy the .env from the pingspot folder
+COPY --from=builder /app/pingspot/.env . 
 
 EXPOSE 8080
 
