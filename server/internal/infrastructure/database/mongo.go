@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"server/internal/config"
 	"server/pkg/logger"
+	"server/pkg/utils/env"
 	"sync"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -18,8 +19,17 @@ var (
 )
 
 func InitMongoDB(cfg config.MongoDBConfig) error {
+	host := env.MongoHost()
+
 	mongoDBOnce.Do(func() {
-		URI := "mongodb://" + cfg.User + ":" + cfg.Password + "@" + cfg.Host + ":" + cfg.Port
+		var URI string
+		if host != "localhost" {
+			URI = fmt.Sprintf("mongodb://%s:%s@%s:%s/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@%s@",
+                cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.User)
+		} else {
+			URI = "mongodb://" + cfg.User + ":" + cfg.Password + "@" + cfg.Host + ":" + cfg.Port
+
+		}
 		logger.Info("Connecting to MongoDB",
 			zap.String("host", cfg.Host),
 			zap.String("port", cfg.Port),
