@@ -9,8 +9,8 @@ RUN go mod download
 # Copy all source code
 COPY . .
 
-# Build the application (main.go is now at ./cmd/main.go relative to context)
-RUN CGO_ENABLED=0 GOOS=linux go build -o pingspot ./cmd/main.go
+# Build the application from the cmd directory
+RUN CGO_ENABLED=0 GOOS=linux go build -o pingspot ./cmd
 
 FROM alpine:3.20
 WORKDIR /app
