@@ -21,7 +21,7 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           docker build \
-            -f Dockerfile \
+            -f server/Dockerfile \
             -t ${{ secrets.ACR_LOGIN_SERVER }}/pingspot-server:latest \
             .
 
