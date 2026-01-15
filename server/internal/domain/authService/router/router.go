@@ -1,11 +1,11 @@
 package router
 
 import (
-	"server/internal/domain/authService/handler"
-	"server/internal/domain/authService/service"
-	"server/internal/domain/userService/repository"
-	"server/internal/infrastructure/database"
-	"server/internal/middleware"
+	"pingspot/internal/domain/authService/handler"
+	"pingspot/internal/domain/authService/service"
+	"pingspot/internal/domain/userService/repository"
+	"pingspot/internal/infrastructure/database"
+	"pingspot/internal/middleware"
 	"time"
 
 	"github.com/gofiber/adaptor/v2"

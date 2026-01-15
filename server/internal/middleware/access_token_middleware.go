@@ -3,10 +3,10 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"server/internal/infrastructure/cache"
-	mainutils "server/pkg/utils/mainUtils"
-	"server/pkg/utils/response"
-	"server/pkg/utils/tokenutils"
+	"pingspot/internal/infrastructure/cache"
+	mainutils "pingspot/pkg/utils/mainUtils"
+	"pingspot/pkg/utils/response"
+	"pingspot/pkg/utils/tokenutils"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"

@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 	"net/http"
-	"server/pkg/utils/env"
+	"pingspot/pkg/utils/env"
 
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"

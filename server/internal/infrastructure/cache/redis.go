@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"server/internal/config"
-	"server/pkg/logger"
-	"server/pkg/utils/env"
+	"pingspot/internal/config"
+	"pingspot/pkg/logger"
+	"pingspot/pkg/utils/env"
 
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"

@@ -3,10 +3,10 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"server/internal/domain/reportService/repository"
-	"server/internal/domain/taskService/payload"
-	"server/internal/domain/taskService/tasks"
-	"server/pkg/logger"
+	"pingspot/internal/domain/reportService/repository"
+	"pingspot/internal/domain/taskService/payload"
+	"pingspot/internal/domain/taskService/tasks"
+	"pingspot/pkg/logger"
 	"time"
 
 	"github.com/hibiken/asynq"

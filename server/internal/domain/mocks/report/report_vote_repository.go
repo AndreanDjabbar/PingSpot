@@ -2,7 +2,7 @@ package report
 
 import (
 	"context"
-	"server/internal/domain/model"
+	"pingspot/internal/domain/model"
 
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"

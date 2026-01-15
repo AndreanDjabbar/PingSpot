@@ -1,6 +1,6 @@
 package config
 
-import "server/pkg/utils/env"
+import "pingspot/pkg/utils/env"
 
 type PostgresConfig struct {
 	Host     string

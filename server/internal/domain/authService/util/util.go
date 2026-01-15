@@ -1,6 +1,6 @@
 package util
 
-import mainutils "server/pkg/utils/mainUtils"
+import mainutils "pingspot/pkg/utils/mainUtils"
 
 func SendVerificationEmail(to, username, verificationLink string) error {
 	return mainutils.SendEmail(mainutils.EmailData{

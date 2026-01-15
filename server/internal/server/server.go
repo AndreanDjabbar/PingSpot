@@ -1,11 +1,11 @@
 package server
 
 import (
-	"server/internal/middleware"
-	"server/internal/router"
-	"server/pkg/logger"
-	"server/pkg/utils/env"
-	"server/pkg/utils/response"
+	"pingspot/internal/middleware"
+	"pingspot/internal/router"
+	"pingspot/pkg/logger"
+	"pingspot/pkg/utils/env"
+	"pingspot/pkg/utils/response"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"

@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"time"
 
-	"server/internal/infrastructure/cache"
-	"server/pkg/apperror"
-	"server/pkg/logger"
-	"server/pkg/utils/env"
-	mainutils "server/pkg/utils/mainUtils"
+	"pingspot/internal/infrastructure/cache"
+	"pingspot/pkg/apperror"
+	"pingspot/pkg/logger"
+	"pingspot/pkg/utils/env"
+	mainutils "pingspot/pkg/utils/mainUtils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

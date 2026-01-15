@@ -1,8 +1,8 @@
 package migration
 
 import (
-	"server/internal/domain/model"
-	"server/pkg/logger"
+	"pingspot/internal/domain/model"
+	"pingspot/pkg/logger"
 
 	"github.com/go-gormigrate/gormigrate/v2"
 	"go.uber.org/zap"

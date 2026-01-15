@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"server/internal/domain/reportService/repository"
-	taskHandler "server/internal/domain/taskService/handler"
-	"server/internal/domain/taskService/tasks"
-	"server/internal/infrastructure/database"
+	"pingspot/internal/domain/reportService/repository"
+	taskHandler "pingspot/internal/domain/taskService/handler"
+	"pingspot/internal/domain/taskService/tasks"
+	"pingspot/internal/infrastructure/database"
 
 	"github.com/hibiken/asynq"
 )

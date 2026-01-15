@@ -1,8 +1,8 @@
 package util
 
 import (
-	"server/internal/domain/model"
-	mainutils "server/pkg/utils/mainUtils"
+	"pingspot/internal/domain/model"
+	mainutils "pingspot/pkg/utils/mainUtils"
 	"time"
 )
 

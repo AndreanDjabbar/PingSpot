@@ -1,11 +1,11 @@
 package cronWorker
 
 import (
-	"server/internal/domain/reportService/repository"
-	tasksService "server/internal/domain/taskService/service"
-	"server/internal/infrastructure/database"
-	"server/internal/worker/cronWorker/handler"
-	"server/pkg/logger"
+	"pingspot/internal/domain/reportService/repository"
+	tasksService "pingspot/internal/domain/taskService/service"
+	"pingspot/internal/infrastructure/database"
+	"pingspot/internal/worker/cronWorker/handler"
+	"pingspot/pkg/logger"
 
 	"github.com/hibiken/asynq"
 	"github.com/robfig/cron/v3"

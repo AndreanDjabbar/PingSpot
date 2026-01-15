@@ -3,10 +3,10 @@ package asynqWorker
 import (
 	"crypto/tls"
 	"fmt"
-	"server/internal/config"
-	"server/internal/worker/asynqWorker/handler"
-	"server/pkg/logger"
-	"server/pkg/utils/env"
+	"pingspot/internal/config"
+	"pingspot/internal/worker/asynqWorker/handler"
+	"pingspot/pkg/logger"
+	"pingspot/pkg/utils/env"
 
 	"github.com/hibiken/asynq"
 	"go.uber.org/zap"

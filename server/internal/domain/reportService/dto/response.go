@@ -1,8 +1,8 @@
 package dto
 
 import (
-	"server/internal/domain/model"
-	userDTO "server/internal/domain/userService/dto"
+	"pingspot/internal/domain/model"
+	userDTO "pingspot/internal/domain/userService/dto"
 )
 
 type CreateReportResponse struct {

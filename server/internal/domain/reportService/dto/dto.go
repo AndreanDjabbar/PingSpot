@@ -1,6 +1,6 @@
 package dto
 
-import userDTO "server/internal/domain/userService/dto"
+import userDTO "pingspot/internal/domain/userService/dto"
 
 type TotalReportCount struct {
 	TotalReports               int64 `json:"totalReports"`

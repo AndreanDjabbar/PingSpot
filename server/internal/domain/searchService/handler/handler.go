@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"server/internal/domain/searchService/service"
-	"server/pkg/logger"
-	contextutils "server/pkg/utils/contextUtils"
-	mainutils "server/pkg/utils/mainUtils"
-	"server/pkg/utils/response"
+	"pingspot/internal/domain/searchService/service"
+	"pingspot/pkg/logger"
+	contextutils "pingspot/pkg/utils/contextUtils"
+	mainutils "pingspot/pkg/utils/mainUtils"
+	"pingspot/pkg/utils/response"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"

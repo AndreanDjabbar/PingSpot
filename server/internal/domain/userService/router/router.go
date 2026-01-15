@@ -1,11 +1,11 @@
 package router
 
 import (
-	"server/internal/domain/userService/handler"
-	"server/internal/domain/userService/repository"
-	"server/internal/domain/userService/service"
-	"server/internal/infrastructure/database"
-	"server/internal/middleware"
+	"pingspot/internal/domain/userService/handler"
+	"pingspot/internal/domain/userService/repository"
+	"pingspot/internal/domain/userService/service"
+	"pingspot/internal/infrastructure/database"
+	"pingspot/internal/middleware"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

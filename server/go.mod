@@ -1,4 +1,4 @@
-module server
+module pingspot
 
 go 1.24.5
 

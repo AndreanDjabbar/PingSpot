@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"server/pkg/logger"
+	"pingspot/pkg/logger"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

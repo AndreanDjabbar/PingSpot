@@ -2,9 +2,9 @@ package database
 
 import (
 	"fmt"
-	"server/internal/config"
-	"server/pkg/logger"
-	"server/pkg/utils/env"
+	"pingspot/internal/config"
+	"pingspot/pkg/logger"
+	"pingspot/pkg/utils/env"
 	"sync"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"

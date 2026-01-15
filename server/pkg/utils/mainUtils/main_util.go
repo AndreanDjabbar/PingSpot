@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"server/pkg/utils/env"
+	"pingspot/pkg/utils/env"
 	"strconv"
 	"time"
 

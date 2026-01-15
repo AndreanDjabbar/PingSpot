@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"regexp"
-	"server/internal/domain/model"
-	"server/internal/domain/reportService/dto"
+	"pingspot/internal/domain/model"
+	"pingspot/internal/domain/reportService/dto"
 	"strings"
 
 	"gorm.io/gorm"

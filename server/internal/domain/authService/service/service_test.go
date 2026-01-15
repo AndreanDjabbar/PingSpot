@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"errors"
-	"server/internal/domain/authService/dto"
-	"server/internal/domain/mocks"
-	"server/internal/domain/model"
-	"server/pkg/utils/tokenutils"
+	"pingspot/internal/domain/authService/dto"
+	"pingspot/internal/domain/mocks"
+	"pingspot/internal/domain/model"
+	"pingspot/pkg/utils/tokenutils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

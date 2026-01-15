@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	"errors"
-	reportRepository "server/internal/domain/reportService/repository"
-	"server/internal/domain/searchService/dto"
-	userRepository "server/internal/domain/userService/repository"
-	apperror "server/pkg/apperror"
-	"server/pkg/logger"
-	contextutils "server/pkg/utils/contextUtils"
+	reportRepository "pingspot/internal/domain/reportService/repository"
+	"pingspot/internal/domain/searchService/dto"
+	userRepository "pingspot/internal/domain/userService/repository"
+	apperror "pingspot/pkg/apperror"
+	"pingspot/pkg/logger"
+	contextutils "pingspot/pkg/utils/contextUtils"
 	"strings"
 
 	"go.uber.org/zap"

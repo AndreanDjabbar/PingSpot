@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
-	"server/internal/domain/mocks"
-	"server/internal/domain/mocks/report"
-	"server/internal/domain/model"
-	mainutils "server/pkg/utils/mainUtils"
+	"pingspot/internal/domain/mocks"
+	"pingspot/internal/domain/mocks/report"
+	"pingspot/internal/domain/model"
+	mainutils "pingspot/pkg/utils/mainUtils"
 	"testing"
 
 	"github.com/stretchr/testify/require"

@@ -2,8 +2,8 @@ package report
 
 import (
 	"context"
-	"server/internal/domain/model"
-	"server/internal/domain/reportService/dto"
+	"pingspot/internal/domain/model"
+	"pingspot/internal/domain/reportService/dto"
 
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"

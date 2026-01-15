@@ -1,10 +1,10 @@
 package util
 
 import (
-	"server/internal/domain/model"
-	reportDTO "server/internal/domain/reportService/dto"
-	"server/internal/domain/userService/dto"
-	mainutils "server/pkg/utils/mainUtils"
+	"pingspot/internal/domain/model"
+	reportDTO "pingspot/internal/domain/reportService/dto"
+	"pingspot/internal/domain/userService/dto"
+	mainutils "pingspot/pkg/utils/mainUtils"
 	"sort"
 )
 

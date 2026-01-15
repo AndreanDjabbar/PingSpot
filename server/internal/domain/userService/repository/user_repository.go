@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"server/internal/domain/model"
+	"pingspot/internal/domain/model"
 	"strings"
 
 	"gorm.io/gorm"

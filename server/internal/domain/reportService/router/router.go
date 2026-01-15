@@ -2,14 +2,14 @@ package router
 
 import (
 	"fmt"
-	"server/internal/domain/reportService/handler"
-	reportRepository "server/internal/domain/reportService/repository"
-	reportService "server/internal/domain/reportService/service"
-	"server/internal/domain/taskService/service"
-	userRepository "server/internal/domain/userService/repository"
-	"server/internal/infrastructure/database"
-	"server/internal/middleware"
-	"server/pkg/utils/env"
+	"pingspot/internal/domain/reportService/handler"
+	reportRepository "pingspot/internal/domain/reportService/repository"
+	reportService "pingspot/internal/domain/reportService/service"
+	"pingspot/internal/domain/taskService/service"
+	userRepository "pingspot/internal/domain/userService/repository"
+	"pingspot/internal/infrastructure/database"
+	"pingspot/internal/middleware"
+	"pingspot/pkg/utils/env"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

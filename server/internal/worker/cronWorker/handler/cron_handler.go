@@ -3,12 +3,12 @@ package handler
 import (
 	"context"
 	"fmt"
-	"server/internal/domain/reportService/repository"
-	"server/internal/domain/taskService/service"
-	"server/internal/worker/cronWorker/util"
-	"server/pkg/logger"
-	"server/pkg/utils/env"
-	mainutils "server/pkg/utils/mainUtils"
+	"pingspot/internal/domain/reportService/repository"
+	"pingspot/internal/domain/taskService/service"
+	"pingspot/internal/worker/cronWorker/util"
+	"pingspot/pkg/logger"
+	"pingspot/pkg/utils/env"
+	mainutils "pingspot/pkg/utils/mainUtils"
 	"time"
 
 	"gorm.io/gorm"

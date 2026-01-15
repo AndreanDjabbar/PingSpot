@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	mainutils "server/pkg/utils/mainUtils"
+	mainutils "pingspot/pkg/utils/mainUtils"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

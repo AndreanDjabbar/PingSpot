@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"server/internal/config"
-	"server/pkg/logger"
+	"pingspot/internal/config"
+	"pingspot/pkg/logger"
 
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"

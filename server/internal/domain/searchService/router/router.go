@@ -1,12 +1,12 @@
 package router
 
 import (
-	reportRepository "server/internal/domain/reportService/repository"
-	"server/internal/domain/searchService/handler"
-	"server/internal/domain/searchService/service"
-	userRepository "server/internal/domain/userService/repository"
-	"server/internal/infrastructure/database"
-	"server/internal/middleware"
+	reportRepository "pingspot/internal/domain/reportService/repository"
+	"pingspot/internal/domain/searchService/handler"
+	"pingspot/internal/domain/searchService/service"
+	userRepository "pingspot/internal/domain/userService/repository"
+	"pingspot/internal/infrastructure/database"
+	"pingspot/internal/middleware"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

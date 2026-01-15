@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"server/internal/domain/model"
+	"pingspot/internal/domain/model"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
