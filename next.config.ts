@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api-proxy/:path*',
-        destination: 'https://pingspot-server.thankfulwater-3d2d743b.southeastasia.azurecontainerapps.io/pingspot/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_SERVER_URL}/:path*`,
       },
     ];
   },
