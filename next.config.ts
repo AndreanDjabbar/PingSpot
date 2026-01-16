@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
     ],
     unoptimized: process.env.NODE_ENV === 'development',
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api-proxy/:path*',
+        destination: 'https://pingspot-server.thankfulwater-3d2d743b.southeastasia.azurecontainerapps.io/pingspot/api/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
