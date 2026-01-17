@@ -24,7 +24,7 @@ const ButtonSubmit: React.FC<ButtonSubmitProps> = ({
         <button
             type="submit"
             className={cn(
-                "group relative flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300",
+                "group relative flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300 hover:cursor-pointer",
                 isDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-sky-700 hover:bg-sky-800", fullWidth ? "w-full" : "",
                 className
             )}

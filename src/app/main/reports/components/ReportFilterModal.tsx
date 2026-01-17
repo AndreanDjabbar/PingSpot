@@ -5,6 +5,7 @@ import { RiProgress3Fill } from "react-icons/ri";
 import { MdCheckCircle, MdAccessTime, MdCancel } from 'react-icons/md';
 import { ReportType } from '@/types/model/report';
 import { useLocationStore } from '@/stores/userLocationStore';
+import { Button } from '@/components/UI';
 
 type SortOption = 'latest' | 'oldest' | 'most_liked' | 'least_liked';
 type StatusFilter = 'all' | 'WAITING' | 'ON_PROGRESS' | 'RESOLVED' | 'POTENTIALLY_RESOLVED' | 'NOT_RESOLVED' | 'EXPIRED';
@@ -208,7 +209,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                                             <button
                                                 key={option.value}
                                                 onClick={() => setFilters({ ...filters, sortBy: option.value as SortOption })}
-                                                className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all ${
+                                                className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all hover:cursor-pointer ${
                                                     filters.sortBy === option.value
                                                         ? 'border-sky-600 bg-sky-50 text-sky-700'
                                                         : 'border-gray-200 hover:border-gray-300 text-gray-700'
@@ -233,7 +234,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                                             <button
                                                 key={option.value}
                                                 onClick={() => setFilters({ ...filters, reportType: option.value as ReportType | 'all' })}
-                                                className={`p-3 sm:p-4 rounded-xl border-2 transition-all text-xs sm:text-sm font-medium ${
+                                                className={`p-3 sm:p-4 rounded-xl border-2 transition-all text-xs sm:text-sm font-medium hover:cursor-pointer ${
                                                     filters.reportType === option.value
                                                         ? 'border-sky-600 bg-sky-50 text-sky-700'
                                                         : 'border-gray-200 hover:border-gray-300 text-gray-700'
@@ -256,7 +257,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                                                 key={option.value}
                                                 disabled={disableStatus}
                                                 onClick={() => setFilters({ ...filters, status: option.value as StatusFilter })}
-                                                className={`w-full flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all ${
+                                                className={`w-full flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all hover:cursor-pointer ${
                                                     disableStatus
                                                         ? 'opacity-50 cursor-not-allowed border-gray-200 bg-gray-100'
                                                         : filters.status === option.value
@@ -311,7 +312,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                                                         setFilters({ ...filters, hasProgress: option.value as ProgressFilter });
                                                     }
                                                 }}
-                                                className={`flex items-center gap-2 p-3 sm:p-4 rounded-xl border-2 transition-all ${
+                                                className={`flex items-center gap-2 p-3 sm:p-4 rounded-xl border-2 transition-all hover:cursor-pointer ${
                                                     filters.hasProgress === option.value
                                                         ? 'border-sky-600 bg-sky-50 text-sky-700'
                                                         : 'border-gray-200 hover:border-gray-300 text-gray-700'
@@ -343,7 +344,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                                                         distance: { ...filters.distance, distance: option.value as DistanceFilter, lat: lat, lng: lng } 
                                                     })
                                                 }}
-                                                className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all ${
+                                                className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all hover:cursor-pointer ${
                                                     filters.distance.distance === option.value
                                                         ? 'border-sky-600 bg-sky-50 text-sky-700'
                                                         : 'border-gray-200 hover:border-gray-300 text-gray-700'
@@ -363,16 +364,16 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                                 <div className="flex gap-2 sm:gap-3">
                                     <button
                                         onClick={handleReset}
-                                        className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl border-2 border-gray-300 text-gray-700 text-sm sm:text-base font-semibold hover:bg-gray-100 transition-colors"
+                                        className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl border-2 border-gray-300 text-gray-700 text-sm sm:text-base font-semibold hover:bg-gray-100 transition-colors hover:cursor-pointer"
                                     >
                                         Reset
                                     </button>
-                                    <button
+                                    <Button
                                         onClick={handleApply}
-                                        className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-sky-700 text-white text-sm sm:text-base font-semibold hover:bg-sky-800 transition-colors shadow-lg shadow-sky-700/30"
+                                        className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl"
                                     >
                                         Terapkan Filter
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>

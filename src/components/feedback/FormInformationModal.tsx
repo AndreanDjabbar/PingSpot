@@ -68,7 +68,7 @@ const FormInformationModal: React.FC<FormInformationModalProps> = ({
                     </div>
                     <button 
                         onClick={onClose} 
-                        className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                        className="p-1 rounded-full hover:bg-gray-100 transition-colors hover:cursor-pointer"
                         aria-label="Close modal"
                     >
                         <BiX className="w-6 h-6 text-gray-900" />
@@ -98,7 +98,7 @@ const FormInformationModal: React.FC<FormInformationModalProps> = ({
                     <button
                         type="button"
                         onClick={onClose}
-                        className={`px-5 py-2 text-white rounded-lg font-medium transition-colors ${config.buttonBg}`}
+                        className={`px-5 py-2 text-white rounded-lg font-medium transition-colors hover:cursor-pointer ${config.buttonBg}`}
                     >
                         Mengerti
                     </button>

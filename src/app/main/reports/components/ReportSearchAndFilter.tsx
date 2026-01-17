@@ -31,7 +31,7 @@ const ReportSearchAndFilter: React.FC<ReportSearchAndFilterProps> = ({
                 <button
                     ref={filterButtonRef}
                     onClick={onFilterClick}
-                    className="relative flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 hover:text-gray-700 font-medium whitespace-nowrap active:bg-gray-200"
+                    className="relative flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 hover:text-gray-700 font-medium whitespace-nowrap active:bg-gray-200 hover:cursor-pointer"
                 >
                     <IoFunnelOutline className="w-5 h-5" />
                     <span>Filter</span>

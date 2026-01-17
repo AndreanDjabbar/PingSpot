@@ -10,7 +10,7 @@ import { useVoteReport } from '@/hooks/main/useVoteReport';
 import { RxCrossCircled } from "react-icons/rx";
 import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { getErrorResponseDetails, getErrorResponseMessage, isInternalServerError } from '@/utils';
-import { EmptyState, Loading } from '@/components/UI';
+import { Button, EmptyState, Loading } from '@/components/UI';
 import { 
     ReportSkeleton, 
     ReportSearchAndFilter,
@@ -600,12 +600,12 @@ const ReportsPage = () => {
                 <div className="flex-1 space-y-4">
                     <HeaderSection currentPath={currentPath || '/main/reports'}
                     message='Temukan dan lihat laporan masalah di sekitar Anda untuk meningkatkan kesadaran dan partisipasi masyarakat.'>
-                        <button 
-                            className="bg-sky-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-all flex items-center justify-center space-x-2 whitespace-nowrap"
-                            onClick={() => router.push('/main/reports/create-report')}>
-                            <BiPlus className="w-5 h-5" />
-                            <span>Buat Laporan</span>
-                        </button>
+                        <Button 
+                        icon={<BiPlus className='w-5 h-5'/>}
+                        onClick={() => router.push('/main/reports/create-report')}
+                        >
+                            Buat laporan
+                        </Button>
                     </HeaderSection>
                     
                     {isDeleteReportError && (

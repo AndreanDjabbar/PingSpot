@@ -119,7 +119,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                     </span>
                     <button
                         ref={optionsButtonRef}
-                        className='p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors'
+                        className='p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors hover:cursor-pointer'
                         onClick={() => {
                             if (!report) return;
                             const optionsToShow: OptionItem[] = [...opts];

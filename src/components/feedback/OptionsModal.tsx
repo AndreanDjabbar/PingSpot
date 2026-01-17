@@ -181,7 +181,7 @@ const OptionsModal: React.FC = () => {
                                             <button
                                                 key={idx}
                                                 onClick={() => onOptionClick(opt)}
-                                                className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-4"
+                                                className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-4 hover:cursor-pointer"
                                                 type="button"
                                             >
                                                 {opt.icon && <span className=" text-gray-600">{opt.icon}</span>}

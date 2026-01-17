@@ -62,7 +62,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     </div>
                     <button 
                         onClick={onClose} 
-                        className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                        className="p-1 rounded-full hover:bg-gray-100 transition-colors hover:cursor-pointer"
                         disabled={isPending}
                         aria-label="Close modal"
                     >
@@ -87,7 +87,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-5 py-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-5 py-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
                         disabled={isPending}
                     >
                         {cancelTitle}
@@ -100,7 +100,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                             disabled={isPending}
                             className={`
                                 px-5 py-2 rounded-lg font-medium flex items-center justify-center gap-2
-                                text-white transition-colors
+                                text-white transition-colors hover:cursor-pointer
                                 ${isPending 
                                     ? 'bg-red-800 opacity-75 cursor-not-allowed' 
                                     : 'bg-red-600 hover:bg-red-700 active:bg-red-800'
@@ -127,7 +127,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                             onClick={onConfirm}
                             disabled={isPending}
                             className={`
-                                px-5 py-2 rounded-lg font-medium flex items-center justify-center gap-2
+                                px-5 py-2 rounded-lg font-medium flex items-center justify-center gap-2 hover:cursor-pointer
                                 text-white transition-colors
                                 ${isPending 
                                     ? 'bg-sky-800 opacity-75 cursor-not-allowed' 

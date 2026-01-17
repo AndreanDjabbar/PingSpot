@@ -200,14 +200,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                     setIsReplying(true)
                                     setShowReplies(true);
                                 }}
-                                className="text-xs text-gray-400 hover:text-gray-600 font-medium"
+                                className="text-xs text-gray-400 hover:text-gray-600 font-medium hover:cursor-pointer"
                             >
                                 Balas
                             </button>
                             {comment.totalReplies !== undefined && comment.totalReplies > 0 && (
                                 <button
                                     onClick={handleToggleReplies}
-                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 hover:cursor-pointer"
                                 >
                                     {showReplies ? (
                                         <FaChevronUp className="w-3 h-3" />
@@ -221,7 +221,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             )}
                             <button
                                 onClick={() => setIsReplying(true)}
-                                className="text-xs text-gray-400 hover:text-gray-600 font-medium"
+                                className="text-xs text-gray-400 hover:text-gray-600 font-medium hover:cursor-pointer"
                             >
                                 Suka
                             </button>
@@ -492,7 +492,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             {showLikes && (
                                 <button
                                     onClick={() => setLiked(!liked)}
-                                    className={`flex items-center space-x-1 text-xs font-medium transition-colors ${
+                                    className={`flex items-center space-x-1 text-xs font-medium transition-colors hover:cursor-pointer ${
                                         liked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
                                     }`}
                                 >
@@ -505,7 +505,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                     setIsReplying(true)
                                     setShowReplies(true);
                                 }} 
-                                className="flex items-center space-x-1 text-xs font-medium text-gray-500 hover:text-sky-600 transition-colors"
+                                className="flex items-center space-x-1 text-xs font-medium text-gray-500 hover:text-sky-600 transition-colors hover:cursor-pointer"
                             >
                                 <FaReply className="w-3 h-3" />
                                 <span>Balas</span>
@@ -513,7 +513,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             {comment.totalReplies !== undefined && comment.totalReplies > 0 && (
                                 <button
                                     onClick={handleToggleReplies}
-                                    className="flex items-center space-x-1 text-xs font-semibold text-sky-700 hover:text-sky-800 transition-colors"
+                                    className="flex items-center space-x-1 text-xs font-semibold text-sky-700 hover:text-sky-800 transition-colors hover:cursor-pointer"
                                 >
                                     {showReplies ? (
                                         <FaChevronUp className="w-3 h-3" />

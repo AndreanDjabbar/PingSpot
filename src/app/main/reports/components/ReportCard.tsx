@@ -204,7 +204,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                                     openOptionsModal({ optionsList: optionsToShow, anchorRef: optionsButtonRef });
                                 }}
                             >
-                                <BsThreeDots size={18} className="text-gray-600 sm:w-5 sm:h-5"/>
+                                <BsThreeDots size={18} className="text-gray-600 sm:w-5 sm:h-5 hover:cursor-pointer"/>
                             </button>
                         )}
                     </div>

@@ -98,7 +98,7 @@ export const ReportInfoSidebar: React.FC<ReportInfoSidebarProps> = ({
                 {isReportOwner && report.hasProgress && (
                     <div className='flex gap-2'>
                         <Button
-                            onClick={() => router.push(`/main/reports/${report.id}/update-progress`)}
+                            onClick={() => router.push(`/main/reports/${report.id}/edit`)}
                             icon={<BiEdit />}
                             size='sm'
                             disabled={report.reportStatus === 'RESOLVED' || report.reportStatus === 'EXPIRED'}

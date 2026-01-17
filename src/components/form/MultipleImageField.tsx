@@ -166,7 +166,7 @@ const MultipleImageField: React.FC<MultipleImageFieldProps> = ({
                             type="button"
                             onClick={handleAddClick}
                             disabled={disabled}
-                            className={cn("px-4 py-2 rounded-lg transition-colors text-md",
+                            className={cn("px-4 py-2 rounded-lg transition-colors text-md hover:cursor-pointer",
                                 disabled ? "bg-gray-400 cursor-not-allowed" : "bg-sky-700 text-white hover:bg-sky-800"
                             )}
                         >
