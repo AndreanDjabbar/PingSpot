@@ -71,7 +71,7 @@ const InputField: React.FC<InputFieldProps> = ({
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                         <button
                         type="button"
-                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                        className="text-gray-500 hover:text-gray-700 transition-colors hover:cursor-pointer"
                         onClick={() => setShowPassword(!showPassword)}
                         >
                         {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}

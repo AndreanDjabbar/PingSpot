@@ -214,7 +214,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
                 <button
                     type="button"
                     onClick={handleAvatarClick}
-                    className="px-4 py-1 bg-sky-700 text-white rounded-lg hover:bg-sky-800 transition-colors text-md"
+                    className="px-4 py-1 bg-sky-700 text-white rounded-lg hover:bg-sky-800 transition-colors text-md hover:cursor-pointer"
                 >
                     {buttonTitle}
                 </button>
@@ -223,7 +223,7 @@ const ImageField: React.FC<ImageFieldProps> = ({
                     <button
                     type="button"
                     onClick={handleRemoveImage}
-                    className="px-4 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                    className="px-4 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm hover:cursor-pointer"
                     >
                     Hapus
                     </button>

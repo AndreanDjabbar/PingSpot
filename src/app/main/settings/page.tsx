@@ -15,6 +15,7 @@ import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 import { SettingCard, SettingItem } from './components';
 import HeaderSection from '../components/HeaderSection';
 import ToggleSwitch from '@/components/UI/ToggleSwitch';
+import { Button } from '@/components/UI';
 
 const SettingsPage = () => {
     const router = useRouter();
@@ -87,7 +88,7 @@ const SettingsPage = () => {
                     action={
                         <button 
                         onClick={() => router.push('/main/settings/profile')}
-                        className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                        className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors hover:cursor-pointer"
                         >
                         Ubah
                         </button>
@@ -100,7 +101,7 @@ const SettingsPage = () => {
                     action={
                         <button 
                         onClick={() => router.push('/main/settings/security')}
-                        className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                        className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors hover:cursor-pointer"
                         >
                         Ubah
                         </button>
@@ -168,21 +169,15 @@ const SettingsPage = () => {
                         </div>
                     </div>
 
-                    <button
+                    <Button
                     onClick={handleLogout}
+                    className='w-full'
+                    variant='danger'
                     disabled={isPending}
-                    className={`
-                    w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl
-                    text-white font-medium
-                    ${isPending 
-                        ? 'bg-red-900 cursor-not-allowed' 
-                        : 'bg-red-700 hover:bg-red-800 active:bg-red-700'
-                    } transition-all shadow-md hover:shadow-lg
-                    `}
+                    icon={<ImExit className={`w-5 h-5 ${isPending ? 'animate-pulse' : ''}`}/>}
                 >
-                    <ImExit className={`w-5 h-5 ${isPending ? 'animate-pulse' : ''}`} />
                     <span>{isPending ? 'Keluar...' : 'Keluar'}</span>
-                </button>
+                </Button>
 
                 </div>
                 </SettingCard>
