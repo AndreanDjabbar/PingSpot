@@ -263,7 +263,7 @@ const ExploreSearchNonModal: React.FC<ExploreSearchNonModalProps> = ({
                     {activeTab === 'users' && searchResults.users.map((user) => (
                         <div 
                         key={user.userID} 
-                        className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                        className="p-4 hover:bg-gray-50 transition-colors cursor-pointer hover:cursor-pointer"
                         onClick={() => {
                             router.push(`/main/profile/${user.username}`);
                         }}

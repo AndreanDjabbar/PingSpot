@@ -45,7 +45,7 @@ const ExploreSearch: React.FC<ExploreSearchProps> = ({
                             className="p-2 hover:bg-gray-100 border border-gray-300 rounded-lg transition-colors duration-200 group"
                             aria-label="Close search"
                         >
-                            <BiX size={24} className="text-gray-500 group-hover:text-gray-700" />
+                            <BiX size={24} className="text-gray-500 group-hover:text-gray-700 hover:cursor-pointer" />
                         </button>
                     )}
                 </div>
