@@ -1,9 +1,12 @@
 import { create } from "zustand";
-import { IReport, ITotalReportCount, IReportProgress } from "@/types/model/report";
+import { IReport, ITotalReportCount, IReportProgress, ReportFilterOptions } from "@/types/model/report";
 
 interface ReportsStore {
     reports: IReport[];
     filteredReports: IReport[];
+    reportFilters: ReportFilterOptions;
+    updateReportFilters: (updates: Partial<ReportFilterOptions>) => void;
+    resetReportFilters: () => void;
     searchTerm: string;
     reportCount: ITotalReportCount;
     setReportCount: (reportCount: ITotalReportCount) => void;
@@ -20,6 +23,32 @@ interface ReportsStore {
 
 export const useReportsStore = create<ReportsStore>((set, get) => ({
     reports: [],
+    reportFilters: {
+        sortBy: 'latest',
+        reportType: 'all',
+        status: 'all',
+        distance: {
+            distance: 'all',
+            lat: null,
+            lng: null,
+        },
+        hasProgress: 'all'
+    },
+    updateReportFilters:(updates) => 
+    set((state) => ({
+        reportFilters: { ...state.reportFilters, ...updates }
+    })),
+    resetReportFilters: () => set({ reportFilters: {
+        sortBy: 'latest',
+        reportType: 'all',
+        status: 'all',
+        distance: {
+            distance: 'all',
+            lat: null,
+            lng: null,
+        },
+        hasProgress: 'all'
+    } }),
     selectedReport: null,
     filteredReports: [],
     reportCount: {
