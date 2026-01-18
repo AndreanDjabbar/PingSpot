@@ -91,7 +91,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({ imageUrl, isOpen,
                 style={{ overscrollBehavior: 'contain' }}
             >
                 <button 
-                    className="absolute top-2 right-2 bg-sky-700 rounded-full p-1 text-white hover:bg-sky-900 shadow-lg transition-colors z-10"
+                    className="absolute top-2 right-2 bg-sky-700 rounded-full p-1 text-white hover:bg-sky-900 shadow-lg transition-colors z-10 hover:cursor-pointer"
                     onClick={onClose}
                 >
                     <BiX size={26} />
@@ -112,21 +112,21 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({ imageUrl, isOpen,
                                 <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-10">
                                     <button
                                         onClick={() => zoomIn()}
-                                        className="bg-sky-700 hover:bg-sky-900 text-white p-2 rounded-full shadow-lg transition-colors"
+                                        className="bg-sky-700 hover:bg-sky-900 text-white p-2 rounded-full shadow-lg transition-colors hover:cursor-pointer"
                                         title="Zoom In"
                                     >
                                         <BiZoomIn size={24} />
                                     </button>
                                     <button
                                         onClick={() => zoomOut()}
-                                        className="bg-sky-700 hover:bg-sky-900 text-white p-2 rounded-full shadow-lg transition-colors"
+                                        className="bg-sky-700 hover:bg-sky-900 text-white p-2 rounded-full shadow-lg transition-colors hover:cursor-pointer"
                                         title="Zoom Out"
                                     >
                                         <BiZoomOut size={24} />
                                     </button>
                                     <button
                                         onClick={() => resetTransform()}
-                                        className="bg-sky-700 hover:bg-sky-900 text-white p-2 rounded-full shadow-lg transition-colors"
+                                        className="bg-sky-700 hover:bg-sky-900 text-white p-2 rounded-full shadow-lg transition-colors hover:cursor-pointer"
                                         title="Reset Zoom"
                                     >
                                         <BiReset size={24} />
