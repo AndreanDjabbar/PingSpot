@@ -148,6 +148,7 @@ const ReportsPage = () => {
         });
         
         setReports(updatedReports);
+        setFilteredReports(updatedReports);
         
         if (selectedReport && selectedReport.id === reportId) {
             const updatedSelectedReport = updatedReports.find(r => r.id === reportId);

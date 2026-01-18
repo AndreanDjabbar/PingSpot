@@ -83,6 +83,8 @@ const ReportCard: React.FC<ReportCardProps> = ({
     const [viewMode, setViewMode] = useState<'attachment' | 'map'>('map');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const reports = useReportsStore((s) => s.reports);
+    const setReports = useReportsStore((s) => s.setReports);
+    const setFilteredReports = useReportsStore((s) => s.setFilteredReports);
     const userProfile = useUserProfileStore((s) => s.userProfile);
     const openOptionsModal = useOptionsModalStore((s) => s.openOptionsModal);
     const openConfirm = useConfirmationModalStore((s) => s.openConfirm);
@@ -108,6 +110,32 @@ const ReportCard: React.FC<ReportCardProps> = ({
         console.log("Opening image preview for URL:", url);
         openImagePreview(url);
     }
+
+    // const handleLike = (reportId: number) => {
+    //     const updatedReports = reports.map(report => {
+    //         if (report.id === reportId) {
+    //             const currentlyLiked = report.isLikedByCurrentUser || false;
+    //             const currentlyDisliked = report.isDislikedByCurrentUser || false;
+                
+    //             return {
+    //                 ...report,
+    //                 totalLikeReactions: currentlyLiked 
+    //                     ? (report?.totalLikeReactions || 1) - 1 
+    //                     : (report?.totalLikeReactions || 0) + 1,
+    //                 totalDislikeReactions: currentlyDisliked 
+    //                     ? (report?.totalDislikeReactions || 1) - 1 
+    //                     : (report?.totalDislikeReactions || 0),
+    //                 totalReactions: report.totalReactions,
+    //                 isLikedByCurrentUser: currentlyLiked ? false : true,
+    //                 isDislikedByCurrentUser: currentlyDisliked ? false : false,
+    //             };
+    //         }
+    //         return report;
+    //     });
+        
+    //     setReports(updatedReports);
+    //     setFilteredReports(updatedReports);
+    // };
 
     const openDeleteConfirm = () => {
         openConfirm({ 
@@ -305,7 +333,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                     <div className="relative">
                         <div className="relative w-full overflow-hidden bg-gray-100 rounded-xl shadow-md">
                                 <StaticMap
-                                    key={`map-${report.id}-${Date.now()}`}
+                                    key={`map-${report.id}`}
                                     latitude={report.location.latitude}
                                     longitude={report.location.longitude}
                                     height={380}
@@ -332,7 +360,9 @@ const ReportCard: React.FC<ReportCardProps> = ({
             <div className={cn("border-gray-200", report.hasProgress && "")}>
                 <ReportInteractionBar
                     report={report}
-                    onLike={() => onLike(report.id)}
+                    onLike={() => {
+                        onLike(report.id)
+                    }}
                     onDislike={() => onDislike!(report.id)}
                     onSave={() => onSave!(report.id)}
                     onComment={onComment ? () => onComment(report.id) : undefined}
