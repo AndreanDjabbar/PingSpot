@@ -55,6 +55,23 @@ export interface IReportReactions {
     updatedAt: number;
 }
 
+export type ReportSortOption = 'latest' | 'oldest' | 'most_liked' | 'least_liked';
+export type ReportStatusFilter = 'all' | 'WAITING' | 'ON_PROGRESS' | 'RESOLVED' | 'POTENTIALLY_RESOLVED' | 'NOT_RESOLVED' | 'EXPIRED';
+export type ReportDistanceFilter = 'all' | '1000' | '5000' | '10000';
+export type ReportProgressFilter = 'all' | 'true' | 'false';
+
+export interface ReportFilterOptions {
+    sortBy: ReportSortOption;
+    reportType: ReportType | 'all';
+    status: ReportStatusFilter;
+    distance: {
+        distance: ReportDistanceFilter;
+        lat: string | null;
+        lng: string | null;
+    };
+    hasProgress: ReportProgressFilter;
+}
+
 export interface IStatusVoteStats {
     resolved: number;
     notResolved: number;
