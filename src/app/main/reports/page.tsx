@@ -21,7 +21,6 @@ import {
 } from './components';
 import { useReportsStore, useLocationStore, useReportCommentStore } from '@/stores';
 import { useInView } from 'react-intersection-observer';
-import type { FilterOptions } from './components/ReportFilterModal';
 import { useCurrentLocation } from '@/hooks/main';
 import { FaLocationDot } from 'react-icons/fa6';
 
@@ -31,17 +30,6 @@ const ReportsPage = () => {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const filterButtonRef = useRef<HTMLButtonElement>(null);
-    const [filters, setFilters] = useState<FilterOptions>({
-        sortBy: 'latest',
-        reportType: 'all',
-        status: 'all',
-        distance: {
-            distance: 'all',
-            lat: null,
-            lng: null,
-        },
-        hasProgress: 'all'
-    });
 
     const { ref, inView } = useInView({
         threshold: 0,
@@ -55,6 +43,8 @@ const ReportsPage = () => {
     const setSelectedReport = useReportsStore((s) => s.setSelectedReport);
     const setReportCount = useReportsStore((s) => s.setReportCount);
     const userLocation = useLocationStore((s) => s.location);
+    const reportFilters = useReportsStore((s) => s.reportFilters);
+    const updateReportFilters = useReportsStore((s) => s.updateReportFilters);
     const hasCoords = userLocation && userLocation?.lat !== null && userLocation?.lat !== '' && userLocation?.lng !== null && userLocation?.lng !== '';
 
     const { requestLocation, loading: loadingRequestLocation, permissionDenied, isPermissionDenied, } = useCurrentLocation();
@@ -102,11 +92,11 @@ const ReportsPage = () => {
         isFetchingNextPage,
         refetch: refetchGetReport,
     } = useGetReport(
-        filters.reportType !== 'all' ? filters.reportType : undefined,
-        filters.status !== 'all' ? filters.status : undefined,
-        filters.sortBy,
-        filters.hasProgress !== 'all' ? filters.hasProgress : undefined,
-        filters.distance,
+        reportFilters.reportType !== 'all' ? reportFilters.reportType : undefined,
+        reportFilters.status !== 'all' ? reportFilters.status : undefined,
+        reportFilters.sortBy,
+        reportFilters.hasProgress !== 'all' ? reportFilters.hasProgress : undefined,
+        reportFilters.distance,
         hasCoords ? hasCoords : false
     );
 
@@ -128,11 +118,11 @@ const ReportsPage = () => {
     };
 
     const activeFiltersCount = 
-    (filters.reportType !== 'all' ? 1 : 0) +
-    (filters.status !== 'all' ? 1 : 0) +
-    ((filters.distance.distance !== 'all' && filters.distance.lat != null && filters.distance.lng != null) ? 1 : 0) +
-    (filters.sortBy !== 'latest' ? 1 : 0) +
-    (filters.hasProgress !== 'all' ? 1 : 0);
+    (reportFilters.reportType !== 'all' ? 1 : 0) +
+    (reportFilters.status !== 'all' ? 1 : 0) +
+    ((reportFilters.distance.distance !== 'all' && reportFilters.distance.lat != null && reportFilters.distance.lng != null) ? 1 : 0) +
+    (reportFilters.sortBy !== 'latest' ? 1 : 0) +
+    (reportFilters.hasProgress !== 'all' ? 1 : 0);
     const isUsingFilters = activeFiltersCount > 0;
 
     const handleLike = (reportId: number) => {
@@ -629,11 +619,11 @@ const ReportsPage = () => {
                             onFilterClick={() => setIsFilterModalOpen(true)}
                             filterButtonRef={filterButtonRef}
                             activeFiltersCount={
-                                (filters.reportType !== 'all' ? 1 : 0) +
-                                (filters.status !== 'all' ? 1 : 0) +
-                                ((filters.distance.distance !== 'all' && filters.distance.lat != null && filters.distance.lng != null) ? 1 : 0) +
-                                (filters.sortBy !== 'latest' ? 1 : 0) +
-                                (filters.hasProgress !== 'all' ? 1 : 0)
+                                (reportFilters.reportType !== 'all' ? 1 : 0) +
+                                (reportFilters.status !== 'all' ? 1 : 0) +
+                                ((reportFilters.distance.distance !== 'all' && reportFilters.distance.lat != null && reportFilters.distance.lng != null) ? 1 : 0) +
+                                (reportFilters.sortBy !== 'latest' ? 1 : 0) +
+                                (reportFilters.hasProgress !== 'all' ? 1 : 0)
                             }
                         />
                     )}
@@ -695,7 +685,7 @@ const ReportsPage = () => {
                                         commandLabel={searchTerm ? 'Hapus Pencarian' : 'Reset Filter'}
                                         onCommandButton={() => {
                                             setSearchTerm('');
-                                            setFilters({
+                                            updateReportFilters({
                                                 sortBy: 'latest',
                                                 reportType: 'all',
                                                 status: 'all',
@@ -737,8 +727,6 @@ const ReportsPage = () => {
                     <ReportFilterModal
                         isOpen={isFilterModalOpen}
                         onClose={() => setIsFilterModalOpen(false)}
-                        onApply={(newFilters) => setFilters(newFilters)}
-                        currentFilters={filters}
                         buttonRef={filterButtonRef}
                     />
                 </div>

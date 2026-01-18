@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BiLike, BiCategory, BiMap } from 'react-icons/bi';
 import { RiProgress3Fill } from "react-icons/ri";
 import { MdCheckCircle, MdAccessTime, MdCancel } from 'react-icons/md';
-import { ReportType } from '@/types/model/report';
+import { ReportFilterOptions, ReportType } from '@/types/model/report';
 import { useLocationStore } from '@/stores/userLocationStore';
 import { Button } from '@/components/UI';
+import { useReportsStore } from '@/stores';
 
 type SortOption = 'latest' | 'oldest' | 'most_liked' | 'least_liked';
 type StatusFilter = 'all' | 'WAITING' | 'ON_PROGRESS' | 'RESOLVED' | 'POTENTIALLY_RESOLVED' | 'NOT_RESOLVED' | 'EXPIRED';
@@ -15,31 +16,20 @@ type ProgressFilter = 'all' | 'true' | 'false';
 interface FilterModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onApply: (filters: FilterOptions) => void;
-    currentFilters: FilterOptions;
     buttonRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
-export interface FilterOptions {
-    sortBy: SortOption;
-    reportType: ReportType | 'all';
-    status: StatusFilter;
-    distance: {
-        distance: DistanceFilter;
-        lat: string | null;
-        lng: string | null;
-    };
-    hasProgress: ProgressFilter;
-}
 
 const ReportFilterModal: React.FC<FilterModalProps> = ({
     isOpen,
     onClose,
-    onApply,
-    currentFilters,
     buttonRef
 }) => {
-    const [filters, setFilters] = useState<FilterOptions>(currentFilters);
+    const reportFilters = useReportsStore((s) => s.reportFilters);
+    const updateReportFilters = useReportsStore((s) => s.updateReportFilters);
+    const resetReportFilters = useReportsStore((s) => s.resetReportFilters);
+    const [filters, setFilters] = useState<ReportFilterOptions>(reportFilters);
+
     const userLocation = useLocationStore((s) => s.location);
     const [disableStatus, setDisableStatus] = useState(false);
     const [position, setPosition] = useState({ top: 0, right: 0 });
@@ -79,6 +69,7 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                 buttonRef?.current &&
                 !buttonRef.current.contains(event.target as Node)
             ) {
+                setFilters(reportFilters);
                 onClose();
             }
         };
@@ -93,12 +84,13 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
     }, [isOpen, onClose, buttonRef]);
 
     const handleApply = () => {
-        onApply(filters);
+        updateReportFilters(filters);
         onClose();
     };
 
     const handleReset = () => {
-        const defaultFilters: FilterOptions = {
+        resetReportFilters();
+        setFilters({
             sortBy: 'latest',
             reportType: 'all',
             status: 'all',
@@ -108,8 +100,8 @@ const ReportFilterModal: React.FC<FilterModalProps> = ({
                 lng: null,
             },
             hasProgress: 'all'
-        };
-        setFilters(defaultFilters);
+        })
+        onClose();
     };
 
     const sortOptions = [
