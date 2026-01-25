@@ -1,17 +1,8 @@
 import z from "zod";
 import { 
-    IReverseLocation, 
     IUserProfile 
 } from "../model/user";
 import { SaveProfileSchema, SaveSecuritySchema } from "@/app/main/schema";
-
-export interface ILogoutRequest {
-    authToken: string;
-}
-
-export interface ILogoutResponse {
-    message: string;
-}
 
 export interface IGetProfileByUsernameResponse {
     message: string;
@@ -36,11 +27,6 @@ export interface ISaveSecurityResponse {
     message: string;
 }
 
-export interface IReverseLocationResponse {
-    message: string;
-    data?: IReverseLocation;
-}
-
 export interface IGetUserStatisticsResponse {
     message: string;
     data?: {
@@ -50,7 +36,3 @@ export interface IGetUserStatisticsResponse {
     }
 }
 
-export interface IReverseLocationRequest {
-    latitude: string;
-    longitude: string;
-}

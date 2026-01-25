@@ -1,4 +1,3 @@
-import axios from "axios";
 import axiosInstance from "@/lib/axiosInstance";
 import { 
     ICreateReportCommentResponse,
@@ -19,17 +18,6 @@ import {
     IVoteReportRequest,
     IVoteReportResponse
 } from "@/types/api/report";
-import { IReverseLocationRequest } from "@/types/api/user";
-import { IReverseLocation } from "@/types/model/user";
-import { ISearchDataResponse } from "@/types/api/search";
-
-const REVERSE_LOCATION_API_URL = `${process.env.NEXT_PUBLIC_REVERSE_LOCATION_URL}`;
-
-export const reverseCurrentLocationService = async (payload: IReverseLocationRequest): 
-Promise<IReverseLocation> => {
-    const response = await axios.get<IReverseLocation>(`${REVERSE_LOCATION_API_URL}?lat=${payload.latitude}&lon=${payload.longitude}&format=json`);
-    return response.data;
-};
 
 export const createReportService = async (payload: FormData): Promise<ICreateReportResponse> => {
     const response = await axiosInstance.post<ICreateReportResponse>(`/report`, payload, {
@@ -175,16 +163,5 @@ export const EditReportService = async (reportID: number, payload: FormData): Pr
 
 export const DeleteReportService = async (payload: IDeleteReportRequest): Promise<IDeleteReportResponse> => {
     const response = await axiosInstance.delete<IDeleteReportResponse>(`/report/${payload.reportID}`);
-    return response.data;
-}
-
-export const searchDataService = async (searchQuery: string, usersDatacursorID?: number, reportsDataCursorID?: number): Promise<ISearchDataResponse> => {
-    const params = new URLSearchParams();
-
-    if (usersDatacursorID) params.append('usersDataCursorID', usersDatacursorID.toString());
-    if (reportsDataCursorID) params.append('reportsDataCursorID', reportsDataCursorID.toString());
-    params.append('searchQuery', searchQuery);
-    const queryString = params.toString() ? `&${params.toString()}` : '';
-    const response = await axiosInstance.get<ISearchDataResponse>(`/search/?${queryString}`);
     return response.data;
 }

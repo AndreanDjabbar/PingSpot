@@ -11,6 +11,14 @@ export type IRegisterRequest = z.infer<typeof RegisterSchema>;
 
 export type ILoginRequest = z.infer<typeof LoginSchema>;
 
+export interface ILogoutRequest {
+    authToken: string;
+}
+
+export interface ILogoutResponse {
+    message: string;
+}
+
 export type IVerificationRequest = z.infer<typeof VerificationSchema>;
 
 export type IForgotPasswordEmailVerificationRequest = z.infer<typeof ForgotPasswordEmailVerificationSchema>;
