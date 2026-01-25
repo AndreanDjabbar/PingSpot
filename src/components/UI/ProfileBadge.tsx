@@ -89,7 +89,7 @@ const ProfileBadge: React.FC<ProfileBadgeProps> = ({
                         {followers !== undefined && (
                             <div className="flex items-center gap-1">
                                 <span className="font-semibold text-white">{followers}</span>
-                                <span>Followers</span>
+                                <span>Pengikut</span>
                             </div>
                         )}
                         {followers !== undefined && following !== undefined && (
@@ -98,7 +98,7 @@ const ProfileBadge: React.FC<ProfileBadgeProps> = ({
                         {following !== undefined && (
                             <div className="flex items-center gap-1">
                                 <span className="font-semibold text-white">{following}</span>
-                                <span>Following</span>
+                                <span>Mengikuti</span>
                             </div>
                         )}
                     </div>
