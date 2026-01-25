@@ -1,4 +1,4 @@
-import { IReverseLocation } from "../model/user";
+import { IReverseLocation } from "../model";
 
 export interface IReverseLocationRequest {
     latitude: string;

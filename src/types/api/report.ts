@@ -6,7 +6,7 @@ import {
     VoteReportSchema,
     CreateReportCommentSchema
 } from "@/app/main/schema";
-import {  IReport, IReportComment, IReportProgress, IReportReactions, IReportVote, ITotalReportCount } from "../model/report";
+import {  IReport, IReportComment, IReportProgress, IReportReactions, IReportVote, ITotalReportCount } from "../model";
 import z from "zod";
 
 export interface IGetReportResponse {

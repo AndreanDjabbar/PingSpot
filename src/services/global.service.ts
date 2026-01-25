@@ -1,5 +1,4 @@
-import { IReverseLocationRequest } from "@/types/api/global";
-import { IReverseLocation } from "@/types/model/user";
+import { IReverseLocation, IReverseLocationRequest } from "@/types";
 import axios from "axios";
 
 const REVERSE_LOCATION_API_URL = `${process.env.NEXT_PUBLIC_REVERSE_LOCATION_URL}`;

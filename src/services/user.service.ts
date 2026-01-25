@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IGetUserStatisticsResponse, ISaveSecurityRequest, ISaveSecurityResponse } from "@/types/api/user";
-import { IGetProfileResponse, ISaveProfileResponse } from "@/types/api/user";
+import { IGetProfileResponse, ISaveProfileResponse } from "@/types";
 import axiosInstance from "@/lib/axiosInstance";
 
 export const saveProfileService = async (payload: FormData): Promise<ISaveProfileResponse> => {

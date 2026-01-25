@@ -1,7 +1,7 @@
 import z from "zod";
 import { 
     IUserProfile 
-} from "../model/user";
+} from "../model";
 import { SaveProfileSchema, SaveSecuritySchema } from "@/app/main/schema";
 
 export interface IGetProfileByUsernameResponse {

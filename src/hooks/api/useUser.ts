@@ -11,7 +11,7 @@ import {
     ISaveProfileResponse, 
     ISaveSecurityRequest, 
     ISaveSecurityResponse 
-} from "@/types/api/user";
+} from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { AxiosError } from "axios";
 

@@ -31,7 +31,7 @@ import {
     IUploadProgressReportResponse,
     IVoteReportRequest,
     IVoteReportResponse
-} from "@/types/api/report"
+} from "@/types"
 
 export const useCreateReport = () => {
     return useMutation<ICreateReportResponse, Error, FormData>({

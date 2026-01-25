@@ -1,5 +1,4 @@
-import { IReport } from "../model/report";
-import { IUserProfile } from "../model/user";
+import { IReport, IUserProfile } from "../model";
 
 export interface ISearchDataResponse {
     message: string;

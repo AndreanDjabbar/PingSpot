@@ -12,7 +12,7 @@ import {
     IRegisterResponse, 
     IVerificationRequest, 
     IVerificationResponse 
-} from "@/types/api/auth";
+} from "@/types";
 import axiosInstance from "@/lib/axiosInstance";
 
 

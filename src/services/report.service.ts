@@ -17,7 +17,7 @@ import {
     IUploadProgressReportResponse,
     IVoteReportRequest,
     IVoteReportResponse
-} from "@/types/api/report";
+} from "@/types";
 
 export const createReportService = async (payload: FormData): Promise<ICreateReportResponse> => {
     const response = await axiosInstance.post<ICreateReportResponse>(`/report`, payload, {
