@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type GlobalState = {
+type GlobalStore = {
     currentPage: string;
     setCurrentPage: (currentPage: string) => void;
     clearGlobalData: () => void;
     expiredAt?: number;
 };
 
-export const useGlobalStore = create<GlobalState>()(
+export const useGlobalStore = create<GlobalStore>()(
     persist(
         (set, get) => ({
         currentPage: "home",
