@@ -1,4 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
+"use client"
+
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib';
 import { AnimatePresence, motion } from 'framer-motion';

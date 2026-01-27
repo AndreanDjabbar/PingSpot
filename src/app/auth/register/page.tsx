@@ -135,7 +135,7 @@ const RegisterPage = () => {
                     </div>
 
                     <Button
-                        className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
+                        className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium"
                         title="Daftar"
                         loadingText="Mendaftar..."
                         isLoading={isPending}

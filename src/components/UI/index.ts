@@ -7,7 +7,7 @@ import Button from "./Button";
 import ProfileBadge from "./ProfileBadge";
 import ImageField from './ImageField';
 import DateTimeField from './DateTimeField';
-import InputField from './InputField';
+import InputField from './TextField';
 import RadioField from './RadioField';
 import TextAreaField from './TextaAreaField';
 import MultipleImageField from './MultipleImageField';

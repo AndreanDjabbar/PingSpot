@@ -258,8 +258,9 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
                         
                         <div className="flex flex-col sm:flex-row gap-3 pt-2">
                             <Button
-                                className="group relative flex-1 flex items-center justify-center py-3.5 px-4 text-sm font-bold rounded-xl text-white bg-sky-700 hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="group relative flex-1 flex items-center justify-center py-3.5 px-4 text-sm font-bold "
                                 loadingText="Memproses..."
+                                type='submit'
                                 isLoading={isUploadProgressReportPending}
                             >
                                 {selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
