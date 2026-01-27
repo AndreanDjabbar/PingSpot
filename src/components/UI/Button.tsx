@@ -1,13 +1,15 @@
 import React from 'react';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost';
+type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonType = 'submit' | 'button';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: ButtonVariant;
     size?: ButtonSize;
     isLoading?: boolean;
+    type?: ButtonType;
     loadingText?: string;
     icon?: React.ReactNode;
     iconPosition?: 'left' | 'right';
@@ -18,6 +20,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const Button: React.FC<ButtonProps> = ({
     variant = 'primary',
     size = 'md',
+    type = 'button',
     isLoading = false,
     loadingText,
     icon,
@@ -83,7 +86,7 @@ const Button: React.FC<ButtonProps> = ({
 
     return (
         <button
-            type="button"
+            type={type}
             className={`${combinedClassName} cursor-pointer`}
             disabled={disabled || isLoading}
             {...props}

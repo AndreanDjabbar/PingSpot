@@ -1,7 +1,7 @@
 "use client";
 
+import { cn } from "@/lib";
 import React, { ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { FaCheck } from "react-icons/fa";
 
 export interface StepItem {

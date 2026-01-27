@@ -1,19 +1,19 @@
 import React from 'react';
 
-export interface GuideStep {
+interface GuideStep {
     number: number;
     title: string;
     description: string;
 }
 
-export interface GuideAlert {
+interface GuideAlert {
     type: 'warning' | 'info' | 'success' | 'error';
     title: string;
     message: string;
     emoji: string;
 }
 
-export interface GuideProps {
+interface GuideProps {
     title: string;
     subtitle: string;
     icon?: React.ReactNode;
