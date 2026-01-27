@@ -1,17 +1,15 @@
 'use client';
 import { MdMailOutline } from "react-icons/md";
 import { FaGoogle } from "react-icons/fa";
-import { InputField, ButtonSubmit } from "@/components/form";
+import { InputField, ErrorSection, SuccessSection, Button } from "@/components";
 import { useForm } from "react-hook-form";
 import { IForgotPasswordEmailVerificationRequest } from "@/types/api/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ErrorSection, SuccessSection } from "@/components/feedback";
 import { getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage } from "@/utils";
 import { useEffect } from "react";
-import { useEmailVerification } from "@/hooks/auth";
+import { useEmailVerification, useErrorToast, useSuccessToast } from "@/hooks";
 import { useRouter } from "next/navigation";
 import { ForgotPasswordEmailVerificationSchema } from "../Schema";
-import { useErrorToast, useSuccessToast } from "@/hooks/toast";
 
 const ForgotPasswordPage = () => {
     const { 
@@ -81,12 +79,14 @@ const ForgotPasswordPage = () => {
                             </a>
                         </p>
 
-                        <ButtonSubmit
+                        <Button
                             className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
-                            title="Kirim Email"
-                            progressTitle="Mengirim..."
-                            isProgressing={isPending}
-                        />
+                            type="submit"
+                            loadingText="Mengirim.."
+                            isLoading={isPending}
+                        >
+                            Kirim Email
+                        </Button>
 
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">

@@ -4,11 +4,10 @@ import React, { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { VerificationSchema } from '../Schema';
 import { useForm } from 'react-hook-form';
-import { useVerification } from '@/hooks/auth';
-import { ErrorSection, SuccessSection } from '@/components/feedback';
+import { useVerification, useErrorToast, useSuccessToast } from '@/hooks';
+import { ErrorSection, SuccessSection } from '@/components';
 import { getDataResponseDetails, getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
-import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { IVerificationRequest } from '@/types/api/auth';
+import { IVerificationRequest } from '@/types';
 
 const VerificationClient = () => {
     const searchParams = useSearchParams();

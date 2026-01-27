@@ -3,17 +3,15 @@
 import { MdMailOutline } from "react-icons/md";
 import { LuLockKeyhole } from "react-icons/lu";
 import { FaGoogle } from "react-icons/fa";
-import { InputField, ButtonSubmit } from "@/components/form";
+import { Button, InputField, ErrorSection, SuccessSection } from "@/components";
 import { useForm } from "react-hook-form";
 import { ILoginRequest } from "@/types/api/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema } from "../Schema";
-import { useLogin } from "@/hooks/auth";
-import { ErrorSection, SuccessSection } from "@/components/feedback";
+import { useLogin, useErrorToast, useSuccessToast } from "@/hooks";
 import { getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage } from "@/utils";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useErrorToast, useSuccessToast } from "@/hooks/toast";
 
 const LoginPage = () => {
     const router = useRouter();
@@ -101,12 +99,15 @@ const LoginPage = () => {
                             </div>
                         </div>
 
-                        <ButtonSubmit
+                        <Button
                             className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
                             title="Masuk"
-                            progressTitle="Masuk..."
-                            isProgressing={isPending}
-                        />
+                            type="submit"
+                            loadingText="Masuk..."
+                            isLoading={isPending}
+                        >
+                            Masuk
+                        </Button>
 
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">

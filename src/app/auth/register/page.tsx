@@ -3,16 +3,15 @@ import { MdMailOutline } from "react-icons/md";
 import { LuLockKeyhole } from "react-icons/lu";
 import { FaGoogle } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
-import { InputField, ButtonSubmit } from "@/components/form";
+import { Button, InputField } from "@/components";
 import { useForm } from "react-hook-form";
 import { IRegisterRequest } from "@/types/api/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../Schema";
-import { useRegister } from "@/hooks/auth";
+import { useRegister, useErrorToast, useSuccessToast } from "@/hooks";
 import { useEffect } from "react";
 import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseMessage } from "@/utils";
 import { useRouter } from "next/navigation";
-import { useErrorToast, useSuccessToast } from "@/hooks/toast";
 import { SuccessSection, ErrorSection } from "@/components/feedback";
 
 const RegisterPage = () => {
@@ -135,12 +134,14 @@ const RegisterPage = () => {
                         <div className="text-red-500 text-sm font-semibold">{errors.passwordConfirmation?.message as string}</div>
                     </div>
 
-                    <ButtonSubmit
+                    <Button
                         className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-colors duration-300"
                         title="Daftar"
-                        progressTitle="Mendaftar..."
-                        isProgressing={isPending}
-                    />
+                        loadingText="Mendaftar..."
+                        isLoading={isPending}
+                    >
+                        Daftar
+                    </Button>
                 </form>
             )}
 

@@ -5,13 +5,12 @@ import React, { useEffect } from 'react'
 import { SuccessSection, ErrorSection } from '@/components/feedback';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useLinkVerification, useResetPassword } from '@/hooks/auth';
-import { ButtonSubmit, InputField } from '@/components/form';
+import { useLinkVerification, useResetPassword, useErrorToast, useSuccessToast } from '@/hooks';
+import { Button, InputField } from '@/components';
 import { LuLockKeyhole } from 'react-icons/lu';
-import { IForgotPasswordResetPasswordRequest } from '@/types/api/auth';
+import { IForgotPasswordResetPasswordRequest } from '@/types';
 import { ForgotPasswordResetPasswordSchema } from '../../Schema';
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
-import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 
 const VerificationClient = () => {
     const searchParams = useSearchParams();
@@ -182,12 +181,14 @@ const VerificationClient = () => {
                         )}
                     </div>
 
-                    <ButtonSubmit
+                    <Button
                         className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-hoverable focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-300"
-                        title="Atur Ulang Kata Sandi"
-                        progressTitle="Memproses..."
-                        isProgressing={isPending}
-                    />
+                        type='submit'
+                        loadingText="Memproses..."
+                        isLoading={isPending}
+                    >      
+                    Atur Ulang Kata Sandi
+                    </Button>
                 </form>
             )}
 
