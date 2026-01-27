@@ -1,15 +1,9 @@
 import { create } from "zustand";
 import { ReactNode } from "react";
+import { OptionItem } from "@/types";
 
 type ConfirmationModalType = "warning" | "info";
 type FormInformationType = "info" | "warning";
-
-interface OptionItem {
-    label: string;
-    icon?: ReactNode;
-    description?: string;
-    onClick: () => void;
-}
 
 interface ConfirmationModalState {
     isOpen: boolean;

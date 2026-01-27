@@ -9,7 +9,7 @@ import {
     ConfirmationModal,
     FormInformationModal,
     ImagePreviewModal 
-} from "@/components/feedback";
+} from "@/components";
 
 export const ConfirmationModalProvider = () => {
     const {
