@@ -1,5 +1,4 @@
 import { jwtDecode } from "jwt-decode"
-import { getAuthToken } from "./getAuthToken";
 
 export const getJWTExpired = (jwt = getAuthToken()): number => {
     if (!jwt) return 0;
@@ -15,5 +14,22 @@ export const getJWTExpired = (jwt = getAuthToken()): number => {
         return exp * 1000;
     } catch {
         return 0;
+    }
+};
+
+export const getAuthToken = (): string | null => {
+    if (typeof document === "undefined") {
+        return null;
+    }
+
+    try {
+        const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("auth_token="))
+        ?.split("=")[1];
+
+        return token || null;
+    } catch {
+        return null;
     }
 };

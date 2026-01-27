@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { AxiosError } from "axios";
 
 interface IErrorResponse {
@@ -5,6 +7,25 @@ interface IErrorResponse {
     message?: string;
     errors?: unknown;
     error_code?: string;
+}
+
+type IDataResponse = {
+    message: string;
+    data?: any;
+}
+
+export const getDataResponseMessage = (data: any): string => {
+    if (data) {
+        return (data as IDataResponse).message || "No message available.";
+    }
+    return "No data provided.";
+}
+
+export const getDataResponseDetails = (data: any): any => {
+    if (data) {
+        return (data as IDataResponse).data || data || null;
+    }
+    return null;
 }
 
 export const getErrorResponseMessage = (error: unknown): string => {
