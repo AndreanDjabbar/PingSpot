@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { FaGithub } from 'react-icons/fa';
 import { SiGmail } from "react-icons/si";
 import { PingspotLogo } from '../UI';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib';
 
 interface FooterProps {
     bottomNavHeightPosition?: number;

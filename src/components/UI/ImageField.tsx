@@ -3,7 +3,7 @@
 import React, { useState, useRef, ChangeEvent, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { FaCamera } from 'react-icons/fa';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib';
 import Cropper from 'react-easy-crop';
 import type { Area } from 'react-easy-crop';
 

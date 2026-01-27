@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { IoMdImages } from 'react-icons/io';
 import { MdClose } from 'react-icons/md';
 import { Button } from '@/components/UI';
-import { useToast } from '@/hooks/toast';
+import { useToast } from '@/hooks';
 
 interface InlineImageUploadProps {
     preview: string | null;

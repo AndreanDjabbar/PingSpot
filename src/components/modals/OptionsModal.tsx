@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useOptionsModalStore, OptionItem } from '@/stores/optionsModalStore';
+import { useOptionsModalStore } from '@/stores';
 
 const OptionsModal: React.FC = () => {
     const { isOpen, optionsList, anchorRef, closeOptionsModal } = useOptionsModalStore();
@@ -116,7 +116,7 @@ const OptionsModal: React.FC = () => {
         };
     }, [isOpen, anchorRef, placement]);
 
-    const onOptionClick = (option: OptionItem) => {
+    const onOptionClick = (option) => {
         try {
             option.onClick();
         } catch (err) {

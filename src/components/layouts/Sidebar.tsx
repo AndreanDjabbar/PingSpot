@@ -8,8 +8,7 @@ import { LuActivity, LuMessageCircle } from "react-icons/lu";
 import { CiSettings } from "react-icons/ci";
 import { IoMdHelpCircleOutline } from "react-icons/io";
 import { usePathname, useRouter } from "next/navigation";
-import { useGlobalStore } from "@/stores/globalStore";
-import { useUserProfileStore } from "@/stores";
+import { useGlobalStore, useUserProfileStore } from "@/stores";
 import { useEffect, useRef } from "react";
 
 interface SidebarProps {

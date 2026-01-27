@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib';
 import { AnimatePresence, motion } from 'framer-motion';
 import { IoChevronDown } from 'react-icons/io5';
 import { FaCheck } from 'react-icons/fa';

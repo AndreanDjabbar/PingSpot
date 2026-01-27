@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { BiX } from 'react-icons/bi';
 import { IoMdAddCircle } from 'react-icons/io';
 import { FiMaximize2 } from 'react-icons/fi';
-import { cn } from '@/lib/utils';
-import { ImageItem } from '@/types/global/type';
+import { cn } from '@/lib';
+import { ImageItem } from '@/types';
 
 interface MultipleImageFieldProps {
     id: string;
