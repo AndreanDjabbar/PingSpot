@@ -1,4 +1,4 @@
-import { IReportProgress } from "@/types/model/report"
+import { IReportProgress } from "@/types"
 import { getFormattedDate, getImageURL } from "@/utils";
 import Image from "next/image";
 import React from "react"

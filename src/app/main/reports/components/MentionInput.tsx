@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import Image from 'next/image';
 import { getImageURL } from '@/utils';
-import { TextAreaField } from '@/components/form';
+import { TextAreaField } from '@/components';
 
 export interface MentionUser {
     userId: number;

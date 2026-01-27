@@ -8,14 +8,11 @@ import { FaUser } from 'react-icons/fa'
 import { GoAlert } from 'react-icons/go'
 import HeaderSection from '../components/HeaderSection';
 import { useLocationStore } from '@/stores';
-import { Button, EmptyState, Loading } from '@/components/UI';
+import { Button, EmptyState, Loading, ErrorSection } from '@/components';
 import { RxCrossCircled } from 'react-icons/rx';
 import { FaLocationDot } from 'react-icons/fa6';
-import { useCurrentLocation, useGetReportStatistics } from '@/hooks/main';
-import { useErrorToast } from '@/hooks/toast';
+import { useCurrentLocation, useGetReportStatistics, useErrorToast, useGetUserStatistics } from '@/hooks';
 import { getErrorResponseMessage, getFormattedDate, getRelativeTime, isInternalServerError } from '@/utils';
-import { ErrorSection } from '@/components/feedback';
-import { useGetUserStatistics } from '@/hooks/user';
 import { IoMdPulse } from 'react-icons/io';
 import { MdCalendarMonth } from 'react-icons/md';
 

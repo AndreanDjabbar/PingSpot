@@ -1,10 +1,9 @@
-import { MultipleImageField, TextAreaField } from '@/components/form';
+import { MultipleImageField, TextAreaField } from '@/components';
 import React from 'react';
 import { BiMessageDetail } from 'react-icons/bi';
 import { FaCamera } from 'react-icons/fa';
 import { FieldErrors, UseFormRegister } from 'react-hook-form';
-import { ImageItem } from '@/types/global/type';
-import { IUploadProgressReportRequest } from '@/types/api/report';
+import { IUploadProgressReportRequest, ImageItem } from '@/types';
 
 interface DetailSectionProps {
     register: UseFormRegister<IUploadProgressReportRequest>;

@@ -1,14 +1,13 @@
 "use client";
 
 import React from 'react';
-import { IReportComment } from '@/types/model/report';
-import { ICreateReportCommentRequest } from '@/types/api/report';
-import { useReportCommentStore } from '@/stores';
+import { IReportComment, ICreateReportCommentRequest } from '@/types';
 import { z } from 'zod';
 import { CreateReportCommentSchema } from '@/app/main/schema';
 import { CommentsList } from '@/app/main/components/CommentsList';
-import { ErrorSection } from '@/components/feedback';
+import { ErrorSection } from '@/components';
 import { getErrorResponseDetails, getErrorResponseMessage, isInternalServerError } from '@/utils';
+import { useReportsStore } from '@/stores';
 
 interface ReportCommentsSectionProps {
     comments: IReportComment[];
@@ -38,7 +37,7 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
     const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
 
-    const reportCommentCounts = useReportCommentStore((state) => state.reportCommentsCount);
+    const reportCommentCounts = useReportsStore((state) => state.reportCommentsCount);
 
     const handleImageSelect = (file: File) => {
         setCommentMediaImage(file);

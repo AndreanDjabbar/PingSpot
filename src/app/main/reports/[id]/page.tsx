@@ -12,12 +12,19 @@ import {
     getImageURL,
     compressImages,
 } from '@/utils';
-import { ReportType, IReportImage, IReportComment } from '@/types/model/report';
+import { ReportType, IReportImage, IReportComment } from '@/types';
 import { ReportInteractionBar } from '../components/ReportInteractionBar';
-import { useUserProfileStore, useReportsStore, useReportCommentStore } from '@/stores';
-import { useDeleteReport, useGetReportByID, useReactReport, useVoteReport, useGetReportComments, useCreateReportCommentReport } from '@/hooks/main';
-import { useImagePreviewModalStore } from '@/stores';
-import { useErrorToast, useSuccessToast } from '@/hooks/toast';
+import { useUserProfileStore, useReportsStore, useImagePreviewModalStore } from '@/stores';
+import { 
+    useDeleteReport, 
+    useGetReportByID, 
+    useReactReport, 
+    useVoteReport, 
+    useGetReportComments, 
+    useCreateReportCommentReport, 
+    useErrorToast, 
+    useSuccessToast 
+} from '@/hooks';
 import { 
     ReportHeader, 
     ReportMediaViewer, 
@@ -27,9 +34,8 @@ import {
     ReportVotingSection,
     ReportDetailSkeleton 
 } from './components';
-import { ErrorSection } from '@/components/feedback';
+import { ErrorSection, Loading } from '@/components';
 import { HeaderSection } from '../../components';
-import { Loading } from '@/components/UI';
 import { ICreateReportCommentRequest } from '@/types/api/report';
 
 const getReportTypeLabel = (type: ReportType): string => {
@@ -74,10 +80,10 @@ const ReportDetailPage = () => {
     const selectedReport = useReportsStore((s) => s.selectedReport);
     const setSelectedReport = useReportsStore((s) => s.setSelectedReport);
     const userProfile = useUserProfileStore((s) => s.userProfile);
-    const reportComments = useReportCommentStore((s) => s.reportComments);
-    const setReportComments = useReportCommentStore((s) => s.setReportComments);
-    const reportCommentCounts = useReportCommentStore((s) => s.reportCommentsCount);
-    const setReportCommentCounts = useReportCommentStore((s) => s.setReportCommentsCount);
+    const reportComments = useReportsStore((s) => s.reportComments);
+    const setReportComments = useReportsStore((s) => s.setReportComments);
+    const reportCommentCounts = useReportsStore((s) => s.reportCommentsCount);
+    const setReportCommentCounts = useReportsStore((s) => s.setReportCommentsCount);
 
     const { 
         data: freshReportData,

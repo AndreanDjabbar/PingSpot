@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { IUserProfile } from '@/types/model/user';
+import { IUserProfile } from '@/types';
 
 interface MentionTextProps {
     text: string;

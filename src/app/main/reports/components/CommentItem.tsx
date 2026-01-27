@@ -8,13 +8,12 @@ import { BiSend } from 'react-icons/bi';
 import { motion } from 'framer-motion';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { useUserProfileStore, useImagePreviewModalStore } from '@/stores';
-import { useGetReportCommentReplies } from '@/hooks/main';
+import { useGetReportCommentReplies } from '@/hooks';
 import MentionInput, { MentionUser } from './MentionInput';
 import MentionText from './MentionText';
 import { Button } from '@/components/UI';
-import { IReportComment } from '@/types/model/report';
-import { ICreateReportCommentRequest } from '@/types/api/report';
-import { ImagePreview, InlineImageUpload } from '@/components/form';
+import { IReportComment, ICreateReportCommentRequest } from '@/types';
+import { ImagePreview, InlineImageUpload } from '@/components/';
 
 interface CommentItemProps {
     comment: IReportComment;

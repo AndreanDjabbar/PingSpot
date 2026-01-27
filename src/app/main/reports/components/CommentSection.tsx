@@ -9,8 +9,7 @@ import { getImageURL } from '@/utils';
 import { useUserProfileStore } from '@/stores';
 import CommentItem from './CommentItem';
 import MentionInput, { MentionUser } from './MentionInput';
-import { IReportComment } from '@/types/model/report';
-import { ICreateReportCommentRequest } from '@/types/api/report';
+import { IReportComment, ICreateReportCommentRequest } from '@/types';
 
 interface CommentSectionProps {
     comments: IReportComment[];

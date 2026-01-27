@@ -1,5 +1,5 @@
-import { ErrorSection, SuccessSection } from '@/components/feedback'
-import { IUploadProgressReportResponse } from '@/types/api/report'
+import { ErrorSection, SuccessSection } from '@/components'
+import { IUploadProgressReportResponse } from '@/types'
 import { getErrorResponseDetails, getErrorResponseMessage } from '@/utils'
 import React from 'react'
 

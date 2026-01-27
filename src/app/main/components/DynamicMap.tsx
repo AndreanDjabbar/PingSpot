@@ -3,10 +3,9 @@
 
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
-import { useCurrentLocation } from '@/hooks/main';
+import { useCurrentLocation, useErrorToast } from '@/hooks';
 import { FaMapPin, FaSpinner, FaLocationArrow } from 'react-icons/fa';
 import L from 'leaflet';
-import { useErrorToast } from '@/hooks/toast';
 import 'leaflet/dist/leaflet.css';
 
 interface DynamicMapProps {

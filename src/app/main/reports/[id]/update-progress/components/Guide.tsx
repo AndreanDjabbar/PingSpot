@@ -1,4 +1,4 @@
-import { Guide } from '@/components/UI'
+import { Guide } from '@/components'
 import React from 'react'
 import { LuNotebookText } from 'react-icons/lu'
 

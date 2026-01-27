@@ -2,12 +2,10 @@
 
 import React, { useEffect } from 'react';
 import { BiSend } from 'react-icons/bi';
-import { IReportComment } from '@/types/model/report';
+import { IReportComment, ICreateReportCommentRequest } from '@/types';
 import CommentItem from '../reports/components/CommentItem';
-import { ImagePreview, InlineImageUpload, TextAreaField } from '@/components/form';
-import { Button } from '@/components/UI';
-import { FaComment } from 'react-icons/fa';
-import { ICreateReportCommentRequest } from '@/types/api/report';
+import { ImagePreview, InlineImageUpload, TextAreaField, Button } from '@/components';
+import { FaComment } from 'react-icons/fa';;
 import { useInView } from 'react-intersection-observer';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 

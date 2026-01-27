@@ -9,16 +9,14 @@ import { motion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { FaCheck } from 'react-icons/fa';
 import { LuNotebookText } from 'react-icons/lu';
-import { ButtonSubmit } from '@/components/form';
-import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { useUploadProgressReport, useGetReportByID } from '@/hooks/main';
+import { useErrorToast, useSuccessToast, useUploadProgressReport, useGetReportByID } from '@/hooks';
 import { useReportsStore, useUserProfileStore, useConfirmationModalStore, useImagePreviewModalStore } from '@/stores';
-import { IUploadProgressReportRequest } from '@/types/api/report';
+import { IUploadProgressReportRequest, ImageItem } from '@/types';
 import { UploadProgressReportSchema } from '../../../schema';
-import { ImageItem } from '@/types/global/type';
 import { DetailSection, GuideSection, ProgressSection, ResponseSection } from './components';
 import { HeaderSection } from '@/app/main/components';
 import { compressImages } from '@/utils';
+import { Button } from '@/components';
 
 const UpdateProgressPage = () => {
     const params = useParams();
@@ -229,11 +227,12 @@ const UpdateProgressPage = () => {
                                                 />
 
                                                 <div className="flex">
-                                                    <ButtonSubmit
-                                                        title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
-                                                        progressTitle="Memproses..."
-                                                        isProgressing={isUploadProgressReportPending}
-                                                    />
+                                                    <Button
+                                                        type='submit'
+                                                        isLoading={isUploadProgressReportPending}
+                                                    >
+                                                        {selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
+                                                    </Button>
                                                 </div>
                                             </motion.div>
                                         )}

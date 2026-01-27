@@ -2,8 +2,7 @@
 
 import React from 'react';
 import { BiSend } from 'react-icons/bi';
-import { ImagePreview, InlineImageUpload, TextAreaField } from '@/components/form';
-import { Button } from '@/components/UI';
+import { ImagePreview, InlineImageUpload, TextAreaField, Button } from '@/components';
 
 interface CommentInputProps {
     commentContent: string;

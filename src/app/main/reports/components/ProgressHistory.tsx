@@ -1,4 +1,3 @@
-import { Accordion } from "@/components/UI";
 import { IReportProgress } from "@/types/model/report"
 import { getFormattedDate, getImageURL } from "@/utils";
 import Image from "next/image";

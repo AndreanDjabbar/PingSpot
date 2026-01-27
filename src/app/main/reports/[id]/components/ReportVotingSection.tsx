@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FaCheck, FaHourglassEnd, FaTimes, FaUsers } from 'react-icons/fa';
 import { RiProgress3Fill } from 'react-icons/ri';
-import { IReport } from '@/types/model/report';
+import { IReport } from '@/types';
 import { LuLock } from 'react-icons/lu';
 import { useConfirmationModalStore } from '@/stores';
 

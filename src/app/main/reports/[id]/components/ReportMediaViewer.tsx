@@ -5,7 +5,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaImage, FaMap } from 'react-icons/fa';
 import { getImageURL } from '@/utils';
-import { IReport } from '@/types/model/report';
+import { IReport } from '@/types';
 
 const StaticMap = dynamic(() => import('../../../components/StaticMap'), {
     ssr: false,

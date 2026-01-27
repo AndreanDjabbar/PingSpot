@@ -4,13 +4,20 @@ import { usePathname } from 'next/navigation';
 import { BiPlus } from 'react-icons/bi';
 import HeaderSection from '../components/HeaderSection';
 import { useRouter } from 'next/navigation';
-import { ErrorSection } from '@/components/feedback';
-import { useDeleteReport, useGetReport, useReactReport, useGetReportComments, useCreateReportCommentReport } from '@/hooks/main';
-import { useVoteReport } from '@/hooks/main/useVoteReport';
+import { 
+    useDeleteReport, 
+    useGetReport, 
+    useReactReport, 
+    useGetReportComments, 
+    useCreateReportCommentReport, 
+    useErrorToast, 
+    useSuccessToast,
+    useVoteReport,
+    useCurrentLocation
+} from '@/hooks';
 import { RxCrossCircled } from "react-icons/rx";
-import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 import { getErrorResponseDetails, getErrorResponseMessage, isInternalServerError } from '@/utils';
-import { Button, EmptyState, Loading } from '@/components/UI';
+import { Button, EmptyState, Loading, ErrorSection } from '@/components';
 import { 
     ReportSkeleton, 
     ReportSearchAndFilter,
@@ -19,9 +26,8 @@ import {
     ReportSidebar,
     ReportFilterModal
 } from './components';
-import { useReportsStore, useLocationStore, useReportCommentStore } from '@/stores';
+import { useReportsStore, useLocationStore } from '@/stores';
 import { useInView } from 'react-intersection-observer';
-import { useCurrentLocation } from '@/hooks/main';
 import { FaLocationDot } from 'react-icons/fa6';
 
 const ReportsPage = () => {
@@ -48,8 +54,8 @@ const ReportsPage = () => {
     const hasCoords = userLocation && userLocation?.lat !== null && userLocation?.lat !== '' && userLocation?.lng !== null && userLocation?.lng !== '';
 
     const { requestLocation, loading: loadingRequestLocation, permissionDenied, isPermissionDenied, } = useCurrentLocation();
-    const setReportCommentCounts = useReportCommentStore((state) => state.setReportCommentsCount);
-    const setReportComments = useReportCommentStore((state) => state.setReportComments);
+    const setReportCommentCounts = useReportsStore((state) => state.setReportCommentsCount);
+    const setReportComments = useReportsStore((state) => state.setReportComments);
 
     const router = useRouter();
     const { 

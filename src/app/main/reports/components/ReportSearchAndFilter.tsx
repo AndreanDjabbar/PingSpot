@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaSearch } from 'react-icons/fa';
 import { IoFunnelOutline } from 'react-icons/io5';
-import { InputField } from '@/components/form';
+import { InputField } from '@/components';
 
 interface ReportSearchAndFilterProps {
     searchTerm: string;

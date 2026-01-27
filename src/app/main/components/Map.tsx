@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unescaped-entities */
-import { useCurrentLocation, useReverseCurrentLocation } from '@/hooks/main'
-import { useErrorToast } from '@/hooks/toast'
+import { useCurrentLocation, useReverseCurrentLocation, useErrorToast } from '@/hooks'
 import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseDetails } from '@/utils'
 import React, { useEffect, useMemo } from 'react'
 import { FaMap, FaMapPin, FaSpinner } from 'react-icons/fa'
@@ -10,7 +9,7 @@ import camelize from 'camelize';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet';
-import { ErrorSection } from '@/components/feedback'
+import { ErrorSection } from '@/components'
 
 interface ReverseLocationResponse {
     display_name?: string;

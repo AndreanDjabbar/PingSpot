@@ -5,9 +5,8 @@ import Image from 'next/image';
 import { BsThreeDots } from 'react-icons/bs';
 import { FaCrown, FaEdit, FaFlag, FaMapMarkerAlt, FaShare, FaTrash } from 'react-icons/fa';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
-import { IReport, ReportType } from '@/types/model/report';
-import { useConfirmationModalStore, useUserProfileStore } from '@/stores';
-import { OptionItem, useOptionsModalStore } from '@/stores/optionsModalStore';
+import { IReport, OptionItem, ReportType } from '@/types';
+import { useConfirmationModalStore, useUserProfileStore, useOptionsModalStore } from '@/stores';
 import { useRouter } from 'next/navigation';
 
 interface ReportHeaderProps {

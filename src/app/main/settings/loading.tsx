@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loading } from '@/components/UI';
+import { Loading } from '@/components';
 
 const SettingsLoading = () => {
     return (

@@ -2,8 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaUser, FaUsers } from 'react-icons/fa';
 import { GoAlert } from 'react-icons/go';
-
-export type TabType = 'users' | 'reports' | 'communities';
+import { TabType } from '@/types';
 
 interface SearchResultTabsProps {
     activeTab: TabType;

@@ -4,9 +4,8 @@ import { BiLike, BiCategory, BiMap } from 'react-icons/bi';
 import { RiProgress3Fill } from "react-icons/ri";
 import { MdCheckCircle, MdAccessTime, MdCancel } from 'react-icons/md';
 import { ReportFilterOptions, ReportType } from '@/types/model/report';
-import { useLocationStore } from '@/stores/userLocationStore';
+import { useLocationStore, useReportsStore } from '@/stores';
 import { Button } from '@/components/UI';
-import { useReportsStore } from '@/stores';
 
 type SortOption = 'latest' | 'oldest' | 'most_liked' | 'least_liked';
 type StatusFilter = 'all' | 'WAITING' | 'ON_PROGRESS' | 'RESOLVED' | 'POTENTIALLY_RESOLVED' | 'NOT_RESOLVED' | 'EXPIRED';

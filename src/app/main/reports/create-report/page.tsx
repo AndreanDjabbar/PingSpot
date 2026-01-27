@@ -4,19 +4,16 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ButtonSubmit } from '@/components/form';
-import { SuccessSection, ErrorSection } from '@/components/feedback';
+import { SuccessSection, ErrorSection, Stepper, Button } from '@/components';
 import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseMessage, compressImages } from '@/utils';
-import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { useCreateReport, useReverseCurrentLocation } from '@/hooks/main';
+import { useErrorToast, useSuccessToast, useCreateReport, useReverseCurrentLocation } from '@/hooks';
 import { CreateReportSchema } from '../../schema';
 import { ICreateReportRequest } from '@/types/api/report';
 import HeaderSection from '../../components/HeaderSection';
 import { useConfirmationModalStore, useImagePreviewModalStore } from '@/stores';
 import { LuNotebookText } from "react-icons/lu";
-import { Stepper } from '@/components/UI';
 import { AttachmentStep, DetailStep, MapStep, SummaryStep } from './components';
-import { ImageItem } from '@/types/global/type';
+import { ImageItem } from '@/types';
 
 const CreateReportPage = () => {
     const currentPath = usePathname();
@@ -275,12 +272,13 @@ const CreateReportPage = () => {
                                     Lanjut
                                 </button>
                             ) : (
-                                <ButtonSubmit
+                                <Button
                                     className="px-6 py-2.5 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-900 transition-colors duration-300 flex justify-center items-center"
-                                    title="Kirim Laporan"
-                                    progressTitle="Mengirim Laporan..."
-                                    isProgressing={isPending || reverseLoading}
-                                />
+                                    loadingText="Mengirim Laporan..."
+                                    isLoading={isPending || reverseLoading}
+                                >
+                                    Kirim Laporan
+                                </Button>
                             )}
                         </div>
                     </div>

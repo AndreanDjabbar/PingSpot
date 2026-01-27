@@ -4,18 +4,15 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { FaChevronLeft, FaChevronRight, FaMapMarkerAlt, FaImage, FaMap, FaCrown, FaShare, FaBookmark, FaFlag, FaEdit, FaTrash } from 'react-icons/fa';
 import { BsThreeDots } from "react-icons/bs";
-import { useOptionsModalStore } from '@/stores';
-import type { OptionItem } from '@/stores/optionsModalStore';
-import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
 import dynamic from 'next/dynamic';
-import { IReportImage, ReportType } from '@/types/model/report';
+import { IReportImage, OptionItem, ReportType } from '@/types';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
 import { ReportInteractionBar } from '@/app/main/reports/components/ReportInteractionBar';
 import ReportInformation from './ReportInformation';
-import { useReportsStore, useImagePreviewModalStore, useUserProfileStore } from '@/stores';
+import { useReportsStore, useImagePreviewModalStore, useUserProfileStore, useOptionsModalStore, useConfirmationModalStore } from '@/stores';
 import { useRouter } from 'next/navigation';
 import { LuNotepadText } from 'react-icons/lu';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,

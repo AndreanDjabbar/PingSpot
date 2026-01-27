@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import HeaderSection from '../components/HeaderSection';
 import { ExploreSearch, ExploreSearchNonModal } from './components';
-import { useSearchData } from '@/hooks/main';
+import { useSearchData } from '@/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 
 const ExplorePage = () => {

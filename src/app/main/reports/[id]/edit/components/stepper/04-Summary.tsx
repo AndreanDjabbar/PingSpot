@@ -6,8 +6,8 @@ import { IoLocationOutline } from 'react-icons/io5';
 import { IoMdImages } from "react-icons/io";
 import { LuNotebookText } from "react-icons/lu";
 import { BsFillInfoCircleFill } from "react-icons/bs";
-import { Accordion } from '@/components/UI';
-import { IEditReportRequest } from '@/types/api/report';
+import { Accordion } from '@/components';
+import { IEditReportRequest } from '@/types';
 
 interface SummaryStepProps {
     watch: UseFormWatch<IEditReportRequest>;

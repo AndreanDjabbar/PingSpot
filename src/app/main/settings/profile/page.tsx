@@ -1,19 +1,26 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { InputField, DateTimeField, RadioField, ImageField, ButtonSubmit, TextAreaField } from '@/components/form';
+import { 
+    InputField, 
+    DateTimeField, 
+    RadioField, 
+    ImageField, 
+    TextAreaField, 
+    SuccessSection, 
+    ErrorSection, 
+    Button
+} from '@/components';
 import { IoPersonSharp } from 'react-icons/io5';
 import { FaCalendarAlt } from 'react-icons/fa';
 import { SaveProfileSchema } from '../../schema';
 import { ISaveProfileRequest } from '@/types/api/user';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSaveProfile } from '@/hooks/user';
+import { useSaveProfile, useErrorToast, useSuccessToast } from '@/hooks';
 import HeaderSection from '../../components/HeaderSection';
-import { SuccessSection, ErrorSection } from '@/components/feedback';
 import { useConfirmationModalStore, useUserProfileStore } from '@/stores';
 import { compressImages, getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage, getImageURL } from '@/utils';
-import { useErrorToast, useSuccessToast } from '@/hooks/toast';
 
 const ProfilePage = () => {
     const currentPath = usePathname();
@@ -263,12 +270,13 @@ const ProfilePage = () => {
                                 </div>
                                 
                                 <div className="w-full flex justify-end mt-6">
-                                    <ButtonSubmit
+                                    <Button
                                         className="group relative w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-pingspot-hoverable "
-                                        title="Perbarui Profil"
-                                        progressTitle="Memperbarui..."
-                                        isProgressing={isPending || isCompressing}
-                                    />
+                                        loadingText="Memperbarui..."
+                                        isLoading={isPending || isCompressing}
+                                    >
+                                        Perbarui Profil
+                                    </Button>
                                 </div>
                             </div>
                         </form>

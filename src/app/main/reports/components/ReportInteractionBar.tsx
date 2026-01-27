@@ -9,7 +9,7 @@ import {
     FaShare
 } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { IReport } from '@/types/model/report';
+import { IReport } from '@/types';
 
 interface ReactionStatsType {
     totalLikes: number;

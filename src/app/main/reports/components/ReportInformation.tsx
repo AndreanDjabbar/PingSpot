@@ -3,21 +3,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useErrorToast, useSuccessToast } from '@/hooks/toast';
+import { useErrorToast, useSuccessToast, useUploadProgressReport } from '@/hooks';
 import { FaUsers } from 'react-icons/fa';
 import { useReportsStore, useUserProfileStore, useConfirmationModalStore, useFormInformationModalStore } from '@/stores';
-import { useUploadProgressReport } from '@/hooks/main';
 import { compressImages, getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
-import { IUploadProgressReportRequest } from '@/types/api/report';
-import { ImageItem } from '@/types/global/type';
+import { ImageItem, IUploadProgressReportRequest } from '@/types';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UploadProgressReportSchema } from '../../schema';
 import { useQueryClient } from '@tanstack/react-query';
-import { ErrorSection, SuccessSection } from '@/components/feedback';
 import { LuNotebookText } from 'react-icons/lu';
 import { FiEdit } from 'react-icons/fi';
-import { Accordion } from '@/components/UI';
+import { Accordion, ErrorSection, SuccessSection } from '@/components';
 import { MdWarning } from 'react-icons/md';
 import VotingSection from './VotingSection';
 import ProgressHistory from './ProgressHistory';

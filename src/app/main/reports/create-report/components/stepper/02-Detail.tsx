@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { UseFormRegister, UseFormSetValue, FieldErrors } from 'react-hook-form';
-import { InputField, TextAreaField, SelectField, CheckboxField } from '@/components/form';
+import { InputField, TextAreaField, SelectField, CheckboxField } from '@/components';
 import { LuNotebookText } from "react-icons/lu";
 import { IoLocationOutline } from 'react-icons/io5';
 import { BiCategory } from 'react-icons/bi';
-import { ICreateReportRequest } from '@/types/api/report';
+import { ICreateReportRequest } from '@/types';
 
 interface DetailStepProps {
     register: UseFormRegister<ICreateReportRequest>;

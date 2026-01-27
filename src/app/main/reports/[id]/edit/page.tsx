@@ -6,18 +6,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LuNotebookText } from 'react-icons/lu';
-import { ButtonSubmit } from '@/components/form';
-import { ErrorSection, SuccessSection } from '@/components/feedback';
-import { Stepper, Button } from '@/components/UI';
-import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { useGetReportByID, useReverseCurrentLocation, useEditReport } from '@/hooks/main';
+import { Stepper, Button, ErrorSection, SuccessSection } from '@/components';
+import { useGetReportByID, useReverseCurrentLocation, useEditReport, useErrorToast, useSuccessToast } from '@/hooks';
 import { useConfirmationModalStore, useFormInformationModalStore, useImagePreviewModalStore } from '@/stores';
-import { IEditReportRequest } from '@/types/api/report';
-import { IReportImage } from '@/types/model/report';
+import { IReportImage, ImageItem, IEditReportRequest } from '@/types';
 import { EditReportSchema } from '../../../schema';
 import { compressImages, getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage, getImageURL } from '@/utils';
 import { HeaderSection } from '@/app/main/components';
-import { ImageItem } from '@/types/global/type';
 import { MapStep, DetailStep, AttachmentStep, SummaryStep } from './components';
 
 const EditReportPage = () => {
@@ -396,12 +391,14 @@ const EditReportPage = () => {
                                     Lanjut
                                 </Button>
                             ) : (
-                                <ButtonSubmit
+                                <Button
                                     disabled={isEditing || reverseLoading || reportStatus === 'RESOLVED'}
-                                    title="Kirim Laporan"
-                                    progressTitle={"Menyunting Laporan..."}
-                                    isProgressing={isEditing || reverseLoading}
-                                />
+                                    type='submit'
+                                    loadingText={"Menyunting Laporan..."}
+                                    isLoading={isEditing || reverseLoading}
+                                >
+                                    Kirim Laporan
+                                </Button>
                             )}
                         </div>
                     </div>

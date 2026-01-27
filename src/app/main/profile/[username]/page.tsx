@@ -3,9 +3,8 @@
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { useGetProfileByUsername } from '@/hooks/user/useGetProfile';
-import { useErrorToast } from '@/hooks/toast';
-import { ErrorSection } from '@/components/feedback';
+import { useGetProfileByUsername, useErrorToast } from '@/hooks';
+import { ErrorSection } from '@/components';
 import { getErrorResponseMessage, getImageURL, isInternalServerError, isNotFoundError } from '@/utils';
 
 const ProfilePageByUsername = () => {

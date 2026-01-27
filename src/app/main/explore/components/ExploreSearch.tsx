@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaSearch, FaSpinner } from 'react-icons/fa';
-import { InputField } from '@/components/form';
+import { InputField } from '@/components';
 import { BiX } from 'react-icons/bi';
 
 interface ExploreSearchProps {

@@ -13,3 +13,5 @@ export interface OptionItem {
     description?: string;
     onClick: () => void;
 }
+
+export type TabType = 'users' | 'reports' | 'communities';

@@ -5,17 +5,14 @@ export const dynamic = 'force-dynamic';
 import React, { useEffect, useState } from 'react';
 import { BiLock, BiEnvelope, BiUser, BiCog } from 'react-icons/bi';
 import { MdOutlineLanguage, MdOutlineMarkEmailUnread } from 'react-icons/md';
-import { useErrorToast, useSuccessToast } from '@/hooks/toast';
-import { useLogout } from '@/hooks/user';
+import { useErrorToast, useSuccessToast, useLogout } from '@/hooks';
 import { useRouter, usePathname } from 'next/navigation';
 import { ImExit } from 'react-icons/im';
 import { IoIosNotifications } from "react-icons/io";
-import { useUserProfileStore } from '@/stores/userProfileStore';
-import { useConfirmationModalStore } from '@/stores/confirmationModalStore';
+import { useUserProfileStore, useConfirmationModalStore } from '@/stores';
 import { SettingCard, SettingItem } from './components';
 import HeaderSection from '../components/HeaderSection';
-import ToggleSwitch from '@/components/UI/ToggleSwitch';
-import { Button } from '@/components/UI';
+import { Button, ToggleSwitch } from '@/components';
 
 const SettingsPage = () => {
     const router = useRouter();

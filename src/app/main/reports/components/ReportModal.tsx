@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 import 'leaflet/dist/leaflet.css';
 import { compressImages, getErrorResponseMessage } from '@/utils';
-import { IReportComment } from '@/types/model/report';
-import { useReportCommentStore, useReportsStore, useUserProfileStore } from '@/stores';
+import { IReportComment } from '@/types';
+import { useReportsStore, useUserProfileStore } from '@/stores';
 import ReportCard from './ReportCard';
 import { ICreateReportCommentRequest, ICreateReportCommentResponse } from '@/types/api/report';
-import { ErrorSection } from '@/components/feedback';
+import { ErrorSection } from '@/components/';
 import { CommentsList } from '@/app/main/components/CommentsList';
 import { CommentInput } from '@/app/main/components/CommentInput';
 import { UseMutateFunction } from '@tanstack/react-query';
@@ -56,10 +56,10 @@ const ReportModal: React.FC<ReportModalProps> = ({
 
     const userProfile = useUserProfileStore((state) => state.userProfile);
     const report = useReportsStore((state) => state.selectedReport)
-    const reportComments = useReportCommentStore((state) => state.reportComments);
-    const reportCommentCounts = useReportCommentStore((state) => state.reportCommentsCount);
-    const setReportCommentCounts = useReportCommentStore((state) => state.setReportCommentsCount);
-    const setReportComments = useReportCommentStore((state) => state.setReportComments);
+    const reportComments = useReportsStore((state) => state.reportComments);
+    const reportCommentCounts = useReportsStore((state) => state.reportCommentsCount);
+    const setReportCommentCounts = useReportsStore((state) => state.setReportCommentsCount);
+    const setReportComments = useReportsStore((state) => state.setReportComments);
 
     const handleLoadMoreComments = () => {
         if (onLoadMoreComments) {

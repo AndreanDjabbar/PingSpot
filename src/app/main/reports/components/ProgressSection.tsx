@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaCheck, FaTimes, FaCamera } from 'react-icons/fa';
 import { RiProgress3Fill } from "react-icons/ri";
 import { BiMessageDetail } from 'react-icons/bi';
-import { ButtonSubmit, MultipleImageField, TextAreaField } from '@/components/form';
-import { ImageItem } from '@/types/global/type';
+import { Button, MultipleImageField, TextAreaField } from '@/components';
+import { ImageItem } from '@/types';
 import { UseFormRegister, FieldErrors, UseFormSetValue, UseFormHandleSubmit } from 'react-hook-form';
 import { IUploadProgressReportRequest } from '@/types/api/report';
 
@@ -257,12 +257,13 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
                         </div>
                         
                         <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                            <ButtonSubmit
+                            <Button
                                 className="group relative flex-1 flex items-center justify-center py-3.5 px-4 text-sm font-bold rounded-xl text-white bg-sky-700 hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                                title={selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
-                                progressTitle="Memproses..."
-                                isProgressing={isUploadProgressReportPending}
-                            />
+                                loadingText="Memproses..."
+                                isLoading={isUploadProgressReportPending}
+                            >
+                                {selectedStatus === 'RESOLVED' ? 'Tutup Laporan' : 'Perbarui Status'}
+                            </Button>
                             
                             <motion.button
                                 type="button"

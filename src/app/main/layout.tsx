@@ -1,4 +1,4 @@
-import { MainLayout } from "@/components/layouts";
+import { MainLayout } from "@/components";
 
 const MainLayoutWrapper = ({children}: {children: React.ReactNode}) => {
     return (

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Breadcrumb } from '@/components/layouts';
+import { Breadcrumb } from '@/components';
 
 interface HeaderSectionProps {
     currentPath: string;

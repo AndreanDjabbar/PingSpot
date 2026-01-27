@@ -1,12 +1,12 @@
 "use client";
 
 import React from 'react';
-import { IReport, ReportType } from '@/types/model/report';
+import { IReport, ReportType } from '@/types';
 import { getFormattedDate as formattedDate } from '@/utils';
 import { useConfirmationModalStore, useFormInformationModalStore, useUserProfileStore } from '@/stores';
 import { MdWarning } from 'react-icons/md';
 import { ImInfo } from 'react-icons/im';
-import { Button } from '@/components/UI';
+import { Button } from '@/components';
 import { BiEdit } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
 import { IoMdTrash } from 'react-icons/io';

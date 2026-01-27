@@ -1,6 +1,6 @@
 import React from 'react';
-import { MultipleImageField } from '@/components/form';
-import { ImageItem } from '@/types/global/type';
+import { MultipleImageField } from '@/components';
+import { ImageItem } from '@/types';
 
 interface AttachmentStepProps {
     images: ImageItem[];
