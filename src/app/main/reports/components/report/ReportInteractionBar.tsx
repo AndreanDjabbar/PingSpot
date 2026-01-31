@@ -28,7 +28,7 @@ interface ReportInteractionBarProps {
     showSecondaryActions?: boolean;
 }
 
-export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
+const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
     report,
     onLike,
     onComment,
@@ -124,3 +124,5 @@ export const ReportInteractionBar: React.FC<ReportInteractionBarProps> = ({
         </div>
     );
 };
+
+export default ReportInteractionBar;

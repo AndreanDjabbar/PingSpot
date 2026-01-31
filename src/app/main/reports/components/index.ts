@@ -1,44 +1,4 @@
-import ReportCard from "./ReportCard";
-import ReportModal from "./ReportModal";
-import ReportInformation from "./ReportInformation";
-import ReportSkeleton from "./ReportSkeleton";
-import ReportSearchAndFilter from "./ReportSearchAndFilter";
-import ReportList from "./ReportList";
-import CommentSection from "./CommentSection";
-import CommentItem from "./CommentItem";
-import MentionInput from "./MentionInput";
-import MentionText from "./MentionText";
-import { ReportSidebar } from "./ReportSidebar";
-import ReportFilterModal from "./ReportFilterModal";
-import ProgressSection from "./ProgressSection";
-import VotingSection from "./VotingSection";
-import ProgressHistory from "./ProgressHistory";
-import CurrentProgress from "./CurrentProgress";
-import ResolvedReport from "./ResolvedReport";
-import PublicVotes from "./PublicVotes";
-import CommentInput from "./CommentInput";
-import CommentsList from "./CommentsList";
-export type { MentionUser } from "./MentionInput";
-
-export {
-    ReportCard,
-    ReportModal,
-    ReportInformation,
-    ReportSkeleton,
-    ReportSearchAndFilter,
-    ReportList,
-    CommentSection,
-    CommentItem,
-    CommentInput,
-    CommentsList,
-    MentionInput,
-    MentionText,
-    ReportSidebar,
-    ReportFilterModal,
-    ProgressSection,
-    VotingSection,
-    ProgressHistory,
-    CurrentProgress,
-    ResolvedReport,
-    PublicVotes
-}
+export * from './comments'
+export * from './progress'
+export * from './voting'
+export * from './report'

@@ -9,7 +9,7 @@ import { FaComment } from 'react-icons/fa';;
 import { useInView } from 'react-intersection-observer';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
-interface CommentsListProps {
+interface CommentListProps {
     comments: IReportComment[];
     commentCount: number;
     showCommentInput?: boolean;
@@ -33,7 +33,7 @@ interface CommentsListProps {
     className?: string;
 }
 
-const CommentsList: React.FC<CommentsListProps> = ({
+const CommentList: React.FC<CommentListProps> = ({
     comments,
     commentCount,
     showCommentInput = true,
@@ -270,4 +270,4 @@ const CommentsList: React.FC<CommentsListProps> = ({
     );
 };
 
-export default CommentsList;
+export default CommentList;
