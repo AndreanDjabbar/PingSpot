@@ -6,13 +6,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LuNotebookText } from 'react-icons/lu';
-import { Stepper, Button, ErrorSection, SuccessSection } from '@/components';
+import { Stepper, Button, ErrorSection, SuccessSection, HeaderSection } from '@/components';
 import { useGetReportByID, useReverseCurrentLocation, useEditReport, useErrorToast, useSuccessToast } from '@/hooks';
 import { useConfirmationModalStore, useFormInformationModalStore, useImagePreviewModalStore } from '@/stores';
 import { IReportImage, ImageItem, IEditReportRequest } from '@/types';
 import { EditReportSchema } from '../../../schema';
 import { compressImages, getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage, getImageURL } from '@/utils';
-import { HeaderSection } from '@/app/main/components';
 import { MapStep, DetailStep, AttachmentStep, SummaryStep } from './components';
 
 const EditReportPage = () => {

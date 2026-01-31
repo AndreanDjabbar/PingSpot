@@ -6,9 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { BiPlus } from 'react-icons/bi'
 import { FaUser } from 'react-icons/fa'
 import { GoAlert } from 'react-icons/go'
-import HeaderSection from '../components/HeaderSection';
 import { useLocationStore } from '@/stores';
-import { Button, EmptyState, Loading, ErrorSection } from '@/components';
+import { Button, EmptyState, Loading, ErrorSection, HeaderSection } from '@/components';
 import { RxCrossCircled } from 'react-icons/rx';
 import { FaLocationDot } from 'react-icons/fa6';
 import { useCurrentLocation, useGetReportStatistics, useErrorToast, useGetUserStatistics } from '@/hooks';
@@ -16,7 +15,7 @@ import { getErrorResponseMessage, getFormattedDate, getRelativeTime, isInternalS
 import { IoMdPulse } from 'react-icons/io';
 import { MdCalendarMonth } from 'react-icons/md';
 
-const Map = dynamic(() => import('@/app/main/components/StaticMap'), {
+const Map = dynamic(() => import('@/components/UI/StaticMap'), {
     ssr: false,
     loading: () => <div className="w-full h-[200px] bg-gray-200 animate-pulse rounded-lg"></div>
 });
