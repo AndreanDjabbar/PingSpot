@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { BiSend } from 'react-icons/bi';
 import { IReportComment, ICreateReportCommentRequest } from '@/types';
-import CommentItem from '../reports/components/CommentItem';
+import CommentItem from './CommentItem';
 import { ImagePreview, InlineImageUpload, TextAreaField, Button } from '@/components';
 import { FaComment } from 'react-icons/fa';;
 import { useInView } from 'react-intersection-observer';
@@ -33,7 +33,7 @@ interface CommentsListProps {
     className?: string;
 }
 
-export const CommentsList: React.FC<CommentsListProps> = ({
+const CommentsList: React.FC<CommentsListProps> = ({
     comments,
     commentCount,
     showCommentInput = true,
@@ -269,3 +269,5 @@ export const CommentsList: React.FC<CommentsListProps> = ({
         </div>
     );
 };
+
+export default CommentsList;

@@ -17,7 +17,7 @@ interface CommentInputProps {
     className?: string;
 }
 
-export const CommentInput: React.FC<CommentInputProps> = ({
+const CommentInput: React.FC<CommentInputProps> = ({
     commentContent,
     commentMediaImage = null,
     imagePreview = null,
@@ -108,3 +108,5 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         </div>
     );
 };
+
+export default CommentInput;

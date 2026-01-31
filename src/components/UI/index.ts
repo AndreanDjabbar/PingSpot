@@ -15,6 +15,9 @@ import CheckboxField from './CheckboxField';
 import SelectField from './SelectField';
 import InlineImageUpload, { ImagePreview } from './InlineImageUpload';
 import Breadcrumb from "./Breadcrumb";
+import DynamicMap from "./DynamicMap";
+import Map from "./Map";
+import StaticMap from "./StaticMap";
 
 export {
     PingspotLogo,
@@ -34,5 +37,8 @@ export {
     CheckboxField,
     SelectField,
     InlineImageUpload,
-    ImagePreview
+    ImagePreview,
+    DynamicMap,
+    Map,
+    StaticMap
 }

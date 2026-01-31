@@ -16,6 +16,8 @@ import ProgressHistory from "./ProgressHistory";
 import CurrentProgress from "./CurrentProgress";
 import ResolvedReport from "./ResolvedReport";
 import PublicVotes from "./PublicVotes";
+import CommentInput from "./CommentInput";
+import CommentsList from "./CommentsList";
 export type { MentionUser } from "./MentionInput";
 
 export {
@@ -27,6 +29,8 @@ export {
     ReportList,
     CommentSection,
     CommentItem,
+    CommentInput,
+    CommentsList,
     MentionInput,
     MentionText,
     ReportSidebar,
