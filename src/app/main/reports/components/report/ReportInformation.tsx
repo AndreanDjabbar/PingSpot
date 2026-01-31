@@ -10,18 +10,15 @@ import { compressImages, getErrorResponseDetails, getErrorResponseMessage } from
 import { ImageItem, IUploadProgressReportRequest } from '@/types';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { UploadProgressReportSchema } from '../../schema';
+import { UploadProgressReportSchema } from '@/app/main/schema';
 import { useQueryClient } from '@tanstack/react-query';
 import { LuNotebookText } from 'react-icons/lu';
 import { FiEdit } from 'react-icons/fi';
 import { Accordion, ErrorSection, SuccessSection } from '@/components';
 import { MdWarning } from 'react-icons/md';
-import VotingSection from './VotingSection';
-import ProgressHistory from './ProgressHistory';
-import CurrentProgress from './CurrentProgress';
+import { PublicVotes, VotingSection } from '../voting';
+import { CurrentProgress, ProgressHistory, ProgressSection } from '../progress';
 import ResolvedReport from './ResolvedReport';
-import ProgressSection from './ProgressSection';
-import PublicVotes from './PublicVotes';
 
 interface ReportInformationProps {
     reportID?: number;
@@ -254,7 +251,7 @@ const ReportInformation: React.FC<ReportInformationProps> = ({
                         {reportID && (
                             <div className='mb-3 space-y-4'>
                                 {progressData && progressData.length > 0 && report && (
-                                    <CurrentProgress 
+                                    <CurrentProgress
                                     handleImageClick={handleImageClick} 
                                     reportProgress={report.reportProgress}/>
                                 )}

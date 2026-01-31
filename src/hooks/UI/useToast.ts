@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import { useEffect, useRef } from 'react'
 import { getDataResponseMessage, getErrorResponseMessage } from '@/utils';
 import { toast, ToastOptions } from 'react-toastify';

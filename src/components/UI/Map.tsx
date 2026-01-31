@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unescaped-entities */
+"use client";
+
 import { useCurrentLocation, useReverseCurrentLocation, useErrorToast } from '@/hooks'
 import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseDetails } from '@/utils'
 import React, { useEffect, useMemo } from 'react'

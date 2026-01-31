@@ -9,6 +9,7 @@ import {
     TextAreaField, 
     SuccessSection, 
     ErrorSection, 
+    HeaderSection,
     Button
 } from '@/components';
 import { IoPersonSharp } from 'react-icons/io5';
@@ -18,7 +19,6 @@ import { ISaveProfileRequest } from '@/types/api/user';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSaveProfile, useErrorToast, useSuccessToast } from '@/hooks';
-import HeaderSection from '../../components/HeaderSection';
 import { useConfirmationModalStore, useUserProfileStore } from '@/stores';
 import { compressImages, getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage, getImageURL } from '@/utils';
 

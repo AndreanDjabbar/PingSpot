@@ -13,7 +13,7 @@ import {
     compressImages,
 } from '@/utils';
 import { ReportType, IReportImage, IReportComment } from '@/types';
-import { ReportInteractionBar } from '../components/ReportInteractionBar';
+import { ReportInteractionBar } from '../components';
 import { useUserProfileStore, useReportsStore, useImagePreviewModalStore } from '@/stores';
 import { 
     useDeleteReport, 

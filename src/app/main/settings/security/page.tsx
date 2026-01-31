@@ -3,7 +3,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Button, InputField } from '@/components';
+import { Button, InputField, HeaderSection } from '@/components';
 import { SaveSecuritySchema } from '../../schema';
 import { ISaveSecurityRequest } from '@/types';
 import { useForm } from 'react-hook-form';
@@ -11,7 +11,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useErrorToast, useSuccessToast, useSaveSecurity, useLogout } from '@/hooks';
 import { SuccessSection, ErrorSection } from '@/components';
 import { getDataResponseMessage, getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
-import HeaderSection from '../../components/HeaderSection';
 import { LuLockKeyhole } from 'react-icons/lu';
 import { IoKey } from 'react-icons/io5';
 import { useConfirmationModalStore } from '@/stores';
