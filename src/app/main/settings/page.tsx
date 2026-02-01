@@ -11,8 +11,7 @@ import { ImExit } from 'react-icons/im';
 import { IoIosNotifications } from "react-icons/io";
 import { useUserProfileStore, useConfirmationModalStore } from '@/stores';
 import { SettingCard, SettingItem } from './components';
-import HeaderSection from '../components/HeaderSection';
-import { Button, ToggleSwitch } from '@/components';
+import { Button, ToggleSwitch, HeaderSection } from '@/components';
 
 const SettingsPage = () => {
     const router = useRouter();

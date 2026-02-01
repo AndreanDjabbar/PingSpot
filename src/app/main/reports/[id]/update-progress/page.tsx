@@ -14,9 +14,8 @@ import { useReportsStore, useUserProfileStore, useConfirmationModalStore, useIma
 import { IUploadProgressReportRequest, ImageItem } from '@/types';
 import { UploadProgressReportSchema } from '../../../schema';
 import { DetailSection, GuideSection, ProgressSection, ResponseSection } from './components';
-import { HeaderSection } from '@/app/main/components';
 import { compressImages } from '@/utils';
-import { Button } from '@/components';
+import { Button, HeaderSection } from '@/components';
 
 const UpdateProgressPage = () => {
     const params = useParams();

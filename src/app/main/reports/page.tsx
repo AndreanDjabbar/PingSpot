@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { BiPlus } from 'react-icons/bi';
-import HeaderSection from '../components/HeaderSection';
 import { useRouter } from 'next/navigation';
 import { 
     useDeleteReport, 
@@ -17,7 +16,7 @@ import {
 } from '@/hooks';
 import { RxCrossCircled } from "react-icons/rx";
 import { getErrorResponseDetails, getErrorResponseMessage, isInternalServerError } from '@/utils';
-import { Button, EmptyState, Loading, ErrorSection } from '@/components';
+import { Button, EmptyState, Loading, ErrorSection, HeaderSection } from '@/components';
 import { 
     ReportSkeleton, 
     ReportSearchAndFilter,

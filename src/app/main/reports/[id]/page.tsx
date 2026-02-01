@@ -34,8 +34,7 @@ import {
     ReportVotingSection,
     ReportDetailSkeleton 
 } from './components';
-import { ErrorSection, Loading } from '@/components';
-import { HeaderSection } from '../../components';
+import { ErrorSection, Loading, HeaderSection } from '@/components';
 import { ICreateReportCommentRequest } from '@/types/api/report';
 
 const getReportTypeLabel = (type: ReportType): string => {
