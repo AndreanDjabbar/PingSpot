@@ -5,6 +5,7 @@ import BackgroundTheme from "./BackgroundTheme";
 import TopNavigation from "./TopNavigation";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
+import HeaderSection from "./HeaderSection";
 
 export {
     AuthLayout,
@@ -13,5 +14,6 @@ export {
     BackgroundTheme,
     TopNavigation,
     Sidebar,
-    Footer
+    Footer,
+    HeaderSection,
 }
