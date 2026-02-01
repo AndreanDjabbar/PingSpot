@@ -17,6 +17,8 @@ import CurrentProgress from "./CurrentProgress";
 import ResolvedReport from "./ResolvedReport";
 import PublicVotes from "./PublicVotes";
 export type { MentionUser } from "./MentionInput";
+import CommentList from "./CommentList";
+import CommentInput from "./CommentInput";
 
 export {
     ReportCard,
@@ -36,5 +38,7 @@ export {
     ProgressHistory,
     CurrentProgress,
     ResolvedReport,
-    PublicVotes
+    PublicVotes,
+    CommentList,
+    CommentInput
 }
