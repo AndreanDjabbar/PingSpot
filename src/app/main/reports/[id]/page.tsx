@@ -13,7 +13,6 @@ import {
     compressImages,
 } from '@/utils';
 import { ReportType, IReportImage, IReportComment } from '@/types';
-import { ReportInteractionBar } from '../components/ReportInteractionBar';
 import { useUserProfileStore, useReportsStore, useImagePreviewModalStore } from '@/stores';
 import { 
     useDeleteReport, 
@@ -36,6 +35,7 @@ import {
 } from './components';
 import { ErrorSection, Loading, HeaderSection } from '@/components';
 import { ICreateReportCommentRequest } from '@/types/api/report';
+import { ReportInteractionBar } from '../components';
 
 const getReportTypeLabel = (type: ReportType): string => {
     const types: Record<ReportType, string> = {

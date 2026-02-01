@@ -11,10 +11,9 @@ import ReportCard from './ReportCard';
 import { ICreateReportCommentRequest, ICreateReportCommentResponse } from '@/types/api/report';
 import { ErrorSection } from '@/components/';
 import { UseMutateFunction } from '@tanstack/react-query';
-import { CreateReportCommentSchema } from '../../schema';
 import z from 'zod';
-import CommentList from './CommentList';
-import CommentInput from './CommentInput';
+import { CreateReportCommentSchema } from '@/app/main/schema';
+import { CommentInput, CommentList } from '../comment';
 
 interface ReportModalProps {
     isOpen: boolean;

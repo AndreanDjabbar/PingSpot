@@ -10,18 +10,16 @@ import { compressImages, getErrorResponseDetails, getErrorResponseMessage } from
 import { ImageItem, IUploadProgressReportRequest } from '@/types';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { UploadProgressReportSchema } from '../../schema';
+import { UploadProgressReportSchema } from '../../../schema';
 import { useQueryClient } from '@tanstack/react-query';
 import { LuNotebookText } from 'react-icons/lu';
 import { FiEdit } from 'react-icons/fi';
 import { Accordion, ErrorSection, SuccessSection } from '@/components';
 import { MdWarning } from 'react-icons/md';
-import VotingSection from './VotingSection';
-import ProgressHistory from './ProgressHistory';
-import CurrentProgress from './CurrentProgress';
+import { CurrentProgress, ProgressHistory, ProgressSection } from '../progress';
 import ResolvedReport from './ResolvedReport';
-import ProgressSection from './ProgressSection';
-import PublicVotes from './PublicVotes';
+import { PublicVotes, VotingSection } from '../voting';
+
 
 interface ReportInformationProps {
     reportID?: number;

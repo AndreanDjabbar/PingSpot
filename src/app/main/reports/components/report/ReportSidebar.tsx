@@ -20,7 +20,7 @@ const reportTypeConfig: Record<string, { label: string; color: string }> = {
     totalOtherReports: { label: 'Lainnya', color: 'text-gray-600' },
 };
 
-export const ReportSidebar = memo(() => {
+const ReportSidebar = memo(() => {
     const reportCount = useReportsStore((state) => state.reportCount);
 
     const reportStats = useMemo(() => {
@@ -188,3 +188,5 @@ export const ReportSidebar = memo(() => {
 });
 
 ReportSidebar.displayName = 'ReportSidebar';
+
+export default ReportSidebar;

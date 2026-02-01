@@ -7,12 +7,12 @@ import { BsThreeDots } from "react-icons/bs";
 import dynamic from 'next/dynamic';
 import { IReportImage, OptionItem, ReportType } from '@/types';
 import { getImageURL, getFormattedDate as formattedDate } from '@/utils';
-import { ReportInteractionBar } from '@/app/main/reports/components/ReportInteractionBar';
 import ReportInformation from './ReportInformation';
 import { useReportsStore, useImagePreviewModalStore, useUserProfileStore, useOptionsModalStore, useConfirmationModalStore } from '@/stores';
 import { useRouter } from 'next/navigation';
 import { LuNotepadText } from 'react-icons/lu';
 import { cn } from '@/lib';
+import ReportInteractionBar from './ReportInteractionBar';
 
 const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
     ssr: false,
