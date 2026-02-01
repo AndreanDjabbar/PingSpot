@@ -10,11 +10,11 @@ import { useReportsStore, useUserProfileStore } from '@/stores';
 import ReportCard from './ReportCard';
 import { ICreateReportCommentRequest, ICreateReportCommentResponse } from '@/types/api/report';
 import { ErrorSection } from '@/components/';
-import { CommentsList } from '@/app/main/components/CommentsList';
-import { CommentInput } from '@/app/main/components/CommentInput';
 import { UseMutateFunction } from '@tanstack/react-query';
 import { CreateReportCommentSchema } from '../../schema';
 import z from 'zod';
+import CommentList from './CommentList';
+import CommentInput from './CommentInput';
 
 interface ReportModalProps {
     isOpen: boolean;
@@ -251,7 +251,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                             </div>
                         )}
 
-                        <CommentsList
+                        <CommentList
                             comments={reportComments!}
                             commentCount={reportCommentCounts}
                             showCommentInput={false}

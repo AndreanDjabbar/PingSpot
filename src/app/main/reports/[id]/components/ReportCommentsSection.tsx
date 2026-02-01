@@ -4,10 +4,10 @@ import React from 'react';
 import { IReportComment, ICreateReportCommentRequest } from '@/types';
 import { z } from 'zod';
 import { CreateReportCommentSchema } from '@/app/main/schema';
-import { CommentsList } from '@/app/main/components/CommentsList';
 import { ErrorSection } from '@/components';
 import { getErrorResponseDetails, getErrorResponseMessage, isInternalServerError } from '@/utils';
 import { useReportsStore } from '@/stores';
+import { CommentList } from '../../components';
 
 interface ReportCommentsSectionProps {
     comments: IReportComment[];
@@ -130,7 +130,7 @@ export const ReportCommentsSection: React.FC<ReportCommentsSectionProps> = ({
     }
 
     return (
-        <CommentsList
+        <CommentList
             comments={comments}
             commentCount={reportCommentCounts}
             showCommentInput={true}
