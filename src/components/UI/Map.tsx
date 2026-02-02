@@ -1,15 +1,17 @@
+"use client";
+
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unescaped-entities */
-import { useCurrentLocation, useReverseCurrentLocation, useErrorToast } from '@/hooks'
-import { getErrorResponseDetails, getErrorResponseMessage, getDataResponseDetails } from '@/utils'
 import React, { useEffect, useMemo } from 'react'
 import { FaMap, FaMapPin, FaSpinner } from 'react-icons/fa'
-import { useLocationStore } from '@/stores'
 import camelize from 'camelize';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet';
-import { ErrorSection } from '@/components'
+import { useLocationStore } from '@/stores';
+import { useCurrentLocation, useErrorToast, useReverseCurrentLocation } from '@/hooks';
+import { ErrorSection } from '../feedback';
+import { getDataResponseDetails, getErrorResponseDetails, getErrorResponseMessage } from '@/utils';
 
 interface ReverseLocationResponse {
     display_name?: string;

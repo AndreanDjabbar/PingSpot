@@ -4,7 +4,7 @@ import { FaMapMarkerAlt } from 'react-icons/fa';
 import { BiInfoCircle } from 'react-icons/bi';
 import 'leaflet/dist/leaflet.css';
 
-const DynamicMap = dynamic(() => import('../../../../../components/DynamicMap'), {
+const DynamicMap = dynamic(() => import('../../../../../../../components/UI/DynamicMap'), {
     ssr: false,
 });
 

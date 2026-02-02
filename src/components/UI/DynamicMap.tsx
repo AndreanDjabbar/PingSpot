@@ -1,5 +1,5 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';

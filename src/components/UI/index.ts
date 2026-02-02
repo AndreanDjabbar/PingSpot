@@ -16,6 +16,13 @@ import SelectField from './SelectField';
 import InlineImageUpload, { ImagePreview } from './InlineImageUpload';
 import Breadcrumb from "./Breadcrumb";
 
+/*
+    Map and DynamicMap components are separated due to issues with Leaflet and Next.js SSR.
+    DynamicMap is loaded dynamically with SSR disabled to prevent rendering issues.
+
+    Because import something from barrel file causes all files to be included!,
+*/
+
 export {
     PingspotLogo,
     ToggleSwitch,

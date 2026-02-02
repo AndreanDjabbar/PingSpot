@@ -7,7 +7,7 @@ import { FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaImage, FaMap } from 'r
 import { getImageURL } from '@/utils';
 import { IReport } from '@/types';
 
-const StaticMap = dynamic(() => import('../../../components/StaticMap'), {
+const StaticMap = dynamic(() => import('../../../../../components/UI/StaticMap'), {
     ssr: false,
     loading: () => <div className="w-full h-[380px] bg-gray-200 animate-pulse rounded-xl"></div>
 });

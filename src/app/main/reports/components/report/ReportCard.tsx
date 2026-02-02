@@ -14,7 +14,7 @@ import { LuNotepadText } from 'react-icons/lu';
 import { cn } from '@/lib';
 import ReportInteractionBar from './ReportInteractionBar';
 
-const StaticMap = dynamic(() => import('@/app/main/components/StaticMap'), {
+const StaticMap = dynamic(() => import('@/components/UI/StaticMap'), {
     ssr: false,
     loading: () => <div className="w-full h-[200px] bg-gray-200 animate-pulse rounded-lg"></div>
 });

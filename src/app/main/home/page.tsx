@@ -15,7 +15,7 @@ import { getErrorResponseMessage, getFormattedDate, getRelativeTime, isInternalS
 import { IoMdPulse } from 'react-icons/io';
 import { MdCalendarMonth } from 'react-icons/md';
 
-const Map = dynamic(() => import('@/app/main/components/StaticMap'), {
+const Map = dynamic(() => import('@/components/UI/StaticMap'), {
     ssr: false,
     loading: () => <div className="w-full h-[200px] bg-gray-200 animate-pulse rounded-lg"></div>
 });
